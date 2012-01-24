@@ -9,7 +9,7 @@ var express = require('express')
    , mongoose = require('mongoose');
 var db;
 
-var app = module.exports = express.createServer();
+//var app = module.exports = express.createServer();
 
 
 /*
@@ -43,16 +43,25 @@ app.configure('production', function(){
 /*
  * Connect to Mongoose and load connection to tldr collection
  */
-models.defineModels(mongoose, function(){
-     /* Callback after calling define Models
-        Load define Models */
-    app.tldrModel = mongoose.model('tldr');
-    app.userModel = mongoose.model('user');
-    db = mongoose.connect('mongodb://localhost/'+app.set('db-name'), function(err) {
-      if (err) { throw err; }
+function initServer(){
+    models.defineModels(mongoose, function(){
+         /* Callback after calling define Models
+            Load define Models */
+        app.tldrModel = mongoose.model('tldr');
+        app.userModel = mongoose.model('user');
+        db = mongoose.connect('mongodb://localhost/'+app.set('db-name'), function(err) {
+          if (err) { throw err; }
+        });
     });
-});
+}
 
+//module.exports.initServer = initServer;
+module.exports = function(){
+    
+    return{
+        express.createServer();
+    }
+};
 /*
  * Routing
  */

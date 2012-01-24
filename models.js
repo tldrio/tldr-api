@@ -5,6 +5,7 @@ function defineModels (mongoose, callback) {
      * Mongoose Schema for a tldr object
      */
     var TldrSchema = new Schema({
+        _id: Schema.ObjectId,
         clean_url: String,
         summary: String,
         short_url: String,
