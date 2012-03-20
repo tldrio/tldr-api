@@ -14,10 +14,11 @@ var restify = require('restify'),
     // Port to connect to server
     PORT = 8787;
 
-logger.warn('Test Warn');
-logger.debug('Test Debug');
-logger.info('Test info');
-logger.error('Test error');
+server.use(restify.acceptParser(server.acceptable));
+server.use(restify.queryParser());
+
+
+
 
 //Hanlding annoying favicon request in Chrome
 server.get('/favicon.ico', function(req, res, next){
