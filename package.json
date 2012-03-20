@@ -8,6 +8,7 @@
       "winston": "0.5.x",
       "chai": "0.5.x",
       "mocha": "0.14.x",
+      "sinon": "1.3.x",
       "restify": "1.3.x"
   }
 }
