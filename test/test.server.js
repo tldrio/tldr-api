@@ -3,17 +3,18 @@ var should = require('chai').should(),
     restify = require('restify'),
     server = require('../server-restify.js'),
     config = require('../lib/config.js'),
+    winston = require('../lib/logger.js').winston;
+
+var client = restify.createJsonClient({
+        url: 'http://localhost:' + PORT,
+    }),
     PORT = config.PORT_TEST;
 
-
 server.listen(PORT, function() {
-  console.log('listening ' + server.url);
-});
-server.get('/test', function(req, res, next) {
-  res.send('test');
-  console.log('handle hello request');
+  winston.info('listening ' + server.url);
 });
 
+// Test Example
 describe('This test', function() {
   it('should be an very useful test', function() {
     var a = 4,
@@ -34,15 +35,13 @@ describe('This test', function() {
 
 
 describe('Set up env: ', function() {
-  it('should return hello', function() {
-    var client = restify.createJsonClient({
-      url: 'http://localhost:' + config.PORT_DEV,
-    });
-    console.log('client' + client.url);
-    client.get('/test', function(err, req, res, obj) {
-        obj.should.equal('hello');
-        console.log('in client');
-        //console.log(JSON.stringify(obj, null, 2));
+  // The done arg is very important ! If absent tests run synchronously
+  // that means there is n chance you receive a response to your request
+  // before mocha quits 
+  it('should return hello', function(done) {
+    client.get('/hello', function(err, req, res, obj) {
+        winston.info(JSON.stringify(obj, null, 2));
+        done();
     });
   });
 });
