@@ -18,13 +18,7 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
-blogger.info('Done with bunyan');
 
-//Hanlding annoying favicon request in Chrome
-server.get('/favicon.ico', function(req, res, next){
-  logger.info('querying favicon');
-  res.end();
-});
 
 // Start server
 server.listen(PORT, function(){
