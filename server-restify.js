@@ -6,9 +6,9 @@
 
 var restify = require('restify'),
     // Custom logger built with Winston
-    logger = require('./lib/logger.js').winston,
+    winston = require('./lib/logger.js').winston,
     // Bunyan Logger for restify integration
-    blogger = require('./lib/logger.js').bunyan,
+    bunyan = require('./lib/logger.js').bunyan,
     // Instantiate server from restify
     server = restify.createServer(),
     // Port to connect to server
@@ -22,7 +22,7 @@ server.use(restify.bodyParser());
 
 // Start server
 server.listen(PORT, function(){
-  logger.info('Server launched');
+  winston.info('Server launched');
 });
 
 
