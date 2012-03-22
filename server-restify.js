@@ -1,6 +1,7 @@
-/**
- * Restify server for Tldr
- *
+/*!
+ *  Restify server for Tldr
+ * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
+ * Fucking Proprietary License
  */
 
 
@@ -38,7 +39,7 @@ server.get('/tldrs', function (req, res, next) {
 
 /**
  * Get tldr identified by one id
- * @method {/tldrs/:id}
+ * 
  * @return {Tldr Object} Returns the Tldr object corresponding to the
  *											 required id
  */

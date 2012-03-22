@@ -1,0 +1,160 @@
+[
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Restify server for Tldr<br />Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti<br />Fucking Proprietary License</p>",
+      "summary": "<p>Restify server for Tldr<br />Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti<br />Fucking Proprietary License</p>",
+      "body": ""
+    },
+    "ignore": true
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Require dependencies</p>",
+      "summary": "<p>Require dependencies</p>",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "var restify = require('restify'),\n    // Custom logger built with Winston\n    winston = require('./lib/logger.js').winston,\n    // Bunyan Logger for restify integration\n    bunyan = require('./lib/logger.js').bunyan,\n    // Port to connect to server\n    config = require('./lib/config.js');\n\nvar server = restify.createServer(),\n\t\tPORT = config.PORT_DEV;",
+    "ctx": {
+      "type": "declaration",
+      "name": "restify",
+      "value": "require('restify'),",
+      "string": "restify"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Bundle Plugins Restify</p>",
+      "summary": "<p>Bundle Plugins Restify</p>",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "server.use(restify.acceptParser(server.acceptable));\nserver.use(restify.queryParser());\nserver.use(restify.bodyParser());"
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Routing</p>",
+      "summary": "<p>Routing</p>",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "// Full tldrs list\nserver.get('/tldrs', function (req, res, next) {\n  res.send(403, 'Dont dump the db fucking idiot');\n});"
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Integer"
+        ],
+        "name": "id",
+        "description": "id of the required tldr"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tldr"
+        ],
+        "description": "Object} Returns the Tldr object corresponding to the"
+      },
+      {
+        "type": "\t\t\t\t\t\t\t\t\t\t\t",
+        "string": "required id"
+      }
+    ],
+    "description": {
+      "full": "<p>Get tldr identified by one id</p>",
+      "summary": "<p>Get tldr identified by one id</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "server.get('/tldrs/:id', function (req, res, next) {\n\tvar tldr = {id: req.id, \n\t\t\t\t\t\t  url:'needforair.com/Mofo',\n\t\t\t\t\t\t\tsummary:'* Programming Mofo  '+\n\t\t\t\t\t\t\t\t\t\t\t'* Programming Mofo',\n\t};\n  res.send(tldr);\n});"
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Start server</p>",
+      "summary": "<p>Start server</p>",
+      "body": ""
+    },
+    "ignore": false
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<hr />",
+      "summary": "<hr />",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "// Start server\nif (module.parent === null) {\n\tserver.listen(PORT, function (){\n\t\twinston.info('Server launched at '+ server.url);\n\t});\n}\n\nmodule.exports = server;"
+  }
+]
