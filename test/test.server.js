@@ -19,35 +19,24 @@ var should = require('chai').should(),
 /***********************************/
 /* Global setup                    */
 /***********************************/
-var PORT = config.PORT_TEST,
-    client = restify.createJsonClient({
-        url: 'http://localhost:' + PORT,
-    });
+var PORT,
+    client;
 
-server.listen(PORT, function () {
-  winston.info('listening ' + server.url);
-});
 
-/***********************************/
-/* Temporary test example          */
-/***********************************/
-describe('This test', function () {
-  it('should be an very useful test', function () {
-    var a = 4,
-        b = 5,
-        c = a + b;
-    assert.equal(c, 9);
+(function() {
+  //set the port for server
+  PORT = config.PORT_TEST;
+  //create client to test api
+  client = restify.createJsonClient({
+      url: 'http://localhost:' + PORT,
   });
-  it('should be even more useful ', function () {
-    var name = 'NFA',
-        post = {date:'1/1/1111', 
-                author:'NFA',
-                subject:'summary'};
-    post.date.should.be.a('string');
-    post.should.have.property('subject');
-    name.should.equal(post.author);
+  //sstart server
+  server.listen(PORT, function () {
+    winston.info('listening ' + server.url);
   });
-});
+  //load mongoose models
+  server.loadModels();
+}());
 
 
 /***********************************/
@@ -78,11 +67,29 @@ describe('Global behaviour ', function () {
 // Test simple GET
 
 describe('Get Requests', function () {
-  it('basic query with id', function (done) {
+
+  //open mongo connection
+  before(function (done) {
+    server.openMongooseConnection(done);
+  });
+
+  it('basic query with existing id', function (done) {
     client.get('/tldrs/1', function (err, req, res, obj) {
       obj.should.have.property('summary');
+      obj.summary.should.equal('No I Need for Space');
       done();
     });
+  });
+  it('basic query with non-existing id', function (done) {
+    client.get('/tldrs/100', function (err, req, res, obj) {
+      obj.should.not.have.property('summary');
+      done();
+    });
+  });
+
+  //close connection
+  after(function (done) {
+    server.closeMongooseConnection(done);
   });
 });
 

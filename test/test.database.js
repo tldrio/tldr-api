@@ -23,7 +23,7 @@ var should = require('chai').should(),
 var db,
 		TldrModel;
 
-// Init function 
+// Load Models - Anonymous function for fun :)
 (function() {
   
 	//Define model and define callback which will
@@ -33,20 +33,23 @@ var db,
 		// Load model
 		TldrModel = mongoose.model('tldrObject');
 		//Establish database connection
-		db = mongoose.connect('mongodb://localhost/datastore-test', function (err) {
-		  if (err) {
-		    throw err;
-		  }
-		});
 	});
+
 }());
+
 
 /***********************************/
 /* Tests												   */
 /***********************************/
 
 describe('Basic operations', function () {
-	before( function (done) {
+	//open mongo connection
+	before(function (done) {
+		db = mongoose.connect('mongodb://localhost/datastore-test', function (err) {
+		  if (err) {
+		    throw err;
+		  }
+		});
 		// Clear Test Database and Repopulate
 		var tldr1 = new TldrModel({
 			_id: 1,
@@ -78,6 +81,7 @@ describe('Basic operations', function () {
 		});
 	});
 
+	// Check that all 3 records are in the db
   it('Global number', function (done) {
     TldrModel.find(null, function (err, docs) {
 			docs.should.have.length(3);
@@ -85,6 +89,7 @@ describe('Basic operations', function () {
     });
   });
 
+	// Get tldr with id 1
 	it('Query by index', function (done) {
 	  TldrModel.find( {_id: 1}, function (err, docs) {
 			docs[0].clean_url.should.equal('http://needforair.com');
@@ -92,4 +97,12 @@ describe('Basic operations', function () {
 	  });
 	});
 
+	// Close mongo connection
+	after(function (done) {
+		mongoose.connection.close();
+		done();
+	});
+
 });
+
+

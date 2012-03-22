@@ -14,15 +14,51 @@ var restify = require('restify'),
     // Bunyan Logger for restify integration
     bunyan = require('./lib/logger.js').bunyan,
     // Port to connect to server
-    config = require('./lib/config.js');
+    config = require('./lib/config.js'),
+		// Mongoose Wrapper to Mongo
+    mongoose = require('mongoose'),
+		// Load datamodels
+    models = require('./lib/data-models.js');
 
 var server = restify.createServer(),
-		PORT = config.PORT_DEV;
+		PORT = config.PORT_DEV,
+		db,
+		TldrModel;
 
+/***********************************/
+/* Database related functions */
+/***********************************/
+
+function loadModels () {
+	//Define model and define callback which will
+	//be called after model definition succeeds
+	models.defineModels(mongoose, function () {
+		// Load model
+		TldrModel = mongoose.model('tldrObject');
+	});
+}
+
+//Open mongo connection
+function openMongooseConnection (callback) {
+	db = mongoose.connect('mongodb://localhost/datastore-test', function (err) {
+		if (err) {
+			throw err;
+		}
+		callback();
+	});
+}
+
+//Close Mongo Connection
+function closeMongooseConnection (callback) {
+	mongoose.connection.close();
+	callback();
+}
 
 /***********************************/
 /* Bundle Plugins Restify          */
 /***********************************/
+
+
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser());
 server.use(restify.bodyParser());
@@ -46,12 +82,10 @@ server.get('/tldrs', function (req, res, next) {
 
 
 server.get('/tldrs/:id', function (req, res, next) {
-	var tldr = {id: req.id, 
-						  url:'needforair.com/Mofo',
-							summary:'* Programming Mofo  '+
-											'* Programming Mofo',
-	};
-  res.send(tldr);
+	var id = req.params.id;
+	TldrModel.find({_id: id}, function (err, docs) {
+		res.send(docs[0]);
+	});
 });
 
 
@@ -66,4 +100,11 @@ if (module.parent === null) {
 	});
 }
 
+/********************/
+/* Exports          */
+/********************/
+
 module.exports = server;
+module.exports.openMongooseConnection = openMongooseConnection;
+module.exports.closeMongooseConnection = closeMongooseConnection;
+module.exports.loadModels = loadModels;
