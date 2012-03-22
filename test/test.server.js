@@ -51,15 +51,15 @@ describe('Global behaviour ', function () {
   // before mocha quits 
   it('should be a 404 page', function (done) {
     client.get('/badroute', function (err, req, res, obj) {
-        res.statusCode.should.equal(404);
-        done();
+      res.statusCode.should.equal(404);
+      done();
     });
   });
 
   it('should not be allowed to dump full db', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
-        res.statusCode.should.equal(403);
-        done();
+      res.statusCode.should.equal(403);
+      done();
     });
   });
 });
