@@ -13,62 +13,37 @@ var should = require('chai').should(),
     assert = require('chai').assert,
     restify = require('restify'),
     server = require('../server.js'),
-    config = require('../lib/config.js'),
     winston = require('../lib/logger.js').winston;
 
 /***********************************/
 /* Global setup                    */
 /***********************************/
-var PORT,
-    client;
 
-
-(function() {
-  //set the port for server
-  PORT = config.PORT_TEST;
-  //create client to test api
-  client = restify.createJsonClient({
-      url: 'http://localhost:' + PORT,
-  });
-  //sstart server
-  server.listen(PORT, function () {
-    winston.info('listening ' + server.url);
-  });
-  //load mongoose models
-  server.loadModels();
-}());
+//create client to test api
+client = restify.createJsonClient({
+    url: 'http://localhost:' + 8686,
+});
+//start server
+server.listen(8686, function () {
+  winston.info('listening to ' + server.url);
+});
+//load mongoose models
+server.loadModels();
 
 
 /***********************************/
 /* Tests                           */
 /***********************************/
 
-// Test for non existent path and not allowed calls 
-
-describe('Global behaviour ', function () {
-  // The done arg is very important ! If absent tests run synchronously
-  // that means there is n chance you receive a response to your request
-  // before mocha quits 
-  it('should be a 404 page', function (done) {
-    client.get('/badroute', function (err, req, res, obj) {
-      res.statusCode.should.equal(404);
-      done();
-    });
-  });
-
-  it('should not be allowed to dump full db', function (done) {
-    client.get('/tldrs', function (err, req, res, obj) {
-      res.statusCode.should.equal(403);
-      done();
-    });
-  });
-});
-
 // Test simple GET
 
 describe('Get Requests', function () {
 
+  // The done arg is very important ! If absent tests run synchronously
+  // that means there is n chance you receive a response to your request
+  // before mocha quits 
   //open mongo connection
+
   before(function (done) {
     server.openMongooseConnection(done);
   });
@@ -80,9 +55,24 @@ describe('Get Requests', function () {
       done();
     });
   });
+
   it('basic query with non-existing id', function (done) {
     client.get('/tldrs/100', function (err, req, res, obj) {
       obj.should.not.have.property('summary');
+      done();
+    });
+  });
+
+  it('should not be allowed to dump full db', function (done) {
+    client.get('/tldrs', function (err, req, res, obj) {
+      res.statusCode.should.equal(403);
+      done();
+    });
+  });
+
+  it('should be a 404 page', function (done) {
+    client.get('/*', function (err, req, res, obj) {
+      res.statusCode.should.equal(404);
       done();
     });
   });
