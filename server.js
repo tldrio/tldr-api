@@ -11,12 +11,10 @@
 var restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger.js').bunyan // Bunyan Logger for restify integration
-  , config = require('./lib/config.js') // Port to connect to server
   , mongoose = require('mongoose') // Mongoose Wrapper to Mongo
   , models = require('./lib/data-models.js'); // Load datamodels
 
 var server = restify.createServer(),
-		PORT = config.PORT_DEV,
 		db,
 		TldrModel;
 
@@ -90,7 +88,7 @@ server.get('/tldrs/:id', function (req, res, next) {
 
 // Start server
 if (module.parent === null) {
-	server.listen(PORT, function (){
+	server.listen(8787, function (){
 		winston.info('Server launched at '+ server.url);
 	});
 }
