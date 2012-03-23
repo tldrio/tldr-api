@@ -1,17 +1,18 @@
 {
-   "name": "tldr",
-   "version": "0.0.1",
-   "description": "server for crowdsourced summaries edition", 
-   "keywords": ["summary", "tldr"],
-   "engines": { "node": ">= 0.4.x < 0.8.0" },
-   "dependencies":{
-      "winston": "0.5.x",
-      "bunyan": "0.6.x",
-      "chai": "0.5.x",
-      "mocha": "0.14.x",
-      "sinon": "1.3.x",
-      "restify": "1.3.x"
-      "mongoose": "2.5.x"
+  "name": "tldr",
+  "private": true,
+  "version": "0.0.1",
+  "description": "server for crowdsourced summaries edition", 
+  "keywords": ["summary", "tldr"],
+  "engines": { "node": ">= 0.6.x < 0.8.0" },
+  "dependencies":{
+     "winston": "0.5.x",
+     "bunyan": "0.6.x",
+     "chai": "0.5.x",
+     "mocha": "0.14.x",
+     "sinon": "1.3.x",
+     "restify": "1.3.x",
+     "mongoose": "2.5.x"
   }
 }
 
