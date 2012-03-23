@@ -1,5 +1,5 @@
 /*!
- *  Restify server for Tldr
+ *  Server for tldr
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Fucking Proprietary License
  */
@@ -8,17 +8,12 @@
 /***********************************/
 /* Require dependencies            */
 /***********************************/
-var restify = require('restify'),
-    // Custom logger built with Winston
-    winston = require('./lib/logger.js').winston,
-    // Bunyan Logger for restify integration
-    bunyan = require('./lib/logger.js').bunyan,
-    // Port to connect to server
-    config = require('./lib/config.js'),
-		// Mongoose Wrapper to Mongo
-    mongoose = require('mongoose'),
-		// Load datamodels
-    models = require('./lib/data-models.js');
+var restify = require('restify')
+  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
+  , bunyan = require('./lib/logger.js').bunyan // Bunyan Logger for restify integration
+  , config = require('./lib/config.js') // Port to connect to server
+  , mongoose = require('mongoose') // Mongoose Wrapper to Mongo
+  , models = require('./lib/data-models.js'); // Load datamodels
 
 var server = restify.createServer(),
 		PORT = config.PORT_DEV,
