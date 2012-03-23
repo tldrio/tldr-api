@@ -12,7 +12,7 @@
 var should = require('chai').should(),
     assert = require('chai').assert,
     restify = require('restify'),
-    server = require('../server-restify.js'),
+    server = require('../server.js'),
     config = require('../lib/config.js'),
     winston = require('../lib/logger.js').winston;
 
