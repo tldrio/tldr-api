@@ -2,6 +2,7 @@
   "name": "tldr",
   "private": true,
   "version": "0.0.1",
+  "author": "tldr",
   "description": "server for crowdsourced summaries edition", 
   "keywords": ["summary", "tldr"],
   "engines": { "node": ">= 0.6.x < 0.8.0" },
