@@ -60,7 +60,7 @@ describe('Get Requests', function () {
 
   it('should not be allowed to dump full db and respond with 403', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
-      res.statusCode.shouIld.equal(403);
+      res.statusCode.should.equal(403);
       done();
     });
   });
