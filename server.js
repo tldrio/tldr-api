@@ -43,7 +43,12 @@ server.get('/tldrs', function (req, res, next) {
 server.get('/tldrs/:id', function (req, res, next) {
 	var id = req.params.id;
 	TldrModel.find({_id: id}, function (err, docs) {
-		res.send(docs[0]);
+    if (docs.length === 0) {
+      res.send(404, "This record doesn't exist");
+    }
+    else {
+      res.send(docs[0]);
+    }
 	});
 });
 
