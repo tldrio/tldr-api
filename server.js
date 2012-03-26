@@ -50,7 +50,7 @@ server.get('/tldrs/:id', function (req, res, next) {
 
 
 // Start server
-if (module.parent === null) {
+if (module.parent === null) { //wtf is this shit?
 	server.listen(8787, function (){
 		winston.info('Server launched at '+ server.url);
 	});
