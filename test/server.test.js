@@ -44,28 +44,28 @@ describe('Get Requests', function () {
   // that means there is n chance you receive a response to your request
   // before mocha quits 
 
-  it('should get the first summary', function (done) {
+  it('for an existent tldr', function (done) {
     client.get('/tldrs/1', function (err, req, res, obj) {
       obj._id.should.equal(1);
       done();
     });
   });
 
-  it('should respond with 404', function (done) {
+  it('for a nonexistent tldr', function (done) {
     client.get('/tldrs/100', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
     });
   });
 
-  it('should not be allowed to dump full db and respond with 403', function (done) {
+  it('Full Database dump not allowed', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
       res.statusCode.should.equal(403);
       done();
     });
   });
 
-  it('should respond with 404', function (done) {
+  it('for non existing routes', function (done) {
     client.get('/*', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
