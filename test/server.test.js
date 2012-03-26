@@ -1,23 +1,23 @@
-/*!
- *  Tests for Restify Server
+/**
+ * Server Tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Fucking Proprietary License
  */
 
 
-/***********************************/
-/* Require dependencies            */
-/***********************************/
+var should = require('chai').should()
+  , assert = require('chai').assert
+  , restify = require('restify')
+  , winston = require('../lib/logger.js').winston // Custom logger built with Winston
+  , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
+  , server = require('../server');
 
-var should = require('chai').should(),
-    assert = require('chai').assert,
-    restify = require('restify'),
-    server = require('../server.js'),
-    winston = require('../lib/logger.js').winston;
 
-/***********************************/
-/* Global setup                    */
-/***********************************/
+
+
+/*
+ * Set up test
+ */
 
 //create client to test api
 client = restify.createJsonClient({
@@ -27,60 +27,51 @@ client = restify.createJsonClient({
 server.listen(8686, function () {
   winston.info('listening to ' + server.url);
 });
-//load mongoose models
-server.loadModels();
 
 
-/***********************************/
-/* Tests                           */
-/***********************************/
 
-// Test simple GET
 
+
+
+/**
+ * Tests
+ */
+
+// Test GET requests
 describe('Get Requests', function () {
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
   // before mocha quits 
-  //open mongo connection
 
-  before(function (done) {
-    server.openMongooseConnection(done);
-  });
-
-  it('basic query with existing id', function (done) {
+  it('should get the first summary', function (done) {
     client.get('/tldrs/1', function (err, req, res, obj) {
-      obj.should.have.property('summary');
-      obj.summary.should.equal('No I Need for Space');
+			obj._id.should.equal(1);
       done();
     });
   });
 
-  it('basic query with non-existing id', function (done) {
+  it('should respond with 404', function (done) {
     client.get('/tldrs/100', function (err, req, res, obj) {
-      obj.should.not.have.property('summary');
+      res.statusCode.should.equal(404);
       done();
     });
   });
 
-  it('should not be allowed to dump full db', function (done) {
+  it('should not be allowed to dump full db and respond with 403', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
       res.statusCode.should.equal(403);
       done();
     });
   });
 
-  it('should be a 404 page', function (done) {
+  it('should respond with 404', function (done) {
     client.get('/*', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
     });
   });
 
-  //close connection
-  after(function (done) {
-    server.closeMongooseConnection(done);
-  });
 });
 
 
