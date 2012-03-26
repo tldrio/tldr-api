@@ -38,34 +38,34 @@ server.listen(8686, function () {
  */
 
 // Test GET requests
-describe('Get Requests', function () {
+describe('GET', function () {
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
   // before mocha quits 
 
-  it('for an existent tldr', function (done) {
+  it('an existing tldr', function (done) {
     client.get('/tldrs/1', function (err, req, res, obj) {
       obj._id.should.equal(1);
       done();
     });
   });
 
-  it('for a nonexistent tldr', function (done) {
+  it('a non existing tldr', function (done) {
     client.get('/tldrs/100', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
     });
   });
 
-  it('Full Database dump not allowed', function (done) {
+  it('all the tldrs', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
       res.statusCode.should.equal(403);
       done();
     });
   });
 
-  it('for non existing routes', function (done) {
+  it('a non existing route', function (done) {
     client.get('/*', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
