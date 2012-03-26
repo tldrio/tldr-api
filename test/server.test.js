@@ -46,7 +46,7 @@ describe('Get Requests', function () {
 
   it('should get the first summary', function (done) {
     client.get('/tldrs/1', function (err, req, res, obj) {
-			obj._id.should.equal(1);
+      obj._id.should.equal(1);
       done();
     });
   });
@@ -60,7 +60,7 @@ describe('Get Requests', function () {
 
   it('should not be allowed to dump full db and respond with 403', function (done) {
     client.get('/tldrs', function (err, req, res, obj) {
-      res.statusCode.should.equal(403);
+      res.statusCode.shouIld.equal(403);
       done();
     });
   });
