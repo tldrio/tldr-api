@@ -24,26 +24,29 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('Basic operations', function () {
+describe('TldrModel', function () {
+  it('should have a constructor', function () {
+    var tldr = models.createTldr('needforair.com', 'Awesome Blog');
+
+    tldr.should.have.property('url');
+    tldr.should.have.property('summary');
+    tldr.url.should.equal('needforair.com');
+    tldr.summary.should.equal('Awesome Blog');
+  });
+});
+
+describe('Database', function () {
 
 	before(function (done) {
 
 		// dummy models
-		var tldr1 = new TldrModel({
-			_id: 1,
-			url: 'http://needforair.com',
-			summary: 'No I Need for Space',
-		})
-			,	tldr2 = new TldrModel({
-			_id: 2,
-			url: 'http://www.avc.com',
-			summary: 'Fred Wilson is my god',
-		})
-			,	tldr3 = new TldrModel({
-			_id: 3,
-			url: 'http://www.bothsidesofthetable.com',
-			summary: 'Sustering is my religion',
-		});
+    var tldr1 = models.createTldr('needforair.com',
+                                  'Awesome Blog')
+      , tldr2 = models.createTldr('avc.com', 
+                                  'Fred Wilson is my God')
+      , tldr3 = models.createTldr('bothsidesofthetable.com',
+                                  'Sustering is my religion');
+
 		
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -63,7 +66,7 @@ describe('Basic operations', function () {
 	});
 
 	// Check that all 3 records are in the db
-  it('should have 3 documents', function (done) {
+  it('should return full collection', function (done) {
     TldrModel.find(null, function (err, docs) {
 			docs.should.have.length(3);
 			done();
@@ -71,14 +74,14 @@ describe('Basic operations', function () {
   });
 
 	// Get tldr with id 1
-	it('should return a tldr with url http://needforair.com', function (done) {
-	  TldrModel.find( {_id: 1}, function (err, docs) {
-			docs[0].url.should.equal('http://needforair.com');
+	it('should return a tldr with url needforair.com', function (done) {
+    var htldrId = 'f795b55c5888074df9b9005b4583ece878f40f4a';
+	  TldrModel.find( {_id: htldrId}, function (err, docs) {
+			docs[0].url.should.equal('needforair.com');
 			done();
 	  });
 	});
 
 
 });
-
 

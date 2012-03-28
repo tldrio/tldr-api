@@ -45,14 +45,14 @@ describe('GET', function () {
   // before mocha quits 
 
   it('an existing tldr', function (done) {
-    client.get('/tldrs/1', function (err, req, res, obj) {
-      obj._id.should.equal(1);
+    client.get('/tldrs/f795b55c5888074df9b9005b4583ece878f40f4a', function (err, req, res, obj) {
+      obj.url.should.equal('needforair.com');
       done();
     });
   });
 
   it('a non existing tldr', function (done) {
-    client.get('/tldrs/100', function (err, req, res, obj) {
+    client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
       res.statusCode.should.equal(404);
       done();
     });
