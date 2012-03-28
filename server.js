@@ -29,6 +29,16 @@ server.use(restify.bodyParser());
 
 
 
+/**
+ * Routes Handlers
+ *
+ */
+
+
+function handlePostNewTldr (req, res, next) {
+  winston.info(req.params.url);
+  res.send(200);
+}
 
 /**
  * Routes
@@ -53,6 +63,8 @@ server.get('/tldrs/:id', function (req, res, next) {
 });
 
 
+//POST a new tldr
+server.post('/tldrs', handlePostNewTldr);
 
 // Start server
 if (module.parent === null) { //wtf is this shit?
