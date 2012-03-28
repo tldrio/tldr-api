@@ -6,12 +6,13 @@
 
 
 var should = require('chai').should()
-, assert = require('chai').assert
-, restify = require('restify')
-, winston = require('../lib/logger.js').winston // Custom logger built with Winston
-, bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
-, server = require('../server')
-, TldrModel = require('../models').TldrModel;
+  , assert = require('chai').assert
+  , restify = require('restify')
+  , winston = require('../lib/logger.js').winston // Custom logger built with Winston
+  , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
+  , server = require('../server')
+  , models = require('../models')
+  , TldrModel = models.TldrModel;
 
 
 
@@ -54,43 +55,51 @@ describe('Webserver', function () {
       });
     });
 
-      it('a non existing tldr', function (done) {
-        client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
-          res.statusCode.should.equal(404);
-          done();
-        });
-
-    });
-        it('all the tldrs', function (done) {
-          client.get('/tldrs', function (err, req, res, obj) {
-            res.statusCode.should.equal(403);
-            done();
-          });
-        });
-
-        it('a non existing route', function (done) {
-          client.get('/*', function (err, req, res, obj) {
-            res.statusCode.should.equal(404);
-            done();
-          });
-        });
+    it('a non existing tldr', function (done) {
+      client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
+        res.statusCode.should.equal(404);
+        done();
       });
 
-      //Test POST Requests
-      describe('should handle POST request for', function () {
-
-        it('adding a new tldr', function (done) {
-
-          var tldr = new TldrModel({
-            url: 'http://youporn.com',
-            summary: 'Handjob',
-          });
-          client.post('/tldrs', tldr, function (err, req, res,obj) {
-            res.statusCode.should.equal(200);
-            done();
-          });
-        });
-
+    });
+    it('all the tldrs', function (done) {
+      client.get('/tldrs', function (err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        done();
       });
     });
+
+    it('a non existing route', function (done) {
+      client.get('/*', function (err, req, res, obj) {
+        res.statusCode.should.equal(404);
+        done();
+      });
+    });
+  });
+
+  //Test POST Requests
+  describe('should handle POST request for', function () {
+
+    before(function (done) {
+      // clear database 
+      TldrModel.remove(null, function (err) {
+        if (err) {throw done(err);}
+        done();
+      });
+    });
+
+    it('adding a new tldr', function (done) {
+      var tldrData = {url: 'youporn.com',
+                      summary: 'Sluts and cockslapers'}
+        , tldr = models.createTldr(tldrData.url, 
+                                   tldrData.summary);
+      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(200);
+        obj._id.should.equal(tldr._id);
+        done();
+      });
+    });
+
+  });
+});
 

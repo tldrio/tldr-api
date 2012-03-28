@@ -35,14 +35,8 @@ server.use(restify.bodyParser());
  */
 
 
-function handlePostNewTldr (req, res, next) {
-  var tldrData = req.params,
-      tldr = models.createTldr(tldrData.url,
-                               tldrData.summary);
-  tldr.save(function (err) {
-    if (err) {throw err;}
-  });
-  res.send(200, tldr);
+function handleGetTldrAll (req, res, next) {
+  res.send(403, 'Dont dump the db fucking idiot');
 }
 
 function handleGetTldrById (req, res, next) {
@@ -57,10 +51,15 @@ function handleGetTldrById (req, res, next) {
 	});
 }
 
-function handleGetTldrAll (req, res, next) {
-  res.send(403, 'Dont dump the db fucking idiot');
+function handlePostNewTldr (req, res, next) {
+  var tldrData = req.params,
+      tldr = models.createTldr(tldrData.url,
+                               tldrData.summary);
+  tldr.save(function (err) {
+    if (err) {throw err;}
+  });
+  res.send(200, tldr);
 }
-
 
 
 /**

@@ -31,18 +31,21 @@ TldrSchema = new Schema({
 
 function createTldr (url, summary) {
   var sha1 = crypto.createHash('sha1')
-    , htldrId;
+    , htldrId
+    , tldr;
 
   // Compute SHA1 Hash
   sha1.update(url, 'utf8');
   // Extract it into a string
   htldrId = sha1.digest('hex');
-  //Return TldrModel instance
-  return new TldrModel({
+  //create TldrModel instance
+  tldr = new TldrModel({
     _id: htldrId,
     url: url,
     summary: summary,
   });
+
+  return tldr;
 }
 
 // Define tldr model
