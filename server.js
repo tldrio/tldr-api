@@ -36,21 +36,16 @@ server.use(restify.bodyParser());
 
 
 function handlePostNewTldr (req, res, next) {
-  winston.info(req.params.url);
-  res.send(200);
+  var tldrData = req.params,
+      tldr = models.createTldr(tldrData.url,
+                               tldrData.summary);
+  tldr.save(function (err) {
+    if (err) {throw err;}
+  });
+  res.send(200, tldr);
 }
 
-/**
- * Routes
- */
-
-// GET all tldrs
-server.get('/tldrs', function (req, res, next) {
-  res.send(403, 'Dont dump the db fucking idiot');
-});
-
-// GET a tldr by id
-server.get('/tldrs/:id', function (req, res, next) {
+function handleGetTldrById (req, res, next) {
 	var id = req.params.id;
 	TldrModel.find({_id: id}, function (err, docs) {
     if (docs.length === 0) {
@@ -60,8 +55,24 @@ server.get('/tldrs/:id', function (req, res, next) {
       res.send(docs[0]);
     }
 	});
-});
+}
 
+function handleGetTldrAll (req, res, next) {
+  res.send(403, 'Dont dump the db fucking idiot');
+}
+
+
+
+/**
+ * Routes
+ */
+
+
+// GET all tldrs
+server.get('/tldrs', handleGetTldrAll);
+//
+// GET a tldr by id
+server.get('/tldrs/:id', handleGetTldrById );
 
 //POST a new tldr
 server.post('/tldrs', handlePostNewTldr);
