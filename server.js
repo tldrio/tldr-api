@@ -8,11 +8,8 @@
 var restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger.js').bunyan // Audit logger for restify
-  , mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , db = mongoose.connect('mongodb://localhost/datastore-test')
-  , models = require('./models')
-	, TldrModel = models.TldrModel
-  , server = restify.createServer();
+  , server = restify.createServer()
+  , requestHandlers = require("./requestHandlers.js");
 
 
 
@@ -35,22 +32,10 @@ server.use(restify.bodyParser());
  */
 
 // GET all tldrs
-server.get('/tldrs', function (req, res, next) {
-  res.send(403, 'Dont dump the db fucking idiot');
-});
+server.get('/tldrs', requestHandlers.getAllTldrs);
 
 // GET a tldr by id
-server.get('/tldrs/:id', function (req, res, next) {
-	var id = req.params.id;
-	TldrModel.find({_id: id}, function (err, docs) {
-    if (docs.length === 0) {
-      res.send(404, "This record doesn't exist");
-    }
-    else {
-      res.send(docs[0]);
-    }
-	});
-});
+server.get('/tldrs/:id', requestHandlers.getTldrById);
 
 
 
