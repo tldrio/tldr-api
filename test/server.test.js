@@ -89,13 +89,25 @@ describe('Webserver', function () {
     });
 
     it('adding a new tldr', function (done) {
-      var tldrData = {url: 'youporn.com',
+      var tldrData = {url: 'http://www.youporn.com/milf',
                       summary: 'Sluts and cockslapers'}
         , tldr = models.createTldr(tldrData.url, 
                                    tldrData.summary);
       client.post('/tldrs/new', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj._id.should.equal(tldr._id);
+        obj.summary.should.equal(tldrData.summary);
+        done();
+      });
+    });
+
+    it('updating an existing tldr', function (done) {
+      var tldrUpdates = {summary: 'Sluts and cockslapers and milf'};
+
+      client.post('/tldrs/update/ce84439749856ef445e174597169fa59d4e7d86d', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(200);
+        obj._id.should.equal('ce84439749856ef445e174597169fa59d4e7d86d');
+        obj.summary.should.equal('Sluts and cockslapers and milf');
         done();
       });
     });

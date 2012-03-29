@@ -41,6 +41,9 @@ server.get('/tldrs/show/:id', requestHandlers.getTldrById);
 //POST a new tldr
 server.post('/tldrs/new', requestHandlers.postNewTldr);
 
+//POST update existing tldr
+server.post('/tldrs/update/:id', requestHandlers.postUpdateTldr);
+
 // Start server
 if (module.parent === null) { //wtf is this shit?
 	server.listen(8787, function (){

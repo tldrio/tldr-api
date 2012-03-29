@@ -42,7 +42,27 @@ function postNewTldr (req, res, next) {
   res.send(200, tldr);
 }
 
+function postUpdateTldr (req, res, next) {
+  var tldrUpdates = req.body
+    , id = req.params.id;
+
+  // Direct injection of req.body is not secure
+  // Need to limit modification to allowed fields
+  TldrModel.findAndModify({_id:id},
+                          [],
+                          {$set: tldrUpdates},
+                          {new: true},
+                          callback);
+
+  function callback (err, doc) {
+    if (err) {throw err;}
+    res.send(200, doc);
+  }
+
+}
+
 // Module interface
 exports.getAllTldrs = getAllTldrs;
 exports.getTldrById = getTldrById;
 exports.postNewTldr = postNewTldr;
+exports.postUpdateTldr = postUpdateTldr;
