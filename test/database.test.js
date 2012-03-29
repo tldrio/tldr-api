@@ -68,6 +68,7 @@ describe('Database', function () {
 	// Check that all 3 records are in the db
   it('should return full collection', function (done) {
     TldrModel.find(null, function (err, docs) {
+      if (err) { throw done(err); }
 			docs.should.have.length(3);
 			done();
     });
@@ -77,6 +78,7 @@ describe('Database', function () {
 	it('should return a tldr for an existing id', function (done) {
     var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
 	  TldrModel.find( {_id: htldrId}, function (err, docs) {
+      if (err) { throw done(err); }
       var tldr = docs[0];
 			tldr.url.should.equal('http://needforair.com/nutcrackers');
 			tldr.hostname.should.equal('needforair.com');
