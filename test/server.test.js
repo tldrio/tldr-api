@@ -49,21 +49,21 @@ describe('Webserver', function () {
   describe('should handle GET request for', function () {
 
     it('an existing tldr', function (done) {
-      client.get('/tldrs/f795b55c5888074df9b9005b4583ece878f40f4a', function (err, req, res, obj) {
+      client.get('/tldrs/show/f795b55c5888074df9b9005b4583ece878f40f4a', function (err, req, res, obj) {
         obj.url.should.equal('needforair.com');
         done();
       });
     });
 
     it('a non existing tldr', function (done) {
-      client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
+      client.get('/tldrs/show/3niggas4bitches', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
         done();
       });
 
     });
     it('all the tldrs', function (done) {
-      client.get('/tldrs', function (err, req, res, obj) {
+      client.get('/tldrs/show', function (err, req, res, obj) {
         res.statusCode.should.equal(403);
         done();
       });
@@ -93,7 +93,7 @@ describe('Webserver', function () {
                       summary: 'Sluts and cockslapers'}
         , tldr = models.createTldr(tldrData.url, 
                                    tldrData.summary);
-      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+      client.post('/tldrs/new', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj._id.should.equal(tldr._id);
         done();

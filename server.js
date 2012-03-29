@@ -33,13 +33,13 @@ server.use(restify.bodyParser());
 
 
 // GET all tldrs
-server.get('/tldrs', requestHandlers.getAllTldrs);
+server.get('/tldrs/show', requestHandlers.getAllTldrs);
 
 // GET a tldr by id
-server.get('/tldrs/:id', requestHandlers.getTldrById);
+server.get('/tldrs/show/:id', requestHandlers.getTldrById);
 
 //POST a new tldr
-server.post('/tldrs', requestHandlers.postNewTldr);
+server.post('/tldrs/new', requestHandlers.postNewTldr);
 
 // Start server
 if (module.parent === null) { //wtf is this shit?
