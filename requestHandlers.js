@@ -7,6 +7,7 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , db = mongoose.connect('mongodb://localhost/datastore-test')
+  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , models = require('./models')
   , TldrModel = models.TldrModel;
 
@@ -32,7 +33,7 @@ var getTldrById = function (req, res, next) {
 
 
 function postNewTldr (req, res, next) {
-  var tldrData = req.params,
+  var tldrData = req.body,
       tldr = models.createTldr(tldrData.url,
                                tldrData.summary);
   tldr.save(function (err) {

@@ -20,8 +20,8 @@ var restify = require('restify')
 
 // Register restify middleware
 server.use(restify.acceptParser(server.acceptable));
-server.use(restify.queryParser());
-server.use(restify.bodyParser());
+server.use(restify.queryParser({mapParams: false}));
+server.use(restify.bodyParser({mapParams: false}));
 
 
 
