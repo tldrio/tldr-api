@@ -31,7 +31,7 @@ var getTldrById = function (req, res, next) {
   });
 };
 
-
+// POST a new tldr
 function postNewTldr (req, res, next) {
   var tldrData = req.body,
       tldr = models.createTldr(tldrData.url,
@@ -42,6 +42,7 @@ function postNewTldr (req, res, next) {
   res.send(200, tldr);
 }
 
+// POST an updated tldr
 function postUpdateTldr (req, res, next) {
   var tldrUpdates = req.body
     , id = req.params.id;
