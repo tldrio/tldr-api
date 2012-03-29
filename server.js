@@ -8,11 +8,8 @@
 var restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger.js').bunyan // Audit logger for restify
-  , mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , db = mongoose.connect('mongodb://localhost/datastore-test')
-  , models = require('./models')
-	, TldrModel = models.TldrModel
-  , server = restify.createServer();
+  , server = restify.createServer()
+  , requestHandlers = require("./requestHandlers.js");
 
 
 
@@ -29,38 +26,6 @@ server.use(restify.bodyParser());
 
 
 
-/**
- * Routes Handlers
- *
- */
-
-
-function handleGetTldrAll (req, res, next) {
-  res.send(403, 'Dont dump the db fucking idiot');
-}
-
-function handleGetTldrById (req, res, next) {
-	var id = req.params.id;
-	TldrModel.find({_id: id}, function (err, docs) {
-    if (docs.length === 0) {
-      res.send(404, "This record doesn't exist");
-    }
-    else {
-      res.send(docs[0]);
-    }
-	});
-}
-
-function handlePostNewTldr (req, res, next) {
-  var tldrData = req.params,
-      tldr = models.createTldr(tldrData.url,
-                               tldrData.summary);
-  tldr.save(function (err) {
-    if (err) {throw err;}
-  });
-  res.send(200, tldr);
-}
-
 
 /**
  * Routes
@@ -68,13 +33,13 @@ function handlePostNewTldr (req, res, next) {
 
 
 // GET all tldrs
-server.get('/tldrs', handleGetTldrAll);
-//
+server.get('/tldrs', requestHandlers.getAllTldrs);
+
 // GET a tldr by id
-server.get('/tldrs/:id', handleGetTldrById );
+server.get('/tldrs/:id', requestHandlers.getTldrById);
 
 //POST a new tldr
-server.post('/tldrs', handlePostNewTldr);
+server.post('/tldrs', requestHandlers.postNewTldr);
 
 // Start server
 if (module.parent === null) { //wtf is this shit?
