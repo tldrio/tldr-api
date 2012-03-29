@@ -6,6 +6,7 @@
 
 var mongoose = require('mongoose')
   , crypto = require('crypto')
+  , url = require('url')
   , Schema = mongoose.Schema
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
 	, TldrSchema
@@ -14,9 +15,10 @@ var mongoose = require('mongoose')
 	
 // Define tldr scehma
 TldrSchema = new Schema({
-	_id:     String,
-	url:     String,
-	summary: String
+	_id        : String,
+	url        : String,
+	hostname   : String,
+	summary    : String,
 });
 
 
@@ -29,20 +31,24 @@ TldrSchema = new Schema({
  *
  */
 
-function createTldr (url, summary) {
+function createTldr (tldrUrl, tldrSummary) {
   var sha1 = crypto.createHash('sha1')
     , htldrId
-    , tldr;
+    , tldr
+    , parsedTldrUrl;
 
   // Compute SHA1 Hash
-  sha1.update(url, 'utf8');
+  sha1.update(tldrUrl, 'utf8');
   // Extract it into a string
   htldrId = sha1.digest('hex');
+  //Parse url
+  parsedTldrUrl = url.parse(tldrUrl);
   //create TldrModel instance
   tldr = new TldrModel({
-    _id: htldrId,
-    url: url,
-    summary: summary,
+    _id         : htldrId,
+    url         : tldrUrl,
+    hostname    : parsedTldrUrl.hostname,
+    summary     : tldrSummary,
   });
 
   return tldr;

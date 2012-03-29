@@ -49,8 +49,8 @@ describe('Webserver', function () {
   describe('should handle GET request for', function () {
 
     it('an existing tldr', function (done) {
-      client.get('/tldrs/show/f795b55c5888074df9b9005b4583ece878f40f4a', function (err, req, res, obj) {
-        obj.url.should.equal('needforair.com');
+      client.get('/tldrs/show/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
+        obj.url.should.equal('http://needforair.com/nutcrackers');
         done();
       });
     });

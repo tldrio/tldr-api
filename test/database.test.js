@@ -26,11 +26,11 @@ var should = require('chai').should()
 
 describe('TldrModel', function () {
   it('should have a constructor', function () {
-    var tldr = models.createTldr('needforair.com', 'Awesome Blog');
+    var tldr = models.createTldr('http://needforair.com/nutcrackers', 'Awesome Blog');
 
     tldr.should.have.property('url');
     tldr.should.have.property('summary');
-    tldr.url.should.equal('needforair.com');
+    tldr.url.should.equal('http://needforair.com/nutcrackers');
     tldr.summary.should.equal('Awesome Blog');
   });
 });
@@ -40,11 +40,11 @@ describe('Database', function () {
 	before(function (done) {
 
 		// dummy models
-    var tldr1 = models.createTldr('needforair.com',
+    var tldr1 = models.createTldr('http://needforair.com/nutcrackers',
                                   'Awesome Blog')
-      , tldr2 = models.createTldr('avc.com', 
+      , tldr2 = models.createTldr('http://avc.com/mba-monday', 
                                   'Fred Wilson is my God')
-      , tldr3 = models.createTldr('bothsidesofthetable.com',
+      , tldr3 = models.createTldr('http://bothsidesofthetable.com/deflationnary-economics',
                                   'Sustering is my religion');
 
 		
@@ -74,10 +74,12 @@ describe('Database', function () {
   });
 
 	// Get tldr with id 1
-	it('should return a tldr with url needforair.com', function (done) {
-    var htldrId = 'f795b55c5888074df9b9005b4583ece878f40f4a';
+	it('should return a tldr for an existing id', function (done) {
+    var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
 	  TldrModel.find( {_id: htldrId}, function (err, docs) {
-			docs[0].url.should.equal('needforair.com');
+      var tldr = docs[0];
+			tldr.url.should.equal('http://needforair.com/nutcrackers');
+			tldr.hostname.should.equal('needforair.com');
 			done();
 	  });
 	});
