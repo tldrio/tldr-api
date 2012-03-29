@@ -47,4 +47,4 @@ if (module.parent === null) { //wtf is this shit?
 }
 
 // exports
-module.exports= server;
+module.exports = server;
