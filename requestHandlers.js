@@ -7,6 +7,7 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , db = mongoose.connect('mongodb://localhost/datastore-test')
+  , restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , models = require('./models')
   , TldrModel = models.TldrModel;
@@ -15,7 +16,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 
 // GET all tldrs
 var getAllTldrs = function (req, res, next) {
-  res.json(403, {"Error": "Dont dump the db fucking idiot"});
+  return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
 };
 
 // GET a tldr by id
@@ -23,7 +24,7 @@ var getTldrById = function (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
     if (docs.length === 0) {
-      res.json(404, {"Error": "This record doesn't exist"});
+      return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     }
     else {
       res.send(docs[0]);
