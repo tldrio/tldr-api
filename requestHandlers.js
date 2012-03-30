@@ -27,7 +27,7 @@ var getTldrById = function (req, res, next) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     }
     else {
-      res.send(docs[0]);
+      res.json(200, docs[0]);
     }
   });
 };
@@ -40,7 +40,7 @@ function postNewTldr (req, res, next) {
   tldr.save(function (err) {
     if (err) {throw err;}
   });
-  res.send(200, tldr);
+  res.json(200, tldr);
 }
 
 // POST an updated tldr
@@ -58,7 +58,7 @@ function postUpdateTldr (req, res, next) {
 
   function callback (err, doc) {
     if (err) {throw err;}
-    res.send(200, doc);
+    res.json(200, doc);
   }
 
 }
