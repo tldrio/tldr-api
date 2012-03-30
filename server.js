@@ -9,7 +9,7 @@ var restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger.js').bunyan // Audit logger for restify
   , server = restify.createServer()
-  , requestHandlers = require("./requestHandlers.js");
+  , requestHandlers = require('./requestHandlers.js');
 
 
 
