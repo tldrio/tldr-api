@@ -59,14 +59,20 @@ describe('Webserver', function () {
 
     it('a non existing tldr', function (done) {
       client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
+        var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
+        response.should.have.ownProperty('code');
+        response.code.should.equal('ResourceNotFound');
         done();
       });
 
     });
     it('all the tldrs', function (done) {
       client.get('/tldrs', function (err, req, res, obj) {
+        var response = JSON.parse(res.body);
         res.statusCode.should.equal(403);
+        response.should.have.ownProperty('code');
+        response.code.should.equal('NotAuthorized');
         done();
       });
     });
