@@ -1,5 +1,5 @@
-var winston = require('./lib/logger.js').winston
-  , bunyan = require('./lib/logger.js').bunyan
+var winston = require('./lib/logger').winston
+  , bunyan = require('./lib/logger').bunyan
   , currentEnvironment = {};      // Stores environment related data
 
 
