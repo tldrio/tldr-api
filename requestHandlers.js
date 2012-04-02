@@ -6,13 +6,17 @@
 
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , db = mongoose.connect('mongodb://localhost/datastore-test')
   , restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , models = require('./models')
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , db;
 
 
+// Connect to Mongo Db
+db = mongoose.connect('mongodb://localhost/datastore-test', function (err) {
+  if (err) {throw err;}
+});
 
 // GET all tldrs
 var getAllTldrs = function (req, res, next) {
@@ -23,6 +27,7 @@ var getAllTldrs = function (req, res, next) {
 var getTldrById = function (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
+    if (err) {throw err;}
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     }
