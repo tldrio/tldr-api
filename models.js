@@ -37,24 +37,24 @@ TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback
  *
  */
 
-function createTldr (tldrUrl, tldrSummary) {
+function createTldr (params) {
   var sha1 = crypto.createHash('sha1')
     , htldrId
     , tldr
-    , parsedTldrUrl;
+    , parsedUrl;
 
   // Compute SHA1 Hash
-  sha1.update(tldrUrl, 'utf8');
+  sha1.update(params.url, 'utf8');
   // Extract it into a string
   htldrId = sha1.digest('hex');
   //Parse url
-  parsedTldrUrl = url.parse(tldrUrl);
+  parsedUrl = url.parse(params.url);
   //create TldrModel instance
   tldr = new TldrModel({
     _id         : htldrId,
-    url         : tldrUrl,
-    hostname    : parsedTldrUrl.hostname,
-    summary     : tldrSummary,
+    url         : params.url,
+    hostname    : parsedUrl.hostname,
+    summary     : params.summary,
   });
 
   return tldr;

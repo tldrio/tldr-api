@@ -93,7 +93,7 @@ describe('Webserver', function () {
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
                       summary: 'Sluts and cockslapers'}
-        , tldr = models.createTldr(tldrData.url, tldrData.summary);
+        , tldr = models.createTldr({url: tldrData.url, summary: tldrData.summary});
         
       client.post('/tldrs', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(200);

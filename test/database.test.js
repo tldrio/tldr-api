@@ -25,7 +25,7 @@ var should = require('chai').should()
 
 describe('TldrModel', function () {
   it('should have a constructor', function () {
-    var tldr = models.createTldr('http://needforair.com/nutcrackers', 'Awesome Blog');
+    var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 
     tldr.should.have.property('url');
     tldr.should.have.property('summary');
@@ -40,12 +40,12 @@ describe('Database', function () {
 
     models.connectToDatabase();
 		// dummy models
-    var tldr1 = models.createTldr('http://needforair.com/nutcrackers',
-                                  'Awesome Blog')
-      , tldr2 = models.createTldr('http://avc.com/mba-monday', 
-                                  'Fred Wilson is my God')
-      , tldr3 = models.createTldr('http://bothsidesofthetable.com/deflationnary-economics',
-                                  'Sustering is my religion');
+    var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
+                                   summary: 'Awesome Blog'})
+      , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
+                                   summary: 'Fred Wilson is my God'})
+      , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
+                                   sumary: 'Sustering is my religion'});
 
 		
 		// clear database and repopulate
