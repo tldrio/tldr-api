@@ -8,10 +8,11 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
-  , winston = require('../lib/logger.js').winston // Custom logger built with Winston
-  , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
+  , winston = require('../lib/logger').winston // Custom logger built with Winston
+  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')
+  , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server');
 
@@ -38,7 +39,7 @@ describe('Database', function () {
 
 	before(function (done) {
 
-    models.connectToDatabase();
+    db.connectToDatabase();
 		// dummy models
     var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
@@ -87,7 +88,7 @@ describe('Database', function () {
 	});
 
   after(function (done) {
-    models.closeDatabaseConnection(done);
+    db.closeDatabaseConnection(done);
   });
 });
 

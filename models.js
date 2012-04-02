@@ -8,12 +8,14 @@ var mongoose = require('mongoose')
   , crypto = require('crypto')
   , url = require('url')
   , Schema = mongoose.Schema
-  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
+  , winston = require('./lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
   , TldrModel
-  , currentEnvironment = require('./environments.js').currentEnvironment;
+  , currentEnvironment = require('./environments').currentEnvironment;
 
 	
+
+
 // Define tldr scehma
 TldrSchema = new Schema({
 	_id        : String,
@@ -22,11 +24,16 @@ TldrSchema = new Schema({
 	summary    : String,
 });
 
+
 // Expose Find and Modify Method - This is still in dvp 
 // cf https://github.com/LearnBoost/mongoose/issues/633
 TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback) {
   return this.collection.findAndModify(query, sort, doc, options, callback);
 };
+
+// Define tldr model
+TldrModel = mongoose.model('tldr', TldrSchema);
+
 
 
 /**
@@ -61,33 +68,11 @@ function createTldr (params) {
   return tldr;
 }
 
-// Create the Connection to Mongodb
-function connectToDatabase (callback) {
-  var cb = callback || function (arg) { return arg;} ;
-  mongoose.connect(currentEnvironment.databaseHost, currentEnvironment.databaseName, currentEnvironment.databasePort, function (err) {
-    if (err) {throw cb(err);}
-    cb();
-  });
-}
 
-// Close Connection to Mongo
-function closeDatabaseConnection (callback) {
-  var cb = callback || function (arg) { return arg;} ;
-  mongoose.connection.close(function (err) {
-    if (err) {throw cb(err);}
-    cb();
-  });
-}
-
-// Define tldr model
-TldrModel = mongoose.model('tldr', TldrSchema);
 
 
 // Export TldrModel
 module.exports.TldrModel = TldrModel;
 module.exports.createTldr = createTldr;
 
-// Export Mongo connection methods
-module.exports.connectToDatabase = connectToDatabase;
-module.exports.closeDatabaseConnection = closeDatabaseConnection;
 

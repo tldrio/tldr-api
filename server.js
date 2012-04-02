@@ -6,12 +6,13 @@
 
 
 var restify = require('restify')
-  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
-  , bunyan = require('./lib/logger.js').bunyan // Audit logger for restify
+  , winston = require('./lib/logger').winston // Custom logger built with Winston
+  , bunyan = require('./lib/logger').bunyan // Audit logger for restify
   , server = restify.createServer()
   , mongoose = require('mongoose')
   , models = require('./models')
-  , requestHandlers = require('./requestHandlers.js');
+  , db = require('./lib/db')
+  , requestHandlers = require('./requestHandlers');
 
 
 /**
@@ -51,7 +52,7 @@ if (module.parent === null) { // Code to execute only when running as main
 	server.listen(8787, function (){
 		winston.info('Server launched at '+ server.url);
 	});
-  models.connectToDatabase();
+  db.connectToDatabase();
 }
 
 // exports
