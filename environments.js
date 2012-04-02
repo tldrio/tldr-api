@@ -5,7 +5,7 @@ var winston = require('./lib/logger').winston
 
 // Define environment
 // Default environment is development
-currentEnvironment.environment = process.env.TLDR_ENV ? process.env.TLDR_ENV : 'development';
+currentEnvironment.environment = process.env.TLDR_ENV || 'development';
 winston.info("Environment set to " + currentEnvironment.environment);
 
 // Corresponds to environment='development', no "if" to ensure variables are always set
