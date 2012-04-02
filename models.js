@@ -11,7 +11,8 @@ var mongoose = require('mongoose')
   , winston = require('./lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
   , TldrModel
-  , currentEnvironment = require('./environments').currentEnvironment;
+  , currentEnvironment = require('./environments').currentEnvironment
+  , customErrors = require('./lib/errors');
 
 	
 
@@ -50,6 +51,21 @@ function createTldr (params) {
     , htldrId
     , tldr
     , parsedUrl;
+
+  // Crude en not DRY validation for now (for the tests)
+  // Use validators here when they are ready
+  if (!params) {
+    throw new customErrors.MissingArgumentError("params is missing", ["params"]);
+  }
+
+
+  if (!params.url || !params.summary) {
+    var missingArguments = [];
+    if (!params.url) {missingArguments.push('url');}
+    if (!params.summary) {missingArguments.push('summary');}
+  
+    throw new customErrors.MissingArgumentError("Some arguments are missing, can't create tldr", missingArguments);
+  }
 
   // Compute SHA1 Hash
   sha1.update(params.url, 'utf8');
