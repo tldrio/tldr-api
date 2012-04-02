@@ -9,6 +9,8 @@ var restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger.js').bunyan // Audit logger for restify
   , server = restify.createServer()
+  , mongoose = require('mongoose')
+  , models = require('./models')
   , requestHandlers = require('./requestHandlers.js');
 
 
@@ -45,10 +47,11 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 server.post('/tldrs/:id', requestHandlers.postUpdateTldr);
 
 // Start server
-if (module.parent === null) { //wtf is this shit?
+if (module.parent === null) { // Code to execute only when running as main
 	server.listen(8787, function (){
 		winston.info('Server launched at '+ server.url);
 	});
+  models.connectToDatabase();
 }
 
 // exports

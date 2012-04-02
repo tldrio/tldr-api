@@ -27,7 +27,6 @@ client = restify.createJsonClient({
 });
 //start server
 server.listen(8686, function () {
-  winston.info('listening to ' + server.url);
 });
 
 
@@ -45,6 +44,9 @@ describe('Webserver', function () {
   // that means there is n chance you receive a response to your request
   // before mocha quits 
 
+  before(function (done) {
+    models.connectToDatabase(done);
+  });
   // Test GET requests
   describe('should handle GET request for', function () {
 
@@ -112,6 +114,10 @@ describe('Webserver', function () {
       });
     });
 
+  });
+
+  after(function (done) {
+    models.closeDatabaseConnection(done);
   });
 });
 

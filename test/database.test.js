@@ -11,7 +11,6 @@ var should = require('chai').should()
   , winston = require('../lib/logger.js').winston // Custom logger built with Winston
   , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , db = mongoose.connect('mongodb://localhost/datastore-test')
   , models = require('../models')
 	, TldrModel = models.TldrModel
   , server = require('../server');
@@ -39,6 +38,7 @@ describe('Database', function () {
 
 	before(function (done) {
 
+    models.connectToDatabase();
 		// dummy models
     var tldr1 = models.createTldr('http://needforair.com/nutcrackers',
                                   'Awesome Blog')
@@ -86,6 +86,8 @@ describe('Database', function () {
 	  });
 	});
 
-
+  after(function (done) {
+    models.closeDatabaseConnection(done);
+  });
 });
 

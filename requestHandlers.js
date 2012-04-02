@@ -9,14 +9,9 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , models = require('./models')
-  , TldrModel = models.TldrModel
-  , db;
+  , TldrModel = models.TldrModel;
 
 
-// Connect to Mongo Db
-db = mongoose.connect('mongodb://localhost/datastore-test', function (err) {
-  if (err) {throw err;}
-});
 
 // GET all tldrs
 var getAllTldrs = function (req, res, next) {
