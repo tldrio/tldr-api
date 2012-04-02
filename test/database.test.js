@@ -1,5 +1,5 @@
 /**
- *  Database tests
+ * Database tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Fucking Proprietary License
  */
@@ -23,7 +23,7 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('TldrModel', function () {
+describe('TldrModel function', function () {
   it('should have a constructor', function () {
     var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 

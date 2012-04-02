@@ -10,7 +10,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
 	, TldrSchema
-  , TldrModel;
+  , TldrModel
+  , currentEnvironment = require('./environments.js').currentEnvironment;
 
 	
 // Define tldr scehma
@@ -60,10 +61,10 @@ function createTldr (params) {
   return tldr;
 }
 
-// Create a Connection to Mongodb
+// Create the Connection to Mongodb
 function connectToDatabase (callback) {
   var cb = callback || function (arg) { return arg;} ;
-  mongoose.connect('localhost', 'datastore-test', 27017, function (err) {
+  mongoose.connect(currentEnvironment.databaseHost, currentEnvironment.databaseName, currentEnvironment.databasePort, function (err) {
     if (err) {throw cb(err);}
     cb();
   });
