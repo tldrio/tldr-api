@@ -10,8 +10,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , winston = require('./lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
-  , TldrModel
-  , currentEnvironment = require('./environments').currentEnvironment;
+  , TldrModel;
 
 	
 
