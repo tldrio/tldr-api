@@ -9,7 +9,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
   , winston = require('./lib/logger.js').winston // Custom logger built with Winston
   , models = require('./models')
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , customErrors = require('./lib/errors.js');
 
 
 
@@ -37,10 +38,20 @@ function postNewTldr (req, res, next) {
   var tldrData = req.body,
       tldr = models.createTldr(tldrData.url,
                                tldrData.summary);
-  tldr.save(function (err) {
+
+  TldrModel.find({_id: tldr._id}, function (err, docs) {
     if (err) {throw err;}
+ 
+    if (docs.length > 0) {
+      next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
+    } else {
+      tldr.save(function (err) {
+        if (err) {throw err;}
+      });
+      res.json(200, tldr);
+    }
   });
-  res.json(200, tldr);
+
 }
 
 // POST an updated tldr
