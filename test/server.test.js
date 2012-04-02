@@ -12,6 +12,7 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
   , server = require('../server')
   , models = require('../models')
+  , db = require('../lib/db')
   , TldrModel = models.TldrModel;
 
 
@@ -45,7 +46,7 @@ describe('Webserver', function () {
   // before mocha quits 
 
   before(function (done) {
-    models.connectToDatabase(done);
+    db.connectToDatabase(done);
   });
   // Test GET requests
   describe('should handle GET request for', function () {
@@ -123,7 +124,7 @@ describe('Webserver', function () {
   });
 
   after(function (done) {
-    models.closeDatabaseConnection(done);
+    db.closeDatabaseConnection(done);
   });
 });
 

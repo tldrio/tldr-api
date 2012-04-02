@@ -11,7 +11,8 @@ var restify = require('restify')
   , server = restify.createServer()
   , mongoose = require('mongoose')
   , models = require('./models')
-  , requestHandlers = require('./requestHandlers.js');
+  , db = require('./lib/db')
+  , requestHandlers = require('./requestHandlers');
 
 
 
@@ -51,7 +52,7 @@ if (module.parent === null) { // Code to execute only when running as main
 	server.listen(8787, function (){
 		winston.info('Server launched at '+ server.url);
 	});
-  models.connectToDatabase();
+  db.connectToDatabase();
 }
 
 // exports
