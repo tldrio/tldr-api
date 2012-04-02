@@ -116,6 +116,8 @@ describe('Database', function () {
 	});
 
   after(function (done) {
+    mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {} );
+
     db.closeDatabaseConnection(done);
   });
 
