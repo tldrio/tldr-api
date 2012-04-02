@@ -14,11 +14,11 @@ var restify = require('restify')
   , requestHandlers = require('./requestHandlers.js');
 
 
-
-
 /**
  * Configure 
  */
+
+
 
 // Register restify middleware
 server.use(restify.acceptParser(server.acceptable));
@@ -55,4 +55,4 @@ if (module.parent === null) { // Code to execute only when running as main
 }
 
 // exports
-module.exports= server;
+module.exports = server;
