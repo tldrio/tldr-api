@@ -8,8 +8,8 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
-  , winston = require('../lib/logger.js').winston // Custom logger built with Winston
-  , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
+  , winston = require('../lib/logger').winston // Custom logger built with Winston
+  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , server = require('../server')
   , models = require('../models')
   , db = require('../lib/db')

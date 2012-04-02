@@ -7,10 +7,10 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
-  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
+  , winston = require('./lib/logger').winston // Custom logger built with Winston
   , models = require('./models')
   , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors.js');
+  , customErrors = require('./lib/errors');
 
 
 

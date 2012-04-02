@@ -8,11 +8,13 @@ var mongoose = require('mongoose')
   , crypto = require('crypto')
   , url = require('url')
   , Schema = mongoose.Schema
-  , winston = require('./lib/logger.js').winston // Custom logger built with Winston
+  , winston = require('./lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
   , TldrModel;
 
 	
+
+
 // Define tldr scehma
 TldrSchema = new Schema({
 	_id        : String,
@@ -21,11 +23,16 @@ TldrSchema = new Schema({
 	summary    : String,
 });
 
+
 // Expose Find and Modify Method - This is still in dvp 
 // cf https://github.com/LearnBoost/mongoose/issues/633
 TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback) {
   return this.collection.findAndModify(query, sort, doc, options, callback);
 };
+
+// Define tldr model
+TldrModel = mongoose.model('tldr', TldrSchema);
+
 
 
 /**
