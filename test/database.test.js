@@ -8,6 +8,7 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
+  , sinon = require('sinon')
   , winston = require('../lib/logger').winston // Custom logger built with Winston
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
@@ -41,31 +42,28 @@ describe('TldrModel', function () {
     });
 
     it('should handle no args', function (done) {
-      var tldr;
       try {
-        tldr = models.createTldr();
+        models.createTldr();
       } catch(err) {
-        assert.equal(true, err instanceof customErrors.MissingArgumentError);
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
       }
     });
 
     it('should hanlde missing summary arg ', function (done) {
-      var tldr;
       try {
-        tldr = models.createTldr({url: 'bla'});
+        models.createTldr({url: 'bla'});
       } catch(err) {
-        assert.equal(true, err instanceof customErrors.MissingArgumentError);
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
       }
     });
 
     it('should handle missing url arg', function (done) {
-      var tldr;
       try {
-        tldr = models.createTldr({summary: 'coin'});
+        models.createTldr({summary: 'coin'});
       } catch(err) {
-        assert.equal(true, err instanceof customErrors.MissingArgumentError);
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
       }
     });
