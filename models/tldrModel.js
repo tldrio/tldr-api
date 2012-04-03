@@ -87,6 +87,6 @@ function createTldr (params) {
 
 // Export TldrModel
 module.exports.Model = TldrModel;
-module.exports.createInstance = createTldr;
+module.exports.createTldr = createTldr;
 
 
