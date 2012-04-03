@@ -12,7 +12,6 @@
   "keywords": ["summary", "tldr"],
   "engines": { "node": "0.6.x" },
   "dependencies":{
-     "winston": "0.5.x",
      "bunyan": "0.6.x",
      "chai": "0.5.x",
      "mocha": "0.14.x",

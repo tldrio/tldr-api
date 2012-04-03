@@ -8,7 +8,7 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
-  , winston = require('../lib/logger').winston // Custom logger built with Winston
+  , sinon = require('sinon')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')
@@ -25,41 +25,48 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('models.createTldr : ', function () {
-  it('should create a tldr given {url, summary}', function () {
-    var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+describe('TldrModel', function () {
+  describe('#createTldr', function () {
 
-    tldr.should.have.property('url');
-    tldr.should.have.property('summary');
-    tldr.should.have.property('hostname');
-    tldr.url.should.equal('http://needforair.com/nutcrackers');
-    tldr.summary.should.equal('Awesome Blog');
-    tldr.hostname.should.equal('needforair.com');
-    tldr._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
+    it('should create a tldr given {url, summary}', function () {
+      var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 
-    try {
-      tldr = models.createTldr();
-    } catch(err) {
-      assert.equal(true, err instanceof customErrors.MissingArgumentError);
-    }
+      tldr.should.have.property('url');
+      tldr.should.have.property('summary');
+      tldr.should.have.property('hostname');
+      tldr.url.should.equal('http://needforair.com/nutcrackers');
+      tldr.summary.should.equal('Awesome Blog');
+      tldr.hostname.should.equal('needforair.com');
+      tldr._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
+    });
 
-    try {
-      tldr = models.createTldr({});
-    } catch(err) {
-      assert.equal(true, err instanceof customErrors.MissingArgumentError);
-    }
+    it('should handle no args', function (done) {
+      try {
+        models.createTldr();
+      } catch(err) {
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
+        done();
+      }
+    });
 
-    try {
-      tldr = models.createTldr({url: 'bla'});
-    } catch(err) {
-      assert.equal(true, err instanceof customErrors.MissingArgumentError);
-    }
+    it('should hanlde missing summary arg ', function (done) {
+      try {
+        models.createTldr({url: 'bla'});
+      } catch(err) {
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
+        done();
+      }
+    });
 
-    try {
-      tldr = models.createTldr({summary: 'coin'});
-    } catch(err) {
-      assert.equal(true, err instanceof customErrors.MissingArgumentError);
-    }
+    it('should handle missing url arg', function (done) {
+      try {
+        models.createTldr({summary: 'coin'});
+      } catch(err) {
+        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
+        done();
+      }
+    });
+
   });
 });
 
