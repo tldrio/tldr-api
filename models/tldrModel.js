@@ -10,7 +10,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , winston = require('../lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
-  , TldrModel;
+  , TldrModel
+  , customErrors = require('../lib/errors');
 
 	
 
@@ -55,8 +56,7 @@ TldrModel = mongoose.model('tldr', TldrSchema);
 /**
  * Creates a TldrModel instance
  *
- * @param {String} url url of the tldrObject
- * @param {String} summary summary of the tldrObject
+ * @param {Object} params contains all parameters for object creation (use of Object for forward compatibility)
  * @return {TldrModel} a new TldrModel instance is created and returned
  *
  */
@@ -66,6 +66,21 @@ function createTldr (params) {
     , htldrId
     , tldr
     , parsedUrl;
+
+  // Crude en not DRY validation for now (for the tests)
+  // Use validators here when they are ready
+  if (!params) {
+    throw new customErrors.MissingArgumentError("params is missing", ["params"]);
+  }
+
+
+  if (!params.url || !params.summary) {
+    var missingArguments = [];
+    if (!params.url) {missingArguments.push('url');}
+    if (!params.summary) {missingArguments.push('summary');}
+  
+    throw new customErrors.MissingArgumentError("Some arguments are missing, can't create tldr", missingArguments);
+  }
 
   // Compute SHA1 Hash
   sha1.update(params.url, 'utf8');
@@ -89,6 +104,6 @@ function createTldr (params) {
 
 // Export TldrModel
 module.exports.Model = TldrModel;
-module.exports.createInstance = createTldr;
+module.exports.createTldr = createTldr;
 
 
