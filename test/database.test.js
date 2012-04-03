@@ -14,7 +14,8 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
-  , server = require('../server');
+  , server = require('../server')
+  , customErrors = require('../lib/errors');
 
 
 
@@ -24,14 +25,41 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('TldrModel function', function () {
-  it('should have a constructor', function () {
+describe('models.createTldr : ', function () {
+  it('should create a tldr given {url, summary}', function () {
     var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 
     tldr.should.have.property('url');
     tldr.should.have.property('summary');
+    tldr.should.have.property('hostname');
     tldr.url.should.equal('http://needforair.com/nutcrackers');
     tldr.summary.should.equal('Awesome Blog');
+    tldr.hostname.should.equal('needforair.com');
+    tldr._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
+
+    try {
+      tldr = models.createTldr();
+    } catch(err) {
+      assert.equal(true, err instanceof customErrors.MissingArgumentError);
+    }
+
+    try {
+      tldr = models.createTldr({});
+    } catch(err) {
+      assert.equal(true, err instanceof customErrors.MissingArgumentError);
+    }
+
+    try {
+      tldr = models.createTldr({url: 'bla'});
+    } catch(err) {
+      assert.equal(true, err instanceof customErrors.MissingArgumentError);
+    }
+
+    try {
+      tldr = models.createTldr({summary: 'coin'});
+    } catch(err) {
+      assert.equal(true, err instanceof customErrors.MissingArgumentError);
+    }
   });
 });
 
@@ -46,7 +74,7 @@ describe('Database', function () {
       , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
                                    summary: 'Fred Wilson is my God'})
       , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
-                                   sumary: 'Sustering is my religion'});
+                                   summary: 'Sustering is my religion'});
 
 		
 		// clear database and repopulate
@@ -88,7 +116,14 @@ describe('Database', function () {
 	});
 
   after(function (done) {
+    mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {} );
+
     db.closeDatabaseConnection(done);
   });
+
+
+
+
+
 });
 

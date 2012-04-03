@@ -13,6 +13,7 @@ var should = require('chai').should()
   , server = require('../server')
   , models = require('../models')
   , db = require('../lib/db')
+  , mongoose = require('mongoose')
   , TldrModel = models.TldrModel;
 
 
@@ -45,9 +46,35 @@ describe('Webserver', function () {
   // that means there is n chance you receive a response to your request
   // before mocha quits 
 
-  before(function (done) {
-    db.connectToDatabase(done);
-  });
+	before(function (done) {
+
+    db.connectToDatabase();
+		// dummy models
+    var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
+                                   summary: 'Awesome Blog'})
+      , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
+                                   summary: 'Fred Wilson is my God'})
+      , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
+                                   summary: 'Sustering is my religion'});
+
+		
+		// clear database and repopulate
+		TldrModel.remove(null, function (err) {
+		  if (err) {throw done(err);}
+			tldr1.save(	function (err) {
+				if (err) {throw done(err); }
+			  tldr2.save( function (err) {
+					if (err) {throw done(err); }
+			    tldr3.save( function (err) {
+			      if (err) {throw done(err); }
+						done();
+			    });
+			  });
+			});
+		});
+
+	});
+
   // Test GET requests
   describe('should handle GET request for', function () {
 
@@ -124,6 +151,8 @@ describe('Webserver', function () {
   });
 
   after(function (done) {
+    mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {} );
+
     db.closeDatabaseConnection(done);
   });
 });
