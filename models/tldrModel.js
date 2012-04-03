@@ -51,6 +51,11 @@ TldrSchema.path('_id').validate(idValidate);
 TldrSchema.path('url').validate(idValidate);
 TldrSchema.path('summary').validate(summaryValidate);
 
+TldrSchema.path('_id').required(true);
+TldrSchema.path('url').required(true);
+TldrSchema.path('summary').required(true);
+TldrSchema.path('hostname').required(true);
+
 
 
 
