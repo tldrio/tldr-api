@@ -19,7 +19,7 @@ var restify = require('restify')
  * Configure 
  */
 
-
+// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
 if (currentEnvironment.environment === "test") {
   server = restify.createServer({
     name: "tldr API"
