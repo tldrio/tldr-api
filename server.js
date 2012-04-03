@@ -11,6 +11,7 @@ var restify = require('restify')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
+  , currentEnvironment = require('./environments').currentEnvironment
   , server;                                 // Will store our restify server
 
 
@@ -18,10 +19,17 @@ var restify = require('restify')
  * Configure 
  */
 
-server = restify.createServer({
-  name: "tldr API",
-  log: bunyan
-});
+
+if (currentEnvironment.environment === "test") {
+  server = restify.createServer({
+    name: "tldr API"
+  });
+} else {
+  server = restify.createServer({
+    name: "tldr API",
+    log: bunyan
+  });
+}
 
 // Register restify middleware
 server.use(restify.acceptParser(server.acceptable));
