@@ -46,9 +46,17 @@ describe('Webserver', function () {
   // that means there is n chance you receive a response to your request
   // before mocha quits 
 
-	before(function (done) {
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
 
-    db.connectToDatabase();
+  after(function (done) {
+
+    db.closeDatabaseConnection(done);
+  });
+
+	beforeEach(function (done) {
+
 		// dummy models
     var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
@@ -74,6 +82,14 @@ describe('Webserver', function () {
 		});
 
 	});
+
+  afterEach(function (done) {
+
+    TldrModel.remove(null, function (err) {
+      if (err) {throw done(err);}               
+      done();
+    });
+  });
 
   // Test GET requests
   describe('should handle GET request for', function () {
@@ -116,14 +132,6 @@ describe('Webserver', function () {
   //Test POST Requests
   describe('should handle POST request for', function () {
 
-    before(function (done) {
-      // clear database 
-      TldrModel.remove(null, function (err) {
-        if (err) {throw done(err);}
-        done();
-      });
-    });
-
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
                       summary: 'Sluts and cockslapers'}
@@ -138,22 +146,17 @@ describe('Webserver', function () {
     });
 
     it('updating an existing tldr', function (done) {
-      var tldrUpdates = {summary: 'Sluts and cockslapers and milf'};
+      var tldrUpdates = {summary: 'This blog smells like shit'};
 
-      client.post('/tldrs/ce84439749856ef445e174597169fa59d4e7d86d', tldrUpdates, function (err, req, res, obj) {
+      client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
         res.statusCode.should.equal(200);
-        obj._id.should.equal('ce84439749856ef445e174597169fa59d4e7d86d');
-        obj.summary.should.equal('Sluts and cockslapers and milf');
+        obj._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
+        obj.summary.should.equal('This blog smells like shit');
         done();
       });
     });
 
   });
 
-  after(function (done) {
-    mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {} );
-
-    db.closeDatabaseConnection(done);
-  });
 });
 
