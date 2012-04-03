@@ -6,28 +6,35 @@
 
 
 var restify = require('restify')
-  , winston = require('./lib/logger').winston // Custom logger built with Winston
   , bunyan = require('./lib/logger').bunyan // Audit logger for restify
-  , server = restify.createServer()
   , mongoose = require('mongoose')
   , models = require('./models')
   , db = require('./lib/db')
-  , requestHandlers = require('./requestHandlers');
+  , requestHandlers = require('./requestHandlers')
+  , currentEnvironment = require('./environments').currentEnvironment
+  , server;                                 // Will store our restify server
 
 
 /**
  * Configure 
  */
 
-
+// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
+if (currentEnvironment.environment === "test") {
+  server = restify.createServer({
+    name: "tldr API"
+  });
+} else {
+  server = restify.createServer({
+    name: "tldr API",
+    log: bunyan
+  });
+}
 
 // Register restify middleware
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
-
-
-
 
 
 /**
@@ -50,7 +57,7 @@ server.post('/tldrs/:id', requestHandlers.postUpdateTldr);
 // Start server
 if (module.parent === null) { // Code to execute only when running as main
 	server.listen(8787, function (){
-		winston.info('Server launched at '+ server.url);
+		bunyan.info('Server %s launched at %s', server.name, server.url);
 	});
   db.connectToDatabase();
 }

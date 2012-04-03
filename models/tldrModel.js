@@ -8,7 +8,6 @@ var mongoose = require('mongoose')
   , crypto = require('crypto')
   , url = require('url')
   , Schema = mongoose.Schema
-  , winston = require('../lib/logger').winston // Custom logger built with Winston
 	, TldrSchema
   , TldrModel
   , customErrors = require('../lib/errors');

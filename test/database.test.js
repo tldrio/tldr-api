@@ -9,7 +9,6 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
   , sinon = require('sinon')
-  , winston = require('../lib/logger').winston // Custom logger built with Winston
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')

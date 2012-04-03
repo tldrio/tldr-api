@@ -1,12 +1,11 @@
-var winston = require('./lib/logger').winston
-  , bunyan = require('./lib/logger').bunyan
+var bunyan = require('./lib/logger').bunyan
   , currentEnvironment = {};      // Stores environment related data
 
 
 // Define environment
 // Default environment is development
 currentEnvironment.environment = process.env.TLDR_ENV || 'development';
-winston.info("Environment set to " + currentEnvironment.environment);
+bunyan.info("Environment set to %s", currentEnvironment.environment);
 
 // Corresponds to environment='development', no "if" to ensure variables are always set
 currentEnvironment.databaseHost = 'localhost';
