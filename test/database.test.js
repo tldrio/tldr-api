@@ -65,9 +65,16 @@ describe('models.createTldr : ', function () {
 
 describe('Database', function () {
 
-	before(function (done) {
+  before(function (done) {
+    db.connectToDatabase(done);
 
-    db.connectToDatabase();
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+	beforeEach(function (done) {
 		// dummy models
     var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
@@ -75,7 +82,6 @@ describe('Database', function () {
                                    summary: 'Fred Wilson is my God'})
       , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
                                    summary: 'Sustering is my religion'});
-
 		
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -93,6 +99,13 @@ describe('Database', function () {
 		});
 
 	});
+
+  afterEach(function (done) {
+    TldrModel.remove(null, function (err) {
+      if (err) {throw done(err);}               
+      done();
+    });
+  });
 
 	// Check that all 3 records are in the db
   it('should return full collection', function (done) {
@@ -114,15 +127,6 @@ describe('Database', function () {
 			done();
 	  });
 	});
-
-  after(function (done) {
-    mongoose.connection.db.executeDbCommand( {dropDatabase:1}, function(err, result) {} );
-
-    db.closeDatabaseConnection(done);
-  });
-
-
-
 
 
 });
