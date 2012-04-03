@@ -57,7 +57,6 @@ describe('Webserver', function () {
 
 	beforeEach(function (done) {
 
-    winston.info('tata');
 		// dummy models
     var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
