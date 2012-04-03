@@ -32,12 +32,24 @@ TldrSchema = new Schema({
  *
  */
 
-//Check _id is a 40 charachters string
+//_id should be a 40 charachters string
 function idValidate (value) {
   return value.length === 40;
 }
 
+//Url length should be less than 256
+function idValidate (value) {
+  return value.length <= 256;
+}
+
+//Summaries should not be too long
+function summaryValidate (value) {
+  return value.length <= 1500;
+}
+
 TldrSchema.path('_id').validate(idValidate);
+TldrSchema.path('url').validate(idValidate);
+TldrSchema.path('summary').validate(summaryValidate);
 
 
 
