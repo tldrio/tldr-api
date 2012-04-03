@@ -24,6 +24,23 @@ TldrSchema = new Schema({
 });
 
 
+
+
+/**
+ * Validators
+ *
+ */
+
+//Check _id is a 40 charachters string
+function idValidate (value) {
+  return value.length === 40;
+}
+
+TldrSchema.path('_id').validate(idValidate);
+
+
+
+
 // Expose Find and Modify Method - This is still in dvp 
 // cf https://github.com/LearnBoost/mongoose/issues/633
 TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback) {
