@@ -136,7 +136,7 @@ describe('TldrModel', function () {
 
   describe('#createTldr', function () {
 
-    it('should create a tldr given {url, summary}', function () {
+    it('should create a tldr given valid {url, summary}', function () {
       var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 
       tldr.should.have.property('url');
@@ -175,7 +175,18 @@ describe('TldrModel', function () {
       }
     });
 
+    it('should detect bad input type', function (done) {
+      try {
+        models.createTldr({url: 123456789, summary: 'Awesome Blog'});
+      } catch(err) {
+        err.should.be.an.instanceOf(TypeError);
+        done();
+      }
+
+    });
+
   });
+
 });
 
 describe('Database', function () {
