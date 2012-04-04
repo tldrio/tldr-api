@@ -26,6 +26,114 @@ var should = require('chai').should()
  */
 
 describe('TldrModel', function () {
+
+  describe('#validators', function () {
+
+    before(function (done) {
+      db.connectToDatabase(done);
+    });
+
+    after(function (done) {
+      db.closeDatabaseConnection(done);
+    });
+
+    beforeEach(function (done) {
+      TldrModel.remove( function (err) {
+        if (err) {throw done(err);}
+        done();
+      });
+    });
+
+    it('should detect missing required _id arg', function (done) {
+      var tldr = new TldrModel({
+        url: 'needforair.com/nutcrackers',
+        hostname: 'needforair.com',
+        summary: 'Awesome Blog',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+    it('should detect missing required url arg', function (done) {
+      var tldr = new TldrModel({
+        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+        hostname: 'needforair.com',
+        summary: 'Awesome Blog',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+    
+    it('should detect missing required summary arg', function (done) {
+      var tldr = new TldrModel({
+        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+        url: 'needforair.com/nutcrackers',
+        hostname: 'needforair.com',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+    it('should detect missing required hostname arg', function (done) {
+      var tldr = new TldrModel({
+        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+        url: 'needforair.com/nutcrackers',
+        summary: 'Awesome Blog',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+    it('should detect bad hostname format', function (done) {
+      var tldr = new TldrModel({
+        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+        url: 'needforair.com/nutcrackers',
+        hostname: 'needforair',
+        summary: 'Awesome Blog',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+    it('should handle wrong type of arg', function (done) {
+      var parasite = {foo: 'bar'}
+        , tldr = new TldrModel({
+            _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+            url: 'http://needforair.com/nutcrackers',
+            hostname: 'needforair.com',
+            summary: parasite,
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+    it('should handle wrong url formatting', function (done) {
+      var tldr = new TldrModel({
+        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+        url: 'needforair.com/nutcrackers',
+        hostname: 'needforair.com',
+        summary: 'Awesome Blog',
+      });
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+    });
+
+  });
+
   describe('#createTldr', function () {
 
     it('should create a tldr given {url, summary}', function () {
