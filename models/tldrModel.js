@@ -13,7 +13,10 @@ var mongoose = require('mongoose')
   , customErrors = require('../lib/errors');
 
 	
-
+/**
+ * Schema
+ *
+ */
 
 // Define tldr scehma
 TldrSchema = new Schema({
@@ -31,29 +34,68 @@ TldrSchema = new Schema({
  *
  */
 
-//_id should be a 40 charachters string
+//_id should be defined a 40 charachters string
 function idValidate (value) {
-  return value.length === 40;
+  var valid = (value !== undefined) ;
+  valid = valid && (value.length === 40);
+  return valid;
 }
 
-//Url length should be less than 256
-function idValidate (value) {
-  return value.length <= 256;
+//Url shoudl be defined, contain hostname and protocol info 
+//and have length than 256
+function urlValidate (value) {
+  var parsedUrl 
+    , hostname 
+    , protocol 
+    , valid;
+
+  valid = (value !== undefined);
+  if (valid) {
+    parsedUrl = url.parse(value);
+    hostname = parsedUrl.hostname;
+    protocol = parsedUrl.protocol;
+    valid = valid && (value.length <= 256);
+    valid = valid && (hostname !== undefined);
+    valid = valid && (protocol !== undefined);
+  }
+  return valid;
 }
 
-//Summaries should not be too long
+//Summaries should be defined and not be too long
 function summaryValidate (value) {
-  return value.length <= 1500;
+  var valid;
+  valid = (value !== undefined);
+  valid = valid && (value.length <= 1500);
+  return valid;
 }
 
-TldrSchema.path('_id').validate(idValidate);
-TldrSchema.path('url').validate(idValidate);
-TldrSchema.path('summary').validate(summaryValidate);
+//Hostname should be defined and contain at least one .
+function hostnameValidate (value) {
+  var valid;
+  valid = (value !== undefined);
+  valid = valid && (value.split('.').length >= 2);
+  return valid;
+}
+
+
+
+
+/**
+ * Route Validators
+ *
+ */
 
 TldrSchema.path('_id').required(true);
 TldrSchema.path('url').required(true);
 TldrSchema.path('summary').required(true);
 TldrSchema.path('hostname').required(true);
+
+
+TldrSchema.path('_id').validate(idValidate);
+TldrSchema.path('url').validate(urlValidate);
+TldrSchema.path('hostname').validate(hostnameValidate);
+TldrSchema.path('summary').validate(summaryValidate);
+
 
 
 
