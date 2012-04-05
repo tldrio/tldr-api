@@ -93,7 +93,7 @@ TldrSchema.path('hostname').required(true);
 
 TldrSchema.path('_id').validate(validateId);
 TldrSchema.path('url').validate(validateUrl);
-TldrSchema.path('hostname').validate(validateUrl);
+TldrSchema.path('hostname').validate(validateHostname);
 TldrSchema.path('summary').validate(validateSummary);
 
 
