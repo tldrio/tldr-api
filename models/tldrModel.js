@@ -6,13 +6,14 @@
 
 var mongoose = require('mongoose')
   , crypto = require('crypto')
+  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , url = require('url')
   , Schema = mongoose.Schema
-	, TldrSchema
+  , TldrSchema
   , TldrModel
   , customErrors = require('../lib/errors');
 
-	
+
 /**
  * Schema
  *
@@ -35,18 +36,16 @@ TldrSchema = new Schema({
  */
 
 //_id should be defined a 40 charachters string
-function validateId (value) {
-  var valid = (value !== undefined) ;
-  valid = valid && (value.length === 40);
-  return valid;
+function id_validateLength (value) {
+  return ((value !== undefined) && (value.length === 40));
 }
 
 //Url shoudl be defined, contain hostname and protocol info 
 //and have length than 256
-function validateUrl (value) {
-  var parsedUrl 
-    , hostname 
-    , protocol 
+function url_validatePresenceOfProtocolAndHostname (value) {
+  var parsedUrl
+    , hostname
+    , protocol
     , valid;
 
   valid = (value !== undefined);
@@ -54,47 +53,46 @@ function validateUrl (value) {
     parsedUrl = url.parse(value);
     hostname = parsedUrl.hostname;
     protocol = parsedUrl.protocol;
-    valid = valid && (value.length <= 256);
     valid = valid && (hostname !== undefined);
     valid = valid && (protocol !== undefined);
   }
   return valid;
 }
 
-//Summaries should be defined and not be too long
-function validateSummary (value) {
-  var valid;
-  valid = (value !== undefined);
-  valid = valid && (value.length <= 1500);
-  return valid;
+//Summaries should be defined, non empty and not be too long
+function summary_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 1500));
 }
 
 //Hostname should be defined and contain at least one .
-function validateHostname (value) {
-  var valid;
-  valid = (value !== undefined);
-  valid = valid && (value.split('.').length >= 2);
-  return valid;
+function hostname_validatePresenceOfDot (value) {
+  return ((value !== undefined) && (value.split('.').length >= 2));
 }
 
 
 
 
 /**
- * Route Validators
+ * Validators mappings
  *
  */
 
 TldrSchema.path('_id').required(true);
+TldrSchema.path('_id').validate(id_validateLength, '[Internal error] please report to contact@needforair.com');  // Should never happen
+
+
 TldrSchema.path('url').required(true);
+TldrSchema.path('url').validate(url_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
+
+
 TldrSchema.path('summary').required(true);
+TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
+
+
 TldrSchema.path('hostname').required(true);
+TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
 
-TldrSchema.path('_id').validate(validateId);
-TldrSchema.path('url').validate(validateUrl);
-TldrSchema.path('hostname').validate(validateHostname);
-TldrSchema.path('summary').validate(validateSummary);
 
 
 
