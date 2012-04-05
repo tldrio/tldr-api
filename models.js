@@ -6,6 +6,8 @@
 
 var TldrModel = require('./models/tldrModel');
 
+// Given the "errors" object of an exception thrown by Mongoose's validation system,
+// return an array of non validated fields
 function getAllValidationErrors(errorsObject) {
 	if (!errorsObject)
 		return null;
@@ -21,7 +23,8 @@ function getAllValidationErrors(errorsObject) {
 	return result;
 }
 
-
+// Given the "errors" object of an exception thrown by Mongoose's validation system,
+// return a JSON with all non validated fields and an explanatory message for each
 function getAllValidationErrorsInNiceJSON(errorsObject) {
 	var result = {}, prop;
 
