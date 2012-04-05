@@ -57,11 +57,11 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
+    var tldr1 = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
-      , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
+      , tldr2 = TldrModel.createTldr({url: 'http://avc.com/mba-monday', 
                                    summary: 'Fred Wilson is my God'})
-      , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
+      , tldr3 = TldrModel.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
                                    summary: 'Sustering is my religion'});
 
 		
@@ -134,7 +134,7 @@ describe('Webserver', function () {
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
                       summary: 'Sluts and cockslapers'}
-        , tldr = models.createTldr({url: tldrData.url, summary: tldrData.summary});
+        , tldr = TldrModel.createTldr({url: tldrData.url, summary: tldrData.summary});
         
       client.post('/tldrs', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(200);

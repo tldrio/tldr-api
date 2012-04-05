@@ -10,4 +10,3 @@ var TldrModel = require('./models/tldrModel');
 
 // Export TldrModel
 module.exports.TldrModel = TldrModel.Model;
-module.exports.createTldr = TldrModel.createTldr;

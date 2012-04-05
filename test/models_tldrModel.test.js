@@ -138,7 +138,7 @@ describe('TldrModel', function () {
   describe('#createTldr', function () {
 
     it('should create a tldr given valid {url, summary}', function () {
-      var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+      var tldr = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
 
       tldr.should.have.property('url');
       tldr.should.have.property('summary');
@@ -151,7 +151,7 @@ describe('TldrModel', function () {
 
     it('should handle no args', function (done) {
       try {
-        models.createTldr();
+        TldrModel.createTldr();
       } catch(err) {
         err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
@@ -160,7 +160,7 @@ describe('TldrModel', function () {
 
     it('should hanlde missing summary arg ', function (done) {
       try {
-        models.createTldr({url: 'bla'});
+        TldrModel.createTldr({url: 'bla'});
       } catch(err) {
         err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
@@ -169,7 +169,7 @@ describe('TldrModel', function () {
 
     it('should handle missing url arg', function (done) {
       try {
-        models.createTldr({summary: 'coin'});
+        TldrModel.createTldr({summary: 'coin'});
       } catch(err) {
         err.should.be.an.instanceOf(customErrors.MissingArgumentError);
         done();
@@ -178,7 +178,7 @@ describe('TldrModel', function () {
 
     it('should detect bad input type', function (done) {
       try {
-        models.createTldr({url: 123456789, summary: 'Awesome Blog'});
+        TldrModel.createTldr({url: 123456789, summary: 'Awesome Blog'});
       } catch(err) {
         err.should.be.an.instanceOf(TypeError);
         done();

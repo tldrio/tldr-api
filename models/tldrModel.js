@@ -104,10 +104,6 @@ TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback
   return this.collection.findAndModify(query, sort, doc, options, callback);
 };
 
-// Define tldr model
-TldrModel = mongoose.model('tldr', TldrSchema);
-
-
 
 /**
  * Creates a TldrModel instance
@@ -117,7 +113,7 @@ TldrModel = mongoose.model('tldr', TldrSchema);
  *
  */
 
-function createTldr (params) {
+TldrSchema.statics.createTldr = function (params) {
   var sha1 = crypto.createHash('sha1')
     , htldrId
     , tldr
@@ -156,10 +152,11 @@ function createTldr (params) {
 }
 
 
+// Define tldr model
+TldrModel = mongoose.model('tldr', TldrSchema);
 
 
 // Export TldrModel
 module.exports.Model = TldrModel;
-module.exports.createTldr = createTldr;
 
 

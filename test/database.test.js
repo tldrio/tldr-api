@@ -39,11 +39,11 @@ describe('Database', function () {
 
 	beforeEach(function (done) {
 		// dummy models
-    var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
+    var tldr1 = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
-      , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
+      , tldr2 = TldrModel.createTldr({url: 'http://avc.com/mba-monday', 
                                    summary: 'Fred Wilson is my God'})
-      , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
+      , tldr3 = TldrModel.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
                                    summary: 'Sustering is my religion'});
 		
 		// clear database and repopulate
