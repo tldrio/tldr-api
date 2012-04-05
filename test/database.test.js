@@ -25,50 +25,6 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('TldrModel', function () {
-  describe('#createTldr', function () {
-
-    it('should create a tldr given {url, summary}', function () {
-      var tldr = models.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-
-      tldr.should.have.property('url');
-      tldr.should.have.property('summary');
-      tldr.should.have.property('hostname');
-      tldr.url.should.equal('http://needforair.com/nutcrackers');
-      tldr.summary.should.equal('Awesome Blog');
-      tldr.hostname.should.equal('needforair.com');
-      tldr._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
-    });
-
-    it('should handle no args', function (done) {
-      try {
-        models.createTldr();
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-    it('should hanlde missing summary arg ', function (done) {
-      try {
-        models.createTldr({url: 'bla'});
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-    it('should handle missing url arg', function (done) {
-      try {
-        models.createTldr({summary: 'coin'});
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-  });
-});
 
 describe('Database', function () {
 
@@ -83,11 +39,11 @@ describe('Database', function () {
 
 	beforeEach(function (done) {
 		// dummy models
-    var tldr1 = models.createTldr({url: 'http://needforair.com/nutcrackers',
+    var tldr1 = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers',
                                    summary: 'Awesome Blog'})
-      , tldr2 = models.createTldr({url: 'http://avc.com/mba-monday', 
+      , tldr2 = TldrModel.createTldr({url: 'http://avc.com/mba-monday', 
                                    summary: 'Fred Wilson is my God'})
-      , tldr3 = models.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
+      , tldr3 = TldrModel.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
                                    summary: 'Sustering is my religion'});
 		
 		// clear database and repopulate

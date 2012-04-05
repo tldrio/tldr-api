@@ -35,7 +35,7 @@ var getTldrById = function (req, res, next) {
 // POST a new tldr
 function postNewTldr (req, res, next) {
   var tldrData = req.body,
-      tldr = models.createTldr({url: tldrData.url
+      tldr = TldrModel.createTldr({url: tldrData.url
                               , summary: tldrData.summary});
 
   TldrModel.find({_id: tldr._id}, function (err, docs) {
