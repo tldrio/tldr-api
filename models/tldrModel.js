@@ -35,7 +35,7 @@ TldrSchema = new Schema({
  */
 
 //_id should be defined a 40 charachters string
-function idValidate (value) {
+function validateId (value) {
   var valid = (value !== undefined) ;
   valid = valid && (value.length === 40);
   return valid;
@@ -43,7 +43,7 @@ function idValidate (value) {
 
 //Url shoudl be defined, contain hostname and protocol info 
 //and have length than 256
-function urlValidate (value) {
+function validateUrl (value) {
   var parsedUrl 
     , hostname 
     , protocol 
@@ -62,7 +62,7 @@ function urlValidate (value) {
 }
 
 //Summaries should be defined and not be too long
-function summaryValidate (value) {
+function validateSummary (value) {
   var valid;
   valid = (value !== undefined);
   valid = valid && (value.length <= 1500);
@@ -70,7 +70,7 @@ function summaryValidate (value) {
 }
 
 //Hostname should be defined and contain at least one .
-function hostnameValidate (value) {
+function validateHostname (value) {
   var valid;
   valid = (value !== undefined);
   valid = valid && (value.split('.').length >= 2);
@@ -91,10 +91,10 @@ TldrSchema.path('summary').required(true);
 TldrSchema.path('hostname').required(true);
 
 
-TldrSchema.path('_id').validate(idValidate);
-TldrSchema.path('url').validate(urlValidate);
-TldrSchema.path('hostname').validate(hostnameValidate);
-TldrSchema.path('summary').validate(summaryValidate);
+TldrSchema.path('_id').validate(validateId);
+TldrSchema.path('url').validate(validateUrl);
+TldrSchema.path('hostname').validate(validateUrl);
+TldrSchema.path('summary').validate(validateSummary);
 
 
 
