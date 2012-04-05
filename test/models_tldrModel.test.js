@@ -112,6 +112,7 @@ describe('TldrModel', function () {
 				valErr._id.should.not.equal(null);
 				valErr.url.should.not.equal(null);
 				assert.equal(valErr.summary, null);
+				assert.equal(valErr.hostname, null);
 
         done();
       });
