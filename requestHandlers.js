@@ -7,6 +7,7 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
+  , bunyan = require('./lib/logger').bunyan
   , models = require('./models')
   , TldrModel = models.TldrModel
   , customErrors = require('./lib/errors');
@@ -22,11 +23,15 @@ var getAllTldrs = function (req, res, next) {
 var getTldrById = function (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
-    if (err) {throw err;}
+    if (err) {
+      throw err;
+      //bunyan.error({error: err, message: "Something wrong with the db access in request handler getTldrById"});
+      //return next(new restify.InternalError('An internal error has occured, we are looking into it'));
+    }
+
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
-    }
-    else {
+    } else {
       res.json(200, docs[0]);
     }
   });
@@ -40,7 +45,7 @@ function postNewTldr (req, res, next) {
 
   TldrModel.find({_id: tldr._id}, function (err, docs) {
     if (err) {throw err;}
- 
+
     if (docs.length > 0) {
       next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
