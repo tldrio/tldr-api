@@ -53,6 +53,8 @@ describe('TldrModel', function () {
       });
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
+				//models.getAllValidationErrors(err.errors).length.should.equal(2);
+				//console.log(models.getAllValidationErrorsInNiceJSON(err.errors));
         done();
       });
     });
@@ -178,12 +180,11 @@ describe('TldrModel', function () {
 
     it('should detect bad input type', function (done) {
       try {
-        TldrModel.createTldr({url: 123456789, summary: 'Awesome Blog'});
+        TldrModel.createTldr({url: 123, summary: 'Awesome Blog'});
       } catch(err) {
         err.should.be.an.instanceOf(TypeError);
         done();
       }
-
     });
 
   });

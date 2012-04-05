@@ -152,9 +152,10 @@ TldrSchema.statics.createTldr = function (params) {
 }
 
 
+
+
 // Define tldr model
 TldrModel = mongoose.model('tldr', TldrSchema);
-
 
 // Export TldrModel
 module.exports.Model = TldrModel;
