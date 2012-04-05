@@ -26,6 +26,59 @@ var should = require('chai').should()
  * Tests
  */
 
+
+
+describe('model', function () {
+	it('getAllValidationErrors should work as expected', function(done) {
+		var errorsObject = {
+			_id: 
+				{ message: 'Validator "required" failed for path _id',
+					name: 'ValidatorError',
+					path: '_id',
+					type: 'required' },
+			url: 
+				{ message: 'Validator "url must be a correctly formatted url, with protocol and hostname" failed for path url',
+					name: 'ValidatorError',
+					path: 'url',
+					type: 'url must be a correctly formatted url, with protocol and hostname' } }
+			, valErr = models.getAllValidationErrors(errorsObject);
+
+		assert.equal(null, models.getAllValidationErrors(null));
+		assert.equal(null, models.getAllValidationErrors(undefined));
+		valErr.length.should.equal(2);
+		valErr[0].should.equal('_id');
+		valErr[1].should.equal('url');
+
+		done();
+	});
+
+
+	it('getAllValidationErrorsInNiceJSON should work as expected', function(done) {
+		var errorsObject = {
+			_id: 
+				{ message: 'Validator "required" failed for path _id',
+					name: 'ValidatorError',
+					path: '_id',
+					type: 'required' },
+			url: 
+				{ message: 'Validator "url must be a correctly formatted url, with protocol and hostname" failed for path url',
+					name: 'ValidatorError',
+					path: 'url',
+					type: 'url must be a correctly formatted url, with protocol and hostname' } }
+			, valErr = models.getAllValidationErrorsInNiceJSON(errorsObject);
+
+		valErr._id.should.equal('required');
+		valErr.url.should.equal('url must be a correctly formatted url, with protocol and hostname');
+		assert.equal(valErr.someOtherProperty, null);
+
+		done();
+	});
+
+
+});
+
+
+
 describe('TldrModel', function () {
 
   describe('#validators', function () {
@@ -50,11 +103,16 @@ describe('TldrModel', function () {
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair.com',
         summary: 'Awesome Blog',
-      });
+      }), valErr;
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
-				//models.getAllValidationErrors(err.errors).length.should.equal(2);
-				//console.log(models.getAllValidationErrorsInNiceJSON(err.errors));
+				
+				models.getAllValidationErrors(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsInNiceJSON(err.errors);
+				valErr._id.should.not.equal(null);
+				valErr.url.should.not.equal(null);
+				assert.equal(valErr.summary, null);
+
         done();
       });
     });
