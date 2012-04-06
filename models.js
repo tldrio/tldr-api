@@ -4,7 +4,7 @@
  * Fucking Proprietary License
  */
 
-var TldrModel = require('./models/tldrModel');
+var TldrModelDefinition = require('./models/tldrModel');
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return an array of non validated fields
@@ -38,7 +38,24 @@ function getAllValidationErrorsInNiceJSON(errorsObject) {
 }
 
 
+// From a schema definition object, return the path names
+// Useful to safely update objects from user input
+function returnPathsFromPathsDefinition(pathsObject) {
+  var prop
+    , result = {};
+
+  for (prop in pathsObject) {
+    if (pathsObject.hasOwnProperty(prop)) {
+      result[prop] = true;
+    }
+  }
+
+  return result;
+}
+
+
 // Export TldrModel
-module.exports.TldrModel = TldrModel.Model;
+module.exports.TldrModel = TldrModelDefinition.TldrModel;
+module.exports.tldrPaths = returnPathsFromPathsDefinition(TldrModelDefinition.tldrPathsDefinition);
 module.exports.getAllValidationErrors = getAllValidationErrors;
 module.exports.getAllValidationErrorsInNiceJSON = getAllValidationErrorsInNiceJSON;

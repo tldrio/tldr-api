@@ -20,14 +20,14 @@ var mongoose = require('mongoose')
  */
 
 // Define tldr scehma
-TldrSchema = new Schema({
+var tldrPathsDefinition = {
 	_id        : String,
 	url        : String,
 	hostname   : String,
-	summary    : String,
-});
+	summary    : String
+}
 
-
+TldrSchema = new Schema(tldrPathsDefinition);
 
 
 /**
@@ -115,7 +115,6 @@ TldrSchema.statics.createTldr = function (params) {
     throw new customErrors.MissingArgumentError("params is missing", ["params"]);
   }
 
-
   if (!params.url || !params.summary) {
     var missingArguments = [];
     if (!params.url) {missingArguments.push('url');}
@@ -142,12 +141,11 @@ TldrSchema.statics.createTldr = function (params) {
 }
 
 
-
-
 // Define tldr model
 TldrModel = mongoose.model('tldr', TldrSchema);
 
-// Export TldrModel
-module.exports.Model = TldrModel;
 
+// Export TldrModel
+module.exports.TldrModel = TldrModel;
+module.exports.tldrPathsDefinition = tldrPathsDefinition;
 

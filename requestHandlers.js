@@ -69,29 +69,41 @@ function postNewTldr (req, res, next) {
 }
 
 // POST an updated tldr
+// Locate tldr by Id (probably not a feature we want to enable, updating by url is better)
 function postUpdateTldr (req, res, next) {
-  var tldrUpdates = req.body
-    , id = req.params.id;
+  var tldr, prop;
 
-  // Direct injection of req.body is not secure
-  // Need to limit modification to allowed fields
-  TldrModel.findAndModify({_id:id},
-                          [],
-                          {$set: tldrUpdates},
-                          {new: true},
-                          callback);
+  TldrModel.find({_id: req.params.id}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in postUpdateTldr"); }
 
-  function callback (err, doc) {
-    if (err) {
-      if (err.errors) {
-        return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
-      } else {
-        return handleInternalDBError(err, next, "Internal error postUpdateTldr");    // Unexpected error while saving
+    if (docs.length === 0) {
+      return next(new restify.InvalidContentError('Couldn\'t find tldr with this id to update'));
+    } else {
+      tldr = docs[0];
+
+      // We update the tldr only for the user specified fields that are valid paths
+      // to avoid unexpected behaviour
+      for (prop in req.body) {
+        if (models.tldrPaths[prop]) {
+          tldr[prop] = req.body[prop];
+        }
       }
+
+      // Ensure consistency across fields, including _id (which changes if url changes)
+      // Probably not the best way, possible use of a middleware instead !
+      // Use middleware instead for id creation to make this work
+      //tldr = models.TldrModel.createTldr(tldr);
+
+      tldr.save(function(err) {
+        if (err) {
+          console.log(err);
+          return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+        } else {
+          return res.json(200, tldr);
+        }
+      });
     }
-    
-    return res.json(200, doc);
-  }
+  });
 }
 
 // Module interface

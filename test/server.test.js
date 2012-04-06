@@ -85,7 +85,7 @@ describe('Webserver', function () {
   afterEach(function (done) {
 
     TldrModel.remove(null, function (err) {
-      if (err) {throw done(err);}               
+      if (err) {throw done(err);}
       done();
     });
   });
@@ -147,12 +147,20 @@ describe('Webserver', function () {
     it('updating an existing tldr', function (done) {
       var tldrUpdates = {summary: 'This blog smells like shit'};
 
+
+
+
       client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+
+        console.log(err);
+
         res.statusCode.should.equal(200);
         obj._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
         obj.summary.should.equal('This blog smells like shit');
         done();
       });
+
+
     });
 
   });
