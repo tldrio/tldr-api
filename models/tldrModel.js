@@ -105,6 +105,7 @@ TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback
 };
 
 
+
 /**
  * Creates a TldrModel instance
  *
@@ -149,7 +150,7 @@ TldrSchema.statics.createTldr = function (params) {
   });
 
   return tldr;
-}
+};
 
 
 
