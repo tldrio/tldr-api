@@ -18,5 +18,10 @@ if (currentEnvironment.environment === 'test') {
   currentEnvironment.databaseName = 'test-db';
 }
 
+if (currentEnvironment.environment === 'remote') {
+  currentEnvironment.databaseHost = 'charles:migli@178.79.181.8';
+  currentEnvironment.databasePort = '61458';
+  currentEnvironment.databaseName = 'prod-db';
+}
 
 module.exports.currentEnvironment = currentEnvironment;
