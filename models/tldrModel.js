@@ -95,16 +95,6 @@ TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname m
 
 
 
-
-
-
-// Expose Find and Modify Method - This is still in dvp 
-// cf https://github.com/LearnBoost/mongoose/issues/633
-TldrSchema.statics.findAndModify = function (query, sort, doc, options, callback) {
-  return this.collection.findAndModify(query, sort, doc, options, callback);
-};
-
-
 /**
  * Creates a TldrModel instance
  *

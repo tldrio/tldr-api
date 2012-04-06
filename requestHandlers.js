@@ -15,8 +15,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 
 // If an error occurs when retrieving from/putting ti the db, inform the user gracefully
 // Later, we may implement a retry count
-function handleInternalDBError(err, next) {
-  bunyan.error({error: err, message: "Something wrong with the db access in request handler getTldrById"});
+function handleInternalDBError(err, next, msg) {
+  bunyan.error({error: err, message: msg});
   return next(new restify.InternalError('An internal error has occured, we are looking into it'));
 }
 
@@ -30,12 +30,12 @@ var getAllTldrs = function (req, res, next) {
 var getTldrById = function (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next); }
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrById"); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     } else {
-      res.json(200, docs[0]);
+      return res.json(200, docs[0]);    // Success
     }
   });
 };
@@ -47,18 +47,25 @@ function postNewTldr (req, res, next) {
                               , summary: tldrData.summary});
 
   TldrModel.find({_id: tldr._id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next); }
+    if (err) { return handleInternalDBError(err, next, "Internal error in postNewTldr"); }
 
     if (docs.length > 0) {
-      next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
+      return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
       tldr.save(function (err) {
-        if (err) {throw err;}
+        console.log(err);
+        if (err) {
+          if (err.errors) {
+            return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+          } else {
+            return handleInternalDBError(err, next, "Internal error in postNewTldr");    // Unexpected error while saving
+          }
+        }
+
+        return res.json(200, tldr);   // Success
       });
-      res.json(200, tldr);
     }
   });
-
 }
 
 // POST an updated tldr
@@ -75,10 +82,16 @@ function postUpdateTldr (req, res, next) {
                           callback);
 
   function callback (err, doc) {
-    if (err) {throw err;}
-    res.json(200, doc);
+    if (err) {
+      if (err.errors) {
+        return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+      } else {
+        return handleInternalDBError(err, next, "Internal error postUpdateTldr");    // Unexpected error while saving
+      }
+    }
+    
+    return res.json(200, doc);
   }
-
 }
 
 // Module interface
