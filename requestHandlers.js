@@ -13,6 +13,13 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , customErrors = require('./lib/errors');
 
 
+// If an error occurs when retrieving from/putting ti the db, inform the user gracefully
+// Later, we may implement a retry count
+function handleInternalDBError(err, next) {
+  bunyan.error({error: err, message: "Something wrong with the db access in request handler getTldrById"});
+  return next(new restify.InternalError('An internal error has occured, we are looking into it'));
+}
+
 
 // GET all tldrs
 var getAllTldrs = function (req, res, next) {
@@ -23,11 +30,7 @@ var getAllTldrs = function (req, res, next) {
 var getTldrById = function (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
-    if (err) {
-      throw err;
-      //bunyan.error({error: err, message: "Something wrong with the db access in request handler getTldrById"});
-      //return next(new restify.InternalError('An internal error has occured, we are looking into it'));
-    }
+    if (err) { return handleInternalDBError(err, next); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
@@ -44,7 +47,7 @@ function postNewTldr (req, res, next) {
                               , summary: tldrData.summary});
 
   TldrModel.find({_id: tldr._id}, function (err, docs) {
-    if (err) {throw err;}
+    if (err) { return handleInternalDBError(err, next); }
 
     if (docs.length > 0) {
       next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
