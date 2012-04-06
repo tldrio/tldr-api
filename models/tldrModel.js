@@ -25,7 +25,7 @@ var tldrPathsDefinition = {
 	url        : String,
 	hostname   : String,
 	summary    : String
-}
+};
 
 TldrSchema = new Schema(tldrPathsDefinition);
 
@@ -41,7 +41,7 @@ function id_validateLength (value) {
 }
 
 //Url shoudl be defined, contain hostname and protocol info 
-//and have length than 256
+
 function url_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname
@@ -138,7 +138,7 @@ TldrSchema.statics.createTldr = function (params) {
   });
 
   return tldr;
-}
+};
 
 
 // Define tldr model
