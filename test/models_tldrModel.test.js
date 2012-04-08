@@ -196,57 +196,5 @@ describe('TldrModel', function () {
 
   });
 
-  describe('#createTldr', function () {
-
-    it('should create a tldr given valid {url, summary}', function () {
-      var tldr = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-
-      tldr.should.have.property('url');
-      tldr.should.have.property('summary');
-      tldr.should.have.property('hostname');
-      tldr.url.should.equal('http://needforair.com/nutcrackers');
-      tldr.summary.should.equal('Awesome Blog');
-      tldr.hostname.should.equal('needforair.com');
-      tldr._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
-    });
-
-    it('should handle no args', function (done) {
-      try {
-        TldrModel.createTldr();
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-    it('should hanlde missing summary arg ', function (done) {
-      try {
-        TldrModel.createTldr({url: 'bla'});
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-    it('should handle missing url arg', function (done) {
-      try {
-        TldrModel.createTldr({summary: 'coin'});
-      } catch(err) {
-        err.should.be.an.instanceOf(customErrors.MissingArgumentError);
-        done();
-      }
-    });
-
-    it('should detect bad input type', function (done) {
-      try {
-        TldrModel.createTldr({url: 123, summary: 'Awesome Blog'});
-      } catch(err) {
-        err.should.be.an.instanceOf(TypeError);
-        done();
-      }
-    });
-
-  });
-
 });
 

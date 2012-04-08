@@ -51,6 +51,7 @@ function postNewTldr (req, res, next) {
     if (docs.length > 0) {
       return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
+      // TODO: constructor accepting any object but only populating on user modifiable arguments
       tldr = new TldrModel({ url: req.body.url, summary: req.body.summary });
       tldr.craftInstance();
 
@@ -91,9 +92,7 @@ function postUpdateTldr (req, res, next) {
       }
 
       // Ensure consistency across fields, including _id (which changes if url changes)
-      // Probably not the best way, possible use of a middleware instead !
-      // Use middleware instead for id creation to make this work
-      //tldr = models.TldrModel.createTldr(tldr);
+      tldr.craftInstance();
 
       tldr.save(function(err) {
         if (err) {
