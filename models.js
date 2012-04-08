@@ -54,8 +54,9 @@ function returnPathsFromPathsDefinition(pathsObject) {
 }
 
 
-// Export TldrModel
+// Export models
 module.exports.TldrModel = TldrModelDefinition.TldrModel;
-module.exports.tldrPaths = returnPathsFromPathsDefinition(TldrModelDefinition.tldrPathsDefinition);
+
+// Export general purpose functions for models
 module.exports.getAllValidationErrors = getAllValidationErrors;
 module.exports.getAllValidationErrorsInNiceJSON = getAllValidationErrorsInNiceJSON;

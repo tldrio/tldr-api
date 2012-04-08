@@ -13,6 +13,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , customErrors = require('./lib/errors');
 
 
+
 // If an error occurs when retrieving from/putting ti the db, inform the user gracefully
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
@@ -42,18 +43,18 @@ var getTldrById = function (req, res, next) {
 
 // POST a new tldr
 function postNewTldr (req, res, next) {
-  var tldrData = req.body,
-      tldr = TldrModel.createTldr({url: tldrData.url
-                              , summary: tldrData.summary});
+  var tldr;
 
-  TldrModel.find({_id: tldr._id}, function (err, docs) {
+  TldrModel.find({url: req.body.url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postNewTldr"); }
 
     if (docs.length > 0) {
       return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
+      tldr = new TldrModel({ url: req.body.url, summary: req.body.summary });
+      tldr.craftInstance();
+
       tldr.save(function (err) {
-        console.log(err);
         if (err) {
           if (err.errors) {
             return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
@@ -71,7 +72,8 @@ function postNewTldr (req, res, next) {
 // POST an updated tldr
 // Locate tldr by Id (probably not a feature we want to enable, updating by url is better)
 function postUpdateTldr (req, res, next) {
-  var tldr, prop;
+  var tldr, prop
+    , userModifiable = models.TldrModel.getUserModifiable();
 
   TldrModel.find({_id: req.params.id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postUpdateTldr"); }
@@ -81,10 +83,9 @@ function postUpdateTldr (req, res, next) {
     } else {
       tldr = docs[0];
 
-      // We update the tldr only for the user specified fields that are valid paths
-      // to avoid unexpected behaviour
+      // Only update fields user has the rights to update to avoid unexpected behaviour
       for (prop in req.body) {
-        if (models.tldrPaths[prop]) {
+        if (userModifiable[prop]) {
           tldr[prop] = req.body[prop];
         }
       }
@@ -96,7 +97,6 @@ function postUpdateTldr (req, res, next) {
 
       tldr.save(function(err) {
         if (err) {
-          console.log(err);
           return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
         } else {
           return res.json(200, tldr);

@@ -38,7 +38,7 @@ if (currentEnvironment.environment === "test") {
 } else {
   server = restify.createServer({
     name: "tldr API",
-    log: bunyan
+    //log: bunyan     // No restify logging for now
   });
 }
 

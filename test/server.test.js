@@ -151,9 +151,6 @@ describe('Webserver', function () {
 
 
       client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
-
-        console.log(err);
-
         res.statusCode.should.equal(200);
         obj._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
         obj.summary.should.equal('This blog smells like shit');
