@@ -4,18 +4,19 @@
  * Fucking Proprietary License
  */
 
-var TldrModelDefinition = require('./models/tldrModel');
+var TldrModelDefinition = require('./models/tldrModel')
+	, _ = require('underscore');
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return an array of non validated fields
 function getAllValidationErrors(errorsObject) {
-	if (!errorsObject)
-		return null;
+	if (!errorsObject) {return null;}
 
-	var result = [], prop;
+	var result = []
+		, prop;
 
 	for (prop in errorsObject) {
-		if (errorsObject.hasOwnProperty(prop)) {
+		if (_.has(errorsObject, prop)) {
 			result.push(prop);
 		}
 	}
@@ -26,10 +27,11 @@ function getAllValidationErrors(errorsObject) {
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return a JSON with all non validated fields and an explanatory message for each
 function getAllValidationErrorsInNiceJSON(errorsObject) {
-	var result = {}, prop;
+	var result = {}
+		, prop;
 
 	for (prop in errorsObject) {
-		if (errorsObject.hasOwnProperty(prop)) {
+		if (_.has(errorsObject, prop)) {
 			result[prop] = errorsObject[prop].type;
 		}
 	}
@@ -45,7 +47,7 @@ function returnPathsFromPathsDefinition(pathsObject) {
     , result = {};
 
   for (prop in pathsObject) {
-    if (pathsObject.hasOwnProperty(prop)) {
+		if (_.has(pathsObject, prop)) {
       result[prop] = true;
     }
   }

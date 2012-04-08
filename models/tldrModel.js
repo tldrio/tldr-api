@@ -101,7 +101,7 @@ function id_validateLength (value) {
 }
 
 //Url shoudl be defined, contain hostname and protocol info 
-//and have length than 256
+
 function url_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname
