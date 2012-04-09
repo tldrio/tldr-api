@@ -36,20 +36,6 @@ TldrSchema = new Schema({
 TldrSchema.statics.userModifiableFields = {url: true, summary: true};
 
 
-// Returns an object with only the fields of userInput that are user-modifiable
-TldrSchema.statics.acceptableUserInput = function (userInput) {
-  var result = {}
-    , prop;
-
-  for (prop in userInput) {
-    if (TldrModel.userModifiableFields[prop]) {
-      result[prop] = userInput[prop];
-    }
-  }
-
-  return result;
-}
-
 // Creates non-user modifiable parameters. This is missing-parameter proof
 TldrSchema.methods.craftInstance = function () {
   var sha1 = crypto.createHash('sha1');

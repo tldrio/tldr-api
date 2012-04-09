@@ -41,9 +41,27 @@ function getAllValidationErrorsInNiceJSON(errorsObject) {
 
 
 
+// Returns an object with only the fields of userInput that are user-modifiable
+// Can be used with any model defined with a userModifiableFields, with the use of call()
+function acceptableUserInput(userInput) {
+  var result = {}
+    , prop;
+
+  for (prop in userInput) {
+    if (this.userModifiableFields[prop]) {
+      result[prop] = userInput[prop];
+    }
+  }
+
+  return result;
+}
+
+
+
 // Export models
 module.exports.TldrModel = TldrModelDefinition.TldrModel;
 
 // Export general purpose functions for models
 module.exports.getAllValidationErrors = getAllValidationErrors;
 module.exports.getAllValidationErrorsInNiceJSON = getAllValidationErrorsInNiceJSON;
+module.exports.acceptableUserInput = acceptableUserInput;

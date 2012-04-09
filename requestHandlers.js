@@ -13,8 +13,6 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , customErrors = require('./lib/errors');
 
 
-
-
 // If an error occurs when retrieving from/putting ti the db, inform the user gracefully
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
@@ -52,8 +50,8 @@ function postNewTldr (req, res, next) {
     if (docs.length > 0) {
       return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
-      // TODO: constructor accepting any object but only populating on user modifiable arguments
-      tldr = new TldrModel({ url: req.body.url, summary: req.body.summary });
+      // Create the new tldr based on only the user modifiable parameters
+      tldr = new TldrModel(models.acceptableUserInput.call(TldrModel, req.body));
       tldr.craftInstance();
 
       tldr.save(function (err) {
