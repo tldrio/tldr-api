@@ -40,21 +40,6 @@ function getAllValidationErrorsInNiceJSON(errorsObject) {
 }
 
 
-// From a schema definition object, return the path names
-// Useful to safely update objects from user input
-function returnPathsFromPathsDefinition(pathsObject) {
-  var prop
-    , result = {};
-
-  for (prop in pathsObject) {
-		if (_.has(pathsObject, prop)) {
-      result[prop] = true;
-    }
-  }
-
-  return result;
-}
-
 
 // Export models
 module.exports.TldrModel = TldrModelDefinition.TldrModel;
