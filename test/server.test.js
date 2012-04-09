@@ -57,14 +57,15 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers',
-                                   summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createTldr({url: 'http://avc.com/mba-monday', 
-                                   summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
-                                   summary: 'Sustering is my religion'});
+    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
+      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
+      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
 
+    tldr1.craftInstance();
+    tldr2.craftInstance();
+    tldr3.craftInstance();
 		
+
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
 		  if (err) {throw done(err);}
@@ -134,8 +135,10 @@ describe('Webserver', function () {
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
                       summary: 'Sluts and cockslapers'}
-        , tldr = TldrModel.createTldr({url: tldrData.url, summary: tldrData.summary});
-        
+        , tldr = new TldrModel({url: tldrData.url, summary: tldrData.summary});
+
+      tldr.craftInstance();
+
       client.post('/tldrs', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj._id.should.equal(tldr._id);

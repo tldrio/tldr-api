@@ -50,43 +50,6 @@ TldrSchema.methods.craftInstance = function () {
   this.hostname = url.parse(this.url).hostname;
 }
 
-// Create a tldr instance
-TldrSchema.statics.createTldr = function (params) {
-  var sha1 = crypto.createHash('sha1')
-    , htldrId
-    , tldr
-    , parsedUrl;
-
-  // Crude en not DRY validation for now (for the tests)
-  // Use validators here when they are ready
-  if (!params) {
-    throw new customErrors.MissingArgumentError("params is missing", ["params"]);
-  }
-
-  if (!params.url || !params.summary) {
-    var missingArguments = [];
-    if (!params.url) {missingArguments.push('url');}
-    if (!params.summary) {missingArguments.push('summary');}
-  
-    throw new customErrors.MissingArgumentError("Some arguments are missing, can't create tldr", missingArguments);
-  }
-
-  // Compute SHA1 Hash
-  sha1.update(params.url, 'utf8');
-  // Extract it into a string
-  htldrId = sha1.digest('hex');
-  //Parse url
-  parsedUrl = url.parse(params.url);
-  //create TldrModel instance
-  tldr = new TldrModel({
-    _id         : htldrId,
-    url         : params.url,
-    hostname    : parsedUrl.hostname,
-    summary     : params.summary,
-  });
-
-  return tldr;
-}
 
 
 
