@@ -14,6 +14,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 
 
 
+
 // If an error occurs when retrieving from/putting ti the db, inform the user gracefully
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
@@ -73,8 +74,7 @@ function postNewTldr (req, res, next) {
 // POST an updated tldr
 // Locate tldr by Id (probably not a feature we want to enable, updating by url is better)
 function postUpdateTldr (req, res, next) {
-  var tldr, prop
-    , userModifiable = models.TldrModel.getUserModifiable();
+  var tldr, prop;
 
   TldrModel.find({_id: req.params.id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postUpdateTldr"); }
@@ -86,7 +86,7 @@ function postUpdateTldr (req, res, next) {
 
       // Only update fields user has the rights to update to avoid unexpected behaviour
       for (prop in req.body) {
-        if (userModifiable[prop]) {
+        if (models.TldrModel.userModifiableFields[prop]) {
           tldr[prop] = req.body[prop];
         }
       }
