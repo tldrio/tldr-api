@@ -96,6 +96,7 @@ describe('Webserver', function () {
 
     it('an existing tldr', function (done) {
       client.get('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
+        res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/nutcrackers');
         done();
       });
@@ -124,7 +125,11 @@ describe('Webserver', function () {
     it('a non existing route', function (done) {
       client.get('/*', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
-        done();
+
+        client.get('/notexistingroute', function (err, req, res, obj) {
+          res.statusCode.should.equal(404);
+          done();
+        });
       });
     });
   });
