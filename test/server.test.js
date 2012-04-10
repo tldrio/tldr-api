@@ -7,6 +7,7 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
+  , _u = require('underscore')
   , restify = require('restify')
   , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
@@ -57,14 +58,10 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
-      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
-      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-
-    tldr1.craftInstance();
-    tldr2.craftInstance();
-    tldr3.craftInstance();
-		
+    var tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
+      , tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
+      , tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'})
+      , tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -75,7 +72,10 @@ describe('Webserver', function () {
 					if (err) {throw done(err); }
 			    tldr3.save( function (err) {
 			      if (err) {throw done(err); }
-						done();
+            tldr4.save( function (err) {
+              if (err) {throw done(err); }
+              done();
+            });
 			    });
 			  });
 			});
@@ -132,56 +132,87 @@ describe('Webserver', function () {
         });
       });
     });
+
+    it('all tldrs for an existing given hostname', function (done) {
+      client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
+        obj.length.should.equal(2);
+        _u.any(obj, function(value) {return value.summary === "Awesome Blog"} ).should.equal(true);
+        _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+        done();
+      });
+    });
+
+    it('all tldrs for a non-existing hostname (return empty array)', function (done) {
+      client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
+        obj.length.should.equal(0);
+        done();
+      });
+    });
+
   });
 
   //Test POST Requests
-  describe('should handle POST request for', function () {
+  describe('should handle POST request', function () {
 
-    it('adding a new tldr', function (done) {
+    it('for /tldrs route with no url provided in body and return error', function (done) {
+      var tldrData = {summary: 'This is a summary', 
+        unusedFields: 'toto'};
+      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(409);
+        err.name.should.equal('MissingParameterError');
+        done();
+      });
+
+    });
+
+    it('for /tldrs route with no summary provided in body and retur error', function (done) {
+      var tldrData = {url: 'http://toto.com', 
+        unusedFields: 'toto'};
+      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(400);
+        err.name.should.equal('InvalidContentError');
+        done();
+      });
+    });
+
+    it('for creating a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
-        summary: 'Sluts and cockslapers', unusableField: "coin"}
-        , tldr = new TldrModel(tldrData);
-
-        tldr.craftInstance();
-
-        TldrModel.find(null, function(err, docs) {
-          docs.should.have.length(3);
-
-          client.post('/tldrs', tldrData, function (err, req, res, obj) {
-            res.statusCode.should.equal(200);
-            obj._id.should.equal(tldr._id);
-            obj.summary.should.equal(tldrData.summary);
-            assert.equal(null, obj.unusableField);
-
-            TldrModel.find(null, function(err, docs) {
-              docs.should.have.length(4);
-
-              TldrModel.find({url: "http://www.youporn.com/milf"}, function(err, docs) {
-                docs.should.have.length(1);
-
-                done();
-              });
-            });
+        summary: 'Sluts and cockslapers', 
+        unusedFields: "coin"}
+        , tldr = TldrModel.createAndCraftInstance(tldrData);
+      
+      TldrModel.find({_id: tldr._id} , function (err, docs) {
+        if (err) { throw err;}
+        //Check tldr doesn't exist
+        docs.length.should.equal(0);
+        client.post('/tldrs', tldrData, function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+          obj._id.should.equal(tldr._id);
+          obj.summary.should.equal(tldrData.summary);
+          obj.should.not.have.property('unusedFields');
+          TldrModel.find({_id: tldr._id} , function (err, docs) {
+            if (err) { throw err;}
+            // Check POST request created entry in DB
+            docs.length.should.equal(1);      
+            docs[0].url.should.equal(tldrData.url);
+            done();
           });
         });
+      });
     });
 
 
-    it('should not post a tldr that already exists', function(done) {
+    it('for consecutive double post with same data', function(done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
         summary: 'Sluts and cockslapers'}
-        , tldr = new TldrModel(tldrData);
-
-        tldr.craftInstance();
+        , tldr = TldrModel.createAndCraftInstance(tldrData);
 
         client.post('/tldrs', tldrData, function (err, req, res, obj) {
           res.statusCode.should.equal(200);
           obj._id.should.equal(tldr._id);
           obj.summary.should.equal(tldrData.summary);
-
           client.post('/tldrs',tldrData, function(err, req, res, obj) {
-            res.statusCode.should.equal(423);
-
+            res.statusCode.should.equal(200);
             done();
           });
         });
@@ -189,40 +220,35 @@ describe('Webserver', function () {
 
 
     it('updating an existing tldr', function (done) {
-      var tldrUpdates = {summary: 'This blog smells like shit'};
+      var tldrUpdates = {url: 'http://needforair.com/nutcrackers',
+        summary: 'This blog smells like shit'}
+        , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
-      client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
-        obj._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
-        obj.summary.should.equal('This blog smells like shit');
-        done();
+      TldrModel.find({_id:tldr._id}, function (err, docs) {
+        if (err) {throw err;} 
+        docs.length.should.equal(1);
+        docs[0].summary.should.equal('Awesome Blog');
+        client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+          obj._id.should.equal(tldr._id);
+          obj.summary.should.equal('This blog smells like shit');
+          done();
+        });
       });
     });
 
 
-    it('should not update non existing tldr', function (done) {
-      var tldrUpdates = {summary: 'This blog smells like shit'};
-
-      client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
-        res.statusCode.should.equal(400);
-
-        done();
-      });
-    });
-
-
-    it('should not update if no validation', function (done) {
+    it('and not allow direct post to speicified id', function (done) {
       var tldrUpdates = {summary: 'This blog smells like shit', url: "ytr.fr"};
 
-      client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
-        res.statusCode.should.equal(400);
-
+      client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(405);
         done();
       });
     });
-
-
-
   });
 });
+
+
+
 

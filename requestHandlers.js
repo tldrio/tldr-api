@@ -7,6 +7,8 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
+  , _u = require('underscore')
+  , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
   , models = require('./models')
   , TldrModel = models.TldrModel
@@ -40,65 +42,70 @@ var getTldrById = function (req, res, next) {
   });
 };
 
-// POST a new tldr
-function postNewTldr (req, res, next) {
-  var tldr;
+//GET all tldrs corresponding to a hostname
+var getAllTldrsByHostname = function (req, res, next) {
+  TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
 
-  TldrModel.find({url: req.body.url}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in postNewTldr"); }
-
-    if (docs.length > 0) {
-      return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
-    } else {
-      // Create the new tldr based on only the user modifiable parameters
-      //tldr = new TldrModel(models.acceptableUserInput.call(TldrModel, req.body));
-      //tldr.craftInstance();
-
-      tldr = TldrModel.createAndCraftInstance(models.acceptableUserInput.call(TldrModel, req.body));
+    return res.json(200, docs);
+  });
+};
 
 
+// POST create or update tldr
+//
+// Provide url, summary etc... in request
+// If tldr associated to url exists update the updatablefields
+// else create new tldr associated to this url
+
+function postCreateOrUpdateTldr (req, res, next) {
+  var tldrData = {}
+    , sha1 = crypto.createHash('sha1')
+    , id
+    , tldr;
+
+  // Return Error if url is missing 
+  if (!req.body.url) {
+    return next( new restify.MissingParameterError('No url is provided in request'));
+  }
+  
+  //Retrieve _id to perform lookup in db
+  id = TldrModel.getIdFromUrl(req.body.url);
+
+  TldrModel.find({_id:id}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
+    if (docs.length === 0) {
+      //Create New Tldr
+      tldr = TldrModel.createAndCraftInstance(req.body);
       tldr.save(function (err) {
         if (err) {
           if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
           } else {
-            return handleInternalDBError(err, next, "Internal error in postNewTldr");    // Unexpected error while saving
+            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
           }
         }
-
         return res.json(200, tldr);   // Success
       });
-    }
-  });
-}
-
-
-// POST an updated tldr
-// Locate tldr by Id (probably not a feature we want to enable, updating by url is better)
-function postUpdateTldr (req, res, next) {
-  var tldr, prop;
-
-  TldrModel.find({_id: req.params.id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in postUpdateTldr"); }
-
-    if (docs.length === 0) {
-      return next(new restify.InvalidContentError('Couldn\'t find tldr with this id to update'));
     } else {
-      tldr = docs[0];
-
+      //Update existing tldr
       // Only update fields user has the rights to update to avoid unexpected behaviour
-      for (prop in req.body) {
-        if (models.TldrModel.userModifiableFields[prop]) {
-          tldr[prop] = req.body[prop];
-        }
-      }
+      var validUpdateFields = _u.intersection(_u.keys(req.body), models.TldrModel.userUpdatableFields);
+      tldr = docs[0];
+      //We don't need to udpate url, _id or hostname because if record was found _id is the same
+      //and url didn't change
 
-      // Ensure consistency across fields, including _id (which changes if url changes)
-      tldr.craftInstance();
+      _u.each( validUpdateFields, function (validField) {
+        tldr[validField] = req.body[validField];
+      });
 
       tldr.save(function(err) {
         if (err) {
-          return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+          if (err.errors) {
+            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
+          } else {
+            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
+          }
         } else {
           return res.json(200, tldr);
         }
@@ -107,8 +114,9 @@ function postUpdateTldr (req, res, next) {
   });
 }
 
+
 // Module interface
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
-module.exports.postNewTldr = postNewTldr;
-module.exports.postUpdateTldr = postUpdateTldr;
+module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
+module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
