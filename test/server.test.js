@@ -164,15 +164,22 @@ describe('Webserver', function () {
         unusedFields: "coin"}
         , tldr = TldrModel.createAndCraftInstance(tldrData);
       
-      client.post('/tldrs', tldrData, function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
-        obj._id.should.equal(tldr._id);
-        obj.summary.should.equal(tldrData.summary);
-        obj.should.not.have.property('unusedFields');
-        client.get('/tldrs/' + tldr._id, function (err, req, res, obj) {
+      TldrModel.find({_id: tldr._id} , function (err, docs) {
+        if (err) { throw err;}
+        //Check tldr doesn't exist
+        docs.length.should.equal(0);
+        client.post('/tldrs', tldrData, function (err, req, res, obj) {
           res.statusCode.should.equal(200);
-          obj.url.should.equal(tldrData.url);
-          done();
+          obj._id.should.equal(tldr._id);
+          obj.summary.should.equal(tldrData.summary);
+          obj.should.not.have.property('unusedFields');
+          TldrModel.find({_id: tldr._id} , function (err, docs) {
+            if (err) { throw err;}
+            // Check POST request created entry in DB
+            docs.length.should.equal(1);      
+            docs[0].url.should.equal(tldrData.url);
+            done();
+          });
         });
       });
     });
@@ -199,15 +206,18 @@ describe('Webserver', function () {
 
     it('updating an existing tldr', function (done) {
       var tldrUpdates = {url: 'http://needforair.com/nutcrackers',
-        summary: 'This blog smells like shit'};
+        summary: 'This blog smells like shit'}
+        , tldr = new TldrModel(tldrUpdates);
 
-      client.get('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
-        obj.url.should.equal('http://needforair.com/nutcrackers');
-        obj.summary.should.equal('Awesome Blog');
+      tldr.craftInstance();
+
+      TldrModel.find({_id:tldr._id}, function (err, docs) {
+        if (err) {throw err;} 
+        docs.length.should.equal(1);
+        docs[0].summary.should.equal('Awesome Blog');
         client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
           res.statusCode.should.equal(200);
-          obj._id.should.equal('c63588884fecf318d13fc3cf3598b19f4f461d21');
+          obj._id.should.equal(tldr._id);
           obj.summary.should.equal('This blog smells like shit');
           done();
         });
