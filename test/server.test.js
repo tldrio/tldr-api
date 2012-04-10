@@ -135,14 +135,28 @@ describe('Webserver', function () {
   });
 
   //Test POST Requests
-  describe('should handle POST request for', function () {
+  describe('should handle POST request', function () {
 
-    it('adding a new tldr', function (done) {
-      var tldrData = {url: 'http://www.youporn.com/milf',
-        summary: 'Sluts and cockslapers', unusableField: "coin"}
-        , tldr = new TldrModel(tldrData);
+    it('for /tldrs route with no url provided in body and return error', function (done) {
+      var tldrData = {summary: 'This is a summary', 
+        unusedFields: 'toto'};
+      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(409);
+        err.name.should.equal('MissingParameterError');
+        done();
+      });
 
-        tldr.craftInstance();
+    });
+
+    it('for /tldrs route with no summary provided in body and retur error', function (done) {
+      var tldrData = {url: 'This is a summary', 
+        unusedFields: 'toto'};
+      client.post('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(409);
+        err.name.should.equal('MissingParameterError');
+        done();
+      });
+    });
 
         TldrModel.find(null, function(err, docs) {
           docs.should.have.length(3);
