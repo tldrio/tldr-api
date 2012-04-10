@@ -41,6 +41,7 @@ server.listen(8686, function () {
  */
 
 describe('Webserver', function () {
+  var tldr1, tldr2, tldr3, tldr4;
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
@@ -58,10 +59,10 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'})
-      , tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
+    tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+    tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
+    tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+    tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -148,6 +149,36 @@ describe('Webserver', function () {
         done();
       });
     });
+
+
+    it('should return the latest tldrs correctly', function (done) {
+      tldr1.lastUpdated = new Date(2020, 04, 10, 12);
+      tldr2.lastUpdated = new Date(2020, 06, 10, 12);
+      tldr3.lastUpdated = new Date(2020, 02, 10, 12);
+      tldr4.lastUpdated = new Date(2021, 00, 10, 12);
+
+      var chainSave = function(objectArray, callback) {
+        if (objectArray.length === 0) {
+          callback();
+        } else {
+          objectArray[0].save(function(err) {
+            chainSave(objectArray.slice(1, objectArray.length), callback);
+          });
+        }
+      };
+
+      chainSave([tldr1, tldr2, tldr3, tldr4], function() {
+        client.get('/tldrs/latest/2', function (err, req, res, obj) {
+          obj.length.should.equal(2);
+          _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+          _u.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
+
+          done();
+        });
+      });
+    });
+
+
 
   });
 

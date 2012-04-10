@@ -61,6 +61,9 @@ server.get('/tldrs/:id', requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get('domains/:hostname/tldrs', requestHandlers.getAllTldrsByHostname);
 
+// GET latest tldrs
+server.get('tldrs/latest/:number', requestHandlers.getLatestTldrs);
+
 //POST a new tldr or update existing tldr
 server.post('/tldrs', requestHandlers.postCreateOrUpdateTldr);
 

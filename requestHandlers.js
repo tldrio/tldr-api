@@ -51,6 +51,18 @@ var getAllTldrsByHostname = function (req, res, next) {
   });
 };
 
+// GET latest tldrs
+var getLatestTldrs = function(req, res, next) {
+  var numberToGet = Math.min(20, req.params.number);   // Avoid getting a huge DB dump!
+
+  TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+    return res.json(200, docs);
+  });
+}
+
+
 
 // POST create or update tldr
 //
@@ -120,4 +132,5 @@ function postCreateOrUpdateTldr (req, res, next) {
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
 module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
+module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
