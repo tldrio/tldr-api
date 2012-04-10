@@ -120,6 +120,6 @@ function postUpdateTldr (req, res, next) {
 // Module interface
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
-module.exports.getTldrByHostname = getTldrByHostname;
+module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
 module.exports.postNewTldr = postNewTldr;
 module.exports.postUpdateTldr = postUpdateTldr;
