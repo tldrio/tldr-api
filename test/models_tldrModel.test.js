@@ -7,6 +7,7 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
+  , _ = require('underscore')
   , restify = require('restify')
   , sinon = require('sinon')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
@@ -49,13 +50,13 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair.com',
-        summary: 'Awesome Blog',
-      }), valErr;
+        summary: 'Awesome Blog'})
+       , valErr;
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 				
-				models.getAllValidationErrors(err.errors).length.should.equal(2);
-				valErr = models.getAllValidationErrorsInNiceJSON(err.errors);
+        _.keys(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr._id.should.not.equal(null);
 				valErr.url.should.not.equal(null);
 				assert.equal(valErr.summary, null);
@@ -172,7 +173,7 @@ describe('TldrModel', function () {
 
       // Only summary should be an error
       tldr.save(function(err) {
-        niceErrors = models.getAllValidationErrorsInNiceJSON(err.errors);
+        niceErrors = models.getAllValidationErrorsWithExplanations(err.errors);
         if (!niceErrors.summary) {throw {};}
         assert.equal(niceErrors.url, null);
         assert.equal(niceErrors.hostname, null);

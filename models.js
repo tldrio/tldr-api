@@ -7,26 +7,10 @@
 var TldrModelDefinition = require('./models/tldrModel')
 	, _ = require('underscore');
 
-// Given the "errors" object of an exception thrown by Mongoose's validation system,
-// return an array of non validated fields
-function getAllValidationErrors(errorsObject) {
-	if (!errorsObject) {return null;}
-
-	var result = []
-		, prop;
-
-	for (prop in errorsObject) {
-		if (_.has(errorsObject, prop)) {
-			result.push(prop);
-		}
-	}
-
-	return result;
-}
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return a JSON with all non validated fields and an explanatory message for each
-function getAllValidationErrorsInNiceJSON(errorsObject) {
+function getAllValidationErrorsWithExplanations(errorsObject) {
 	var result = {}
 		, prop;
 
@@ -62,6 +46,5 @@ function acceptableUserInput(userInput) {
 module.exports.TldrModel = TldrModelDefinition.TldrModel;
 
 // Export general purpose functions for models
-module.exports.getAllValidationErrors = getAllValidationErrors;
-module.exports.getAllValidationErrorsInNiceJSON = getAllValidationErrorsInNiceJSON;
+module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;
 module.exports.acceptableUserInput = acceptableUserInput;

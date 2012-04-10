@@ -74,7 +74,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       tldr.save(function (err) {
         if (err) {
           if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
           } else {
             return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
           }
@@ -98,7 +98,7 @@ function postCreateOrUpdateTldr (req, res, next) {
 
       tldr.save(function(err) {
         if (err) {
-          return next(new restify.InvalidContentError(models.getAllValidationErrorsInNiceJSON(err.errors)));   // Validation error, return causes of failure to user
+          return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
         } else {
           return res.json(200, tldr);
         }
