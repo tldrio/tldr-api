@@ -22,10 +22,12 @@ var mongoose = require('mongoose')
 
 // Define tldr schema
 TldrSchema = new Schema({
-	_id        : String,
-	url        : String,
-	hostname   : String,
-	summary    : String
+	_id          : String,
+	url          : String,
+	hostname     : String,
+	summary      : String,
+  dateCreated  : Date,
+  lastUpdated  : Date
 });
 
 
@@ -46,7 +48,6 @@ TldrSchema.statics.getIdFromUrl = function (url) {
 
 // Creates non-user modifiable parameters. This is missing-parameter proof
 TldrSchema.methods.craftInstance = function () {
-
   if (! this.url) { this.url = ""; }
   // _id is the hashed url
   this._id = TldrModel.getIdFromUrl(this.url);
@@ -57,7 +58,10 @@ TldrSchema.methods.craftInstance = function () {
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
   var validFields = _u.pick(userInput, this.userSetableFields)
     , instance = new TldrModel(validFields);
+
   instance.craftInstance();
+  instance.dateCreated = new Date();
+
   return instance;
 };
 
@@ -119,6 +123,7 @@ TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be n
 TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
+TldrSchema.path('dateCreated').required(true);
 
 
 // Define tldr model

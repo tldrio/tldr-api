@@ -68,7 +68,7 @@ function postCreateOrUpdateTldr (req, res, next) {
   if (!req.body.url) {
     return next( new restify.MissingParameterError('No url is provided in request'));
   }
-  
+
   //Retrieve _id to perform lookup in db
   id = TldrModel.getIdFromUrl(req.body.url);
 
