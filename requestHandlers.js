@@ -41,7 +41,7 @@ var getTldrById = function (req, res, next) {
 };
 
 //GET all tldrs corresponding to a hostname
-var getTldrByHostname = function (req, res, next) {
+var getAllTldrsByHostname = function (req, res, next) {
   TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
 
