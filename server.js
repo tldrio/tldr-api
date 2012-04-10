@@ -59,11 +59,8 @@ server.get('/tldrs', requestHandlers.getAllTldrs);
 // GET a tldr by id
 server.get('/tldrs/:id', requestHandlers.getTldrById);
 
-//POST a new tldr
-server.post('/tldrs', requestHandlers.postNewTldr);
-
-//POST update existing tldr
-server.post('/tldrs/:id', requestHandlers.postUpdateTldr);
+//POST a new tldr or update existing tldr
+server.post('/tldrs', requestHandlers.postCreateOrUpdateTldr);
 
 // Start server
 if (module.parent === null) { // Code to execute only when running as main
