@@ -12,6 +12,9 @@ var restify = require('restify')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
   , currentEnvironment = require('./environments').currentEnvironment
+  , privateKey = fs.readFileSync('privatekey.pem').toString()
+  , certificate = fs.readFileSync('certificate.pem').toString()
+  , credentials = crypto.createCredentials({key: privateKey, cert: certificate})
   , server;                                 // Will store our restify server
 
 
@@ -30,7 +33,7 @@ if (currentEnvironment.environment === "production") {
  * Configure 
  */
 
-// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
+var // If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
 if (currentEnvironment.environment === "test") {
   server = restify.createServer({
     name: "tldr API"
