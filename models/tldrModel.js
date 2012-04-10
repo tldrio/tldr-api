@@ -52,11 +52,9 @@ TldrSchema.methods.craftInstance = function () {
 
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var inst = new TldrModel(userInput);
-
-  inst.craftInstance();
-
-  return inst;
+  var instance = new TldrModel(userInput);
+  instance.craftInstance();
+  return instance;
 }
 
 
