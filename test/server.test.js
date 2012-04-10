@@ -139,24 +139,56 @@ describe('Webserver', function () {
 
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
-                      summary: 'Sluts and cockslapers'}
-        , tldr = new TldrModel({url: tldrData.url, summary: tldrData.summary});
+        summary: 'Sluts and cockslapers'}
+        , tldr = new TldrModel(tldrData);
 
-      tldr.craftInstance();
+        tldr.craftInstance();
 
-      client.post('/tldrs', tldrData, function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
-        obj._id.should.equal(tldr._id);
-        obj.summary.should.equal(tldrData.summary);
-        done();
-      });
+        TldrModel.find(null, function(err, docs) {
+          docs.should.have.length(3);
+
+          client.post('/tldrs', tldrData, function (err, req, res, obj) {
+            res.statusCode.should.equal(200);
+            obj._id.should.equal(tldr._id);
+            obj.summary.should.equal(tldrData.summary);
+
+            TldrModel.find(null, function(err, docs) {
+              docs.should.have.length(4);
+
+              TldrModel.find({url: "http://www.youporn.com/milf"}, function(err, docs) {
+                docs.should.have.length(1);
+
+                done();
+              });
+            });
+          });
+        });
     });
+
+
+    it('should not post a tldr that already exists', function(done) {
+      var tldrData = {url: 'http://www.youporn.com/milf',
+        summary: 'Sluts and cockslapers'}
+        , tldr = new TldrModel(tldrData);
+
+        tldr.craftInstance();
+
+        client.post('/tldrs', tldrData, function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+          obj._id.should.equal(tldr._id);
+          obj.summary.should.equal(tldrData.summary);
+
+          client.post('/tldrs',tldrData, function(err, req, res, obj) {
+            res.statusCode.should.equal(423);
+
+            done();
+          });
+        });
+    });
+
 
     it('updating an existing tldr', function (done) {
       var tldrUpdates = {summary: 'This blog smells like shit'};
-
-
-
 
       client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
         res.statusCode.should.equal(200);
@@ -164,11 +196,32 @@ describe('Webserver', function () {
         obj.summary.should.equal('This blog smells like shit');
         done();
       });
-
-
     });
 
-  });
 
+    it('should not update non existing tldr', function (done) {
+      var tldrUpdates = {summary: 'This blog smells like shit'};
+
+      client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(400);
+
+        done();
+      });
+    });
+
+
+    it('should not update if no validation', function (done) {
+      var tldrUpdates = {summary: 'This blog smells like shit', url: "ytr.fr"};
+
+      client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(400);
+
+        done();
+      });
+    });
+
+
+
+  });
 });
 
