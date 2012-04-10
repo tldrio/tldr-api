@@ -40,6 +40,16 @@ var getTldrById = function (req, res, next) {
   });
 };
 
+//GET all tldrs corresponding to a hostname
+var getTldrByHostname = function (req, res, next) {
+  TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+    return res.json(200, docs);
+  });
+}
+
+
 // POST a new tldr
 function postNewTldr (req, res, next) {
   var tldr;
@@ -110,5 +120,6 @@ function postUpdateTldr (req, res, next) {
 // Module interface
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
+module.exports.getTldrByHostname = getTldrByHostname;
 module.exports.postNewTldr = postNewTldr;
 module.exports.postUpdateTldr = postUpdateTldr;

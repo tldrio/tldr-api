@@ -13,6 +13,7 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
   , mongoose = require('mongoose')
+	, _ = require('underscore')
   , TldrModel = models.TldrModel;
 
 
@@ -64,6 +65,8 @@ describe('Webserver', function () {
     tldr1.craftInstance();
     tldr2.craftInstance();
     tldr3.craftInstance();
+
+    var tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 		
 
 		// clear database and repopulate
@@ -75,7 +78,10 @@ describe('Webserver', function () {
 					if (err) {throw done(err); }
 			    tldr3.save( function (err) {
 			      if (err) {throw done(err); }
-						done();
+            tldr4.save( function (err) {
+              if (err) {throw done(err); }
+              done();
+            });
 			    });
 			  });
 			});
@@ -132,6 +138,23 @@ describe('Webserver', function () {
         });
       });
     });
+
+    it('get all tldrs for a given hostname', function (done) {
+      client.get('/tldrs/hostname/needforair.com', function (err, req, res, obj) {
+        obj.length.should.equal(2);
+        _.any(obj, function(value) {return value.summary === "Awesome Blog"} ).should.equal(true);
+        _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+        done();
+      });
+    });
+
+    it('get all tldrs for a given hostname', function (done) {
+      client.get('/tldrs/hostname/unusedDomain.com', function (err, req, res, obj) {
+        obj.length.should.equal(0);
+        done();
+      });
+    });
+
   });
 
   //Test POST Requests
@@ -140,12 +163,12 @@ describe('Webserver', function () {
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
         summary: 'Sluts and cockslapers', unusableField: "coin"}
-        , tldr = new TldrModel(tldrData);
+        , tldr = new TldrModel(tldrData), dbLength;
 
         tldr.craftInstance();
 
         TldrModel.find(null, function(err, docs) {
-          docs.should.have.length(3);
+          dbLength = docs.length;
 
           client.post('/tldrs', tldrData, function (err, req, res, obj) {
             res.statusCode.should.equal(200);
@@ -154,7 +177,7 @@ describe('Webserver', function () {
             assert.equal(null, obj.unusableField);
 
             TldrModel.find(null, function(err, docs) {
-              docs.should.have.length(4);
+              docs.should.have.length(dbLength + 1);
 
               TldrModel.find({url: "http://www.youporn.com/milf"}, function(err, docs) {
                 docs.should.have.length(1);

@@ -52,18 +52,21 @@ server.use(restify.bodyParser({mapParams: false}));
  * Routes
  */
 
-
 // GET all tldrs
 server.get('/tldrs', requestHandlers.getAllTldrs);
 
 // GET a tldr by id
 server.get('/tldrs/:id', requestHandlers.getTldrById);
 
+// GET tldrs by hostname
+server.get('tldrs/hostname/:hostname', requestHandlers.getTldrByHostname);
+
 //POST a new tldr
 server.post('/tldrs', requestHandlers.postNewTldr);
 
 //POST update existing tldr
 server.post('/tldrs/:id', requestHandlers.postUpdateTldr);
+
 
 // Start server
 if (module.parent === null) { // Code to execute only when running as main
