@@ -42,13 +42,13 @@ function getAllValidationErrorsInNiceJSON(errorsObject) {
 
 
 // Returns an object with only the fields of userInput that are user-modifiable
-// Can be used with any model defined with a userModifiableFields, with the use of call()
+// Can be used with any model defined with a userSetabefiableFields, with the use of call()
 function acceptableUserInput(userInput) {
   var result = {}
     , prop;
 
   for (prop in userInput) {
-    if (this.userModifiableFields[prop]) {
+    if (this.userSetableFields[prop]) {
       result[prop] = userInput[prop];
     }
   }

@@ -33,7 +33,8 @@ TldrSchema = new Schema({
  */
 
 // Returns the fields that are modifiable by user
-TldrSchema.statics.userModifiableFields = {url: true, summary: true};
+TldrSchema.statics.userSetableFields = {url: true, summary: true};
+TldrSchema.statics.userUpdatableFields = {summary: true};
 
 
 // Creates non-user modifiable parameters. This is missing-parameter proof
