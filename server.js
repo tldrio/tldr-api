@@ -59,7 +59,7 @@ server.get('/tldrs', requestHandlers.getAllTldrs);
 server.get('/tldrs/:id', requestHandlers.getTldrById);
 
 // GET tldrs by hostname
-server.get('tldrs/hostname/:hostname', requestHandlers.getAllTldrsByHostname);
+server.get('domains/:hostname/tldrs', requestHandlers.getAllTldrsByHostname);
 
 //POST a new tldr
 server.post('/tldrs', requestHandlers.postNewTldr);

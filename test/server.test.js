@@ -140,7 +140,7 @@ describe('Webserver', function () {
     });
 
     it('get all tldrs for a given hostname', function (done) {
-      client.get('/tldrs/hostname/needforair.com', function (err, req, res, obj) {
+      client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(2);
         _.any(obj, function(value) {return value.summary === "Awesome Blog"} ).should.equal(true);
         _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
@@ -148,8 +148,8 @@ describe('Webserver', function () {
       });
     });
 
-    it('get all tldrs for a given hostname', function (done) {
-      client.get('/tldrs/hostname/unusedDomain.com', function (err, req, res, obj) {
+    it('get an empty array if given hostname has no tldr', function (done) {
+      client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(0);
         done();
       });
