@@ -27,29 +27,26 @@ var should = require('chai').should()
 
 describe('Models', function() {
   describe('#AcceptableUserInput', function () {
-    it('should accept the correct properties', function(done) {
+    it('should accept the correct properties', function() {
       var test = models.acceptableUserInput.call(TldrModel, {url: "ttt", summary: "res"});
 
       test.url.should.equal("ttt");
       test.summary.should.equal("res");
 
-      done();
     });
 
-    it('should fail if called with a null this context', function(done) {
+    it('should fail if called with a null this context', function() {
       (function () { var test = models.acceptableUserInput.call(null, {url: "rrr"}); }).should.throw();
 
-      done();
     });
 
-    it('should not use non user modifiable input', function(done) {
+    it('should not use non user modifiable input', function() {
       var test = models.acceptableUserInput.call(TldrModel, { summary: "res", donotuseit: "rrrr"});
 
       assert.equal(null, test.url);
       test.summary.should.equal("res");
       assert.equal(null, test.donotuseit);
 
-      done();
     });
   });
   

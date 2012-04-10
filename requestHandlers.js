@@ -7,6 +7,7 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
+  , _u = require('underscore')
   , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
   , models = require('./models')
@@ -49,10 +50,10 @@ var getTldrById = function (req, res, next) {
 // else create new tldr associated to this url
 
 function postCreateOrUpdateTldr (req, res, next) {
-  var tldr
-    , tldrData = {}
+  var tldrData = {}
     , sha1 = crypto.createHash('sha1')
-    , id;
+    , id
+    , tldr;
 
   // Handle missing params in request
   if (!req.body.url) {
@@ -70,7 +71,7 @@ function postCreateOrUpdateTldr (req, res, next) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
     if (docs.length === 0) {
       //Create New Tldr
-      tldr = TldrModel.createAndCraftInstance(models.acceptableUserInput.call(TldrModel, req.body));
+      tldr = TldrModel.createAndCraftInstance(req.body);
       tldr.save(function (err) {
         if (err) {
           if (err.errors) {
@@ -83,18 +84,15 @@ function postCreateOrUpdateTldr (req, res, next) {
       });
     } else {
       //Update existing tldr
-      var prop;
-
+      // Only update fields user has the rights to update to avoid unexpected behaviour
+      var validUpdateFields = _u.intersection(_u.keys(req.body), models.TldrModel.userUpdatableFields);
       tldr = docs[0];
       //We don't need to udpate url, _id or hostname because if record was found _id is the same
       //and url didn't change
 
-      // Only update fields user has the rights to update to avoid unexpected behaviour
-      for (prop in req.body) {
-        if (models.TldrModel.userUpdatableFields[prop]) {
-          tldr[prop] = req.body[prop];
-        }
-      }
+      _u.each( validUpdateFields, function (validField) {
+        tldr[validField] = req.body[validField];
+      });
 
       tldr.save(function(err) {
         if (err) {

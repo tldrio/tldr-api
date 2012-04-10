@@ -5,7 +5,7 @@
  */
 
 var TldrModelDefinition = require('./models/tldrModel')
-	, _ = require('underscore');
+	, _u = require('underscore');
 
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
@@ -15,7 +15,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 		, prop;
 
 	for (prop in errorsObject) {
-		if (_.has(errorsObject, prop)) {
+		if (_u.has(errorsObject, prop)) {
 			result[prop] = errorsObject[prop].type;
 		}
 	}
@@ -28,16 +28,10 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 // Returns an object with only the fields of userInput that are user-modifiable
 // Can be used with any model defined with a userSetabefiableFields, with the use of call()
 function acceptableUserInput(userInput) {
-  var result = {}
-    , prop;
-
-  for (prop in userInput) {
-    if (this.userSetableFields[prop]) {
-      result[prop] = userInput[prop];
-    }
+  if (typeof this.userSetableFields === 'undefined') {
+    throw new Error('Execution context is not correct');
   }
-
-  return result;
+  return _u.pick(userInput, this.userSetableFields);
 }
 
 

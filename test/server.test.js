@@ -7,6 +7,7 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
+  , _u = require('underscore')
   , restify = require('restify')
   , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
@@ -235,4 +236,7 @@ describe('Webserver', function () {
     });
   });
 });
+
+
+
 

@@ -6,6 +6,7 @@
 
 var mongoose = require('mongoose')
   , crypto = require('crypto')
+  , _u = require('underscore')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , url = require('url')
   , Schema = mongoose.Schema
@@ -33,8 +34,8 @@ TldrSchema = new Schema({
  */
 
 // Returns the fields that are modifiable by user
-TldrSchema.statics.userSetableFields = {url: true, summary: true};
-TldrSchema.statics.userUpdatableFields = {summary: true};
+TldrSchema.statics.userSetableFields = ['url', 'summary'];
+TldrSchema.statics.userUpdatableFields = ['summary'];
 
 
 // Creates non-user modifiable parameters. This is missing-parameter proof
@@ -52,7 +53,8 @@ TldrSchema.methods.craftInstance = function () {
 
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var instance = new TldrModel(userInput);
+  var validFields = _u.pick(userInput, this.userSetableFields)
+    , instance = new TldrModel(validFields);
   instance.craftInstance();
   return instance;
 };
