@@ -7,6 +7,7 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
+  , _ = require('underscore')
   , restify = require('restify')
   , sinon = require('sinon')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
@@ -54,7 +55,7 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 				
-				models.getAllValidationErrors(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(2);
 				valErr = models.getAllValidationErrorsInNiceJSON(err.errors);
 				valErr._id.should.not.equal(null);
 				valErr.url.should.not.equal(null);
