@@ -4,18 +4,19 @@
  * Fucking Proprietary License
  */
 
-var TldrModel = require('./models/tldrModel');
+var TldrModelDefinition = require('./models/tldrModel')
+	, _ = require('underscore');
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return an array of non validated fields
 function getAllValidationErrors(errorsObject) {
-	if (!errorsObject)
-		return null;
+	if (!errorsObject) {return null;}
 
-	var result = [], prop;
+	var result = []
+		, prop;
 
 	for (prop in errorsObject) {
-		if (errorsObject.hasOwnProperty(prop)) {
+		if (_.has(errorsObject, prop)) {
 			result.push(prop);
 		}
 	}
@@ -26,10 +27,11 @@ function getAllValidationErrors(errorsObject) {
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
 // return a JSON with all non validated fields and an explanatory message for each
 function getAllValidationErrorsInNiceJSON(errorsObject) {
-	var result = {}, prop;
+	var result = {}
+		, prop;
 
 	for (prop in errorsObject) {
-		if (errorsObject.hasOwnProperty(prop)) {
+		if (_.has(errorsObject, prop)) {
 			result[prop] = errorsObject[prop].type;
 		}
 	}
@@ -38,7 +40,28 @@ function getAllValidationErrorsInNiceJSON(errorsObject) {
 }
 
 
-// Export TldrModel
-module.exports.TldrModel = TldrModel.Model;
+
+// Returns an object with only the fields of userInput that are user-modifiable
+// Can be used with any model defined with a userModifiableFields, with the use of call()
+function acceptableUserInput(userInput) {
+  var result = {}
+    , prop;
+
+  for (prop in userInput) {
+    if (this.userModifiableFields[prop]) {
+      result[prop] = userInput[prop];
+    }
+  }
+
+  return result;
+}
+
+
+
+// Export models
+module.exports.TldrModel = TldrModelDefinition.TldrModel;
+
+// Export general purpose functions for models
 module.exports.getAllValidationErrors = getAllValidationErrors;
 module.exports.getAllValidationErrorsInNiceJSON = getAllValidationErrorsInNiceJSON;
+module.exports.acceptableUserInput = acceptableUserInput;

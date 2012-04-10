@@ -40,4 +40,10 @@ if (currentEnvironment.environment === 'remote') {
   currentEnvironment.databaseName = 'remote-db'; 
 }
 
+if (currentEnvironment.environment === 'production') {
+  currentEnvironment.databaseHost = 'localhost';
+  currentEnvironment.databasePort = '27017';
+  currentEnvironment.databaseName = 'prod-db';
+}
+
 module.exports.currentEnvironment = currentEnvironment;

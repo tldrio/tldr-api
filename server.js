@@ -15,6 +15,17 @@ var restify = require('restify')
   , server;                                 // Will store our restify server
 
 
+// Last wall of defense. If an exception makes its way to the top, the service shouldn't
+// stop, but log a fatal error and send an email to us.
+// Of course, this piece of code should NEVER have to be called.
+// Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
+if (currentEnvironment.environment === "production") {
+  process.on('uncaughtException', function(err) {
+    // TODO implement email sending
+    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+  });
+}
+
 /**
  * Configure 
  */
@@ -27,7 +38,7 @@ if (currentEnvironment.environment === "test") {
 } else {
   server = restify.createServer({
     name: "tldr API",
-    log: bunyan
+    //log: bunyan     // No restify logging for now
   });
 }
 
