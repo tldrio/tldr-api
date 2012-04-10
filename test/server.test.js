@@ -57,14 +57,15 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createTldr({url: 'http://needforair.com/nutcrackers',
-                                   summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createTldr({url: 'http://avc.com/mba-monday', 
-                                   summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createTldr({url: 'http://bothsidesofthetable.com/deflationnary-economics',
-                                   summary: 'Sustering is my religion'});
+    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
+      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
+      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
 
+    tldr1.craftInstance();
+    tldr2.craftInstance();
+    tldr3.craftInstance();
 		
+
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
 		  if (err) {throw done(err);}
@@ -85,7 +86,7 @@ describe('Webserver', function () {
   afterEach(function (done) {
 
     TldrModel.remove(null, function (err) {
-      if (err) {throw done(err);}               
+      if (err) {throw done(err);}
       done();
     });
   });
@@ -95,6 +96,7 @@ describe('Webserver', function () {
 
     it('an existing tldr', function (done) {
       client.get('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
+        res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/nutcrackers');
         done();
       });
@@ -123,7 +125,11 @@ describe('Webserver', function () {
     it('a non existing route', function (done) {
       client.get('/*', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
-        done();
+
+        client.get('/notexistingroute', function (err, req, res, obj) {
+          res.statusCode.should.equal(404);
+          done();
+        });
       });
     });
   });
@@ -133,16 +139,54 @@ describe('Webserver', function () {
 
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
-                      summary: 'Sluts and cockslapers'}
-        , tldr = TldrModel.createTldr({url: tldrData.url, summary: tldrData.summary});
-        
-      client.post('/tldrs', tldrData, function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
-        obj._id.should.equal(tldr._id);
-        obj.summary.should.equal(tldrData.summary);
-        done();
-      });
+        summary: 'Sluts and cockslapers', unusableField: "coin"}
+        , tldr = new TldrModel(tldrData);
+
+        tldr.craftInstance();
+
+        TldrModel.find(null, function(err, docs) {
+          docs.should.have.length(3);
+
+          client.post('/tldrs', tldrData, function (err, req, res, obj) {
+            res.statusCode.should.equal(200);
+            obj._id.should.equal(tldr._id);
+            obj.summary.should.equal(tldrData.summary);
+            assert.equal(null, obj.unusableField);
+
+            TldrModel.find(null, function(err, docs) {
+              docs.should.have.length(4);
+
+              TldrModel.find({url: "http://www.youporn.com/milf"}, function(err, docs) {
+                docs.should.have.length(1);
+
+                done();
+              });
+            });
+          });
+        });
     });
+
+
+    it('should not post a tldr that already exists', function(done) {
+      var tldrData = {url: 'http://www.youporn.com/milf',
+        summary: 'Sluts and cockslapers'}
+        , tldr = new TldrModel(tldrData);
+
+        tldr.craftInstance();
+
+        client.post('/tldrs', tldrData, function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+          obj._id.should.equal(tldr._id);
+          obj.summary.should.equal(tldrData.summary);
+
+          client.post('/tldrs',tldrData, function(err, req, res, obj) {
+            res.statusCode.should.equal(423);
+
+            done();
+          });
+        });
+    });
+
 
     it('updating an existing tldr', function (done) {
       var tldrUpdates = {summary: 'This blog smells like shit'};
@@ -155,7 +199,30 @@ describe('Webserver', function () {
       });
     });
 
-  });
 
+    it('should not update non existing tldr', function (done) {
+      var tldrUpdates = {summary: 'This blog smells like shit'};
+
+      client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(400);
+
+        done();
+      });
+    });
+
+
+    it('should not update if no validation', function (done) {
+      var tldrUpdates = {summary: 'This blog smells like shit', url: "ytr.fr"};
+
+      client.post('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
+        res.statusCode.should.equal(400);
+
+        done();
+      });
+    });
+
+
+
+  });
 });
 

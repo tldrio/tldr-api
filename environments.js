@@ -37,7 +37,13 @@ if (currentEnvironment.environment === 'remote') {
 	pwd = dbInfo[3];
   currentEnvironment.databaseHost = user+ ':' + pwd + '@' + ipAddress;
   currentEnvironment.databasePort = parseInt(port, 10);
-  currentEnvironment.databaseName = 'test-db'; 
+  currentEnvironment.databaseName = 'remote-db'; 
+}
+
+if (currentEnvironment.environment === 'production') {
+  currentEnvironment.databaseHost = 'localhost';
+  currentEnvironment.databasePort = '27017';
+  currentEnvironment.databaseName = 'prod-db';
 }
 
 module.exports.currentEnvironment = currentEnvironment;
