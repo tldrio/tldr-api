@@ -98,6 +98,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       _u.each( validUpdateFields, function (validField) {
         tldr[validField] = req.body[validField];
       });
+      tldr.lastUpdated = new Date();
 
       tldr.save(function(err) {
         if (err) {

@@ -61,6 +61,7 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 
   instance.craftInstance();
   instance.dateCreated = new Date();
+  instance.lastUpdated = new Date();
 
   return instance;
 };
@@ -124,6 +125,8 @@ TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
 TldrSchema.path('dateCreated').required(true);
+
+TldrSchema.path('lastUpdated').required(true);
 
 
 // Define tldr model

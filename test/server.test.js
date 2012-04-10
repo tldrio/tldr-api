@@ -224,7 +224,7 @@ describe('Webserver', function () {
         summary: 'This blog smells like shit'}
         , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
-      TldrModel.find({_id:tldr._id}, function (err, docs) {
+      TldrModel.find({_id: tldr._id}, function (err, docs) {
         if (err) {throw err;} 
         docs.length.should.equal(1);
         docs[0].summary.should.equal('Awesome Blog');
@@ -232,7 +232,12 @@ describe('Webserver', function () {
           res.statusCode.should.equal(200);
           obj._id.should.equal(tldr._id);
           obj.summary.should.equal('This blog smells like shit');
-          done();
+
+          TldrModel.find({_id: tldr._id}, function(err, docs) {
+            assert.equal(true, docs[0].lastUpdated - docs[0].dateCreated > 0);
+
+            done();
+          });
         });
       });
     });
