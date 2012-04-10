@@ -139,7 +139,7 @@ describe('Webserver', function () {
 
     it('adding a new tldr', function (done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
-        summary: 'Sluts and cockslapers'}
+        summary: 'Sluts and cockslapers', unusableField: "coin"}
         , tldr = new TldrModel(tldrData);
 
         tldr.craftInstance();
@@ -151,6 +151,7 @@ describe('Webserver', function () {
             res.statusCode.should.equal(200);
             obj._id.should.equal(tldr._id);
             obj.summary.should.equal(tldrData.summary);
+            assert.equal(null, obj.unusableField);
 
             TldrModel.find(null, function(err, docs) {
               docs.should.have.length(4);

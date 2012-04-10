@@ -51,8 +51,11 @@ function postNewTldr (req, res, next) {
       return next(new customErrors.tldrAlreadyExistsError('tldr already exists, can\'t create it again'));
     } else {
       // Create the new tldr based on only the user modifiable parameters
-      tldr = new TldrModel(models.acceptableUserInput.call(TldrModel, req.body));
-      tldr.craftInstance();
+      //tldr = new TldrModel(models.acceptableUserInput.call(TldrModel, req.body));
+      //tldr.craftInstance();
+
+      tldr = TldrModel.createAndCraftInstance(models.acceptableUserInput.call(TldrModel, req.body));
+
 
       tldr.save(function (err) {
         if (err) {
