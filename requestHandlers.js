@@ -55,17 +55,13 @@ function postCreateOrUpdateTldr (req, res, next) {
     , id
     , tldr;
 
-  // Handle missing params in request
+  // Return Error if url is missing 
   if (!req.body.url) {
     return next( new restify.MissingParameterError('No url is provided in request'));
   }
-  if (!req.body.summary) {
-    return next( new restify.MissingParameterError('No summary is provided in request'));
-  }
   
-  //Compute _id to perform lookup in db
-  sha1.update(req.body.url, 'utf8');
-  id = sha1.digest('hex');
+  //Retrieve _id to perform lookup in db
+  id = TldrModel.getIdFromUrl(req.body.url);
 
   TldrModel.find({_id:id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
@@ -96,7 +92,11 @@ function postCreateOrUpdateTldr (req, res, next) {
 
       tldr.save(function(err) {
         if (err) {
-          return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
+          if (err.errors) {
+            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
+          } else {
+            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
+          }
         } else {
           return res.json(200, tldr);
         }

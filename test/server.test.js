@@ -150,11 +150,11 @@ describe('Webserver', function () {
     });
 
     it('for /tldrs route with no summary provided in body and retur error', function (done) {
-      var tldrData = {url: 'This is a summary', 
+      var tldrData = {url: 'http://toto.com', 
         unusedFields: 'toto'};
       client.post('/tldrs', tldrData, function (err, req, res, obj) {
-        res.statusCode.should.equal(409);
-        err.name.should.equal('MissingParameterError');
+        res.statusCode.should.equal(400);
+        err.name.should.equal('InvalidContentError');
         done();
       });
     });
