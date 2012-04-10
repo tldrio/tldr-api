@@ -58,14 +58,10 @@ describe('Webserver', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
-      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
-      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-
-    tldr1.craftInstance();
-    tldr2.craftInstance();
-    tldr3.craftInstance();
-		
+    var tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
+      , tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
+      , tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'})
+      , tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -76,7 +72,10 @@ describe('Webserver', function () {
 					if (err) {throw done(err); }
 			    tldr3.save( function (err) {
 			      if (err) {throw done(err); }
-						done();
+            tldr4.save( function (err) {
+              if (err) {throw done(err); }
+              done();
+            });
 			    });
 			  });
 			});
@@ -133,6 +132,23 @@ describe('Webserver', function () {
         });
       });
     });
+
+    it('all tldrs for an existing given hostname', function (done) {
+      client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
+        obj.length.should.equal(2);
+        _u.any(obj, function(value) {return value.summary === "Awesome Blog"} ).should.equal(true);
+        _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+        done();
+      });
+    });
+
+    it('all tldrs for a non-existing hostname (return empty array)', function (done) {
+      client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
+        obj.length.should.equal(0);
+        done();
+      });
+    });
+
   });
 
   //Test POST Requests
@@ -189,9 +205,7 @@ describe('Webserver', function () {
     it('for consecutive double post with same data', function(done) {
       var tldrData = {url: 'http://www.youporn.com/milf',
         summary: 'Sluts and cockslapers'}
-        , tldr = new TldrModel(tldrData);
-
-        tldr.craftInstance();
+        , tldr = TldrModel.createAndCraftInstance(tldrData);
 
         client.post('/tldrs', tldrData, function (err, req, res, obj) {
           res.statusCode.should.equal(200);
@@ -208,9 +222,7 @@ describe('Webserver', function () {
     it('updating an existing tldr', function (done) {
       var tldrUpdates = {url: 'http://needforair.com/nutcrackers',
         summary: 'This blog smells like shit'}
-        , tldr = new TldrModel(tldrUpdates);
-
-      tldr.craftInstance();
+        , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
       TldrModel.find({_id:tldr._id}, function (err, docs) {
         if (err) {throw err;} 
