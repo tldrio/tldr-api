@@ -143,46 +143,44 @@ describe('TldrModel', function () {
 
   });
 
-});
+  describe("#craftInstance", function() {
+    it("should not break if no url is given", function(done) {
+      var tldr = new TldrModel({summary: "a summary"});
+      assert.equal(null, tldr.url);
 
+      tldr.craftInstance();
+      tldr.url.should.equal("");
+      assert.equal(null, tldr.hostname);
 
-describe("tldrModel.craftInstance", function() {
-  it("should not break if no url is given", function(done) {
-    var tldr = new TldrModel({summary: "a summary"});
-    assert.equal(null, tldr.url);
+      tldr.save(function (err) {
+        if (!err) {throw {}; }    // Shouldn't be able to save
+      });
 
-    tldr.craftInstance();
-    tldr.url.should.equal("");
-    assert.equal(null, tldr.hostname);
-
-    tldr.save(function (err) {
-      if (!err) {throw {}; }    // Shouldn't be able to save
+      done();
     });
 
-    done();
-  });
 
+    it ("should calculate the correct id and hostname", function(done) {
+      var tldr = new TldrModel({url: "http://adomain.tld"})
+        , niceErrors;
+      assert.equal(null, tldr.hostname);
 
-  it ("should calculate the correct id and hostname", function(done) {
-    var tldr = new TldrModel({url: "http://adomain.tld"})
-      , niceErrors;
-    assert.equal(null, tldr.hostname);
+      tldr.craftInstance();
 
-    tldr.craftInstance();
+      tldr.hostname.should.equal("adomain.tld");
+      tldr._id.should.equal("839f9a097256c214581548a39bb7840a27c242e2");
 
-    tldr.hostname.should.equal("adomain.tld");
-    tldr._id.should.equal("839f9a097256c214581548a39bb7840a27c242e2");
+      // Only summary should be an error
+      tldr.save(function(err) {
+        niceErrors = models.getAllValidationErrorsInNiceJSON(err.errors);
+        if (!niceErrors.summary) {throw {};}
+        assert.equal(niceErrors.url, null);
+        assert.equal(niceErrors.hostname, null);
+        assert.equal(niceErrors._id, null);
+      });
 
-    // Only summary should be an error
-    tldr.save(function(err) {
-      niceErrors = models.getAllValidationErrorsInNiceJSON(err.errors);
-      if (!niceErrors.summary) {throw {};}
-      assert.equal(niceErrors.url, null);
-      assert.equal(niceErrors.hostname, null);
-      assert.equal(niceErrors._id, null);
+      done();
     });
-
-    done();
   });
 });
 

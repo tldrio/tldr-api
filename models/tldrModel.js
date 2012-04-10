@@ -55,7 +55,7 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
   var instance = new TldrModel(userInput);
   instance.craftInstance();
   return instance;
-}
+};
 
 
 /**
