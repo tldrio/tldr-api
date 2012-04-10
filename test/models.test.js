@@ -35,10 +35,6 @@ describe('Models', function() {
 
     });
 
-    it('should fail if called with a null this context', function() {
-      (function () { var test = models.acceptableUserInput.call(null, {url: "rrr"}); }).should.throw();
-
-    });
 
     it('should not use non user modifiable input', function() {
       var test = models.acceptableUserInput.call(TldrModel, { summary: "res", donotuseit: "rrrr"});
