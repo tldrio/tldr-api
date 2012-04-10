@@ -6,6 +6,7 @@
 
 var mongoose = require('mongoose')
   , crypto = require('crypto')
+  , _u = require('underscore')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , url = require('url')
   , Schema = mongoose.Schema
@@ -33,30 +34,32 @@ TldrSchema = new Schema({
  */
 
 // Returns the fields that are modifiable by user
-TldrSchema.statics.userModifiableFields = {url: true, summary: true};
+TldrSchema.statics.userSetableFields = ['url', 'summary'];
+TldrSchema.statics.userUpdatableFields = ['summary'];
 
+//Compute Id from Url
+TldrSchema.statics.getIdFromUrl = function (url) {
+  var sha1 = crypto.createHash('sha1');
+  sha1.update(url, 'utf8');
+  return sha1.digest('hex');
+};
 
 // Creates non-user modifiable parameters. This is missing-parameter proof
 TldrSchema.methods.craftInstance = function () {
-  var sha1 = crypto.createHash('sha1');
 
   if (! this.url) { this.url = ""; }
-
   // _id is the hashed url
-  sha1.update(this.url, 'utf8');
-  this._id = sha1.digest('hex');
-
+  this._id = TldrModel.getIdFromUrl(this.url);
   this.hostname = url.parse(this.url).hostname;
 };
 
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var inst = new TldrModel(userInput);
-
-  inst.craftInstance();
-
-  return inst;
-}
+  var validFields = _u.pick(userInput, this.userSetableFields)
+    , instance = new TldrModel(validFields);
+  instance.craftInstance();
+  return instance;
+};
 
 
 /**
