@@ -90,15 +90,10 @@ function postCreateOrUpdateTldr (req, res, next) {
     } else {
       //Update existing tldr
       // Only update fields user has the rights to update to avoid unexpected behaviour
-      var validUpdateFields = _u.intersection(_u.keys(req.body), models.TldrModel.userUpdatableFields);
-      tldr = docs[0];
       //We don't need to udpate url, _id or hostname because if record was found _id is the same
       //and url didn't change
-
-      _u.each( validUpdateFields, function (validField) {
-        tldr[validField] = req.body[validField];
-      });
-
+      tldr = docs[0];
+      tldr.update(req.body);
       tldr.save(function(err) {
         if (err) {
           if (err.errors) {

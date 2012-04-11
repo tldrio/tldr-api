@@ -15,6 +15,8 @@ var mongoose = require('mongoose')
   , customErrors = require('../lib/errors');
 
 
+
+
 /**
  * Schema
  *
@@ -30,7 +32,10 @@ TldrSchema = new Schema({
 });
 
 
-/*
+
+
+
+/**
  * Statics and dynamics are defined here
  */
 
@@ -55,12 +60,24 @@ TldrSchema.methods.craftInstance = function () {
 };
 
 
-TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, this.userSetableFields)
-    , instance = new TldrModel(validFields);
-  instance.craftInstance();
-  return instance;
+/**
+ * Update tldr object with the provided hash.
+ * Only fields in userUpdatableFields are handled
+ * @param {JSObject} updates Object containing fields to update with corresponding value
+ *
+ */
+
+TldrSchema.methods.update = function (updates) {
+  var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
+    , self = this;
+  console.log(validUpdateFields);
+  _u.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
 };
+
+
+
 
 
 /**

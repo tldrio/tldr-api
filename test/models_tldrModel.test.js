@@ -185,8 +185,8 @@ describe('TldrModel', function () {
     });
   });
 
-  describe('createAndCraftInstance, user settable and modifiable fields', function () {
-    it('user can set url, summary and resourceAuthor only', function (done) {
+  describe('#createAndCraftInstance', function () {
+    it('should allow user to set url, summary and resourceAuthor only', function () {
       // Test is coupled with createAndCraftInstance because they are designed to work together
       var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
       tldr.url.should.equal("bla");
@@ -194,38 +194,30 @@ describe('TldrModel', function () {
       tldr.resourceAuthor.should.equal("bloup");
 
       var tldr2 = TldrModel.createAndCraftInstance({unusedField: "glok"});
-      assert.equal(null, tldr2.unusedField);
-      assert.equal('', tldr2.url);
-      assert.equal(null, tldr2.summary);
-      assert.equal(null, tldr2.resourceAuthor);
-
-      done();
+      tldr2.should.not.have.property('unusedField');
+      tldr2.should.not.have.property('summary');
+      tldr2.should.not.have.property('resourceAuthor');
+      tldr2.url.should.eql('');
     });
 
-    it('user can modify summary and sourceAuthor only', function (done) {
-      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
+    it('should allow user to update summary and sourceAuthor only', function () {
+      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
+        , toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusedField: 'new4'};
+
       tldr.url.should.equal("bla");
       tldr.summary.should.equal("coin");
       tldr.resourceAuthor.should.equal("bloup");
 
-      var toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusuedField: 'new4'};
-      var validUpdateFields = _u.intersection(_u.keys(toUpdate), models.TldrModel.userUpdatableFields);
-      _u.each( validUpdateFields, function (validField) {
-        tldr[validField] = toUpdate[validField];
-      });
+      // Perform update
+      tldr.update(toUpdate);
 
       tldr.url.should.equal('bla');
       tldr.summary.should.equal('new2');
       tldr.resourceAuthor.should.equal('new3');
-      assert.equal(null, tldr.unusuedField);
+      tldr.should.not.have.property('unusedField');
 
-      done();
 
     });
-
-
   });
-  
-
 });
 
