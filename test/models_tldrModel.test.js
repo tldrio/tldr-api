@@ -51,8 +51,12 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair.com',
-        summary: 'Awesome Blog'})
+        summary: 'Awesome Blog',
+        dateCreated: new Date(),
+        lastUpdated: new Date()
+      })
        , valErr;
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 				
@@ -62,11 +66,37 @@ describe('TldrModel', function () {
 				valErr.url.should.not.equal(null);
 				assert.equal(valErr.summary, null);
 				assert.equal(valErr.hostname, null);
+				assert.equal(valErr.dateCreated, null);
 
         done();
       });
     });
 
+    it('should detect missing required dateCreated and lastUpdated args', function (done) {
+      var tldr = new TldrModel({
+        url: 'http://needforair.com/nutcrackers',
+        _id: "aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx",
+        hostname: 'needforair.com',
+        summary: 'Awesome Blog',
+      })
+       , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+				
+        _.keys(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+				assert.equal(valErr.url, null);
+				assert.equal(valErr._id, null);
+				assert.equal(valErr.summary, null);
+				assert.equal(valErr.hostname, null);
+				valErr.dateCreated.should.not.equal(null);
+				valErr.lastUpdated.should.not.equal(null);
+
+        done();
+      });
+    });
+    
     it('should detect missing required url arg', function (done) {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',

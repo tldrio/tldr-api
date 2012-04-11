@@ -51,6 +51,22 @@ var getAllTldrsByHostname = function (req, res, next) {
   });
 };
 
+// GET latest tldrs
+var getLatestTldrs = function(req, res, next) {
+  var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
+
+  if (numberToGet === 0) {
+    return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+  }
+
+  TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+    return res.json(200, docs);
+  });
+};
+
+
 
 // POST create or update tldr
 //
@@ -68,7 +84,7 @@ function postCreateOrUpdateTldr (req, res, next) {
   if (!req.body.url) {
     return next( new restify.MissingParameterError('No url is provided in request'));
   }
-  
+
   //Retrieve _id to perform lookup in db
   id = TldrModel.getIdFromUrl(req.body.url);
 
@@ -94,6 +110,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       //and url didn't change
       tldr = docs[0];
       tldr.update(req.body);
+      
       tldr.save(function(err) {
         if (err) {
           if (err.errors) {
@@ -114,4 +131,5 @@ function postCreateOrUpdateTldr (req, res, next) {
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
 module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
+module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

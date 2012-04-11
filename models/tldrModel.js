@@ -27,8 +27,10 @@ TldrSchema = new Schema({
 	_id             : String,
 	url             : String,
 	hostname        : String,
+	summary         : String,
   resourceAuthor  : String,
-	summary         : String
+  dateCreated     : Date,
+  lastUpdated     : Date
 });
 
 
@@ -67,7 +69,11 @@ TldrSchema.statics.getIdFromUrl = function (url) {
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
   var validFields = _u.pick(userInput, this.userSetableFields)
     , instance = new TldrModel(validFields);
+
   instance.craftInstance();
+  instance.dateCreated = new Date();
+  instance.lastUpdated = new Date();
+
   return instance;
 };
 
@@ -78,7 +84,6 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
  *
  */
 TldrSchema.methods.craftInstance = function () {
-
   if (! this.url) { this.url = ""; }
   // _id is the hashed url
   this._id = TldrModel.getIdFromUrl(this.url);
@@ -101,6 +106,17 @@ TldrSchema.methods.update = function (updates) {
   });
 };
 
+
+/**
+ * Middlewares
+ *
+ */
+
+TldrSchema.pre('save', function(next) {
+  this.lastUpdated = new Date();
+
+  next();
+});
 
 
 
@@ -145,6 +161,9 @@ function hostname_validatePresenceOfDot (value) {
 }
 
 
+
+
+
 /**
  * Validators mappings
  *
@@ -162,6 +181,9 @@ TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be n
 TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
+TldrSchema.path('dateCreated').required(true);
+
+TldrSchema.path('lastUpdated').required(true);
 
 
 // Define tldr model
