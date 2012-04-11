@@ -1,5 +1,5 @@
 /**
- *  Database tests
+ * Database tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Fucking Proprietary License
  */
@@ -8,13 +8,14 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , restify = require('restify')
-  , winston = require('../lib/logger.js').winston // Custom logger built with Winston
-  , bunyan = require('../lib/logger.js').bunyan // Audit logger for restify
+  , sinon = require('sinon')
+  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , db = mongoose.connect('mongodb://localhost/datastore-test')
   , models = require('../models')
+  , db = require('../lib/db')
 	, TldrModel = models.TldrModel
-  , server = require('../server');
+  , server = require('../server')
+  , customErrors = require('../lib/errors');
 
 
 
@@ -24,27 +25,24 @@ var should = require('chai').should()
  * Tests
  */
 
-describe('Basic operations', function () {
 
-	before(function (done) {
+describe('Database', function () {
 
+  before(function (done) {
+    db.connectToDatabase(done);
+
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+	beforeEach(function (done) {
 		// dummy models
-		var tldr1 = new TldrModel({
-			_id: 1,
-			url: 'http://needforair.com',
-			summary: 'No I Need for Space',
-		})
-			,	tldr2 = new TldrModel({
-			_id: 2,
-			url: 'http://www.avc.com',
-			summary: 'Fred Wilson is my god',
-		})
-			,	tldr3 = new TldrModel({
-			_id: 3,
-			url: 'http://www.bothsidesofthetable.com',
-			summary: 'Sustering is my religion',
-		});
-		
+    var tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
+      , tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
+      , tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
 		  if (err) {throw done(err);}
@@ -62,23 +60,33 @@ describe('Basic operations', function () {
 
 	});
 
+  afterEach(function (done) {
+    TldrModel.remove(null, function (err) {
+      if (err) {throw done(err);}               
+      done();
+    });
+  });
+
 	// Check that all 3 records are in the db
-  it('should have 3 documents', function (done) {
+  it('should return full collection', function (done) {
     TldrModel.find(null, function (err, docs) {
+      if (err) { throw done(err); }
 			docs.should.have.length(3);
 			done();
     });
   });
 
 	// Get tldr with id 1
-	it('should return a tldr with url http://needforair.com', function (done) {
-	  TldrModel.find( {_id: 1}, function (err, docs) {
-			docs[0].url.should.equal('http://needforair.com');
+	it('should return a tldr for an existing id', function (done) {
+    var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
+	  TldrModel.find( {_id: htldrId}, function (err, docs) {
+      if (err) { throw done(err); }
+      var tldr = docs[0];
+			tldr.url.should.equal('http://needforair.com/nutcrackers');
+			tldr.hostname.should.equal('needforair.com');
 			done();
 	  });
 	});
-
-
 });
 
 
