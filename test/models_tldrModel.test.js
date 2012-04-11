@@ -16,6 +16,7 @@ var should = require('chai').should()
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server')
+  , _u = require('underscore')
   , customErrors = require('../lib/errors');
 
 
@@ -77,7 +78,7 @@ describe('TldrModel', function () {
         done();
       });
     });
-    
+
     it('should detect missing required summary arg', function (done) {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
@@ -183,5 +184,48 @@ describe('TldrModel', function () {
       done();
     });
   });
+
+  describe('createAndCraftInstance, user settable and modifiable fields', function () {
+    it('user can set url, summary and resourceAuthor only', function (done) {
+      // Test is coupled with createAndCraftInstance because they are designed to work together
+      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
+      tldr.url.should.equal("bla");
+      tldr.summary.should.equal("coin");
+      tldr.resourceAuthor.should.equal("bloup");
+
+      var tldr2 = TldrModel.createAndCraftInstance({unusedField: "glok"});
+      assert.equal(null, tldr2.unusedField);
+      assert.equal('', tldr2.url);
+      assert.equal(null, tldr2.summary);
+      assert.equal(null, tldr2.resourceAuthor);
+
+      done();
+    });
+
+    it('user can modify summary and sourceAuthor only', function (done) {
+      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
+      tldr.url.should.equal("bla");
+      tldr.summary.should.equal("coin");
+      tldr.resourceAuthor.should.equal("bloup");
+
+      var toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusuedField: 'new4'};
+      var validUpdateFields = _u.intersection(_u.keys(toUpdate), models.TldrModel.userUpdatableFields);
+      _u.each( validUpdateFields, function (validField) {
+        tldr[validField] = toUpdate[validField];
+      });
+
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('new2');
+      tldr.resourceAuthor.should.equal('new3');
+      assert.equal(null, tldr.unusuedField);
+
+      done();
+
+    });
+
+
+  });
+  
+
 });
 
