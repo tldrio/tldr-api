@@ -22,10 +22,11 @@ var mongoose = require('mongoose')
 
 // Define tldr schema
 TldrSchema = new Schema({
-	_id        : String,
-	url        : String,
-	hostname   : String,
-	summary    : String
+	_id             : String,
+	url             : String,
+	hostname        : String,
+  resourceAuthor  : String,
+	summary         : String
 });
 
 
@@ -34,8 +35,8 @@ TldrSchema = new Schema({
  */
 
 // Returns the fields that are modifiable by user
-TldrSchema.statics.userSetableFields = ['url', 'summary'];
-TldrSchema.statics.userUpdatableFields = ['summary'];
+TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
+TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
 
 //Compute Id from Url
 TldrSchema.statics.getIdFromUrl = function (url) {
