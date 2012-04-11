@@ -56,7 +56,7 @@ TldrSchema.methods.craftInstance = function () {
 
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, this.userSetableFields)
+  var validFields = _u.pick(userInput, TldrModel.userSetableFields)
     , instance = new TldrModel(validFields);
 
   instance.craftInstance();
@@ -65,6 +65,21 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 
   return instance;
 };
+
+
+
+/**
+ * Middlewares
+ *
+ */
+
+TldrSchema.pre('save', function(next) {
+  this.lastUpdated = new Date();
+
+  next();
+});
+
+
 
 
 /**
@@ -107,17 +122,6 @@ function hostname_validatePresenceOfDot (value) {
 }
 
 
-/**
- * Setters
- *
- */
-
-function lastUpdated_set (value) {
-  var date = new Date();
-  return date;
-}
-
-
 
 
 
@@ -141,7 +145,6 @@ TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname m
 TldrSchema.path('dateCreated').required(true);
 
 TldrSchema.path('lastUpdated').required(true);
-TldrSchema.path('lastUpdated').set(lastUpdated_set);
 
 
 // Define tldr model
