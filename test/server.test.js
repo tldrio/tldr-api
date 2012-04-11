@@ -14,7 +14,8 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
   , mongoose = require('mongoose')
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , customUtils = require('../lib/customUtils');
 
 
 
@@ -157,27 +158,50 @@ describe('Webserver', function () {
       tldr3.lastUpdated = new Date(2020, 02, 10, 12);
       tldr4.lastUpdated = new Date(2021, 00, 10, 12);
 
-      var chainSave = function(objectArray, callback) {
-        if (objectArray.length === 0) {
-          callback();
-        } else {
-          objectArray[0].save(function(err) {
-            chainSave(objectArray.slice(1, objectArray.length), callback);
-          });
-        }
-      };
-
-      chainSave([tldr1, tldr2, tldr3, tldr4], function() {
+      customUtils.chainSave([tldr1, tldr2, tldr3, tldr4], function() {
         client.get('/tldrs/latest/2', function (err, req, res, obj) {
           obj.length.should.equal(2);
           _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
           _u.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
+
+          client.get('/tldrs/latest/12', function (err, req, res, obj) {
+            obj.length.should.equal(4);
+
+            done();
+          });
+        });
+      });
+    });
+
+
+    it('should not return any tldr if called with 0 or a negative number', function (done) {
+      client.get('/tldrs/latest/0', function (err, req, res, obj) {
+        obj.length.should.equal(0);
+
+        client.get('/tldrs/latest/-2', function (err, req, res, obj) {
+          obj.length.should.equal(0);
 
           done();
         });
       });
     });
 
+
+    it('should not return any tldr if called with 0 or a negative number', function (done) {
+      var toCreate = [], i;
+
+      // Create dummy entries in the database
+      for (i = 0; i < 34; i++) {tldr1.url = "http://test.com/" + i; toCreate.push(TldrModel.createAndCraftInstance(tldr1));}
+
+      customUtils.chainSave(toCreate, function() {
+        client.get('/tldrs/latest/123', function (err, req, res, obj) {
+          obj.length.should.equal(20);
+
+
+          done();
+        });
+      });
+    });
 
 
   });

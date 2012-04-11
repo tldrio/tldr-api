@@ -53,7 +53,11 @@ var getAllTldrsByHostname = function (req, res, next) {
 
 // GET latest tldrs
 var getLatestTldrs = function(req, res, next) {
-  var numberToGet = Math.min(20, req.params.number);   // Avoid getting a huge DB dump!
+  var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
+
+  if (numberToGet === 0) {
+    return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+  }
 
   TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
