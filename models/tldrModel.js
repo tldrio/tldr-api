@@ -43,14 +43,40 @@ TldrSchema = new Schema({
 TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
 TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
 
-//Compute Id from Url
+
+/**
+ * Compute Id (Hash) from Url with the current choice of hash function
+ * @param {String} url Url to get hashed
+ * @return {String} Id associated with the given url
+ */
+
 TldrSchema.statics.getIdFromUrl = function (url) {
   var sha1 = crypto.createHash('sha1');
   sha1.update(url, 'utf8');
   return sha1.digest('hex');
 };
 
-// Creates non-user modifiable parameters. This is missing-parameter proof
+
+/**
+ * Create a new TldrInstance and craft all the nececessary.
+ * Only fields in userSetableFields are handled
+ * @param {JSObject} userInput Object containing the fields to set for the tldr instance
+ *
+ */
+
+TldrSchema.statics.createAndCraftInstance = function(userInput) {
+  var validFields = _u.pick(userInput, this.userSetableFields)
+    , instance = new TldrModel(validFields);
+  instance.craftInstance();
+  return instance;
+};
+
+
+/**
+ * Creates non-user modifiable parameters.
+ * This is missing-parameter proof
+ *
+ */
 TldrSchema.methods.craftInstance = function () {
 
   if (! this.url) { this.url = ""; }
@@ -70,7 +96,6 @@ TldrSchema.methods.craftInstance = function () {
 TldrSchema.methods.update = function (updates) {
   var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
     , self = this;
-  console.log(validUpdateFields);
   _u.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
