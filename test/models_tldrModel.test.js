@@ -16,6 +16,7 @@ var should = require('chai').should()
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server')
+  , _u = require('underscore')
   , customErrors = require('../lib/errors');
 
 
@@ -77,7 +78,7 @@ describe('TldrModel', function () {
         done();
       });
     });
-    
+
     it('should detect missing required summary arg', function (done) {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
@@ -181,6 +182,41 @@ describe('TldrModel', function () {
       });
 
       done();
+    });
+  });
+
+  describe('#createAndCraftInstance', function () {
+    it('should allow user to set url, summary and resourceAuthor only', function () {
+      // Test is coupled with createAndCraftInstance because they are designed to work together
+      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
+      tldr.url.should.equal("bla");
+      tldr.summary.should.equal("coin");
+      tldr.resourceAuthor.should.equal("bloup");
+
+      var tldr2 = TldrModel.createAndCraftInstance({unusedField: "glok"});
+      tldr2.should.not.have.property('unusedField');
+      tldr2.should.not.have.property('summary');
+      tldr2.should.not.have.property('resourceAuthor');
+      tldr2.url.should.eql('');
+    });
+
+    it('should allow user to update summary and sourceAuthor only', function () {
+      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
+        , toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusedField: 'new4'};
+
+      tldr.url.should.equal("bla");
+      tldr.summary.should.equal("coin");
+      tldr.resourceAuthor.should.equal("bloup");
+
+      // Perform update
+      tldr.update(toUpdate);
+
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('new2');
+      tldr.resourceAuthor.should.equal('new3');
+      tldr.should.not.have.property('unusedField');
+
+
     });
   });
 });
