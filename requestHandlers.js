@@ -64,7 +64,7 @@ var getLatestTldrs = function(req, res, next) {
 
     return res.json(200, docs);
   });
-}
+};
 
 
 
@@ -114,7 +114,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       _u.each( validUpdateFields, function (validField) {
         tldr[validField] = req.body[validField];
       });
-      tldr.lastUpdated = new Date();
+      //tldr.lastUpdated = new Date();
 
       tldr.save(function(err) {
         if (err) {

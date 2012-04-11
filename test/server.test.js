@@ -158,7 +158,7 @@ describe('Webserver', function () {
       tldr3.lastUpdated = new Date(2020, 02, 10, 12);
       tldr4.lastUpdated = new Date(2021, 00, 10, 12);
 
-      customUtils.chainSave([tldr1, tldr2, tldr3, tldr4], function() {
+      //customUtils.chainSave([tldr1, tldr2, tldr3, tldr4], function() {
         client.get('/tldrs/latest/2', function (err, req, res, obj) {
           obj.length.should.equal(2);
           _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
@@ -169,7 +169,7 @@ describe('Webserver', function () {
 
             done();
           });
-        });
+        //});
       });
     });
 

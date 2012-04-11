@@ -108,6 +108,20 @@ function hostname_validatePresenceOfDot (value) {
 
 
 /**
+ * Setters
+ *
+ */
+
+function lastUpdated_set (value) {
+  var date = new Date();
+  return date;
+}
+
+
+
+
+
+/**
  * Validators mappings
  *
  */
@@ -127,6 +141,7 @@ TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname m
 TldrSchema.path('dateCreated').required(true);
 
 TldrSchema.path('lastUpdated').required(true);
+TldrSchema.path('lastUpdated').set(lastUpdated_set);
 
 
 // Define tldr model
