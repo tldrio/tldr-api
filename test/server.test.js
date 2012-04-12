@@ -24,17 +24,9 @@ var should = require('chai').should()
  * Set up test
 */
 
-//create client to test api
-client = restify.createJsonClient({
-  url: 'https://localhost:' + 8686,
-});
 //start server
 server.listen(8686, function () {
 });
-
-
-
-
 
 
 /**
@@ -42,11 +34,8 @@ server.listen(8686, function () {
 */
 
 describe('Webserver', function () {
-  var tldr1, tldr2, tldr3, tldr4;
-
-  // The done arg is very important ! If absent tests run synchronously
-  // that means there is n chance you receive a response to your request
-  // before mocha quits 
+  var tldr1, tldr2, tldr3, tldr4
+    , client;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -58,6 +47,11 @@ describe('Webserver', function () {
   });
 
   beforeEach(function (done) {
+    //create client to test api
+    client = restify.createJsonClient({
+      url: 'https://localhost:' + 8686,
+    });
+    client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
     tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
@@ -93,6 +87,19 @@ describe('Webserver', function () {
     });
   });
 
+  describe('should authorize only for identified users', function () {
+    it('No user - pwd should fail', function (done) {
+      client.basicAuth(' ', ' ');
+      client.get('/tldrs/latest', function (err, req, res, obj) {
+        var response = JSON.parse(res.body);
+        res.statusCode.should.equal(403);
+        response.should.have.ownProperty('code');
+        response.code.should.equal('NotAuthorized');
+        done();
+      });
+    });
+  });
+  
   // Test GET requests
   describe('should handle GET request for', function () {
 
