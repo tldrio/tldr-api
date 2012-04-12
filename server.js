@@ -15,10 +15,14 @@ var restify = require('restify')
   , server;                                 // Will store our restify server
 
 
-// Last wall of defense. If an exception makes its way to the top, the service shouldn't
-// stop, but log a fatal error and send an email to us.
-// Of course, this piece of code should NEVER have to be called.
-// Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
+
+/**
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called.
+ * Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
+ */
+
 if (currentEnvironment.environment === "production") {
   process.on('uncaughtException', function(err) {
     // TODO implement email sending
@@ -26,11 +30,13 @@ if (currentEnvironment.environment === "production") {
   });
 }
 
+
+
 /**
  * Configure 
  */
 
-// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
+// If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
 if (currentEnvironment.environment === "test") {
   server = restify.createServer({
     name: "tldr API"
@@ -46,6 +52,7 @@ if (currentEnvironment.environment === "test") {
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
+
 
 
 /**
