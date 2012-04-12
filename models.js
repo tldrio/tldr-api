@@ -23,7 +23,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 
 
 // Returns an object with only the fields of userInput that are user-modifiable
-// Can be used with any model defined with a userSetabefiableFields, with the use of call()
+// Can be used with any model defined with a userSetableFields, with the use of call()
 function acceptableUserInput(userInput) {
   return _u.pick(userInput, this.userSetableFields);
 }
