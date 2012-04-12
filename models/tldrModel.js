@@ -36,7 +36,6 @@ TldrSchema = new Schema({
 
 
 
-
 /**
  * Statics and dynamics are defined here
  */
@@ -44,6 +43,8 @@ TldrSchema = new Schema({
 // Returns the fields that are modifiable by user
 TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
 TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
+
+
 
 
 /**
@@ -57,6 +58,8 @@ TldrSchema.statics.getIdFromUrl = function (url) {
   sha1.update(url, 'utf8');
   return sha1.digest('hex');
 };
+
+
 
 
 /**
@@ -78,17 +81,21 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 };
 
 
+
+
 /**
  * Creates non-user modifiable parameters.
  * This is missing-parameter proof
  *
  */
 TldrSchema.methods.craftInstance = function () {
-  if (! this.url) { this.url = ""; }
+  if (!this.url) { this.url = ""; }
   // _id is the hashed url
   this._id = TldrModel.getIdFromUrl(this.url);
   this.hostname = url.parse(this.url).hostname;
 };
+
+
 
 
 /**
@@ -101,10 +108,13 @@ TldrSchema.methods.craftInstance = function () {
 TldrSchema.methods.update = function (updates) {
   var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
     , self = this;
+
   _u.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
 };
+
+
 
 
 /**
@@ -126,13 +136,12 @@ TldrSchema.pre('save', function(next) {
  *
  */
 
-//_id should be defined a 40 charachters string
+//_id should be a 40 charachters string
 function id_validateLength (value) {
   return ((value !== undefined) && (value.length === 40));
 }
 
-//Url shoudl be defined, contain hostname and protocol info 
-
+//Url should be defined, contain hostname and protocol info 
 function url_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname
