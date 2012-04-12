@@ -193,7 +193,7 @@ describe('Webserver', function () {
     });
 
 
-    it('should not return any tldr if called with 0 or a negative number', function (done) {
+    it('should not return more than 20 tldrs', function (done) {
       var toCreate = [], i;
 
       // Create dummy entries in the database
