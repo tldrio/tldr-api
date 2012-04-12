@@ -26,8 +26,11 @@ var should = require('chai').should()
  */
 
 describe('Models', function() {
+
   describe('#AcceptableUserInput', function () {
+
     it('should accept the correct properties', function() {
+
       var test = models.acceptableUserInput.call(TldrModel, {url: "ttt", summary: "res"});
 
       test.url.should.equal("ttt");
@@ -37,6 +40,7 @@ describe('Models', function() {
 
 
     it('should not use non user modifiable input', function() {
+
       var test = models.acceptableUserInput.call(TldrModel, { summary: "res", donotuseit: "rrrr"});
 
       assert.equal(null, test.url);
@@ -44,9 +48,8 @@ describe('Models', function() {
       assert.equal(null, test.donotuseit);
 
     });
-  });
-  
 
+  });
 
 });
 
