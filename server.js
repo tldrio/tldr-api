@@ -68,7 +68,7 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
-// GET latest tldrs
+// GET latest tldrs with limit number
 server.get('tldrs/latest/:number', requestHandlers.getLatestTldrs);
 
 //POST a new tldr or update existing tldr
