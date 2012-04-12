@@ -51,6 +51,22 @@ var getAllTldrsByHostname = function (req, res, next) {
   });
 };
 
+// GET latest tldrs
+var getLatestTldrs = function(req, res, next) {
+  var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
+
+  if (numberToGet === 0) {
+    return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+  }
+
+  TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+    return res.json(200, docs);
+  });
+};
+
+
 
 // POST create or update tldr
 //
@@ -68,7 +84,7 @@ function postCreateOrUpdateTldr (req, res, next) {
   if (!req.body.url) {
     return next( new restify.MissingParameterError('No url is provided in request'));
   }
-  
+
   //Retrieve _id to perform lookup in db
   id = TldrModel.getIdFromUrl(req.body.url);
 
@@ -90,15 +106,11 @@ function postCreateOrUpdateTldr (req, res, next) {
     } else {
       //Update existing tldr
       // Only update fields user has the rights to update to avoid unexpected behaviour
-      var validUpdateFields = _u.intersection(_u.keys(req.body), models.TldrModel.userUpdatableFields);
-      tldr = docs[0];
       //We don't need to udpate url, _id or hostname because if record was found _id is the same
       //and url didn't change
-
-      _u.each( validUpdateFields, function (validField) {
-        tldr[validField] = req.body[validField];
-      });
-
+      tldr = docs[0];
+      tldr.update(req.body);
+      
       tldr.save(function(err) {
         if (err) {
           if (err.errors) {
@@ -119,4 +131,5 @@ function postCreateOrUpdateTldr (req, res, next) {
 module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrById = getTldrById;
 module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
+module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

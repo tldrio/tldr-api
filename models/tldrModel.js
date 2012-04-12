@@ -15,6 +15,8 @@ var mongoose = require('mongoose')
   , customErrors = require('../lib/errors');
 
 
+
+
 /**
  * Schema
  *
@@ -22,31 +24,66 @@ var mongoose = require('mongoose')
 
 // Define tldr schema
 TldrSchema = new Schema({
-	_id        : String,
-	url        : String,
-	hostname   : String,
-	summary    : String
+	_id             : String,
+	url             : String,
+	hostname        : String,
+	summary         : String,
+  resourceAuthor  : String,
+  dateCreated     : Date,
+  lastUpdated     : Date
 });
 
 
-/*
+
+
+
+/**
  * Statics and dynamics are defined here
  */
 
 // Returns the fields that are modifiable by user
-TldrSchema.statics.userSetableFields = ['url', 'summary'];
-TldrSchema.statics.userUpdatableFields = ['summary'];
+TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
+TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
 
-//Compute Id from Url
+
+/**
+ * Compute Id (Hash) from Url with the current choice of hash function
+ * @param {String} url Url to get hashed
+ * @return {String} Id associated with the given url
+ */
+
 TldrSchema.statics.getIdFromUrl = function (url) {
   var sha1 = crypto.createHash('sha1');
   sha1.update(url, 'utf8');
   return sha1.digest('hex');
 };
 
-// Creates non-user modifiable parameters. This is missing-parameter proof
-TldrSchema.methods.craftInstance = function () {
 
+/**
+ * Create a new TldrInstance and craft all the nececessary.
+ * Only fields in userSetableFields are handled
+ * @param {JSObject} userInput Object containing the fields to set for the tldr instance
+ *
+ */
+
+TldrSchema.statics.createAndCraftInstance = function(userInput) {
+  var validFields = _u.pick(userInput, this.userSetableFields)
+    , instance = new TldrModel(validFields);
+
+  instance.craftInstance();
+  instance.dateCreated = new Date();
+  instance.lastUpdated = new Date();
+
+  return instance;
+};
+
+
+/**
+ * Creates non-user modifiable parameters.
+ * This is missing-parameter proof
+ *
+ */
+TldrSchema.methods.craftInstance = function () {
   if (! this.url) { this.url = ""; }
   // _id is the hashed url
   this._id = TldrModel.getIdFromUrl(this.url);
@@ -54,12 +91,34 @@ TldrSchema.methods.craftInstance = function () {
 };
 
 
-TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, this.userSetableFields)
-    , instance = new TldrModel(validFields);
-  instance.craftInstance();
-  return instance;
+/**
+ * Update tldr object with the provided hash.
+ * Only fields in userUpdatableFields are handled
+ * @param {JSObject} updates Object containing fields to update with corresponding value
+ *
+ */
+
+TldrSchema.methods.update = function (updates) {
+  var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
+    , self = this;
+  _u.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
 };
+
+
+/**
+ * Middlewares
+ *
+ */
+
+TldrSchema.pre('save', function(next) {
+  this.lastUpdated = new Date();
+
+  next();
+});
+
+
 
 
 /**
@@ -102,6 +161,9 @@ function hostname_validatePresenceOfDot (value) {
 }
 
 
+
+
+
 /**
  * Validators mappings
  *
@@ -119,6 +181,9 @@ TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be n
 TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
+TldrSchema.path('dateCreated').required(true);
+
+TldrSchema.path('lastUpdated').required(true);
 
 
 // Define tldr model
