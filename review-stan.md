@@ -19,3 +19,5 @@
 
 ## Architecture changes needed
 
+* i'm not sure that models should be defined at the same place as the
+	model helpers, it looks kinda weird to me.
