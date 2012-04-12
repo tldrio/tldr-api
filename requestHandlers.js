@@ -15,7 +15,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , customErrors = require('./lib/errors');
 
 
-// If an error occurs when retrieving from/putting ti the db, inform the user gracefully
+// If an error occurs when retrieving from/putting to the db, inform the user gracefully
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
   bunyan.error({error: err, message: msg});
