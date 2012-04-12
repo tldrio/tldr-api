@@ -21,7 +21,7 @@ var should = require('chai').should()
 
 
 /*
- * Set up test
+ * Start Server and Client
 */
 
 //create client to test api
@@ -53,7 +53,6 @@ describe('Webserver', function () {
   });
 
   after(function (done) {
-
     db.closeDatabaseConnection(done);
   });
 
@@ -91,20 +90,24 @@ describe('Webserver', function () {
       if (err) {throw done(err);}
       done();
     });
+
   });
 
   // Test GET requests
   describe('should handle GET request for', function () {
 
     it('an existing tldr', function (done) {
+
       client.get('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/nutcrackers');
         done();
       });
+
     });
 
     it('a non existing tldr', function (done) {
+
       client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
@@ -114,7 +117,9 @@ describe('Webserver', function () {
       });
 
     });
+
     it('all the tldrs', function (done) {
+
       client.get('/tldrs', function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(403);
@@ -122,9 +127,11 @@ describe('Webserver', function () {
         response.code.should.equal('NotAuthorized');
         done();
       });
+
     });
 
     it('a non existing route', function (done) {
+
       client.get('/*', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
 
@@ -133,22 +140,27 @@ describe('Webserver', function () {
           done();
         });
       });
+
     });
 
     it('all tldrs for an existing given hostname', function (done) {
+
       client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(2);
-        _u.any(obj, function(value) {return value.summary === "Awesome Blog"} ).should.equal(true);
-        _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+        _u.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
+        _u.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
         done();
       });
+
     });
 
     it('all tldrs for a non-existing hostname (return empty array)', function (done) {
+
       client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(0);
         done();
       });
+
     });
 
 
@@ -181,6 +193,7 @@ describe('Webserver', function () {
 
 
     it('should not return any tldr if called with 0 or a negative number', function (done) {
+
       client.get('/tldrs/latest/0', function (err, req, res, obj) {
         obj.length.should.equal(0);
 
@@ -189,11 +202,14 @@ describe('Webserver', function () {
 
           done();
         });
+
       });
+
     });
 
 
     it('should not return any tldr if called with 0 or a negative number', function (done) {
+
       var toCreate = [], i;
 
       // Create dummy entries in the database
@@ -207,6 +223,7 @@ describe('Webserver', function () {
           done();
         });
       });
+
     });
 
 
@@ -215,113 +232,137 @@ describe('Webserver', function () {
   //Test POST Requests
   describe('should handle POST request', function () {
 
-    it('for /tldrs route with no url provided in body and return error', function (done) {
-      var tldrData = {summary: 'This is a summary', 
-        unusedFields: 'toto'};
-        client.post('/tldrs', tldrData, function (err, req, res, obj) {
-          res.statusCode.should.equal(409);
-          err.name.should.equal('MissingParameterError');
-          done();
-        });
+    it('for /tldrs route with no url provided in body and return an error', function (done) {
+      var tldrData = {
+						summary: 'This is a summary', 
+						unusedFields: 'toto'};
+
+			client.post('/tldrs', tldrData, function (err, req, res, obj) {
+				res.statusCode.should.equal(409);
+				err.name.should.equal('MissingParameterError');
+				done();
+			});
 
     });
 
-    it('for /tldrs route with no summary provided in body and retur error', function (done) {
-      var tldrData = {url: 'http://toto.com', 
-        unusedFields: 'toto'};
-        client.post('/tldrs', tldrData, function (err, req, res, obj) {
-          res.statusCode.should.equal(400);
-          err.name.should.equal('InvalidContentError');
-          done();
-        });
+    it('for /tldrs route with no summary provided in body and return error', function (done) {
+
+      var tldrData = {
+						url: 'http://toto.com', 
+						unusedFields: 'toto'};
+
+			client.post('/tldrs', tldrData, function (err, req, res, obj) {
+				res.statusCode.should.equal(400);
+				err.name.should.equal('InvalidContentError');
+				done();
+			});
+
     });
 
     it('for creating a new tldr', function (done) {
-      var tldrData = {url: 'http://www.youporn.com/milf',
-        summary: 'Sluts and cockslapers', 
-        unusedFields: "coin"}
+
+      var tldrData = {
+						url: 'http://www.youporn.com/milf',
+						summary: 'Sluts and cockslapers', 
+						unusedFields: "coin"}
         , tldr = TldrModel.createAndCraftInstance(tldrData);
 
-        TldrModel.find({_id: tldr._id} , function (err, docs) {
-          if (err) { throw err;}
-          //Check tldr doesn't exist
-          docs.length.should.equal(0);
-          client.post('/tldrs', tldrData, function (err, req, res, obj) {
-            res.statusCode.should.equal(200);
-            obj._id.should.equal(tldr._id);
-            obj.summary.should.equal(tldrData.summary);
-            obj.should.not.have.property('unusedFields');
-            TldrModel.find({_id: tldr._id} , function (err, docs) {
-              if (err) { throw err;}
-              // Check POST request created entry in DB
-              docs.length.should.equal(1);      
-              docs[0].url.should.equal(tldrData.url);
-              done();
-            });
-          });
-        });
+			TldrModel.find({_id: tldr._id} , function (err, docs) {
+
+				if (err) { throw err;}
+				
+				//Check tldr doesn't exist
+				docs.length.should.equal(0);
+
+				client.post('/tldrs', tldrData, function (err, req, res, obj) {
+
+					res.statusCode.should.equal(200);
+					obj._id.should.equal(tldr._id);
+					obj.summary.should.equal(tldrData.summary);
+					obj.should.not.have.property('unusedFields');
+
+					TldrModel.find({_id: tldr._id} , function (err, docs) {
+						if (err) { throw err;}
+						// Check POST request created entry in DB
+						docs.length.should.equal(1);      
+						docs[0].url.should.equal(tldrData.url);
+						done();
+					});
+
+				});
+
+			});
+
     });
 
 
     it('for consecutive double post with same data', function(done) {
-      var tldrData = {url: 'http://www.youporn.com/milf',
-        summary: 'Sluts and cockslapers'}
+			
+      var tldrData = {
+				    url: 'http://www.youporn.com/milf',
+            summary: 'Sluts and cockslapers'}
         , tldr = TldrModel.createAndCraftInstance(tldrData);
 
-        client.post('/tldrs', tldrData, function (err, req, res, obj) {
-          res.statusCode.should.equal(200);
-          obj._id.should.equal(tldr._id);
-          obj.summary.should.equal(tldrData.summary);
-          client.post('/tldrs',tldrData, function(err, req, res, obj) {
-            res.statusCode.should.equal(200);
-            done();
-          });
-        });
+			client.post('/tldrs', tldrData, function (err, req, res, obj) {
+
+				res.statusCode.should.equal(200);
+				obj._id.should.equal(tldr._id);
+				obj.summary.should.equal(tldrData.summary);
+
+				client.post('/tldrs',tldrData, function(err, req, res, obj) {
+					res.statusCode.should.equal(200);
+					done();
+				});
+
+			});
+
     });
 
 
     it('updating an existing tldr', function (done) {
-      var tldrUpdates = {url: 'http://needforair.com/nutcrackers',
-        summary: 'This blog smells like shit'}
+
+      var tldrUpdates = {
+				    url: 'http://needforair.com/nutcrackers',
+            summary: 'This blog smells like shit'}
         , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
+			TldrModel.find({_id: tldr._id}, function (err, docs) {
+				if (err) {throw err;}
 
+				docs.length.should.equal(1);
+				docs[0].summary.should.equal('Awesome Blog');
 
-       
+				client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
+					res.statusCode.should.equal(200);
+					obj._id.should.equal(tldr._id);
+					obj.summary.should.equal('This blog smells like shit');
 
-        TldrModel.find({_id: tldr._id}, function (err, docs) {
-          if (err) {throw err;}
+					TldrModel.find({_id: tldr._id}, function(err, docs) {
+						assert.isTrue(docs[0].lastUpdated - docs[0].dateCreated > 0);
 
-          docs.length.should.equal(1);
-          docs[0].summary.should.equal('Awesome Blog');
+						done();
+					});
 
-          client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
-            res.statusCode.should.equal(200);
-            obj._id.should.equal(tldr._id);
-            obj.summary.should.equal('This blog smells like shit');
+				});
 
-            TldrModel.find({_id: tldr._id}, function(err, docs) {
-              assert.isTrue(docs[0].lastUpdated - docs[0].dateCreated > 0);
-
-              done();
-            });
-          });
-        });
-
-
+			});
 
     });
 
 
-    it('and not allow direct post to speicified id', function (done) {
+    it('and not allow direct post to specified id', function (done) {
+
       var tldrUpdates = {summary: 'This blog smells like shit', url: "ytr.fr"};
 
       client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
         res.statusCode.should.equal(405);
         done();
       });
+
     });
+
   });
+
 });
 
 
