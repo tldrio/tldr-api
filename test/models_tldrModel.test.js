@@ -48,14 +48,15 @@ describe('TldrModel', function () {
     });
 
     it('should detect missing required _id arg', function (done) {
+
       var tldr = new TldrModel({
-        url: 'needforair.com/nutcrackers',
-        hostname: 'needforair.com',
-        summary: 'Awesome Blog',
-        dateCreated: new Date(),
-        lastUpdated: new Date()
-      })
-       , valErr;
+					url: 'needforair.com/nutcrackers',
+					hostname: 'needforair.com',
+					summary: 'Awesome Blog',
+					dateCreated: new Date(),
+					lastUpdated: new Date()
+				})
+        , valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
@@ -70,16 +71,18 @@ describe('TldrModel', function () {
 
         done();
       });
+
     });
 
     it('should detect missing required dateCreated and lastUpdated args', function (done) {
+
       var tldr = new TldrModel({
-        url: 'http://needforair.com/nutcrackers',
-        _id: "aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx",
-        hostname: 'needforair.com',
-        summary: 'Awesome Blog',
-      })
-       , valErr;
+					url: 'http://needforair.com/nutcrackers',
+					_id: "aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx",
+					hostname: 'needforair.com',
+					summary: 'Awesome Blog',
+				})
+				, valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
@@ -95,58 +98,72 @@ describe('TldrModel', function () {
 
         done();
       });
+
     });
     
     it('should detect missing required url arg', function (done) {
+
       var tldr = new TldrModel({
-        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-        hostname: 'needforair.com',
-        summary: 'Awesome Blog',
-      });
+				_id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
+				hostname: 'needforair.com',
+				summary: 'Awesome Blog',
+			});
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
     it('should detect missing required summary arg', function (done) {
+
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair.com',
       });
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
     it('should detect missing required hostname arg', function (done) {
+
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
         summary: 'Awesome Blog',
       });
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
     it('should detect bad hostname format', function (done) {
+
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair',
         summary: 'Awesome Blog',
       });
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
     it('should handle wrong type of arg', function (done) {
+
       var parasite = {foo: 'bar'}
         , tldr = new TldrModel({
             _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
@@ -154,29 +171,36 @@ describe('TldrModel', function () {
             hostname: 'needforair.com',
             summary: parasite,
       });
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
     it('should handle wrong url formatting', function (done) {
+
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair.com',
         summary: 'Awesome Blog',
       });
+
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
         done();
       });
+
     });
 
   });
 
   describe("#craftInstance", function() {
+
     it("should not break if no url is given", function(done) {
+
       var tldr = new TldrModel({summary: "a summary"});
       assert.equal(null, tldr.url);
 
@@ -193,6 +217,7 @@ describe('TldrModel', function () {
 
 
     it ("should calculate the correct id and hostname", function(done) {
+
       var tldr = new TldrModel({url: "http://adomain.tld"})
         , niceErrors;
       assert.equal(null, tldr.hostname);
@@ -213,10 +238,13 @@ describe('TldrModel', function () {
 
       done();
     });
+
   });
 
   describe('#createAndCraftInstance', function () {
+
     it('should allow user to set url, summary and resourceAuthor only', function () {
+
       // Test is coupled with createAndCraftInstance because they are designed to work together
       var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
       tldr.url.should.equal("bla");
@@ -228,9 +256,11 @@ describe('TldrModel', function () {
       tldr2.should.not.have.property('summary');
       tldr2.should.not.have.property('resourceAuthor');
       tldr2.url.should.eql('');
+
     });
 
     it('should allow user to update summary and sourceAuthor only', function () {
+
       var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
         , toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusedField: 'new4'};
 
@@ -246,8 +276,9 @@ describe('TldrModel', function () {
       tldr.resourceAuthor.should.equal('new3');
       tldr.should.not.have.property('unusedField');
 
-
     });
+
   });
+
 });
 
