@@ -26,7 +26,7 @@ var should = require('chai').should()
 
 //create client to test api
 client = restify.createJsonClient({
-  url: 'http://localhost:' + 8686,
+  url: 'https://localhost:' + 8686,
 });
 //start server
 server.listen(8686, function () {

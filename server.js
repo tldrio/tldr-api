@@ -6,6 +6,7 @@
 
 
 var restify = require('restify')
+  , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose')
   , models = require('./models')
@@ -14,7 +15,6 @@ var restify = require('restify')
   , currentEnvironment = require('./environments').currentEnvironment
   , privateKey = fs.readFileSync('privatekey.pem').toString()
   , certificate = fs.readFileSync('certificate.pem').toString()
-  , credentials = crypto.createCredentials({key: privateKey, cert: certificate})
   , server;                                 // Will store our restify server
 
 
@@ -33,14 +33,18 @@ if (currentEnvironment.environment === "production") {
  * Configure 
  */
 
-var // If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
+// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
 if (currentEnvironment.environment === "test") {
   server = restify.createServer({
-    name: "tldr API"
+    name: "tldr API",
+    key: privateKey, 
+    certificate: certificate
   });
 } else {
   server = restify.createServer({
     name: "tldr API",
+    key: privateKey, 
+    certificate: certificate
     //log: bunyan     // No restify logging for now
   });
 }
