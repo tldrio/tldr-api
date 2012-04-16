@@ -12,6 +12,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
+  , userSetableFields = ['url', 'summary', 'resourceAuthor'] // setable fields by user
+  , userUpdatableFields = ['summary', 'resourceAuthor']// updatabe fields by user
   , customErrors = require('../lib/errors');
 
 
@@ -41,9 +43,27 @@ TldrSchema = new Schema({
  * Statics and dynamics are defined here
  */
 
-// Returns the fields that are modifiable by user
-TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
-TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
+
+
+
+/**
+ * Get the array of fields a user can set when creating a tldr
+ * @return {Array} Array of setable fields by user
+ */
+
+TldrSchema.statics.getUserSetableFields = function () {
+  return userSetableFields;
+};
+
+
+/**
+ * Get the array of fields a user can update when creating a tldr
+ * @return {Array} Array of updatable fields by user
+ */
+
+TldrSchema.statics.getUserUpdatableFields = function () {
+  return userUpdatableFields;
+};
 
 
 /**
@@ -67,7 +87,7 @@ TldrSchema.statics.getIdFromUrl = function (url) {
  */
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, this.userSetableFields)
+  var validFields = _u.pick(userInput, userSetableFields)
     , instance = new TldrModel(validFields);
 
   instance.craftInstance();
@@ -99,7 +119,7 @@ TldrSchema.methods.craftInstance = function () {
  */
 
 TldrSchema.methods.update = function (updates) {
-  var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
+  var validUpdateFields = _u.intersection(_u.keys(updates), userUpdatableFields)
     , self = this;
   _u.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
