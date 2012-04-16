@@ -285,10 +285,6 @@ describe('Webserver', function () {
         summary: 'This blog smells like shit'}
         , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
-
-
-       
-
         TldrModel.find({_id: tldr._id}, function (err, docs) {
           if (err) {throw err;}
 
@@ -307,9 +303,6 @@ describe('Webserver', function () {
             });
           });
         });
-
-
-
     });
 
 
