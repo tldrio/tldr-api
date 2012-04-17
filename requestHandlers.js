@@ -23,6 +23,7 @@ function handleInternalDBError(err, next, msg) {
 }
 
 
+
 // GET all tldrs
 function getAllTldrs (req, res, next) {
   return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
@@ -75,12 +76,10 @@ function getLatestTldrs (req, res, next) {
 // else create new tldr associated to this url
 
 function postCreateOrUpdateTldr (req, res, next) {
-  var tldrData = {}
-    , sha1 = crypto.createHash('sha1')
-    , id
+  var id
     , tldr;
 
-  // Return Error if url is missing 
+  // Return Error if url is missing
   if (!req.body.url) {
     return next( new restify.MissingParameterError('No URL was provided in the request'));
   }
@@ -93,6 +92,7 @@ function postCreateOrUpdateTldr (req, res, next) {
     if (docs.length === 0) {
       //Create New Tldr
       tldr = TldrModel.createAndCraftInstance(req.body);
+
       tldr.save(function (err) {
         if (err) {
           if (err.errors) {
@@ -110,7 +110,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       //and url didn't change
       tldr = docs[0];
       tldr.update(req.body);
-      
+
       tldr.save(function(err) {
         if (err) {
           if (err.errors) {

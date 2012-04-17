@@ -208,8 +208,7 @@ describe('Webserver', function () {
     });
 
 
-    it('should not return any tldr if called with 0 or a negative number', function (done) {
-
+    it('should not return more than 20 tldrs', function (done) {
       var toCreate = [], i;
 
       // Create dummy entries in the database
@@ -219,15 +218,13 @@ describe('Webserver', function () {
         client.get('/tldrs/latest/123', function (err, req, res, obj) {
           obj.length.should.equal(20);
 
-
           done();
         });
       });
-
     });
-
-
   });
+
+
 
   //Test POST Requests
   describe('should handle POST request', function () {
@@ -320,7 +317,6 @@ describe('Webserver', function () {
 
 
     it('updating an existing tldr', function (done) {
-
       var tldrUpdates = {
 				    url: 'http://needforair.com/nutcrackers',
             summary: 'This blog smells like shit'}
