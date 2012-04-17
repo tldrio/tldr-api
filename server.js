@@ -32,6 +32,7 @@ if (currentEnvironment.environment === "production") {
 
 
 
+
 /**
  * Configure 
  */
@@ -52,6 +53,7 @@ if (currentEnvironment.environment === "test") {
 server.use(restify.acceptParser(server.acceptable));
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
+
 
 
 

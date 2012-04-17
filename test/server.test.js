@@ -88,6 +88,7 @@ describe('Webserver', function () {
 
     TldrModel.remove(null, function (err) {
       if (err) {throw done(err);}
+
       done();
     });
 
@@ -317,9 +318,10 @@ describe('Webserver', function () {
 
 
     it('updating an existing tldr', function (done) {
+
       var tldrUpdates = {
-				    url: 'http://needforair.com/nutcrackers',
-            summary: 'This blog smells like shit'}
+				    url: 'http://needforair.com/nutcrackers'
+          , summary: 'This blog smells like shit'}
         , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
 
 			TldrModel.find({_id: tldr._id}, function (err, docs) {
