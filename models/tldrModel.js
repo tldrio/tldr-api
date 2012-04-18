@@ -12,6 +12,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
+  , userSetableFields = ['url', 'summary', 'resourceAuthor'] // setable fields by user
+  , userUpdatableFields = ['summary', 'resourceAuthor']// updatabe fields by user
   , customErrors = require('../lib/errors');
 
 
@@ -36,14 +38,33 @@ TldrSchema = new Schema({
 
 
 
-
 /**
  * Statics and dynamics are defined here
  */
 
-// Returns the fields that are modifiable by user
-TldrSchema.statics.userSetableFields = ['url', 'summary', 'resourceAuthor'];
-TldrSchema.statics.userUpdatableFields = ['summary', 'resourceAuthor'];
+
+
+
+/**
+ * Get the array of fields a user can set when creating a tldr
+ * @return {Array} Array of setable fields by user
+ */
+
+TldrSchema.statics.getUserSetableFields = function () {
+  return userSetableFields;
+};
+
+
+/**
+ * Get the array of fields a user can update when creating a tldr
+ * @return {Array} Array of updatable fields by user
+ */
+
+TldrSchema.statics.getUserUpdatableFields = function () {
+  return userUpdatableFields;
+};
+
+
 
 
 /**
@@ -59,6 +80,8 @@ TldrSchema.statics.getIdFromUrl = function (url) {
 };
 
 
+
+
 /**
  * Create a new TldrInstance and craft all the nececessary.
  * Only fields in userSetableFields are handled
@@ -67,7 +90,7 @@ TldrSchema.statics.getIdFromUrl = function (url) {
  */
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, this.userSetableFields)
+  var validFields = _u.pick(userInput, userSetableFields)
     , instance = new TldrModel(validFields);
 
   instance.craftInstance();
@@ -78,17 +101,21 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 };
 
 
+
+
 /**
  * Creates non-user modifiable parameters.
  * This is missing-parameter proof
  *
  */
 TldrSchema.methods.craftInstance = function () {
-  if (! this.url) { this.url = ""; }
+  if (!this.url) { this.url = ""; }
   // _id is the hashed url
   this._id = TldrModel.getIdFromUrl(this.url);
   this.hostname = url.parse(this.url).hostname;
 };
+
+
 
 
 /**
@@ -99,12 +126,15 @@ TldrSchema.methods.craftInstance = function () {
  */
 
 TldrSchema.methods.update = function (updates) {
-  var validUpdateFields = _u.intersection(_u.keys(updates), TldrModel.userUpdatableFields)
+  var validUpdateFields = _u.intersection(_u.keys(updates), userUpdatableFields)
     , self = this;
+
   _u.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
 };
+
+
 
 
 /**
@@ -126,13 +156,12 @@ TldrSchema.pre('save', function(next) {
  *
  */
 
-//_id should be defined a 40 charachters string
+//_id should be a 40 charachters string
 function id_validateLength (value) {
   return ((value !== undefined) && (value.length === 40));
 }
 
-//Url shoudl be defined, contain hostname and protocol info 
-
+//Url should be defined, contain hostname and protocol info 
 function url_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname

@@ -1,0 +1,81 @@
+<!DOCTYPE html>  <html> <head>   <title>database.test.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="environments.html">                 environments.js               </a>                                           <a class="source" href="models.html">                 models.js               </a>                                           <a class="source" href="tldrModel.html">                 tldrModel.js               </a>                                           <a class="source" href="requestHandlers.html">                 requestHandlers.js               </a>                                           <a class="source" href="server.html">                 server.js               </a>                                           <a class="source" href="crypto.test.html">                 crypto.test.js               </a>                                           <a class="source" href="database.test.html">                 database.test.js               </a>                                           <a class="source" href="models.test.html">                 models.test.js               </a>                                           <a class="source" href="models_tldrModel.test.html">                 models_tldrModel.test.js               </a>                                           <a class="source" href="server.test.html">                 server.test.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               database.test.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/**</span>
+<span class="cm"> * Database tests</span>
+<span class="cm"> * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti</span>
+<span class="cm"> * Fucking Proprietary License</span>
+<span class="cm"> */</span>
+
+
+<span class="kd">var</span> <span class="nx">should</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;chai&#39;</span><span class="p">).</span><span class="nx">should</span><span class="p">()</span>
+  <span class="p">,</span> <span class="nx">assert</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;chai&#39;</span><span class="p">).</span><span class="nx">assert</span>
+  <span class="p">,</span> <span class="nx">restify</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;restify&#39;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">sinon</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;sinon&#39;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">bunyan</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../lib/logger&#39;</span><span class="p">).</span><span class="nx">bunyan</span> <span class="c1">// Audit logger for restify</span>
+  <span class="p">,</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;mongoose&#39;</span><span class="p">)</span> <span class="c1">// Mongoose ODM to Mongo</span>
+  <span class="p">,</span> <span class="nx">models</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../models&#39;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">db</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../lib/db&#39;</span><span class="p">)</span>
+	<span class="p">,</span> <span class="nx">TldrModel</span> <span class="o">=</span> <span class="nx">models</span><span class="p">.</span><span class="nx">TldrModel</span>
+  <span class="p">,</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../server&#39;</span><span class="p">)</span>
+  <span class="p">,</span> <span class="nx">customErrors</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;../lib/errors&#39;</span><span class="p">);</span>
+
+
+
+
+
+<span class="cm">/**</span>
+<span class="cm"> * Tests</span>
+<span class="cm"> */</span>
+
+
+<span class="nx">describe</span><span class="p">(</span><span class="s1">&#39;Database&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+  <span class="nx">before</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">connectToDatabase</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+
+  <span class="p">});</span>
+
+  <span class="nx">after</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">closeDatabaseConnection</span><span class="p">(</span><span class="nx">done</span><span class="p">);</span>
+  <span class="p">});</span>
+
+	<span class="nx">beforeEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>dummy models</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">tldr1</span> <span class="o">=</span> <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">createAndCraftInstance</span><span class="p">({</span><span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://needforair.com/nutcrackers&#39;</span><span class="p">,</span> <span class="nx">summary</span><span class="o">:</span> <span class="s1">&#39;Awesome Blog&#39;</span><span class="p">})</span>
+      <span class="p">,</span> <span class="nx">tldr2</span> <span class="o">=</span> <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">createAndCraftInstance</span><span class="p">({</span><span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://avc.com/mba-monday&#39;</span><span class="p">,</span> <span class="nx">summary</span><span class="o">:</span> <span class="s1">&#39;Fred Wilson is my God&#39;</span><span class="p">})</span>
+      <span class="p">,</span> <span class="nx">tldr3</span> <span class="o">=</span> <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">createAndCraftInstance</span><span class="p">({</span><span class="nx">url</span><span class="o">:</span> <span class="s1">&#39;http://bothsidesofthetable.com/deflationnary-economics&#39;</span><span class="p">,</span> <span class="nx">summary</span><span class="o">:</span> <span class="s1">&#39;Sustering is my religion&#39;</span><span class="p">});</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>clear database and repopulate</p>             </td>             <td class="code">               <div class="highlight"><pre>		<span class="nx">TldrModel</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+		  <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);}</span>
+			<span class="nx">tldr1</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span>	<span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+			  <span class="nx">tldr2</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+					<span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+			    <span class="nx">tldr3</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+			      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+						<span class="nx">done</span><span class="p">();</span>
+			    <span class="p">});</span>
+			  <span class="p">});</span>
+			<span class="p">});</span>
+		<span class="p">});</span>
+
+	<span class="p">});</span>
+
+  <span class="nx">afterEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">remove</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);}</span>               
+      <span class="nx">done</span><span class="p">();</span>
+    <span class="p">});</span>
+  <span class="p">});</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Check that all 3 records are in the db</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should return full collection&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+			<span class="nx">docs</span><span class="p">.</span><span class="nx">should</span><span class="p">.</span><span class="nx">have</span><span class="p">.</span><span class="nx">length</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+			<span class="nx">done</span><span class="p">();</span>
+    <span class="p">});</span>
+  <span class="p">});</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Get tldr with id 1</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nx">it</span><span class="p">(</span><span class="s1">&#39;should return a tldr for an existing id&#39;</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">htldrId</span> <span class="o">=</span> <span class="s1">&#39;c63588884fecf318d13fc3cf3598b19f4f461d21&#39;</span><span class="p">;</span>
+	  <span class="nx">TldrModel</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span> <span class="p">{</span><span class="nx">_id</span><span class="o">:</span> <span class="nx">htldrId</span><span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">docs</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span> <span class="k">throw</span> <span class="nx">done</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span> <span class="p">}</span>
+      <span class="kd">var</span> <span class="nx">tldr</span> <span class="o">=</span> <span class="nx">docs</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+			<span class="nx">tldr</span><span class="p">.</span><span class="nx">url</span><span class="p">.</span><span class="nx">should</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="s1">&#39;http://needforair.com/nutcrackers&#39;</span><span class="p">);</span>
+			<span class="nx">tldr</span><span class="p">.</span><span class="nx">hostname</span><span class="p">.</span><span class="nx">should</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="s1">&#39;needforair.com&#39;</span><span class="p">);</span>
+			<span class="nx">done</span><span class="p">();</span>
+	  <span class="p">});</span>
+	<span class="p">});</span>
+<span class="p">});</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

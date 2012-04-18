@@ -38,6 +38,7 @@ describe('Database', function () {
   });
 
 	beforeEach(function (done) {
+
 		// dummy models
     var tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
       , tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
@@ -61,24 +62,30 @@ describe('Database', function () {
 	});
 
   afterEach(function (done) {
+
     TldrModel.remove(null, function (err) {
       if (err) {throw done(err);}               
       done();
     });
+
   });
 
 	// Check that all 3 records are in the db
   it('should return full collection', function (done) {
+
     TldrModel.find(null, function (err, docs) {
       if (err) { throw done(err); }
 			docs.should.have.length(3);
 			done();
     });
+
   });
 
 	// Get tldr with id 1
 	it('should return a tldr for an existing id', function (done) {
+
     var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
+
 	  TldrModel.find( {_id: htldrId}, function (err, docs) {
       if (err) { throw done(err); }
       var tldr = docs[0];
@@ -86,7 +93,9 @@ describe('Database', function () {
 			tldr.hostname.should.equal('needforair.com');
 			done();
 	  });
+
 	});
+
 });
 
 

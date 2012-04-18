@@ -15,7 +15,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , customErrors = require('./lib/errors');
 
 
-// If an error occurs when retrieving from/putting ti the db, inform the user gracefully
+// If an error occurs when retrieving from/putting to the db, inform the user gracefully
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
   bunyan.error({error: err, message: msg});
@@ -23,13 +23,14 @@ function handleInternalDBError(err, next, msg) {
 }
 
 
+
 // GET all tldrs
-var getAllTldrs = function (req, res, next) {
+function getAllTldrs (req, res, next) {
   return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
-};
+}
 
 // GET a tldr by id
-var getTldrById = function (req, res, next) {
+function getTldrById (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrById"); }
@@ -40,19 +41,19 @@ var getTldrById = function (req, res, next) {
       return res.json(200, docs[0]);    // Success
     }
   });
-};
+}
 
 //GET all tldrs corresponding to a hostname
-var getAllTldrsByHostname = function (req, res, next) {
+function getAllTldrsByHostname (req, res, next) {
   TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
 
     return res.json(200, docs);
   });
-};
+}
 
 // GET latest tldrs
-var getLatestTldrs = function(req, res, next) {
+function getLatestTldrs (req, res, next) {
   var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
 
   if (numberToGet === 0) {
@@ -64,25 +65,23 @@ var getLatestTldrs = function(req, res, next) {
 
     return res.json(200, docs);
   });
-};
+}
 
 
 
 // POST create or update tldr
 //
 // Provide url, summary etc... in request
-// If tldr associated to url exists update the updatablefields
+// If tldr associated to url exists update the updatable fields
 // else create new tldr associated to this url
 
 function postCreateOrUpdateTldr (req, res, next) {
-  var tldrData = {}
-    , sha1 = crypto.createHash('sha1')
-    , id
+  var id
     , tldr;
 
-  // Return Error if url is missing 
+  // Return Error if url is missing
   if (!req.body.url) {
-    return next( new restify.MissingParameterError('No url is provided in request'));
+    return next( new restify.MissingParameterError('No URL was provided in the request'));
   }
 
   //Retrieve _id to perform lookup in db
@@ -93,6 +92,7 @@ function postCreateOrUpdateTldr (req, res, next) {
     if (docs.length === 0) {
       //Create New Tldr
       tldr = TldrModel.createAndCraftInstance(req.body);
+
       tldr.save(function (err) {
         if (err) {
           if (err.errors) {
@@ -110,7 +110,7 @@ function postCreateOrUpdateTldr (req, res, next) {
       //and url didn't change
       tldr = docs[0];
       tldr.update(req.body);
-      
+
       tldr.save(function(err) {
         if (err) {
           if (err.errors) {

@@ -18,10 +18,14 @@ var restify = require('restify')
   , server;                                 // Will store our restify server
 
 
-// Last wall of defense. If an exception makes its way to the top, the service shouldn't
-// stop, but log a fatal error and send an email to us.
-// Of course, this piece of code should NEVER have to be called.
-// Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
+
+/**
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called.
+ * Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
+ */
+
 if (currentEnvironment.environment === "production") {
   process.on('uncaughtException', function(err) {
     // TODO implement email sending
@@ -29,11 +33,14 @@ if (currentEnvironment.environment === "production") {
   });
 }
 
+
+
+
 /**
  * Configure 
  */
 
-// If we're testing, avoid logging everything restify tells us to avoid cluttering the screen
+// If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
 if (currentEnvironment.environment === "test") {
   server = restify.createServer({
     name: "tldr API",
@@ -66,6 +73,8 @@ function authenticate (req, res, next) {
   }
 }
 
+
+
 /**
  * Routes
  */
@@ -79,7 +88,7 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
-// GET latest tldrs
+// GET latest tldrs with limit number
 server.get('tldrs/latest/:number', requestHandlers.getLatestTldrs);
 
 //POST a new tldr or update existing tldr
