@@ -84,7 +84,7 @@ function postCreateOrUpdateTldr (req, res, next) {
   }
 
   //Retrieve _id to perform lookup in db
-  id = TldrModel.getIdFromUrl(req.body.url);
+  id = TldrModel.computeIdFromUrl(req.body.url);
 
   TldrModel.find({_id:id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }

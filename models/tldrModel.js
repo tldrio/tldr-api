@@ -73,7 +73,7 @@ TldrSchema.statics.getUserUpdatableFields = function () {
  * @return {String} Id associated with the given url
  */
 
-TldrSchema.statics.getIdFromUrl = function (url) {
+TldrSchema.statics.computeIdFromUrl = function (url) {
   var sha1 = crypto.createHash('sha1');
   sha1.update(url, 'utf8');
   return sha1.digest('hex');
@@ -111,7 +111,7 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 TldrSchema.methods.craftInstance = function () {
   if (!this.url) { this.url = ""; }
   // _id is the hashed url
-  this._id = TldrModel.getIdFromUrl(this.url);
+  this._id = TldrModel.computeIdFromUrl(this.url);
   this.hostname = url.parse(this.url).hostname;
 };
 
