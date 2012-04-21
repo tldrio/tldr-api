@@ -11,7 +11,7 @@ var restify = require('restify')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
-  , currentEnvironment = require('./environments').currentEnvironment
+  , env = require('./environments').env
   , server;                                 // Will store our restify server
 
 
@@ -23,7 +23,7 @@ var restify = require('restify')
  * Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
  */
 
-if (currentEnvironment.environment === "production") {
+if (env.name === "production") {
   process.on('uncaughtException', function(err) {
     // TODO implement email sending
     bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
@@ -38,7 +38,7 @@ if (currentEnvironment.environment === "production") {
  */
 
 // If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
-if (currentEnvironment.environment === "test") {
+if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API"
   });
