@@ -7,7 +7,6 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
-  , _u = require('underscore')
   , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
   , models = require('./models')

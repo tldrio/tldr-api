@@ -6,7 +6,7 @@
 
 var mongoose = require('mongoose')
   , crypto = require('crypto')
-  , _u = require('underscore')
+  , _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , url = require('url')
   , Schema = mongoose.Schema
@@ -90,7 +90,7 @@ TldrSchema.statics.getIdFromUrl = function (url) {
  */
 
 TldrSchema.statics.createAndCraftInstance = function(userInput) {
-  var validFields = _u.pick(userInput, userSetableFields)
+  var validFields = _.pick(userInput, userSetableFields)
     , instance = new TldrModel(validFields);
 
   instance.craftInstance();
@@ -126,10 +126,10 @@ TldrSchema.methods.craftInstance = function () {
  */
 
 TldrSchema.methods.update = function (updates) {
-  var validUpdateFields = _u.intersection(_u.keys(updates), userUpdatableFields)
+  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
-  _u.each( validUpdateFields, function (validField) {
+  _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
 };

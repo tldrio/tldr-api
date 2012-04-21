@@ -5,7 +5,7 @@
  */
 
 var TldrModelDefinition = require('./models/tldrModel')
-	, _u = require('underscore');
+	, _ = require('underscore');
 
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
@@ -13,7 +13,7 @@ var TldrModelDefinition = require('./models/tldrModel')
 function getAllValidationErrorsWithExplanations(errorsObject) {
 	var result = {};
 
-  _u.each(errorsObject, function (value, key) {
+  _.each(errorsObject, function (value, key) {
     result[key] = value.type;
   });
 

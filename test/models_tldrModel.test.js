@@ -16,7 +16,6 @@ var should = require('chai').should()
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server')
-  , _u = require('underscore')
   , customErrors = require('../lib/errors');
 
 

@@ -7,7 +7,7 @@
 
 var should = require('chai').should()
 , assert = require('chai').assert
-, _u = require('underscore')
+, _ = require('underscore')
 , restify = require('restify')
 , bunyan = require('../lib/logger').bunyan 
 , server = require('../server')
@@ -148,8 +148,8 @@ describe('Webserver', function () {
 
       client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(2);
-        _u.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
-        _u.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
+        _.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
+        _.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
         done();
       });
 
@@ -177,8 +177,8 @@ describe('Webserver', function () {
             TldrModel.update({_id: tldr4._id}, {lastUpdated: new Date(2021, 00, 10, 12)}, {}, function() {
               client.get('/tldrs/latest/2', function (err, req, res, obj) {
                 obj.length.should.equal(2);
-                _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
-                _u.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
+                _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+                _.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
 
                 client.get('/tldrs/latest/12', function (err, req, res, obj) {
                   obj.length.should.equal(4);
