@@ -31,8 +31,8 @@ TldrSchema = new Schema({
 	hostname        : String,
 	summary         : String,
   resourceAuthor  : String,
-  dateCreated     : Date,
-  lastUpdated     : Date
+  createdAt       : Date,
+  updatedAt       : Date
 });
 
 
@@ -94,8 +94,8 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
     , instance = new TldrModel(validFields);
 
   instance.craftInstance();
-  instance.dateCreated = new Date();
-  instance.lastUpdated = new Date();
+  instance.createdAt = new Date();
+  instance.updatedAt = new Date();
 
   return instance;
 };
@@ -143,7 +143,7 @@ TldrSchema.methods.update = function (updates) {
  */
 
 TldrSchema.pre('save', function(next) {
-  this.lastUpdated = new Date();
+  this.updatedAt = new Date();
 
   next();
 });
@@ -210,9 +210,9 @@ TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be n
 TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
-TldrSchema.path('dateCreated').required(true);
+TldrSchema.path('createdAt').required(true);
 
-TldrSchema.path('lastUpdated').required(true);
+TldrSchema.path('updatedAt').required(true);
 
 
 // Define tldr model

@@ -52,8 +52,8 @@ describe('TldrModel', function () {
 					url: 'needforair.com/nutcrackers',
 					hostname: 'needforair.com',
 					summary: 'Awesome Blog',
-					dateCreated: new Date(),
-					lastUpdated: new Date()
+					createdAt: new Date(),
+					updatedAt: new Date()
 				})
         , valErr;
 
@@ -66,14 +66,14 @@ describe('TldrModel', function () {
 				valErr.url.should.not.equal(null);
 				assert.equal(valErr.summary, null);
 				assert.equal(valErr.hostname, null);
-				assert.equal(valErr.dateCreated, null);
+				assert.equal(valErr.createdAt, null);
 
         done();
       });
 
     });
 
-    it('should detect missing required dateCreated and lastUpdated args', function (done) {
+    it('should detect missing required createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
 					url: 'http://needforair.com/nutcrackers',
@@ -92,8 +92,8 @@ describe('TldrModel', function () {
 				assert.equal(valErr._id, null);
 				assert.equal(valErr.summary, null);
 				assert.equal(valErr.hostname, null);
-				valErr.dateCreated.should.not.equal(null);
-				valErr.lastUpdated.should.not.equal(null);
+				valErr.createdAt.should.not.equal(null);
+				valErr.updatedAt.should.not.equal(null);
 
         done();
       });

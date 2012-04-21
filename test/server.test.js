@@ -166,15 +166,15 @@ describe('Webserver', function () {
 
 
     it('should return the latest tldrs correctly', function (done) {
-      //tldr1.lastUpdated = new Date(2020, 04, 10, 12);
-      //tldr2.lastUpdated = new Date(2020, 06, 10, 12);
-      //tldr3.lastUpdated = new Date(2020, 02, 10, 12);
-      //tldr4.lastUpdated = new Date(2021, 00, 10, 12);
+      //tldr1.updatedAt = new Date(2020, 04, 10, 12);
+      //tldr2.updatedAt = new Date(2020, 06, 10, 12);
+      //tldr3.updatedAt = new Date(2020, 02, 10, 12);
+      //tldr4.updatedAt = new Date(2021, 00, 10, 12);
 
-      TldrModel.update({_id: tldr1._id}, {lastUpdated: new Date(2020, 04, 10, 12)}, {}, function() {
-        TldrModel.update({_id: tldr2._id}, {lastUpdated: new Date(2020, 06, 10, 12)}, {}, function() {
-          TldrModel.update({_id: tldr3._id}, {lastUpdated: new Date(2020, 02, 10, 12)}, {}, function() {
-            TldrModel.update({_id: tldr4._id}, {lastUpdated: new Date(2021, 00, 10, 12)}, {}, function() {
+      TldrModel.update({_id: tldr1._id}, {updatedAt: new Date(2020, 04, 10, 12)}, {}, function() {
+        TldrModel.update({_id: tldr2._id}, {updatedAt: new Date(2020, 06, 10, 12)}, {}, function() {
+          TldrModel.update({_id: tldr3._id}, {updatedAt: new Date(2020, 02, 10, 12)}, {}, function() {
+            TldrModel.update({_id: tldr4._id}, {updatedAt: new Date(2021, 00, 10, 12)}, {}, function() {
               client.get('/tldrs/latest/2', function (err, req, res, obj) {
                 obj.length.should.equal(2);
                 _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
@@ -336,7 +336,7 @@ describe('Webserver', function () {
 					obj.summary.should.equal('This blog smells like shit');
 
 					TldrModel.find({_id: tldr._id}, function(err, docs) {
-						assert.isTrue(docs[0].lastUpdated - docs[0].dateCreated > 0);
+						assert.isTrue(docs[0].updatedAt - docs[0].createdAt > 0);
 
 						done();
 					});

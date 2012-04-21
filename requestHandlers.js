@@ -59,7 +59,7 @@ function getLatestTldrs (req, res, next) {
     return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
   }
 
-  TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
+  TldrModel.find({}).sort('updatedAt', -1).limit(numberToGet).run(function(err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
 
     return res.json(200, docs);
