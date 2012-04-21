@@ -196,61 +196,33 @@ describe('TldrModel', function () {
 
   });
 
-  describe("#craftInstance", function() {
+ 
 
-    it("should not break if no url is given", function(done) {
-
-      var tldr = new TldrModel({summary: "a summary"});
-      assert.equal(null, tldr.url);
-
-      tldr.craftInstance();
-      tldr.url.should.equal("");
-      assert.equal(null, tldr.hostname);
-
-      tldr.save(function (err) {
-        if (!err) {throw {}; }    // Shouldn't be able to save
-      });
-
-      done();
-    });
+  describe('#createInstance', function () {
 
 
-    it ("should calculate the correct id and hostname", function(done) {
+    it ("should calculate the correct id and hostname", function() {
 
-      var tldr = new TldrModel({url: "http://adomain.tld"})
+      var tldr = TldrModel.createInstance({url: 'http://adomain.tld',
+                                          summary: 'coin',
+                                          resourceAuthor: 'bloup'})
         , niceErrors;
-      assert.equal(null, tldr.hostname);
 
-      tldr.craftInstance();
+      tldr.hostname.should.equal('adomain.tld');
+      tldr._id.should.equal('839f9a097256c214581548a39bb7840a27c242e2');
 
-      tldr.hostname.should.equal("adomain.tld");
-      tldr._id.should.equal("839f9a097256c214581548a39bb7840a27c242e2");
-
-      // Only summary should be an error
-      tldr.save(function(err) {
-        niceErrors = models.getAllValidationErrorsWithExplanations(err.errors);
-        if (!niceErrors.summary) {throw {};}
-        assert.equal(niceErrors.url, null);
-        assert.equal(niceErrors.hostname, null);
-        assert.equal(niceErrors._id, null);
-      });
-
-      done();
     });
-
-  });
-
-  describe('#createAndCraftInstance', function () {
+    
 
     it('should allow user to set url, summary and resourceAuthor only', function () {
 
-      // Test is coupled with createAndCraftInstance because they are designed to work together
-      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
+      // Test is coupled with createInstance because they are designed to work together
+      var tldr = TldrModel.createInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
       tldr.url.should.equal("bla");
       tldr.summary.should.equal("coin");
       tldr.resourceAuthor.should.equal("bloup");
 
-      var tldr2 = TldrModel.createAndCraftInstance({unusedField: "glok"});
+      var tldr2 = TldrModel.createInstance({unusedField: "glok"});
       tldr2.should.not.have.property('unusedField');
       tldr2.should.not.have.property('summary');
       tldr2.should.not.have.property('resourceAuthor');
@@ -260,7 +232,7 @@ describe('TldrModel', function () {
 
     it('should allow user to update summary and sourceAuthor only', function () {
 
-      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
+      var tldr = TldrModel.createInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
         , toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusedField: 'new4'};
 
       tldr.url.should.equal("bla");

@@ -90,7 +90,7 @@ function postCreateOrUpdateTldr (req, res, next) {
     if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
     if (docs.length === 0) {
       //Create New Tldr
-      tldr = TldrModel.createAndCraftInstance(req.body);
+      tldr = TldrModel.createInstance(req.body);
 
       tldr.save(function (err) {
         if (err) {

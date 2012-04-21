@@ -59,10 +59,10 @@ describe('Webserver', function () {
   beforeEach(function (done) {
 
     // dummy models
-    tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-    tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
-    tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-    tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
+    tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+    tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
+    tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+    tldr4 = TldrModel.createInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -213,7 +213,7 @@ describe('Webserver', function () {
       var toCreate = [], i;
 
       // Create dummy entries in the database
-      for (i = 0; i < 34; i++) {tldr1.url = "http://test.com/" + i; toCreate.push(TldrModel.createAndCraftInstance(tldr1));}
+      for (i = 0; i < 34; i++) {tldr1.url = "http://test.com/" + i; toCreate.push(TldrModel.createInstance(tldr1));}
 
       customUtils.chainSave(toCreate, function() {
         client.get('/tldrs/latest/123', function (err, req, res, obj) {
@@ -263,7 +263,7 @@ describe('Webserver', function () {
 						url: 'http://www.youporn.com/milf',
 						summary: 'Sluts and cockslapers', 
 						unusedFields: "coin"}
-        , tldr = TldrModel.createAndCraftInstance(tldrData);
+        , tldr = TldrModel.createInstance(tldrData);
 
 			TldrModel.find({_id: tldr._id} , function (err, docs) {
 
@@ -299,7 +299,7 @@ describe('Webserver', function () {
       var tldrData = {
 				    url: 'http://www.youporn.com/milf',
             summary: 'Sluts and cockslapers'}
-        , tldr = TldrModel.createAndCraftInstance(tldrData);
+        , tldr = TldrModel.createInstance(tldrData);
 
 			client.post('/tldrs', tldrData, function (err, req, res, obj) {
 
@@ -322,7 +322,7 @@ describe('Webserver', function () {
       var tldrUpdates = {
 				    url: 'http://needforair.com/nutcrackers'
           , summary: 'This blog smells like shit'}
-        , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
+        , tldr = TldrModel.createInstance(tldrUpdates);
 
 			TldrModel.find({_id: tldr._id}, function (err, docs) {
 				if (err) {throw err;}

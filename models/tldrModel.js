@@ -89,11 +89,14 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
  *
  */
 
-TldrSchema.statics.createAndCraftInstance = function(userInput) {
+TldrSchema.statics.createInstance = function(userInput) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance = new TldrModel(validFields);
 
-  instance.craftInstance();
+  if (!instance.url) { instance.url = ""; }
+  // _id is the hashed url
+  instance._id = TldrModel.computeIdFromUrl(instance.url);
+  instance.hostname = url.parse(instance.url).hostname;
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
 
@@ -101,19 +104,6 @@ TldrSchema.statics.createAndCraftInstance = function(userInput) {
 };
 
 
-
-
-/**
- * Creates non-user modifiable parameters.
- * This is missing-parameter proof
- *
- */
-TldrSchema.methods.craftInstance = function () {
-  if (!this.url) { this.url = ""; }
-  // _id is the hashed url
-  this._id = TldrModel.computeIdFromUrl(this.url);
-  this.hostname = url.parse(this.url).hostname;
-};
 
 
 
