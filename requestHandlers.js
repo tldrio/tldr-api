@@ -83,15 +83,47 @@ function getAllTldrsByHostname (req, res, next) {
 
 
 
-// POST create or update tldr
+// POST create a new tldr
 //
 // Provide url, summary etc... in request
-// If tldr associated to url exists update the updatable fields
-// else create new tldr associated to this url
+// create new tldr associated to this url
 
-function postCreateOrUpdateTldr (req, res, next) {
+function postCreateTldr (req, res, next) {
   var id
-    , tldr;
+  , tldr;
+
+  // Return Error if url is missing
+  if (!req.body.url) {
+    return next( new restify.MissingParameterError('No URL was provided in the request'));
+  }
+
+  //Create New Tldr
+  tldr = TldrModel.createInstance(req.body);
+
+  tldr.save(function (err) {
+    if (err) {
+      if (err.errors) {
+        return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
+      } else if (err.code === 11000){
+        //11000 is a Mongo error code for duplicate _id key
+        return next(new customErrors.TldrAlreadyExistsError('A tldr for the provided url already exists. You can update with PUT /tldrs/:id'));
+      } else {
+        return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+      }
+    }
+    return res.json(200, tldr);   // Success
+  });
+}
+
+
+//Update existing tldr
+// Only update fields user has the rights to update to avoid unexpected behaviour
+//We don't need to udpate url, _id or hostname because if record was found _id is the same
+//and url didn't change
+//
+function putUpdateTldr (req, res, next) {
+  var tldr
+    , id;
 
   // Return Error if url is missing
   if (!req.body.url) {
@@ -102,47 +134,33 @@ function postCreateOrUpdateTldr (req, res, next) {
   id = TldrModel.computeIdFromUrl(req.body.url);
 
   TldrModel.find({_id:id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
-    if (docs.length === 0) {
-      //Create New Tldr
-      tldr = TldrModel.createInstance(req.body);
+    if (err) { return handleInternalDBError(err, next, "Internal error in putUpdateTldr"); }
+    
+    tldr = docs[0];
+    tldr.update(req.body);
 
-      tldr.save(function (err) {
-        if (err) {
-          if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
-          }
-        }
-        return res.json(200, tldr);   // Success
-      });
-    } else {
-      //Update existing tldr
-      // Only update fields user has the rights to update to avoid unexpected behaviour
-      //We don't need to udpate url, _id or hostname because if record was found _id is the same
-      //and url didn't change
-      tldr = docs[0];
-      tldr.update(req.body);
+    tldr.save(function(err) {
 
-      tldr.save(function(err) {
-        if (err) {
-          if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
-          }
+      if (err) {
+        if (err.errors) {
+          return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
         } else {
-          return res.json(200, tldr);
+          return handleInternalDBError(err, next, "Internal error in putUpdateTldr");    // Unexpected error while saving
         }
-      });
-    }
+      } else {
+        return res.json(200, tldr);
+      }
+
+    });
+
   });
+
 }
 
 
 // Module interface
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrById = getTldrById;
-module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
+module.exports.postCreateTldr = postCreateTldr;
+module.exports.putUpdateTldr = putUpdateTldr;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

@@ -70,10 +70,11 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
+//POST a new tldr 
+server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateTldr);
 
-//POST a new tldr or update existing tldr
-server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateOrUpdateTldr);
-
+//PUT update existing tldr
+server.put({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.putUpdateTldr);
 
 
 // Start server

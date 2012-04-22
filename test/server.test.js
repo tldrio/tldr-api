@@ -319,7 +319,7 @@ describe('Webserver', function () {
 				obj.summary.should.equal(tldrData.summary);
 
 				client.post('/tldrs',tldrData, function(err, req, res, obj) {
-					res.statusCode.should.equal(200);
+					res.statusCode.should.equal(423);
 					done();
 				});
 
@@ -341,7 +341,7 @@ describe('Webserver', function () {
 				docs.length.should.equal(1);
 				docs[0].summary.should.equal('Awesome Blog');
 
-				client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
+				client.put('/tldrs/'+tldr._id, tldrUpdates, function (err, req, res, obj) {
 					res.statusCode.should.equal(200);
 					obj._id.should.equal(tldr._id);
 					obj.summary.should.equal('This blog smells like shit');
