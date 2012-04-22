@@ -62,7 +62,7 @@ server.use(restify.bodyParser({mapParams: false}));
  */
 
 // GET all tldrs
-server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrs);
+server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getTldrsWithQuery);
 
 // GET a tldr by id
 server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
@@ -70,8 +70,6 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
-// GET latest tldrs with limit number
-server.get('tldrs/latest/:number', requestHandlers.getLatestTldrs);
 
 //POST a new tldr or update existing tldr
 server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateOrUpdateTldr);

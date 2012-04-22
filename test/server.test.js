@@ -164,12 +164,12 @@ describe('Webserver', function () {
         TldrModel.update({_id: tldr2._id}, {updatedAt: new Date(2020, 06, 10, 12)}, {}, function() {
           TldrModel.update({_id: tldr3._id}, {updatedAt: new Date(2020, 02, 10, 12)}, {}, function() {
             TldrModel.update({_id: tldr4._id}, {updatedAt: new Date(2021, 00, 10, 12)}, {}, function() {
-              client.get('/tldrs/latest/2', function (err, req, res, obj) {
+              client.get('/tldrs?sort=latest&limit=2', function (err, req, res, obj) {
                 obj.length.should.equal(2);
                 _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
                 _.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
 
-                client.get('/tldrs/latest/12', function (err, req, res, obj) {
+                client.get('/tldrs?sort=latest&limit=12', function (err, req, res, obj) {
                   obj.length.should.equal(4);
 
                   done();
@@ -184,10 +184,10 @@ describe('Webserver', function () {
 
     it('should not return any tldr if called with 0 or a negative number', function (done) {
 
-      client.get('/tldrs/latest/0', function (err, req, res, obj) {
+      client.get('/tldrs?sort=latest&limit=0', function (err, req, res, obj) {
         obj.length.should.equal(0);
 
-        client.get('/tldrs/latest/-2', function (err, req, res, obj) {
+        client.get('/tldrs?sort=latest&limit=-2', function (err, req, res, obj) {
           obj.length.should.equal(0);
 
           done();
@@ -225,7 +225,7 @@ describe('Webserver', function () {
 
       async.series(toExecute, function (err, results) {
         if (err) { throw(err); }
-        client.get('/tldrs/latest/123', function (err, req, res, obj) {
+        client.get('/tldrs?sort=latest&limit=123', function (err, req, res, obj) {
           obj.length.should.equal(20);
           done();
         });

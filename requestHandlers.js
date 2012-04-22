@@ -9,6 +9,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
   , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
+  , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
   , customErrors = require('./lib/errors');
@@ -24,8 +25,37 @@ function handleInternalDBError(err, next, msg) {
 
 
 // GET all tldrs
-function getAllTldrs (req, res, next) {
-  return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+function getTldrsWithQuery (req, res, next) {
+
+  if (_.isEmpty(req.query) ) {
+    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+  }
+  else {
+    
+    //TODO Better Handling of default args 
+    // Handle specific query for future needs
+    var method = req.query.sort || 'latest'
+      , limit = req.query.limit || 20;
+
+    limit = Math.max(0, Math.min(20, limit));   // Clip limit between 0 and 20
+
+    if (limit === 0) {
+      return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+    }
+
+    if (method === 'latest') {
+      TldrModel.find({})
+      .sort('updatedAt', -1)
+      .limit(limit)
+      .run(function(err, docs) {
+        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+        return res.json(200, docs);
+      });
+    }
+
+  }
+
 }
 
 // GET a tldr by id
@@ -45,21 +75,6 @@ function getTldrById (req, res, next) {
 //GET all tldrs corresponding to a hostname
 function getAllTldrsByHostname (req, res, next) {
   TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
-
-    return res.json(200, docs);
-  });
-}
-
-// GET latest tldrs
-function getLatestTldrs (req, res, next) {
-  var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
-
-  if (numberToGet === 0) {
-    return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
-  }
-
-  TldrModel.find({}).sort('updatedAt', -1).limit(numberToGet).run(function(err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
 
     return res.json(200, docs);
@@ -127,8 +142,7 @@ function postCreateOrUpdateTldr (req, res, next) {
 
 
 // Module interface
-module.exports.getAllTldrs = getAllTldrs;
+module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrById = getTldrById;
 module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
-module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
