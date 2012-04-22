@@ -6,16 +6,17 @@
 
 
 var should = require('chai').should()
-, assert = require('chai').assert
-, _ = require('underscore')
-, restify = require('restify')
-, bunyan = require('../lib/logger').bunyan 
-, server = require('../server')
-, models = require('../models')
-, db = require('../lib/db')
-, mongoose = require('mongoose')
-, TldrModel = models.TldrModel
-, customUtils = require('../lib/customUtils');
+  , assert = require('chai').assert
+  , _ = require('underscore')
+  , restify = require('restify')
+  , bunyan = require('../lib/logger').bunyan 
+  , server = require('../server')
+  , models = require('../models')
+  , db = require('../lib/db')
+  , mongoose = require('mongoose')
+  , async = require('async')
+  , TldrModel = models.TldrModel
+  , customUtils = require('../lib/customUtils');
 
 
 
@@ -198,19 +199,41 @@ describe('Webserver', function () {
 
 
     it('should not return more than 20 tldrs', function (done) {
-      var toCreate = [], i;
+      var toExecute = []
+        , i;
 
       // Create dummy entries in the database
-      for (i = 0; i < 34; i++) {tldr1.url = "http://test.com/" + i; toCreate.push(TldrModel.createInstance(tldr1));}
+      for (i = 0; i < 34; i++) {
+        (function (i) {
+          var newTldr
+            , saveTldr;
 
-      customUtils.chainSave(toCreate, function() {
+          newTldr = TldrModel.createInstance({url: 'http://test.com/'+i
+                                            , summary: 'testsummary'
+                                            , resourceAuthor: 'Me'});
+
+          saveTldr = function (callback) {
+            newTldr.save( function (err) {
+              if (err) { callback(err); }
+              callback(null);
+            });
+          };
+
+          toExecute.push(saveTldr);
+        })(i);
+      }
+
+      async.series(toExecute, function (err, results) {
+        if (err) { throw(err); }
         client.get('/tldrs/latest/123', function (err, req, res, obj) {
           obj.length.should.equal(20);
-
           done();
         });
+
       });
+
     });
+
   });
 
 
