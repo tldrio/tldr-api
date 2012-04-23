@@ -228,7 +228,7 @@ describe('Webserver', function () {
           };
 
           toExecute.push(saveTldr);
-        })(i);
+        }(i));
       }
 
       async.series(toExecute, function (err, results) {
