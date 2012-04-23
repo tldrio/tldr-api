@@ -132,6 +132,14 @@ describe('Webserver', function () {
 
     });
 
+    it('a non existing route', function (done) {
+
+      client.get('/notexistingroute', function (err, req, res, obj) {
+        res.statusCode.should.equal(404);
+        done();
+      });
+
+    });
 
     it('all tldrs for an existing given hostname', function (done) {
 
