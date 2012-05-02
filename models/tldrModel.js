@@ -12,10 +12,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['url', 'summary', 'resourceAuthor'] // setable fields by user
-  , userUpdatableFields = ['summary', 'resourceAuthor']// updatabe fields by user
-  , customErrors = require('../lib/errors');
-
+  , userSetableFields = ['url', 'summary','title', 'resourceAuthor'] // setable fields by user
+  , userUpdatableFields = ['summary', 'title', 'resourceAuthor'];// updatabe fields by user
 
 
 
@@ -28,6 +26,7 @@ var mongoose = require('mongoose')
 TldrSchema = new Schema({
 	_id             : String,
 	url             : String,
+	title           : String,
 	hostname        : String,
 	summary         : String,
   resourceAuthor  : String,
@@ -99,6 +98,8 @@ TldrSchema.statics.createInstance = function(userInput) {
   instance.hostname = url.parse(instance.url).hostname;
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
+  //If no title was provided use url as title
+  instance.title = instance.title || instance.url;
 
   return instance;
 };
@@ -174,6 +175,11 @@ function summary_validateLength (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 1500));
 }
 
+//Titles should be defined, non empty and not be too long
+function title_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
+}
+
 //Hostname should be defined and contain at least one .
 function hostname_validatePresenceOfDot (value) {
   return ((value !== undefined) && (value.split('.').length >= 2));
@@ -193,6 +199,9 @@ TldrSchema.path('_id').validate(id_validateLength, '[Internal error] please repo
 
 TldrSchema.path('url').required(true);
 TldrSchema.path('url').validate(url_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
+
+TldrSchema.path('title').required(true);
+TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
 
 TldrSchema.path('summary').required(true);
 TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');

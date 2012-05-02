@@ -40,9 +40,15 @@ describe('Database', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+    var tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers'
+                                         , title: 'Blog NFA'
+                                         , summary: 'Awesome Blog'})
+      , tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday'
+                                         , title: 'Blog AVC'
+                                         , summary: 'Fred Wilson is my God'})
+      , tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics'
+                                         , title: 'Deflat Eco'
+                                         , summary: 'Sustering is my religion'});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
