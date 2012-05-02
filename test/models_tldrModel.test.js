@@ -78,7 +78,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
 					url: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
-					_id: "aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx",
+					_id: 'aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx',
 					hostname: 'needforair.com',
 					summary: 'Awesome Blog',
 				})
@@ -208,7 +208,7 @@ describe('TldrModel', function () {
   describe('#createInstance', function () {
 
 
-    it ("should calculate the correct id and hostname", function() {
+    it ('should calculate the correct id and hostname', function() {
 
       var tldr = TldrModel.createInstance({url: 'http://adomain.tld',
                                           title: 'Learn to Code',
@@ -226,15 +226,15 @@ describe('TldrModel', function () {
     it('should allow user to set url, summary and resourceAuthor only', function () {
 
       // Test is coupled with createInstance because they are designed to work together
-      var tldr = TldrModel.createInstance({url: "bla"
+      var tldr = TldrModel.createInstance({url: 'bla'
                                           , title: 'Blog NFA'
-                                          , summary: "coin"
-                                          , resourceAuthor: "bloup"});
-      tldr.url.should.equal("bla");
-      tldr.summary.should.equal("coin");
-      tldr.resourceAuthor.should.equal("bloup");
+                                          , summary: 'coin'
+                                          , resourceAuthor: 'bloup'});
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('coin');
+      tldr.resourceAuthor.should.equal('bloup');
 
-      var tldr2 = TldrModel.createInstance({unusedField: "glok"});
+      var tldr2 = TldrModel.createInstance({unusedField: 'glok'});
       tldr2.should.not.have.property('unusedField');
       tldr2.should.not.have.property('summary');
       tldr2.should.not.have.property('resourceAuthor');
@@ -244,20 +244,20 @@ describe('TldrModel', function () {
 
     it('should restrict the fields the user is allowed to update', function () {
 
-      var tldr = TldrModel.createInstance({url: "bla"
+      var tldr = TldrModel.createInstance({url: 'bla'
                                           , title: 'Blog NFA'
-                                          , summary: "coin"
-                                          , resourceAuthor: "bloup"})
+                                          , summary: 'coin'
+                                          , resourceAuthor: 'bloup'})
         , toUpdate = {url: 'new1'
           , summary: 'new2'
           , title: 'Blog NeedForAir'
           , resourceAuthor: 'new3'
           , unusedField: 'new4'};
 
-      tldr.url.should.equal("bla");
-      tldr.summary.should.equal("coin");
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('coin');
       tldr.title.should.equal('Blog NFA');
-      tldr.resourceAuthor.should.equal("bloup");
+      tldr.resourceAuthor.should.equal('bloup');
 
       // Perform update
       tldr.update(toUpdate);
