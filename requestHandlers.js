@@ -103,7 +103,7 @@ function postCreateTldr (req, res, next) {
   tldr.save(function (err) {
     if (err) {
       if (err.errors) {
-        return res.json(409, models.getAllValidationErrorsWithExplanations(err.errors));   // Error code 409 is used by restify for invalid or missing arguments
+        return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
       } else if (err.code === 11000) {
         //11000 is a Mongo error code for duplicate _id key
         return next(new customErrors.TldrAlreadyExistsError('A tldr for the provided url already exists. You can update with PUT /tldrs/:id'));
@@ -143,7 +143,7 @@ function putUpdateTldr (req, res, next) {
 
       if (err) {
         if (err.errors) {
-          return res.json(409, models.getAllValidationErrorsWithExplanations(err.errors));   // Error code 409 is used by restify for invalid or missing arguments
+          return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
         } else {
           return handleInternalDBError(err, next, "Internal error in putUpdateTldr");    // Unexpected error while saving
         }
