@@ -9,7 +9,7 @@ var TldrModelDefinition = require('./models/tldrModel')
 
 
 // Given the "errors" object of an exception thrown by Mongoose's validation system,
-// return a JSON with all non validated fields and an explanatory message for each
+// return an object with all non validated fields and an explanatory message for each
 function getAllValidationErrorsWithExplanations(errorsObject) {
 	var result = {};
 
@@ -17,7 +17,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
     result[key] = value.type;
   });
 
-	return result;
+  return result;
 }
 
 
