@@ -103,8 +103,8 @@ function postCreateTldr (req, res, next) {
   tldr.save(function (err) {
     if (err) {
       if (err.errors) {
-        return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
-      } else if (err.code === 11000){
+        return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
+      } else if (err.code === 11000) {
         //11000 is a Mongo error code for duplicate _id key
         return next(new customErrors.TldrAlreadyExistsError('A tldr for the provided url already exists. You can update with PUT /tldrs/:id'));
       } else {
@@ -135,7 +135,7 @@ function putUpdateTldr (req, res, next) {
 
   TldrModel.find({_id:id}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in putUpdateTldr"); }
-    
+
     tldr = docs[0];
     tldr.update(req.body);
 
@@ -143,7 +143,7 @@ function putUpdateTldr (req, res, next) {
 
       if (err) {
         if (err.errors) {
-          return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
+          return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
         } else {
           return handleInternalDBError(err, next, "Internal error in putUpdateTldr");    // Unexpected error while saving
         }
