@@ -25,17 +25,9 @@ var should = require('chai').should()
  * Start Server and Client
 */
 
-//create client to test api
-client = restify.createJsonClient({
-  url: 'http://localhost:' + 8686,
-});
 //start server
 server.listen(8686, function () {
 });
-
-
-
-
 
 
 /**
@@ -43,7 +35,8 @@ server.listen(8686, function () {
 */
 
 describe('Webserver', function () {
-  var tldr1, tldr2, tldr3, tldr4, numberOfTldrs;
+  var tldr1, tldr2, tldr3, tldr4, numberOfTldrs
+    , client;
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
@@ -58,6 +51,11 @@ describe('Webserver', function () {
   });
 
   beforeEach(function (done) {
+    //create client to test api
+    client = restify.createJsonClient({
+      url: 'https://localhost:' + 8686,
+    });
+    client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
     tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
@@ -101,6 +99,7 @@ describe('Webserver', function () {
 
   });
 
+  
   // Test GET requests
   describe('should handle GET request for', function () {
 

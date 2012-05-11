@@ -6,11 +6,14 @@
 
 
 var restify = require('restify')
+  , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for restify
   , mongoose = require('mongoose')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
+  , privateKey = fs.readFileSync('./privatekey.pem').toString()
+  , certificate = fs.readFileSync('./certificate.pem').toString()
   , env = require('./environments').env
   , server;                                 // Will store our restify server
 
@@ -40,21 +43,24 @@ if (env.name === "production") {
 // If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
 if (env.name === "test") {
   server = restify.createServer({
-    name: "tldr API"
+    name: "tldr API",
+    key: privateKey, 
+    certificate: certificate
   });
 } else {
   server = restify.createServer({
     name: "tldr API",
+    key: privateKey, 
+    certificate: certificate
     //log: bunyan     // No restify logging for now
   });
 }
 
 // Register restify middleware
 server.use(restify.acceptParser(server.acceptable));
+server.use(restify.authorizationParser());
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
-
-
 
 
 /**
