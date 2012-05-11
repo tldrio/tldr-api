@@ -30,6 +30,7 @@ TldrSchema = new Schema({
 	hostname        : String,
 	summary         : String,
   resourceAuthor  : String,
+  resourceDate    : Date,
   createdAt       : Date,
   updatedAt       : Date
 });
