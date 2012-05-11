@@ -269,8 +269,8 @@ describe('Webserver', function () {
 						unusedFields: 'toto'};
 
 			client.post('/tldrs', tldrData, function (err, req, res, obj) {
-				res.statusCode.should.equal(400);
-				err.name.should.equal('InvalidContentError');
+				res.statusCode.should.equal(403);
+				err.name.should.equal('ForbiddenError');
 				done();
 			});
 
@@ -327,7 +327,7 @@ describe('Webserver', function () {
 				obj.summary.should.equal(tldrData.summary);
 
 				client.post('/tldrs',tldrData, function(err, req, res, obj) {
-					res.statusCode.should.equal(423);
+					res.statusCode.should.equal(409);
 					done();
 				});
 
