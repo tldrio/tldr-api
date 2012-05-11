@@ -83,8 +83,8 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 /**
- * Create a new instance of TldrModel and populate it.
- * Only fields in userSetableFields are handled
+ * Creates a new instance of TldrModel and populates it
+ * with fields in userSetableFields.
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
  *
  */
@@ -139,11 +139,8 @@ TldrSchema.methods.update = function (updates) {
  */
 
 TldrSchema.methods.cleanUrl = function () {
-  var partsUrl;
-
-  partsUrl = url.parse(this.url);
-  this.url = partsUrl.protocol+ '//' + partsUrl.hostname + partsUrl.pathname;
-
+  var parsedUrl = url.parse(this.url);
+  this.url = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
   return;
 };
 
@@ -156,7 +153,6 @@ TldrSchema.methods.cleanUrl = function () {
 
 TldrSchema.pre('save', function(next) {
   this.updatedAt = new Date();
-
   next();
 });
 
