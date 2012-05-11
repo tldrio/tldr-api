@@ -61,18 +61,6 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.authorizationParser());
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
-server.use(authenticate);
-
-
-function authenticate (req, res, next) {
-  if (req.username === 'Magellan' && req.authorization.basic.password === 'VascoDeGama') {
-    return next();
-  }
-  else {
-    return next(new restify.NotAuthorizedError('Username and Password don\'t match any record'));
-  }
-}
-
 
 
 /**

@@ -89,23 +89,6 @@ describe('Webserver', function () {
 
   });
 
-  describe('should authorize only for identified users', function () {
-
-    it('No user - pwd should fail', function (done) {
-
-      client.basicAuth(' ', ' ');
-
-      client.get('/tldrs/latest', function (err, req, res, obj) {
-        var response = JSON.parse(res.body);
-        res.statusCode.should.equal(403);
-        response.should.have.ownProperty('code');
-        response.code.should.equal('NotAuthorized');
-        done();
-      });
-
-    });
-
-  });
   
   // Test GET requests
   describe('should handle GET request for', function () {
