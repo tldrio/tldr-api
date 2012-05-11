@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['_id','summary','title', 'resourceAuthor'] // setable fields by user
-  , userUpdatableFields = ['summary', 'title', 'resourceAuthor'];// updatabe fields by user
+  , userSetableFields = ['_id', 'summary','title', 'resourceAuthor', 'resourceDate'] // setable fields by user
+  , userUpdatableFields = ['summary', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
 
 
 
