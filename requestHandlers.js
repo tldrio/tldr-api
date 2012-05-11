@@ -131,6 +131,5 @@ function updateTldrCreateIfNeeded (req, res, next) {
 // Module interface
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrById = getTldrById;
-module.exports.postCreateTldr = postCreateTldr;
 module.exports.updateTldrCreateIfNeeded = updateTldrCreateIfNeeded;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
