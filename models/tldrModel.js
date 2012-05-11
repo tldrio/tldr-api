@@ -81,6 +81,7 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 
+
 /**
  * Create a new TldrInstance and craft all the nececessary.
  * Only fields in userSetableFields are handled
@@ -92,7 +93,9 @@ TldrSchema.statics.createInstance = function(userInput) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance = new TldrModel(validFields);
 
-  if (!instance.url) { instance.url = ""; }
+  if (!instance.url) { instance.url = 'http://nonexistingdomain.com'; }
+  
+  instance.cleanUrl();
   // _id is the hashed url
   instance._id = TldrModel.computeIdFromUrl(instance.url);
   instance.hostname = url.parse(instance.url).hostname;
@@ -123,8 +126,24 @@ TldrSchema.methods.update = function (updates) {
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+
 };
 
+
+
+/**
+ * Clean url of instance, removing query string and hastag
+ * 
+ */
+
+TldrSchema.methods.cleanUrl = function () {
+  var partsUrl;
+
+  partsUrl = url.parse(this.url);
+  this.url = partsUrl.protocol+ '//' + partsUrl.hostname + partsUrl.pathname;
+
+  return;
+};
 
 
 
