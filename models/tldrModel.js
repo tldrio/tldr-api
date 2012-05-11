@@ -24,11 +24,11 @@ var mongoose = require('mongoose')
 
 // Define tldr schema
 TldrSchema = new Schema({
-	_id             : String,
-	url             : String,
-	title           : String,
-	hostname        : String,
-	summary         : String,
+  _id             : String,
+  url             : String,
+  title           : String,
+  hostname        : String,
+  summary         : String,
   resourceAuthor  : String,
   createdAt       : Date,
   updatedAt       : Date
@@ -82,7 +82,7 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 /**
- * Create a new TldrInstance and craft all the nececessary.
+ * Create a new TldrInstance without persisting it
  * Only fields in userSetableFields are handled
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
  *
@@ -93,7 +93,6 @@ TldrSchema.statics.createInstance = function(userInput) {
     , instance = new TldrModel(validFields);
 
   if (!instance.url) { instance.url = ""; }
-  // _id is the hashed url
   instance._id = TldrModel.computeIdFromUrl(instance.url);
   instance.hostname = url.parse(instance.url).hostname;
   instance.createdAt = new Date();

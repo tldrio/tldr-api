@@ -31,7 +31,7 @@ function getTldrsWithQuery (req, res, next) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
   }
   else {
-    
+
     //TODO Better Handling of default args 
     // Handle specific query for future needs
     var method = req.query.sort || 'latest'
@@ -92,65 +92,49 @@ function postCreateTldr (req, res, next) {
   var id
   , tldr;
 
-  // Return Error if url is missing
-  if (!req.body.url) {
-    return next( new restify.MissingParameterError('No URL was provided in the request'));
-  }
 
-  //Create New Tldr
-  tldr = TldrModel.createInstance(req.body);
 
-  tldr.save(function (err) {
-    if (err) {
-      if (err.errors) {
-        return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
-      } else if (err.code === 11000) {
-        //11000 is a Mongo error code for duplicate _id key
-        return next(new customErrors.TldrAlreadyExistsError('A tldr for the provided url already exists. You can update with PUT /tldrs/:id'));
-      } else {
-        return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
-      }
-    }
-    return res.json(200, tldr);   // Success
-  });
 }
 
 
-//Update existing tldr
-// Only update fields user has the rights to update to avoid unexpected behaviour
-//We don't need to udpate url, _id or hostname because if record was found _id is the same
-//and url didn't change
-//
-function putUpdateTldr (req, res, next) {
+/* Update existing tldr
+ * Only update fields user has the rights to update to avoid unexpected behaviour
+ * We don't need to udpate url, _id or hostname because if record was found _id is the same
+ * and url didn't change
+ * If tldr did not exist, we create it
+ */
+function updateTldrCreateIfNeeded (req, res, next) {
   var tldr
     , id;
 
   // Return Error if url is missing
   if (!req.body.url) {
-    return next( new restify.MissingParameterError('No URL was provided in the request'));
+    return res.json(403, {"url": "No URL was provided"});   // TODO: use global validation mechanism instead
   }
 
   //Retrieve _id to perform lookup in db
   id = TldrModel.computeIdFromUrl(req.body.url);
 
-  TldrModel.find({_id:id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in putUpdateTldr"); }
+  TldrModel.find({_id: id}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, next, "Internal error in updateTldrCreateIfNeeded"); }
 
-    tldr = docs[0];
-    tldr.update(req.body);
+    if (docs.length === 1) {
+      tldr = docs[0];
+      tldr.update(req.body);   // A tldr was found, update it
+    } else {
+      tldr = TldrModel.createInstance(req.body);   // No tldr was found, create it
+    }
 
-    tldr.save(function(err) {
-
+    tldr.save(function (err) {
       if (err) {
         if (err.errors) {
           return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
         } else {
-          return handleInternalDBError(err, next, "Internal error in putUpdateTldr");    // Unexpected error while saving
+          return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
         }
-      } else {
-        return res.json(200, tldr);
       }
 
+      return res.json(200, tldr);   // Success
     });
 
   });
@@ -162,5 +146,5 @@ function putUpdateTldr (req, res, next) {
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrById = getTldrById;
 module.exports.postCreateTldr = postCreateTldr;
-module.exports.putUpdateTldr = putUpdateTldr;
+module.exports.updateTldrCreateIfNeeded = updateTldrCreateIfNeeded;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

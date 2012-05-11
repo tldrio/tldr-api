@@ -43,7 +43,7 @@ server.listen(8686, function () {
 */
 
 describe('Webserver', function () {
-  var tldr1, tldr2, tldr3, tldr4;
+  var tldr1, tldr2, tldr3, tldr4, numberOfTldrs;
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
@@ -76,7 +76,13 @@ describe('Webserver', function () {
             if (err) {throw done(err); }
             tldr4.save( function (err) {
               if (err) {throw done(err); }
-              done();
+
+              TldrModel.find({}, function(err, docs) {
+                if (err) {throw done(err); }
+                numberOfTldrs = docs.length;
+                done();
+              });
+
             });
           });
         });
@@ -108,7 +114,7 @@ describe('Webserver', function () {
 
     });
 
-    it('a non existing tldr', function (done) {
+    it('GET a non existing tldr', function (done) {
 
       client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
         var response = JSON.parse(res.body);
@@ -120,7 +126,7 @@ describe('Webserver', function () {
 
     });
 
-    it('all the tldrs', function (done) {
+    it('GET all the tldrs', function (done) {
 
       client.get('/tldrs', function (err, req, res, obj) {
         var response = JSON.parse(res.body);
@@ -132,7 +138,7 @@ describe('Webserver', function () {
 
     });
 
-    it('a non existing route', function (done) {
+    it('GET a non existing route', function (done) {
 
       client.get('/notexistingroute', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
@@ -141,7 +147,7 @@ describe('Webserver', function () {
 
     });
 
-    it('all tldrs for an existing given hostname', function (done) {
+    it('GET all tldrs for an existing given hostname', function (done) {
 
       client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(2);
@@ -152,7 +158,7 @@ describe('Webserver', function () {
 
     });
 
-    it('all tldrs for a non-existing hostname (return empty array)', function (done) {
+    it('GET all tldrs for a non-existing hostname (return empty array)', function (done) {
 
       client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(0);
@@ -162,7 +168,7 @@ describe('Webserver', function () {
     });
 
 
-    it('should return the latest tldrs correctly', function (done) {
+    it('GET the latest tldrs correctly', function (done) {
       //tldr1.updatedAt = new Date(2020, 04, 10, 12);
       //tldr2.updatedAt = new Date(2020, 06, 10, 12);
       //tldr3.updatedAt = new Date(2020, 02, 10, 12);
@@ -190,7 +196,7 @@ describe('Webserver', function () {
     });
 
 
-    it('should not return any tldr if called with 0 or a negative number', function (done) {
+    it('GET should not return any tldr if called with 0 or a negative number', function (done) {
 
       client.get('/tldrs?sort=latest&limit=0', function (err, req, res, obj) {
         obj.length.should.equal(0);
@@ -206,7 +212,7 @@ describe('Webserver', function () {
     });
 
 
-    it('should not return more than 20 tldrs', function (done) {
+    it('GET should not return more than 20 tldrs', function (done) {
       var toExecute = []
         , i;
 
@@ -247,136 +253,69 @@ describe('Webserver', function () {
 
 
   //Test POST Requests
-  describe('should handle POST request', function () {
+  describe('Should handle PUT requests', function () {
 
-    it('for /tldrs route with no url provided in body and return an error', function (done) {
+    it('Shouldn\'t be able to PUT a tldr if no url is provided', function (done) {
       var tldrData = {
-						summary: 'This is a summary', 
-						unusedFields: 'toto'};
+            summary: 'This is a summary',
+            unusedFields: 'toto'};
 
-			client.post('/tldrs', tldrData, function (err, req, res, obj) {
-				res.statusCode.should.equal(409);
-				err.name.should.equal('MissingParameterError');
-				done();
-			});
-
-    });
-
-    it('for /tldrs route with no summary provided in body and return error', function (done) {
-
-      var tldrData = {
-						url: 'http://toto.com', 
-						unusedFields: 'toto'};
-
-			client.post('/tldrs', tldrData, function (err, req, res, obj) {
-				res.statusCode.should.equal(400);
-				err.name.should.equal('InvalidContentError');
-				done();
-			});
-
-    });
-
-    it('for creating a new tldr', function (done) {
-
-      var tldrData = {
-						url: 'http://www.youporn.com/milf',
-						summary: 'Sluts and cockslapers', 
-						unusedFields: "coin"}
-        , tldr = TldrModel.createInstance(tldrData);
-
-			TldrModel.find({_id: tldr._id} , function (err, docs) {
-
-				if (err) { throw err;}
-				
-				//Check tldr doesn't exist
-				docs.length.should.equal(0);
-
-				client.post('/tldrs', tldrData, function (err, req, res, obj) {
-
-					res.statusCode.should.equal(200);
-					obj._id.should.equal(tldr._id);
-					obj.summary.should.equal(tldrData.summary);
-					obj.should.not.have.property('unusedFields');
-
-					TldrModel.find({_id: tldr._id} , function (err, docs) {
-						if (err) { throw err;}
-						// Check POST request created entry in DB
-						docs.length.should.equal(1);      
-						docs[0].url.should.equal(tldrData.url);
-						done();
-					});
-
-				});
-
-			});
-
-    });
-
-
-    it('for consecutive double post with same data', function(done) {
-			
-      var tldrData = {
-				    url: 'http://www.youporn.com/milf',
-            summary: 'Sluts and cockslapers'}
-        , tldr = TldrModel.createInstance(tldrData);
-
-			client.post('/tldrs', tldrData, function (err, req, res, obj) {
-
-				res.statusCode.should.equal(200);
-				obj._id.should.equal(tldr._id);
-				obj.summary.should.equal(tldrData.summary);
-
-				client.post('/tldrs',tldrData, function(err, req, res, obj) {
-					res.statusCode.should.equal(423);
-					done();
-				});
-
-			});
-
-    });
-
-
-    it('updating an existing tldr', function (done) {
-
-      var tldrUpdates = {
-				    url: 'http://needforair.com/nutcrackers'
-          , summary: 'This blog smells like shit'}
-        , tldr = TldrModel.createInstance(tldrUpdates);
-
-			TldrModel.find({_id: tldr._id}, function (err, docs) {
-				if (err) {throw err;}
-
-				docs.length.should.equal(1);
-				docs[0].summary.should.equal('Awesome Blog');
-
-				client.put('/tldrs/'+tldr._id, tldrUpdates, function (err, req, res, obj) {
-					res.statusCode.should.equal(200);
-					obj._id.should.equal(tldr._id);
-					obj.summary.should.equal('This blog smells like shit');
-
-					TldrModel.find({_id: tldr._id}, function(err, docs) {
-						assert.isTrue(docs[0].updatedAt - docs[0].createdAt > 0);
-
-						done();
-					});
-
-				});
-
-			});
-
-    });
-
-
-    it('and not allow direct post to specified id', function (done) {
-
-      var tldrUpdates = {summary: 'This blog smells like shit', url: "ytr.fr"};
-
-      client.post('/tldrs/c63588884fecf318d1wwwwwf3598b19f4f461d21', tldrUpdates, function (err, req, res, obj) {
-        res.statusCode.should.equal(405);
+      client.put('/tldrs', tldrData, function (err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        assert.isNotNull(res.url);
         done();
       });
-
     });
+
+
+    it('Should create a new tldr with PUT if it doesn\'t exist yet', function (done) {
+      var tldrData = {
+            url: 'http://yetanotherunusedurl.tld/somepage'
+          , summary: 'A summary' }
+        , tldr;
+
+      client.put('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(200);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs + 1);
+
+          TldrModel.find({url: tldrData.url}, function(err, docs) {
+            tldr = docs[0];
+            tldr.url.should.equal('http://yetanotherunusedurl.tld/somepage');
+            tldr.hostname.should.equal('yetanotherunusedurl.tld');
+            tldr.summary.should.equal('A summary');
+
+            done();
+          });
+        });
+      });
+    });
+
+
+    it('Should update an existing tldr with PUT', function (done) {
+      var tldrData = {
+            url: 'http://avc.com/mba-monday'
+          , summary: 'A new summary' }
+        , tldr;
+
+      client.put('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(200);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs);
+
+          TldrModel.find({url: tldrData.url}, function(err, docs) {
+            tldr = docs[0];
+            tldr.url.should.equal('http://avc.com/mba-monday');
+            tldr.hostname.should.equal('avc.com');
+            tldr.summary.should.equal('A new summary');
+
+            done();
+          });
+        });
+      });
+    });
+
+
 
   });
 
