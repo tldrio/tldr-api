@@ -96,6 +96,8 @@ TldrSchema.statics.createInstance = function(userInput) {
   // _id is the hashed url
   instance._id = TldrModel.computeIdFromUrl(instance.url);
   instance.hostname = url.parse(instance.url).hostname;
+  instance.resourceAuthor = "bilbo le hobit";
+  instance.resourceDate = new Date();
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
   //If no title was provided use url as title
@@ -185,6 +187,15 @@ function hostname_validatePresenceOfDot (value) {
   return ((value !== undefined) && (value.split('.').length >= 2));
 }
 
+// Resource Author should be defined, not empty and not be too long
+function resourceAuthor_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+}
+
+// Resource Date should be defined, not empty and not be too long (later, ensure its a date)
+function resourceDate_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+}
 
 
 
