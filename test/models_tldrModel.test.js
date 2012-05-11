@@ -15,9 +15,7 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
-  , server = require('../server')
-  , _u = require('underscore')
-  , customErrors = require('../lib/errors');
+  , server = require('../server');
 
 
 
@@ -52,9 +50,10 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
 					url: 'needforair.com/nutcrackers',
 					hostname: 'needforair.com',
+					title: 'Blog NFA',
 					summary: 'Awesome Blog',
-					dateCreated: new Date(),
-					lastUpdated: new Date()
+					createdAt: new Date(),
+					updatedAt: new Date()
 				})
         , valErr;
 
@@ -67,18 +66,19 @@ describe('TldrModel', function () {
 				valErr.url.should.not.equal(null);
 				assert.equal(valErr.summary, null);
 				assert.equal(valErr.hostname, null);
-				assert.equal(valErr.dateCreated, null);
+				assert.equal(valErr.createdAt, null);
 
         done();
       });
 
     });
 
-    it('should detect missing required dateCreated and lastUpdated args', function (done) {
+    it('should detect missing required createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
 					url: 'http://needforair.com/nutcrackers',
-					_id: "aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx",
+					title: 'Blog NFA',
+					_id: 'aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx',
 					hostname: 'needforair.com',
 					summary: 'Awesome Blog',
 				})
@@ -93,8 +93,8 @@ describe('TldrModel', function () {
 				assert.equal(valErr._id, null);
 				assert.equal(valErr.summary, null);
 				assert.equal(valErr.hostname, null);
-				valErr.dateCreated.should.not.equal(null);
-				valErr.lastUpdated.should.not.equal(null);
+				valErr.createdAt.should.not.equal(null);
+				valErr.updatedAt.should.not.equal(null);
 
         done();
       });
@@ -106,6 +106,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
 				_id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
 				hostname: 'needforair.com',
+        title: 'Blog NFA',
 				summary: 'Awesome Blog',
 			});
 
@@ -121,6 +122,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
+        title: 'Blog NFA',
         hostname: 'needforair.com',
       });
 
@@ -136,6 +138,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
+        title: 'Blog NFA',
         summary: 'Awesome Blog',
       });
 
@@ -152,6 +155,7 @@ describe('TldrModel', function () {
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
         hostname: 'needforair',
+        title: 'Blog NFA',
         summary: 'Awesome Blog',
       });
 
@@ -169,6 +173,7 @@ describe('TldrModel', function () {
             _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
             url: 'http://needforair.com/nutcrackers',
             hostname: 'needforair.com',
+            title: 'Blog NFA',
             summary: parasite,
       });
 
@@ -184,6 +189,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
         url: 'needforair.com/nutcrackers',
+        title: 'Blog NFA',
         hostname: 'needforair.com',
         summary: 'Awesome Blog',
       });
@@ -197,61 +203,38 @@ describe('TldrModel', function () {
 
   });
 
-  describe("#craftInstance", function() {
+ 
 
-    it("should not break if no url is given", function(done) {
-
-      var tldr = new TldrModel({summary: "a summary"});
-      assert.equal(null, tldr.url);
-
-      tldr.craftInstance();
-      tldr.url.should.equal("");
-      assert.equal(null, tldr.hostname);
-
-      tldr.save(function (err) {
-        if (!err) {throw {}; }    // Shouldn't be able to save
-      });
-
-      done();
-    });
+  describe('#createInstance', function () {
 
 
-    it ("should calculate the correct id and hostname", function(done) {
+    it ('should calculate the correct id and hostname', function() {
 
-      var tldr = new TldrModel({url: "http://adomain.tld"})
+      var tldr = TldrModel.createInstance({url: 'http://adomain.tld',
+                                          title: 'Learn to Code',
+                                          summary: 'coin',
+                                          resourceAuthor: 'bloup'})
         , niceErrors;
-      assert.equal(null, tldr.hostname);
 
-      tldr.craftInstance();
+      tldr.hostname.should.equal('adomain.tld');
+      tldr.title.should.equal('Learn to Code');
+      tldr._id.should.equal('839f9a097256c214581548a39bb7840a27c242e2');
 
-      tldr.hostname.should.equal("adomain.tld");
-      tldr._id.should.equal("839f9a097256c214581548a39bb7840a27c242e2");
-
-      // Only summary should be an error
-      tldr.save(function(err) {
-        niceErrors = models.getAllValidationErrorsWithExplanations(err.errors);
-        if (!niceErrors.summary) {throw {};}
-        assert.equal(niceErrors.url, null);
-        assert.equal(niceErrors.hostname, null);
-        assert.equal(niceErrors._id, null);
-      });
-
-      done();
     });
-
-  });
-
-  describe('#createAndCraftInstance', function () {
+    
 
     it('should allow user to set url, summary and resourceAuthor only', function () {
 
-      // Test is coupled with createAndCraftInstance because they are designed to work together
-      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"});
-      tldr.url.should.equal("bla");
-      tldr.summary.should.equal("coin");
-      tldr.resourceAuthor.should.equal("bloup");
+      // Test is coupled with createInstance because they are designed to work together
+      var tldr = TldrModel.createInstance({url: 'bla'
+                                          , title: 'Blog NFA'
+                                          , summary: 'coin'
+                                          , resourceAuthor: 'bloup'});
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('coin');
+      tldr.resourceAuthor.should.equal('bloup');
 
-      var tldr2 = TldrModel.createAndCraftInstance({unusedField: "glok"});
+      var tldr2 = TldrModel.createInstance({unusedField: 'glok'});
       tldr2.should.not.have.property('unusedField');
       tldr2.should.not.have.property('summary');
       tldr2.should.not.have.property('resourceAuthor');
@@ -259,20 +242,29 @@ describe('TldrModel', function () {
 
     });
 
-    it('should allow user to update summary and sourceAuthor only', function () {
+    it('should restrict the fields the user is allowed to update', function () {
 
-      var tldr = TldrModel.createAndCraftInstance({url: "bla", summary: "coin", resourceAuthor: "bloup"})
-        , toUpdate = {url: 'new1', summary: 'new2', resourceAuthor: 'new3', unusedField: 'new4'};
+      var tldr = TldrModel.createInstance({url: 'bla'
+                                          , title: 'Blog NFA'
+                                          , summary: 'coin'
+                                          , resourceAuthor: 'bloup'})
+        , toUpdate = {url: 'new1'
+          , summary: 'new2'
+          , title: 'Blog NeedForAir'
+          , resourceAuthor: 'new3'
+          , unusedField: 'new4'};
 
-      tldr.url.should.equal("bla");
-      tldr.summary.should.equal("coin");
-      tldr.resourceAuthor.should.equal("bloup");
+      tldr.url.should.equal('bla');
+      tldr.summary.should.equal('coin');
+      tldr.title.should.equal('Blog NFA');
+      tldr.resourceAuthor.should.equal('bloup');
 
       // Perform update
       tldr.update(toUpdate);
 
       tldr.url.should.equal('bla');
       tldr.summary.should.equal('new2');
+      tldr.title.should.equal('Blog NeedForAir');
       tldr.resourceAuthor.should.equal('new3');
       tldr.should.not.have.property('unusedField');
 

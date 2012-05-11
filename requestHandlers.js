@@ -7,9 +7,9 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
-  , _u = require('underscore')
   , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
+  , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
   , customErrors = require('./lib/errors');
@@ -25,8 +25,37 @@ function handleInternalDBError(err, next, msg) {
 
 
 // GET all tldrs
-function getAllTldrs (req, res, next) {
-  return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+function getTldrsWithQuery (req, res, next) {
+
+  if (_.isEmpty(req.query) ) {
+    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+  }
+  else {
+    
+    //TODO Better Handling of default args 
+    // Handle specific query for future needs
+    var method = req.query.sort || 'latest'
+      , limit = req.query.limit || 20;
+
+    limit = Math.max(0, Math.min(20, limit));   // Clip limit between 0 and 20
+
+    if (limit === 0) {
+      return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+    }
+
+    if (method === 'latest') {
+      TldrModel.find({})
+      .sort('updatedAt', -1)
+      .limit(limit)
+      .run(function(err, docs) {
+        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+
+        return res.json(200, docs);
+      });
+    }
+
+  }
+
 }
 
 // GET a tldr by id
@@ -52,32 +81,49 @@ function getAllTldrsByHostname (req, res, next) {
   });
 }
 
-// GET latest tldrs
-function getLatestTldrs (req, res, next) {
-  var numberToGet = Math.max(0, Math.min(20, req.params.number));   // Avoid getting a huge DB dump!
 
-  if (numberToGet === 0) {
-    return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
+
+// POST create a new tldr
+//
+// Provide url, summary etc... in request
+// create new tldr associated to this url
+
+function postCreateTldr (req, res, next) {
+  var id
+  , tldr;
+
+  // Return Error if url is missing
+  if (!req.body.url) {
+    return next( new restify.MissingParameterError('No URL was provided in the request'));
   }
 
-  TldrModel.find({}).sort('lastUpdated', -1).limit(numberToGet).run(function(err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+  //Create New Tldr
+  tldr = TldrModel.createInstance(req.body);
 
-    return res.json(200, docs);
+  tldr.save(function (err) {
+    if (err) {
+      if (err.errors) {
+        return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
+      } else if (err.code === 11000) {
+        //11000 is a Mongo error code for duplicate _id key
+        return next(new customErrors.TldrAlreadyExistsError('A tldr for the provided url already exists. You can update with PUT /tldrs/:id'));
+      } else {
+        return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+      }
+    }
+    return res.json(200, tldr);   // Success
   });
 }
 
 
-
-// POST create or update tldr
+//Update existing tldr
+// Only update fields user has the rights to update to avoid unexpected behaviour
+//We don't need to udpate url, _id or hostname because if record was found _id is the same
+//and url didn't change
 //
-// Provide url, summary etc... in request
-// If tldr associated to url exists update the updatable fields
-// else create new tldr associated to this url
-
-function postCreateOrUpdateTldr (req, res, next) {
-  var id
-    , tldr;
+function putUpdateTldr (req, res, next) {
+  var tldr
+    , id;
 
   // Return Error if url is missing
   if (!req.body.url) {
@@ -85,51 +131,36 @@ function postCreateOrUpdateTldr (req, res, next) {
   }
 
   //Retrieve _id to perform lookup in db
-  id = TldrModel.getIdFromUrl(req.body.url);
+  id = TldrModel.computeIdFromUrl(req.body.url);
 
   TldrModel.find({_id:id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr"); }
-    if (docs.length === 0) {
-      //Create New Tldr
-      tldr = TldrModel.createAndCraftInstance(req.body);
+    if (err) { return handleInternalDBError(err, next, "Internal error in putUpdateTldr"); }
 
-      tldr.save(function (err) {
-        if (err) {
-          if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
-          }
-        }
-        return res.json(200, tldr);   // Success
-      });
-    } else {
-      //Update existing tldr
-      // Only update fields user has the rights to update to avoid unexpected behaviour
-      //We don't need to udpate url, _id or hostname because if record was found _id is the same
-      //and url didn't change
-      tldr = docs[0];
-      tldr.update(req.body);
+    tldr = docs[0];
+    tldr.update(req.body);
 
-      tldr.save(function(err) {
-        if (err) {
-          if (err.errors) {
-            return next(new restify.InvalidContentError(models.getAllValidationErrorsWithExplanations(err.errors)));   // Validation error, return causes of failure to user
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateOrUpdateTldr");    // Unexpected error while saving
-          }
+    tldr.save(function(err) {
+
+      if (err) {
+        if (err.errors) {
+          return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
         } else {
-          return res.json(200, tldr);
+          return handleInternalDBError(err, next, "Internal error in putUpdateTldr");    // Unexpected error while saving
         }
-      });
-    }
+      } else {
+        return res.json(200, tldr);
+      }
+
+    });
+
   });
+
 }
 
 
 // Module interface
-module.exports.getAllTldrs = getAllTldrs;
+module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrById = getTldrById;
-module.exports.postCreateOrUpdateTldr = postCreateOrUpdateTldr;
-module.exports.getLatestTldrs = getLatestTldrs;
+module.exports.postCreateTldr = postCreateTldr;
+module.exports.putUpdateTldr = putUpdateTldr;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

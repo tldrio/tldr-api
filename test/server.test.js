@@ -6,16 +6,17 @@
 
 
 var should = require('chai').should()
-, assert = require('chai').assert
-, _u = require('underscore')
-, restify = require('restify')
-, bunyan = require('../lib/logger').bunyan 
-, server = require('../server')
-, models = require('../models')
-, db = require('../lib/db')
-, mongoose = require('mongoose')
-, TldrModel = models.TldrModel
-, customUtils = require('../lib/customUtils');
+  , assert = require('chai').assert
+  , _ = require('underscore')
+  , restify = require('restify')
+  , bunyan = require('../lib/logger').bunyan 
+  , server = require('../server')
+  , models = require('../models')
+  , db = require('../lib/db')
+  , mongoose = require('mongoose')
+  , async = require('async')
+  , TldrModel = models.TldrModel
+  , customUtils = require('../lib/customUtils');
 
 
 
@@ -53,10 +54,10 @@ describe('Webserver', function () {
     client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
-    tldr1 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-    tldr2 = TldrModel.createAndCraftInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
-    tldr3 = TldrModel.createAndCraftInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-    tldr4 = TldrModel.createAndCraftInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
+    tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+    tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
+    tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+    tldr4 = TldrModel.createInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -145,13 +146,9 @@ describe('Webserver', function () {
 
     it('a non existing route', function (done) {
 
-      client.get('/*', function (err, req, res, obj) {
+      client.get('/notexistingroute', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
-
-        client.get('/notexistingroute', function (err, req, res, obj) {
-          res.statusCode.should.equal(404);
-          done();
-        });
+        done();
       });
 
     });
@@ -160,8 +157,8 @@ describe('Webserver', function () {
 
       client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
         obj.length.should.equal(2);
-        _u.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
-        _u.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
+        _.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
+        _.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
         done();
       });
 
@@ -178,21 +175,21 @@ describe('Webserver', function () {
 
 
     it('should return the latest tldrs correctly', function (done) {
-      //tldr1.lastUpdated = new Date(2020, 04, 10, 12);
-      //tldr2.lastUpdated = new Date(2020, 06, 10, 12);
-      //tldr3.lastUpdated = new Date(2020, 02, 10, 12);
-      //tldr4.lastUpdated = new Date(2021, 00, 10, 12);
+      //tldr1.updatedAt = new Date(2020, 04, 10, 12);
+      //tldr2.updatedAt = new Date(2020, 06, 10, 12);
+      //tldr3.updatedAt = new Date(2020, 02, 10, 12);
+      //tldr4.updatedAt = new Date(2021, 00, 10, 12);
 
-      TldrModel.update({_id: tldr1._id}, {lastUpdated: new Date(2020, 04, 10, 12)}, {}, function() {
-        TldrModel.update({_id: tldr2._id}, {lastUpdated: new Date(2020, 06, 10, 12)}, {}, function() {
-          TldrModel.update({_id: tldr3._id}, {lastUpdated: new Date(2020, 02, 10, 12)}, {}, function() {
-            TldrModel.update({_id: tldr4._id}, {lastUpdated: new Date(2021, 00, 10, 12)}, {}, function() {
-              client.get('/tldrs/latest/2', function (err, req, res, obj) {
+      TldrModel.update({_id: tldr1._id}, {updatedAt: new Date(2020, 04, 10, 12)}, {}, function() {
+        TldrModel.update({_id: tldr2._id}, {updatedAt: new Date(2020, 06, 10, 12)}, {}, function() {
+          TldrModel.update({_id: tldr3._id}, {updatedAt: new Date(2020, 02, 10, 12)}, {}, function() {
+            TldrModel.update({_id: tldr4._id}, {updatedAt: new Date(2021, 00, 10, 12)}, {}, function() {
+              client.get('/tldrs?sort=latest&limit=2', function (err, req, res, obj) {
                 obj.length.should.equal(2);
-                _u.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
-                _u.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
+                _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
+                _.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
 
-                client.get('/tldrs/latest/12', function (err, req, res, obj) {
+                client.get('/tldrs?sort=latest&limit=12', function (err, req, res, obj) {
                   obj.length.should.equal(4);
 
                   done();
@@ -207,10 +204,10 @@ describe('Webserver', function () {
 
     it('should not return any tldr if called with 0 or a negative number', function (done) {
 
-      client.get('/tldrs/latest/0', function (err, req, res, obj) {
+      client.get('/tldrs?sort=latest&limit=0', function (err, req, res, obj) {
         obj.length.should.equal(0);
 
-        client.get('/tldrs/latest/-2', function (err, req, res, obj) {
+        client.get('/tldrs?sort=latest&limit=-2', function (err, req, res, obj) {
           obj.length.should.equal(0);
 
           done();
@@ -222,19 +219,41 @@ describe('Webserver', function () {
 
 
     it('should not return more than 20 tldrs', function (done) {
-      var toCreate = [], i;
+      var toExecute = []
+        , i;
 
       // Create dummy entries in the database
-      for (i = 0; i < 34; i++) {tldr1.url = "http://test.com/" + i; toCreate.push(TldrModel.createAndCraftInstance(tldr1));}
+      for (i = 0; i < 34; i++) {
+        (function (i) {
+          var newTldr
+            , saveTldr;
 
-      customUtils.chainSave(toCreate, function() {
-        client.get('/tldrs/latest/123', function (err, req, res, obj) {
+          newTldr = TldrModel.createInstance({url: 'http://test.com/'+i
+                                            , summary: 'testsummary'
+                                            , resourceAuthor: 'Me'});
+
+          saveTldr = function (callback) {
+            newTldr.save( function (err) {
+              if (err) { callback(err); }
+              callback(null);
+            });
+          };
+
+          toExecute.push(saveTldr);
+        }(i));
+      }
+
+      async.series(toExecute, function (err, results) {
+        if (err) { throw(err); }
+        client.get('/tldrs?sort=latest&limit=123', function (err, req, res, obj) {
           obj.length.should.equal(20);
-
           done();
         });
+
       });
+
     });
+
   });
 
 
@@ -275,7 +294,7 @@ describe('Webserver', function () {
 						url: 'http://www.youporn.com/milf',
 						summary: 'Sluts and cockslapers', 
 						unusedFields: "coin"}
-        , tldr = TldrModel.createAndCraftInstance(tldrData);
+        , tldr = TldrModel.createInstance(tldrData);
 
 			TldrModel.find({_id: tldr._id} , function (err, docs) {
 
@@ -311,7 +330,7 @@ describe('Webserver', function () {
       var tldrData = {
 				    url: 'http://www.youporn.com/milf',
             summary: 'Sluts and cockslapers'}
-        , tldr = TldrModel.createAndCraftInstance(tldrData);
+        , tldr = TldrModel.createInstance(tldrData);
 
 			client.post('/tldrs', tldrData, function (err, req, res, obj) {
 
@@ -320,7 +339,7 @@ describe('Webserver', function () {
 				obj.summary.should.equal(tldrData.summary);
 
 				client.post('/tldrs',tldrData, function(err, req, res, obj) {
-					res.statusCode.should.equal(200);
+					res.statusCode.should.equal(423);
 					done();
 				});
 
@@ -334,7 +353,7 @@ describe('Webserver', function () {
       var tldrUpdates = {
 				    url: 'http://needforair.com/nutcrackers'
           , summary: 'This blog smells like shit'}
-        , tldr = TldrModel.createAndCraftInstance(tldrUpdates);
+        , tldr = TldrModel.createInstance(tldrUpdates);
 
 			TldrModel.find({_id: tldr._id}, function (err, docs) {
 				if (err) {throw err;}
@@ -342,13 +361,13 @@ describe('Webserver', function () {
 				docs.length.should.equal(1);
 				docs[0].summary.should.equal('Awesome Blog');
 
-				client.post('/tldrs', tldrUpdates, function (err, req, res, obj) {
+				client.put('/tldrs/'+tldr._id, tldrUpdates, function (err, req, res, obj) {
 					res.statusCode.should.equal(200);
 					obj._id.should.equal(tldr._id);
 					obj.summary.should.equal('This blog smells like shit');
 
 					TldrModel.find({_id: tldr._id}, function(err, docs) {
-						assert.isTrue(docs[0].lastUpdated - docs[0].dateCreated > 0);
+						assert.isTrue(docs[0].updatedAt - docs[0].createdAt > 0);
 
 						done();
 					});

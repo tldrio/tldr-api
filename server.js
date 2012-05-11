@@ -12,9 +12,9 @@ var restify = require('restify')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
-  , currentEnvironment = require('./environments').currentEnvironment
   , privateKey = fs.readFileSync('privatekey.pem').toString()
   , certificate = fs.readFileSync('certificate.pem').toString()
+  , env = require('./environments').env
   , server;                                 // Will store our restify server
 
 
@@ -26,7 +26,7 @@ var restify = require('restify')
  * Only useful in production environment when we don't want to stop the service. Not set in development environment to get meaningful errors
  */
 
-if (currentEnvironment.environment === "production") {
+if (env.name === "production") {
   process.on('uncaughtException', function(err) {
     // TODO implement email sending
     bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
@@ -41,7 +41,7 @@ if (currentEnvironment.environment === "production") {
  */
 
 // If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
-if (currentEnvironment.environment === "test") {
+if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
     key: privateKey, 
@@ -80,7 +80,7 @@ function authenticate (req, res, next) {
  */
 
 // GET all tldrs
-server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrs);
+server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getTldrsWithQuery);
 
 // GET a tldr by id
 server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
@@ -88,12 +88,11 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
-// GET latest tldrs with limit number
-server.get('tldrs/latest/:number', requestHandlers.getLatestTldrs);
+//POST a new tldr 
+server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateTldr);
 
-//POST a new tldr or update existing tldr
-server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateOrUpdateTldr);
-
+//PUT update existing tldr
+server.put({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.putUpdateTldr);
 
 
 // Start server

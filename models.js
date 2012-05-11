@@ -5,19 +5,24 @@
  */
 
 var TldrModelDefinition = require('./models/tldrModel')
-	, _u = require('underscore');
+	, _ = require('underscore');
 
 
-// Given the "errors" object of an exception thrown by Mongoose's validation system,
-// return a JSON with all non validated fields and an explanatory message for each
+/* 
+ * Given the "errors" object of an exception thrown by Mongoose's validation system,
+ * return an object with all non validated fields and an explanatory message for each
+ * 
+ * @param {Object} errorsObject object thrown by Mongoose
+ * @return {Object} result object that contains the incriminated fields
+ */
 function getAllValidationErrorsWithExplanations(errorsObject) {
 	var result = {};
 
-  _u.each(errorsObject, function (value, key) {
+  _.each(errorsObject, function (value, key) {
     result[key] = value.type;
   });
 
-	return result;
+  return result;
 }
 
 
