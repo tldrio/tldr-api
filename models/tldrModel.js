@@ -22,7 +22,6 @@ var mongoose = require('mongoose')
  *
  */
 
-// Define tldr schema
 TldrSchema = new Schema({
 	_id             : String,
 	url             : String,
@@ -83,7 +82,7 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 /**
- * Create a new TldrInstance and craft all the nececessary.
+ * Create a new instance of TldrModel and populate it.
  * Only fields in userSetableFields are handled
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
  *
