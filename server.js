@@ -12,8 +12,8 @@ var restify = require('restify')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
-  , privateKey = fs.readFileSync('privatekey.pem').toString()
-  , certificate = fs.readFileSync('certificate.pem').toString()
+  , privateKey = fs.readFileSync('./privatekey.pem').toString()
+  , certificate = fs.readFileSync('./certificate.pem').toString()
   , env = require('./environments').env
   , server;                                 // Will store our restify server
 
