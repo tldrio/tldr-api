@@ -22,7 +22,6 @@ var mongoose = require('mongoose')
  *
  */
 
-// Define tldr schema
 TldrSchema = new Schema({
 	_id             : String,
 	url             : String,
@@ -30,6 +29,7 @@ TldrSchema = new Schema({
 	hostname        : String,
 	summary         : String,
   resourceAuthor  : String,
+  resourceDate    : Date,
   createdAt       : Date,
   updatedAt       : Date
 });
@@ -83,7 +83,7 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 /**
- * Create a new TldrInstance and craft all the nececessary.
+ * Create a new instance of TldrModel and populate it.
  * Only fields in userSetableFields are handled
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
  *
@@ -99,6 +99,8 @@ TldrSchema.statics.createInstance = function(userInput) {
   // _id is the hashed url
   instance._id = TldrModel.computeIdFromUrl(instance.url);
   instance.hostname = url.parse(instance.url).hostname;
+  instance.resourceAuthor = "bilbo le hobit";
+  instance.resourceDate = new Date();
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
   //If no title was provided use url as title
@@ -204,6 +206,15 @@ function hostname_validatePresenceOfDot (value) {
   return ((value !== undefined) && (value.split('.').length >= 2));
 }
 
+// Resource Author should be defined, not empty and not be too long
+function resourceAuthor_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+}
+
+// Resource Date should be defined, not empty and not be too long (later, ensure its a date)
+function resourceDate_validateLength (value) {
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+}
 
 
 
