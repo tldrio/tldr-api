@@ -187,9 +187,9 @@ function url_validatePresenceOfProtocolAndHostname (value) {
   return valid;
 }
 
-//Summaries should be defined, non empty and not be too long
+//Summaries should be an Array, non empty and not be too long
 function summary_validateLength (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 1500));
+  return (Object.prototype.toString.call(value) === '[object Array]' && value.length >= 1 && value.length <= 4);
 }
 
 //Titles should be defined, non empty and not be too long
