@@ -17,9 +17,9 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
 // Later, we may implement a retry count
-function handleInternalDBError(err, next, msg) {
+function handleInternalDBError(err, res, msg) {
   bunyan.error({error: err, message: msg});
-  return next(new restify.InternalError('An internal error has occured, we are looking into it'));
+  return res.json( 500, {"message": "An internal error has occured, we are looking into it"} );
 }
 
 
@@ -48,7 +48,7 @@ function getTldrsWithQuery (req, res, next) {
       .sort('updatedAt', -1)
       .limit(limit)
       .run(function(err, docs) {
-        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+        if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
 
         return res.json(200, docs);
       });
@@ -62,7 +62,7 @@ function getTldrsWithQuery (req, res, next) {
 function getTldrById (req, res, next) {
   var id = req.params.id;
   TldrModel.find({_id: id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrById"); }
+    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrById"); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
@@ -75,26 +75,12 @@ function getTldrById (req, res, next) {
 //GET all tldrs corresponding to a hostname
 function getAllTldrsByHostname (req, res, next) {
   TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByHostname"); }
+    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
 
     return res.json(200, docs);
   });
 }
 
-
-
-// POST create a new tldr
-//
-// Provide url, summary etc... in request
-// create new tldr associated to this url
-
-function postCreateTldr (req, res, next) {
-  var id
-  , tldr;
-
-
-
-}
 
 
 /* Update existing tldr
@@ -116,7 +102,7 @@ function updateTldrCreateIfNeeded (req, res, next) {
   id = TldrModel.computeIdFromUrl(req.body.url);
 
   TldrModel.find({_id: id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in updateTldrCreateIfNeeded"); }
+    if (err) { return handleInternalDBError(err, res, "Internal error in updateTldrCreateIfNeeded"); }
 
     if (docs.length === 1) {
       tldr = docs[0];
@@ -130,7 +116,7 @@ function updateTldrCreateIfNeeded (req, res, next) {
         if (err.errors) {
           return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
         } else {
-          return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+          return handleInternalDBError(err, res, "Internal error in postCreateTldr");    // Unexpected error while saving
         }
       }
 
