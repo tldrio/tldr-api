@@ -23,15 +23,15 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema({
-	_id             : String,
-	url             : String,
-	title           : String,
-	hostname        : String,
-	summary         : String,
-  resourceAuthor  : String,
-  resourceDate    : Date,
-  createdAt       : Date,
-  updatedAt       : Date
+	_id             : { type: String, required: true },
+	url             : { type: String, required: true },
+	title           : { type: String, required: true },
+	hostname        : { type: String, required: true },
+	summary         : { type: [String], required: true },
+  resourceAuthor  : { type: String, required: true },
+  resourceDate    : { type: Date, required: true },
+  createdAt       : { type: Date, required: true },
+  updatedAt       : { type: Date, required: true }
 });
 
 
@@ -224,24 +224,15 @@ function resourceDate_validateLength (value) {
  *
  */
 
-TldrSchema.path('_id').required(true);
 TldrSchema.path('_id').validate(id_validateLength, '[Internal error] please report to contact@needforair.com');  // Should never happen
 
-TldrSchema.path('url').required(true);
 TldrSchema.path('url').validate(url_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
 
-TldrSchema.path('title').required(true);
 TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
 
-TldrSchema.path('summary').required(true);
-TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be 4 bullet points');
 
-TldrSchema.path('hostname').required(true);
 TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
-
-TldrSchema.path('createdAt').required(true);
-
-TldrSchema.path('updatedAt').required(true);
 
 
 // Define tldr model
