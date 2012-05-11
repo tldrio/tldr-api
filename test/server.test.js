@@ -49,7 +49,7 @@ describe('Webserver', function () {
   beforeEach(function (done) {
     //create client to test api
     client = restify.createJsonClient({
-      url: 'https://localhost:' + 8686,
+      url: 'http://localhost:' + 8686,
     });
     client.basicAuth('Magellan', 'VascoDeGama');
 
