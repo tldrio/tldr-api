@@ -316,6 +316,51 @@ describe('Webserver', function () {
     });
 
 
+    it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
+      var tldrData = {
+            url: 'http://yetanotherunusedurl.tld/somepage'
+          , summary: '' }   // Summary can't be empty
+        , tldr;
+
+      client.put('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        assert.isNotNull(obj.summary);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs);
+
+          done();
+        });
+      });
+    });
+
+
+    it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
+      var tldrData = {
+            url: 'http://avc.com/mba-monday'
+          , summary: '' }
+        , tldr;
+
+      client.put('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs);
+
+          TldrModel.find({url: tldrData.url}, function(err, docs) {
+            tldr = docs[0];
+            tldr.url.should.equal('http://avc.com/mba-monday');
+            tldr.hostname.should.equal('avc.com');
+            tldr.summary.should.equal('Fred Wilson is my God');
+
+            done();
+          });
+        });
+      });
+    });
+
+
+
+
+
 
   });
 
