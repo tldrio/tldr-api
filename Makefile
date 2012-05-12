@@ -1,6 +1,6 @@
 test:
 	@echo "TLDR - Launching tests. Setting environment to test"
-	@ TLDR_ENV="test" ./node_modules/.bin/mocha --reporter spec --grep Webserver
+	@ TLDR_ENV="test" ./node_modules/.bin/mocha --reporter spec 
 	@echo "Tests finished, setting environment back to development"
 
 testRemote:

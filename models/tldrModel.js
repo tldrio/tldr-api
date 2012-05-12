@@ -98,7 +98,7 @@ TldrSchema.statics.createInstance = function(userInput) {
  */
 
 TldrSchema.methods.update = function (updates) {
-  var validUpdateFields = _.pick(updates, userUpdatableFields)
+  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
   _.each( validUpdateFields, function (validField) {

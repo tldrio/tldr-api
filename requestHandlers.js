@@ -94,27 +94,29 @@ function getAllTldrsByHostname (req, res, next) {
  */
 function updateTldrCreateIfNeeded (req, res, next) {
   var tldr
+    , log
     , url;
 
-  // Return Error if url is missing
-  if (!req.body.url) {
-    res.json(403, {"url": "No URL was provided"});   // TODO: use global validation mechanism instead
-    return next();
-  }
-
   //Retrieve _id to perform lookup in db
-  url = req.body.url;
+  url = req.params.url;
+  log = req.log;
+  //log.warn(url);
+  //log.warn(req.body);
 
-  TldrModel.find({_id: url}, function (err, docs) {
+  TldrModel.find({_id: decodeURIComponent(url)}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in updateTldrCreateIfNeeded"); }
 
+    //log.warn(docs.length, 'toto');
     if (docs.length === 1) {
       tldr = docs[0];
       tldr.update(req.body);   // A tldr was found, update it
+      //log.warn(tldr);
     } else {
       tldr = TldrModel.createInstance(req.body);   // No tldr was found, create it
+      tldr._id = url;
     }
 
+    //log.warn(tldr);
     tldr.save(function (err) {
       if (err) {
         if (err.errors) {
@@ -125,7 +127,7 @@ function updateTldrCreateIfNeeded (req, res, next) {
         }
       }
 
-      res.json(200, tldr);   // Success
+      res.send(204);   // No Content status code for succesful PUT requests
       return next();
     });
 
