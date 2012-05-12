@@ -53,7 +53,7 @@ if (env.name === "test") {
     name: "tldr API",
     //key: privateKey, 
     //certificate: certificate
-    //log: bunyan     // No restify logging for now
+    log: bunyan     // No restify logging for now
   });
 }
 

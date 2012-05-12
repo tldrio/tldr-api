@@ -59,29 +59,20 @@ function getTldrsWithQuery (req, res, next) {
 
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
-  var url = req.params.url
+  var url = decodeURIComponent(req.params.url)
     , log = req.log;
 
   //log.warn(url);
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
 
+    log.warn(docs);
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     } else {
-      res.json(200, docs[0]);    // Success
-      return next();
+      return res.json(200, docs[0]);    // Success
+      //return next();
     }
-  });
-}
-
-//GET all tldrs corresponding to a hostname
-function getAllTldrsByHostname (req, res, next) {
-  TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
-
-    res.json(200, docs);
-    return next();
   });
 }
 
@@ -140,4 +131,3 @@ function updateTldrCreateIfNeeded (req, res, next) {
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.updateTldrCreateIfNeeded = updateTldrCreateIfNeeded;
-module.exports.getAllTldrsByHostname = getAllTldrsByHostname;
