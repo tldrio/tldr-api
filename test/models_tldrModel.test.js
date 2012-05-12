@@ -57,6 +57,8 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
 					title: 'Blog NFA',
 					summary: 'Awesome Blog',
+          resourceAuthor: 'NFA Crew',
+          resourceDate: '2012',
 					createdAt: new Date(),
 					updatedAt: new Date()
 				})
@@ -64,11 +66,11 @@ describe('TldrModel', function () {
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
-        _.keys(err.errors).length.should.equal(2);
+
+        _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        console.log(valErr);
 				valErr._id.should.not.equal(null);
-				valErr.summary.should.equal(null);
-				valErr.createdAt.should.equal(null);
 
         done();
       });
@@ -81,6 +83,8 @@ describe('TldrModel', function () {
 					_id: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
 					summary: 'Awesome Blog',
+          resourceAuthor: 'NFA Crew',
+          resourceDate: '2012'
 				})
 				, valErr;
 
@@ -89,8 +93,6 @@ describe('TldrModel', function () {
 				
         _.keys(err.errors).length.should.equal(2);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr._id.should.equal(null);
-				valErr.summary.should.equal(null);
 				valErr.createdAt.should.not.equal(null);
 				valErr.updatedAt.should.not.equal(null);
 
@@ -102,12 +104,22 @@ describe('TldrModel', function () {
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'needforair.com/nutcrackers',
-        title: 'Blog NFA',
-      });
+          _id: 'needforair.com/nutcrackers',
+          title: 'Blog NFA',
+          resourceAuthor: 'NFA Crew',
+          resourceDate: '2012',
+					createdAt: new Date(),
+					updatedAt: new Date()
+      })
+        , valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+				valErr.summary.should.not.equal(null);
+
         done();
       });
 
@@ -120,10 +132,13 @@ describe('TldrModel', function () {
             _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
             title: 'Blog NFA',
             summary: parasite,
-      });
+      })
+        , valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.summary.should.be.a('string');
         done();
       });
 
