@@ -125,6 +125,54 @@ describe('TldrModel', function () {
 
     });
 
+    it('should detect missing required resourceAuthor', function (done) {
+
+      var tldr = new TldrModel({
+          _id: 'needforair.com/nutcrackers',
+          title: 'Blog NFA',
+          summary: 'Awesome Blog',
+          resourceDate: '2012',
+					createdAt: new Date(),
+					updatedAt: new Date()
+      })
+        , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+				valErr.resourceAuthor.should.not.equal(null);
+
+        done();
+      });
+
+    });
+
+    it('should detect missing required resourceDate', function (done) {
+
+      var tldr = new TldrModel({
+          _id: 'needforair.com/nutcrackers',
+          title: 'Blog NFA',
+          summary: 'Awesome Blog',
+          resourceAuthor: 'NFA Crew',
+					createdAt: new Date(),
+					updatedAt: new Date()
+      })
+        , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(2);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+				valErr.resourceDate.should.not.equal(null);
+
+        done();
+      });
+
+    });
+
     it('should handle wrong type of arg', function (done) {
 
       var parasite = {foo: 'bar'}
