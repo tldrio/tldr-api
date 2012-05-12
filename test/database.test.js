@@ -40,13 +40,13 @@ describe('Database', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers'
+    var tldr1 = TldrModel.createInstance({_id: 'http://needforair.com/nutcrackers'
                                          , title: 'Blog NFA'
                                          , summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday'
+      , tldr2 = TldrModel.createInstance({_id: 'http://avc.com/mba-monday'
                                          , title: 'Blog AVC'
                                          , summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics'
+      , tldr3 = TldrModel.createInstance({_id: 'http://bothsidesofthetable.com/deflationnary-economics'
                                          , title: 'Deflat Eco'
                                          , summary: 'Sustering is my religion'});
 
@@ -90,13 +90,12 @@ describe('Database', function () {
 	// Get tldr with id 1
 	it('should return a tldr for an existing id', function (done) {
 
-    var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
+    var _id = 'http://needforair.com/nutcrackers';
 
-	  TldrModel.find( {_id: htldrId}, function (err, docs) {
+	  TldrModel.find( {_id: _id}, function (err, docs) {
       if (err) { throw done(err); }
       var tldr = docs[0];
-			tldr.url.should.equal('http://needforair.com/nutcrackers');
-			tldr.hostname.should.equal('needforair.com');
+			tldr.title.should.equal('Blog NFA');
 			done();
 	  });
 

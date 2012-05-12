@@ -55,13 +55,13 @@ describe('Webserver', function () {
     client = restify.createJsonClient({
       url: 'http://localhost:' + 8686,
     });
-    client.basicAuth('Magellan', 'VascoDeGama');
+    //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
-    tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-    tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
-    tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-    tldr4 = TldrModel.createInstance({url: 'http://needforair.com/sopa', summary: 'Great article'});
+    tldr1 = TldrModel.createInstance({_id: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
+    tldr2 = TldrModel.createInstance({_id: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
+    tldr3 = TldrModel.createInstance({_id: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
+    tldr4 = TldrModel.createInstance({_id: 'http://needforair.com/sopa', summary: 'Great article'});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -105,9 +105,9 @@ describe('Webserver', function () {
 
     it('an existing tldr', function (done) {
 
-      client.get('/tldrs/c63588884fecf318d13fc3cf3598b19f4f461d21', function (err, req, res, obj) {
+      client.get('/tldrs/http://needforair.com/sopa', function (err, req, res, obj) {
         res.statusCode.should.equal(200);
-        obj.url.should.equal('http://needforair.com/nutcrackers');
+        obj._id.should.equal('http://needforair.com/sopa');
         done();
       });
 
@@ -115,7 +115,7 @@ describe('Webserver', function () {
 
     it('GET a non existing tldr', function (done) {
 
-      client.get('/tldrs/3niggas4bitches', function (err, req, res, obj) {
+      client.get('/tldrs/http://3niggas4bitches.com', function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         response.should.have.ownProperty('code');
@@ -139,33 +139,12 @@ describe('Webserver', function () {
 
     it('GET a non existing route', function (done) {
 
-      client.get('/notexistingroute', function (err, req, res, obj) {
+      client.get('/nonexistingroute', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
         done();
       });
 
     });
-
-    it('GET all tldrs for an existing given hostname', function (done) {
-
-      client.get('/domains/needforair.com/tldrs', function (err, req, res, obj) {
-        obj.length.should.equal(2);
-        _.any(obj, function(value) {return value.summary === "Awesome Blog";} ).should.equal(true);
-        _.any(obj, function(value) {return value.summary === "Great article";} ).should.equal(true);
-        done();
-      });
-
-    });
-
-    it('GET all tldrs for a non-existing hostname (return empty array)', function (done) {
-
-      client.get('/domains/unusedDomain.com/tldrs', function (err, req, res, obj) {
-        obj.length.should.equal(0);
-        done();
-      });
-
-    });
-
 
     it('GET the latest tldrs correctly', function (done) {
       //tldr1.updatedAt = new Date(2020, 04, 10, 12);
@@ -221,7 +200,7 @@ describe('Webserver', function () {
           var newTldr
             , saveTldr;
 
-          newTldr = TldrModel.createInstance({url: 'http://test.com/'+i
+          newTldr = TldrModel.createInstance({_id: 'http://test.com/'+i
                                             , summary: 'testsummary'
                                             , resourceAuthor: 'Me'});
 
@@ -251,7 +230,7 @@ describe('Webserver', function () {
 
 
 
-  //Test POST Requests
+  //Test PUT Requests
   describe('Should handle PUT requests', function () {
 
     it('Shouldn\'t be able to PUT a tldr if no url is provided', function (done) {
@@ -261,7 +240,7 @@ describe('Webserver', function () {
 
       client.put('/tldrs', tldrData, function (err, req, res, obj) {
         res.statusCode.should.equal(403);
-        assert.isNotNull(res.url);
+        assert.isNotNull(res._id); //not sure why?
         done();
       });
     });
@@ -269,7 +248,7 @@ describe('Webserver', function () {
 
     it('Should create a new tldr with PUT if it doesn\'t exist yet', function (done) {
       var tldrData = {
-            url: 'http://yetanotherunusedurl.tld/somepage'
+            _id: 'http://yetanotherunusedurl.tld/somepage'
           , summary: 'A summary' }
         , tldr;
 
@@ -278,10 +257,9 @@ describe('Webserver', function () {
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs + 1);
 
-          TldrModel.find({url: tldrData.url}, function(err, docs) {
+          TldrModel.find({_id: tldrData._id}, function(err, docs) {
             tldr = docs[0];
-            tldr.url.should.equal('http://yetanotherunusedurl.tld/somepage');
-            tldr.hostname.should.equal('yetanotherunusedurl.tld');
+            tldr._id.should.equal('http://yetanotherunusedurl.tld/somepage');
             tldr.summary.should.equal('A summary');
 
             done();
@@ -293,7 +271,7 @@ describe('Webserver', function () {
 
     it('Should update an existing tldr with PUT', function (done) {
       var tldrData = {
-            url: 'http://avc.com/mba-monday'
+            _id: 'http://avc.com/mba-monday'
           , summary: 'A new summary' }
         , tldr;
 
@@ -302,10 +280,9 @@ describe('Webserver', function () {
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: tldrData.url}, function(err, docs) {
+          TldrModel.find({_id: tldrData._id}, function(err, docs) {
             tldr = docs[0];
-            tldr.url.should.equal('http://avc.com/mba-monday');
-            tldr.hostname.should.equal('avc.com');
+            tldr._id.should.equal('http://avc.com/mba-monday');
             tldr.summary.should.equal('A new summary');
 
             done();
@@ -317,7 +294,7 @@ describe('Webserver', function () {
 
     it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
       var tldrData = {
-            url: 'http://yetanotherunusedurl.tld/somepage'
+            _id: 'http://yetanotherunusedurl.tld/somepage'
           , summary: '' }   // Summary can't be empty
         , tldr;
 
@@ -335,7 +312,7 @@ describe('Webserver', function () {
 
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
       var tldrData = {
-            url: 'http://avc.com/mba-monday'
+            _id: 'http://avc.com/mba-monday'
           , summary: '' }
         , tldr;
 
@@ -344,10 +321,9 @@ describe('Webserver', function () {
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: tldrData.url}, function(err, docs) {
+          TldrModel.find({_id: tldrData._id}, function(err, docs) {
             tldr = docs[0];
-            tldr.url.should.equal('http://avc.com/mba-monday');
-            tldr.hostname.should.equal('avc.com');
+            tldr._id.should.equal('http://avc.com/mba-monday');
             tldr.summary.should.equal('Fred Wilson is my God');
 
             done();

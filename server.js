@@ -70,14 +70,11 @@ server.use(restify.bodyParser({mapParams: false}));
 // GET all tldrs
 server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getTldrsWithQuery);
 
-// GET a tldr by id
-server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
-
-// GET tldrs by hostname
-server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
+// GET a tldr by url
+server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
 
 //PUT update existing tldr, create it if it doesn't exist
-server.put({path: '/tldrs', version: '0.1.0'}, requestHandlers.updateTldrCreateIfNeeded);
+server.put({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.updateTldrCreateIfNeeded);
 
 
 // Start server

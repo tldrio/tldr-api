@@ -7,7 +7,6 @@
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , restify = require('restify')
-  , crypto = require('crypto')
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
@@ -45,7 +44,7 @@ function getTldrsWithQuery (req, res, next) {
 
     if (method === 'latest') {
       TldrModel.find({})
-      .sort('updatedAt', -1)
+      .sort('updatedAt', -1) //pretty sure this is not good, should use a double index
       .limit(limit)
       .run(function(err, docs) {
         if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
@@ -58,11 +57,11 @@ function getTldrsWithQuery (req, res, next) {
 
 }
 
-// GET a tldr by id
-function getTldrById (req, res, next) {
-  var id = req.params.id;
-  TldrModel.find({_id: id}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrById"); }
+// GET a tldr by url
+function getTldrByUrl (req, res, next) {
+  var url = req.params.url;
+  TldrModel.find({_id: url}, function (err, docs) {
+    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
@@ -85,13 +84,12 @@ function getAllTldrsByHostname (req, res, next) {
 
 /* Update existing tldr
  * Only update fields user has the rights to update to avoid unexpected behaviour
- * We don't need to udpate url, _id or hostname because if record was found _id is the same
- * and url didn't change
+ * We don't need to udpate _id because if record was found _id is the same
  * If tldr did not exist, we create it
  */
 function updateTldrCreateIfNeeded (req, res, next) {
   var tldr
-    , id;
+    , url;
 
   // Return Error if url is missing
   if (!req.body.url) {
@@ -99,9 +97,9 @@ function updateTldrCreateIfNeeded (req, res, next) {
   }
 
   //Retrieve _id to perform lookup in db
-  id = TldrModel.computeIdFromUrl(req.body.url);
+  url = req.body.url;
 
-  TldrModel.find({_id: id}, function (err, docs) {
+  TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in updateTldrCreateIfNeeded"); }
 
     if (docs.length === 1) {
@@ -130,6 +128,6 @@ function updateTldrCreateIfNeeded (req, res, next) {
 
 // Module interface
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
-module.exports.getTldrById = getTldrById;
+module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.updateTldrCreateIfNeeded = updateTldrCreateIfNeeded;
 module.exports.getAllTldrsByHostname = getAllTldrsByHostname;

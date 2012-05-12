@@ -55,8 +55,6 @@ describe('TldrModel', function () {
     it('should detect missing required _id arg', function (done) {
 
       var tldr = new TldrModel({
-					url: 'needforair.com/nutcrackers',
-					hostname: 'needforair.com',
 					title: 'Blog NFA',
 					summary: 'Awesome Blog',
 					createdAt: new Date(),
@@ -66,14 +64,11 @@ describe('TldrModel', function () {
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
-				
         _.keys(err.errors).length.should.equal(2);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr._id.should.not.equal(null);
-				valErr.url.should.not.equal(null);
-				assert.equal(valErr.summary, null);
-				assert.equal(valErr.hostname, null);
-				assert.equal(valErr.createdAt, null);
+				valErr.summary.should.equal(null);
+				valErr.createdAt.should.equal(null);
 
         done();
       });
@@ -83,10 +78,8 @@ describe('TldrModel', function () {
     it('should detect missing required createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
-					url: 'http://needforair.com/nutcrackers',
+					_id: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
-					_id: 'aqaqaqaqaqaqaqaqaqaqzxzxzxzxzxzxzxzxzxzx',
-					hostname: 'needforair.com',
 					summary: 'Awesome Blog',
 				})
 				, valErr;
@@ -96,10 +89,8 @@ describe('TldrModel', function () {
 				
         _.keys(err.errors).length.should.equal(2);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				assert.equal(valErr.url, null);
-				assert.equal(valErr._id, null);
-				assert.equal(valErr.summary, null);
-				assert.equal(valErr.hostname, null);
+				valErr._id.should.equal(null);
+				valErr.summary.should.equal(null);
 				valErr.createdAt.should.not.equal(null);
 				valErr.updatedAt.should.not.equal(null);
 
@@ -108,62 +99,11 @@ describe('TldrModel', function () {
 
     });
     
-    it('should detect missing required url arg', function (done) {
-
-      var tldr = new TldrModel({
-				_id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-				hostname: 'needforair.com',
-        title: 'Blog NFA',
-				summary: 'Awesome Blog',
-			});
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-        done();
-      });
-
-    });
-
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-        url: 'needforair.com/nutcrackers',
+        _id: 'needforair.com/nutcrackers',
         title: 'Blog NFA',
-        hostname: 'needforair.com',
-      });
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-        done();
-      });
-
-    });
-
-    it('should detect missing required hostname arg', function (done) {
-
-      var tldr = new TldrModel({
-        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-        url: 'needforair.com/nutcrackers',
-        title: 'Blog NFA',
-        summary: 'Awesome Blog',
-      });
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-        done();
-      });
-
-    });
-
-    it('should detect bad hostname format', function (done) {
-
-      var tldr = new TldrModel({
-        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-        url: 'needforair.com/nutcrackers',
-        hostname: 'needforair',
-        title: 'Blog NFA',
-        summary: 'Awesome Blog',
       });
 
       tldr.save( function (err) {
@@ -178,8 +118,6 @@ describe('TldrModel', function () {
       var parasite = {foo: 'bar'}
         , tldr = new TldrModel({
             _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-            url: 'http://needforair.com/nutcrackers',
-            hostname: 'needforair.com',
             title: 'Blog NFA',
             summary: parasite,
       });
@@ -194,10 +132,8 @@ describe('TldrModel', function () {
     it('should handle wrong url formatting', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-        url: 'needforair.com/nutcrackers',
+        _id: 'needforair.com/nutcrackers',
         title: 'Blog NFA',
-        hostname: 'needforair.com',
         summary: 'Awesome Blog',
       });
 
@@ -214,49 +150,32 @@ describe('TldrModel', function () {
 
   describe('#createInstance', function () {
 
-
-    it ('should compute the correct id and hostname', function() {
-
-      var tldr = TldrModel.createInstance({url: 'http://adomain.tld',
-                                          title: 'Learn to Code',
-                                          summary: 'coin',
-                                          resourceAuthor: 'bloup'})
-        , niceErrors;
-
-      tldr.hostname.should.equal('adomain.tld');
-      tldr.title.should.equal('Learn to Code');
-      tldr._id.should.equal('4db23ed1d1d6b4ebf43d668024f39d759ec7c157');
-
-    });
-
-    it('should clean url and keep hostname+path only', function () {
-      var tldr = TldrModel.createInstance({url: 'http://mydomain.com?toto=tata&titi=tutu',
+    it('should clean _id and keep hostname+path only', function () {
+      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com?toto=tata&titi=tutu',
                                           title: 'Some Title',
                                           summary: 'Summary is good',
                                           resourceAuthor: 'John'});
 
-      tldr.url.should.equal('http://mydomain.com/');
-      tldr._id.should.equal('2a179becf9a98250889e3812e167771303fa195d');
+      tldr._id.should.equal('http://mydomain.com/');
 
-      tldr = TldrModel.createInstance({url: 'http://mydomain.com#anchor',
+      tldr = TldrModel.createInstance({_id: 'http://mydomain.com#anchor',
                                           title: 'Some Title',
                                           summary: 'Summary is good',
                                           resourceAuthor: 'John'});
 
-      tldr.url.should.equal('http://mydomain.com/');
-      tldr._id.should.equal('2a179becf9a98250889e3812e167771303fa195d');
+      tldr._id.should.equal('http://mydomain.com/');
     });
     
 
-    it('should allow user to set url, summary and resourceAuthor only', function () {
+    it('should allow user to set _id, title, summary and resourceAuthor only', function () {
 
       // Test is coupled with createInstance because they are designed to work together
-      var tldr = TldrModel.createInstance({url: 'http://mydomain.com'
+      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
                                           , title: 'Blog NFA'
                                           , summary: 'coin'
                                           , resourceAuthor: 'bloup'});
 
-      tldr.url.should.equal('http://mydomain.com/');
+      tldr._id.should.equal('http://mydomain.com/');
       tldr.summary.should.equal('coin');
       tldr.resourceAuthor.should.equal('bloup');
 
@@ -264,23 +183,22 @@ describe('TldrModel', function () {
       tldr2.should.not.have.property('unusedField');
       tldr2.should.not.have.property('summary');
       tldr2.should.not.have.property('resourceAuthor');
-      tldr2.url.should.eql('http://nonexistingdomain.com/');
 
     });
 
     it('should restrict the fields the user is allowed to update', function () {
 
-      var tldr = TldrModel.createInstance({url: 'http://mydomain.com'
+      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
                                           , title: 'Blog NFA'
                                           , summary: 'coin'
                                           , resourceAuthor: 'bloup'})
-        , toUpdate = {url: 'http://myotherdomain.com'
+        , toUpdate = {_id: 'http://myotherdomain.com'
           , summary: 'new2'
           , title: 'Blog NeedForAir'
           , resourceAuthor: 'new3'
           , unusedField: 'new4'};
 
-      tldr.url.should.equal('http://mydomain.com/');
+      tldr._id.should.equal('http://mydomain.com/');
       tldr.summary.should.equal('coin');
       tldr.title.should.equal('Blog NFA');
       tldr.resourceAuthor.should.equal('bloup');
@@ -288,7 +206,7 @@ describe('TldrModel', function () {
       // Perform update
       tldr.update(toUpdate);
 
-      tldr.url.should.equal('http://mydomain.com/');
+      tldr._id.should.equal('http://myotherdomain.com/');
       tldr.summary.should.equal('new2');
       tldr.title.should.equal('Blog NeedForAir');
       tldr.resourceAuthor.should.equal('new3');
