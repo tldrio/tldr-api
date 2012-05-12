@@ -116,8 +116,8 @@ TldrSchema.methods.update = function (updates) {
 
 TldrSchema.methods.cleanUrl = function () {
   var partsUrl;
-  partsUrl = url.parse(this.url);
-  this.url = partsUrl.protocol+ '//' + partsUrl.hostname + partsUrl.pathname;
+  partsUrl = url.parse(this._id);
+  this._id = partsUrl.protocol+ '//' + partsUrl.hostname + partsUrl.pathname;
   return;
 };
 
@@ -142,7 +142,7 @@ TldrSchema.pre('save', function(next) {
  */
 
 //_id should be a url, containing hostname and protocol info 
-function id_validateLength (value) {
+function  id_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname
     , protocol
@@ -169,11 +169,6 @@ function title_validateLength (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
 }
 
-//Hostname should be defined and contain at least one .
-function hostname_validatePresenceOfDot (value) {
-  return ((value !== undefined) && (value.split('.').length >= 2));
-}
-
 // Resource Author should be defined, not empty and not be too long
 function resourceAuthor_validateLength (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
@@ -192,15 +187,13 @@ function resourceDate_validateLength (value) {
  *
  */
 
-TldrSchema.path('_id').validate(id_validateLength, '[Internal error] please report to contact@needforair.com');  // Should never happen
 
-TldrSchema.path('url').validate(url_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
+TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
 
 TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
 
 TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
 
-TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
 
 
