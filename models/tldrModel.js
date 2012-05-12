@@ -23,11 +23,11 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema({
-	_id             : String,
-	url             : String,
-	title           : String,
-	hostname        : String,
-	summary         : String,
+  _id             : String,
+  url             : String,
+  title           : String,
+  hostname        : String,
+  summary         : String,
   resourceAuthor  : String,
   resourceDate    : Date,
   createdAt       : Date,
@@ -83,7 +83,7 @@ TldrSchema.statics.computeIdFromUrl = function (url) {
 
 
 /**
- * Create a new instance of TldrModel and populate it.
+ * Create a new instance of TldrModel and populate it without persisting it.
  * Only fields in userSetableFields are handled
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
  *
@@ -96,7 +96,6 @@ TldrSchema.statics.createInstance = function(userInput) {
   if (!instance.url) { instance.url = 'http://nonexistingdomain.com'; }
   
   instance.cleanUrl();
-  // _id is the hashed url
   instance._id = TldrModel.computeIdFromUrl(instance.url);
   instance.hostname = url.parse(instance.url).hostname;
   instance.resourceAuthor = "bilbo le hobit";

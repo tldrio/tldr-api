@@ -76,18 +76,15 @@ server.get({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.getTldrById);
 // GET tldrs by hostname
 server.get({path: 'domains/:hostname/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrsByHostname);
 
-//POST a new tldr 
-server.post({path: '/tldrs', version: '0.1.0'}, requestHandlers.postCreateTldr);
-
-//PUT update existing tldr
-server.put({path: '/tldrs/:id', version: '0.1.0'}, requestHandlers.putUpdateTldr);
+//PUT update existing tldr, create it if it doesn't exist
+server.put({path: '/tldrs', version: '0.1.0'}, requestHandlers.updateTldrCreateIfNeeded);
 
 
 // Start server
 if (module.parent === null) { // Code to execute only when running as main
-	server.listen(8787, function (){
-		bunyan.info('Server %s launched at %s', server.name, server.url);
-	});
+  server.listen(8787, function (){
+    bunyan.info('Server %s launched at %s', server.name, server.url);
+  });
   db.connectToDatabase();
 }
 
