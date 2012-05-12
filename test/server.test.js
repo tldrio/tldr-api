@@ -65,19 +65,20 @@ describe('Webserver', function () {
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
-      if (err) {throw done(err);}
+      if (err) {return done(err);}
       tldr1.save(	function (err) {
-        if (err) {throw done(err); }
+        if (err) {return done(err); }
         tldr2.save( function (err) {
-          if (err) {throw done(err); }
+          if (err) {return done(err); }
           tldr3.save( function (err) {
-            if (err) {throw done(err); }
+            if (err) {return done(err); }
             tldr4.save( function (err) {
-              if (err) {throw done(err); }
+              if (err) {return done(err); }
 
               TldrModel.find({}, function(err, docs) {
-                if (err) {throw done(err); }
+                if (err) {return done(err); }
                 numberOfTldrs = docs.length;
+                //console.log(docs);
                 done();
               });
 
@@ -90,13 +91,10 @@ describe('Webserver', function () {
   });
 
   afterEach(function (done) {
-
     TldrModel.remove(null, function (err) {
-      if (err) {throw done(err);}
-
+      if (err) {return done(err);}
       done();
     });
-
   });
 
   
@@ -105,7 +103,7 @@ describe('Webserver', function () {
 
     it('an existing tldr', function (done) {
 
-      client.get('/tldrs/http://needforair.com/sopa', function (err, req, res, obj) {
+      client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj._id.should.equal('http://needforair.com/sopa');
         done();
@@ -115,7 +113,7 @@ describe('Webserver', function () {
 
     it('GET a non existing tldr', function (done) {
 
-      client.get('/tldrs/http://3niggas4bitches.com', function (err, req, res, obj) {
+      client.get('/tldrs/'+encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         response.should.have.ownProperty('code');

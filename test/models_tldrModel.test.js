@@ -236,46 +236,43 @@ describe('TldrModel', function () {
       var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
                                           , title: 'Blog NFA'
                                           , summary: 'coin'
-                                          , resourceAuthor: 'bloup'});
+                                          , resourceAuthor: 'bloup'
+                                          , unusedField: 'glok'});
 
       tldr._id.should.equal('http://mydomain.com/');
       tldr.summary.should.equal('coin');
       tldr.resourceAuthor.should.equal('bloup');
-
-      var tldr2 = TldrModel.createInstance({unusedField: 'glok'});
-      tldr2.should.not.have.property('unusedField');
-      tldr2.should.not.have.property('summary');
-      tldr2.should.not.have.property('resourceAuthor');
-
-    });
-
-    it('should restrict the fields the user is allowed to update', function () {
-
-      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
-                                          , title: 'Blog NFA'
-                                          , summary: 'coin'
-                                          , resourceAuthor: 'bloup'})
-        , toUpdate = {_id: 'http://myotherdomain.com'
-          , summary: 'new2'
-          , title: 'Blog NeedForAir'
-          , resourceAuthor: 'new3'
-          , unusedField: 'new4'};
-
-      tldr._id.should.equal('http://mydomain.com/');
-      tldr.summary.should.equal('coin');
-      tldr.title.should.equal('Blog NFA');
-      tldr.resourceAuthor.should.equal('bloup');
-
-      // Perform update
-      tldr.update(toUpdate);
-
-      tldr._id.should.equal('http://myotherdomain.com/');
-      tldr.summary.should.equal('new2');
-      tldr.title.should.equal('Blog NeedForAir');
-      tldr.resourceAuthor.should.equal('new3');
       tldr.should.not.have.property('unusedField');
 
     });
+
+    //it('should restrict the fields the user is allowed to update', function () {
+
+      //var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
+                                          //, title: 'Blog NFA'
+                                          //, summary: 'coin'
+                                          //, resourceAuthor: 'bloup'})
+        //, toUpdate = {_id: 'http://myotherdomain.com'
+          //, summary: 'new2'
+          //, title: 'Blog NeedForAir'
+          //, resourceAuthor: 'new3'
+          //, unusedField: 'new4'};
+
+      //tldr._id.should.equal('http://mydomain.com/');
+      //tldr.summary.should.equal('coin');
+      //tldr.title.should.equal('Blog NFA');
+      //tldr.resourceAuthor.should.equal('bloup');
+
+      //// Perform update
+      //tldr.update(toUpdate);
+
+      //tldr._id.should.equal('http://mydomain.com/');
+      //tldr.summary.should.equal('new2');
+      //tldr.title.should.equal('Blog NeedForAir');
+      //tldr.resourceAuthor.should.equal('new3');
+      //tldr.should.not.have.property('unusedField');
+
+    //});
 
   });
 

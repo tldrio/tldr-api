@@ -115,9 +115,9 @@ TldrSchema.methods.update = function (updates) {
  */
 
 TldrSchema.methods.cleanUrl = function () {
-  var partsUrl;
-  partsUrl = url.parse(this._id);
-  this._id = partsUrl.protocol+ '//' + partsUrl.hostname + partsUrl.pathname;
+  var parsedUrl;
+  parsedUrl = url.parse(decodeURIComponent(this._id));
+  this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
   return;
 };
 

@@ -44,6 +44,7 @@ if (env.name === "production") {
 if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
+    log: bunyan
     //key: privateKey, 
     //certificate: certificate
   });

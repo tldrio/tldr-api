@@ -59,14 +59,18 @@ function getTldrsWithQuery (req, res, next) {
 
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
-  var url = req.params.url;
+  var url = req.params.url
+    , log = req.log;
+
+  //log.warn(url);
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     } else {
-      return res.json(200, docs[0]);    // Success
+      res.json(200, docs[0]);    // Success
+      return next();
     }
   });
 }
@@ -76,7 +80,8 @@ function getAllTldrsByHostname (req, res, next) {
   TldrModel.find({hostname: req.params.hostname}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
 
-    return res.json(200, docs);
+    res.json(200, docs);
+    return next();
   });
 }
 
@@ -93,7 +98,8 @@ function updateTldrCreateIfNeeded (req, res, next) {
 
   // Return Error if url is missing
   if (!req.body.url) {
-    return res.json(403, {"url": "No URL was provided"});   // TODO: use global validation mechanism instead
+    res.json(403, {"url": "No URL was provided"});   // TODO: use global validation mechanism instead
+    return next();
   }
 
   //Retrieve _id to perform lookup in db
@@ -112,13 +118,15 @@ function updateTldrCreateIfNeeded (req, res, next) {
     tldr.save(function (err) {
       if (err) {
         if (err.errors) {
-          return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
+          res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
+          return next();
         } else {
           return handleInternalDBError(err, res, "Internal error in postCreateTldr");    // Unexpected error while saving
         }
       }
 
-      return res.json(200, tldr);   // Success
+      res.json(200, tldr);   // Success
+      return next();
     });
 
   });
