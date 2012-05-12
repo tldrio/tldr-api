@@ -75,7 +75,7 @@ TldrSchema.statics.createInstance = function(userInput) {
     , instance = new TldrModel(validFields);
 
   instance.cleanUrl();
-  instance.resourceAuthor = "bilbo le hobit";
+  instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
   instance.resourceDate = new Date();
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
