@@ -18,43 +18,14 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 // Later, we may implement a retry count
 function handleInternalDBError(err, res, msg) {
   bunyan.error({error: err, message: msg});
-  return res.json( 500, {"message": "An internal error has occured, we are looking into it"} );
+  return next(new restify.InternalError('An internal error has occured, we are looking into it'));
 }
 
 
 
 // GET all tldrs
 function getTldrsWithQuery (req, res, next) {
-
-  if (_.isEmpty(req.query) ) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
-  }
-  else {
-
-    //TODO Better Handling of default args 
-    // Handle specific query for future needs
-    var method = req.query.sort || 'latest'
-      , limit = req.query.limit || 20;
-
-    limit = Math.max(0, Math.min(20, limit));   // Clip limit between 0 and 20
-
-    if (limit === 0) {
-      return res.json(200, []);   // A limit of 0 is equivalent to no limit, this avoids dumping the whole db
-    }
-
-    if (method === 'latest') {
-      TldrModel.find({})
-      .sort('updatedAt', -1) //pretty sure this is not good, should use a double index
-      .limit(limit)
-      .run(function(err, docs) {
-        if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByHostname"); }
-
-        return res.json(200, docs);
-      });
-    }
-
-  }
-
 }
 
 // GET a tldr by url
@@ -62,7 +33,6 @@ function getTldrByUrl (req, res, next) {
   var url = decodeURIComponent(req.params.url)
     , log = req.log;
 
-  //log.warn(url);
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
 
@@ -88,33 +58,38 @@ function putTldrByUrl (req, res, next) {
   var url = decodeURIComponent(req.params.url)
     , log = req.log;
 
+
   TldrModel.find({_id: url}, function (err, docs) {
     var tldr;
-
-    if (err) { return handleInternalDBError(err, res, "Internal error in updateTldrCreateIfNeeded"); }
+    if (err) { return handleInternalDBError(err, res, "Internal error in putTldrByUrl"); }
 
     if (docs.length === 1) {
       tldr = docs[0];
-      tldr.update(req.body);   // A tldr was found, update it
-    } else {
-      tldr = TldrModel.createInstance(req.body);   // No tldr was found, create it
-      tldr._id = url;
-    }
-
-    tldr.save(function (err) {
-      if (err) {
-        if (err.errors) {
-          res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));   // 403 is for validations error (request not authorized, see HTTP spec)
-          return next();
-        } else {
-          return handleInternalDBError(err, res, "Internal error in postCreateTldr");    // Unexpected error while saving
+      tldr.updateValidFields(req.body, function (err) {
+        if (err) {
+          return next(new restify.NotAuthorizedError('Error in update, could be validation'));
         }
-      }
 
-      res.send(204);   // No Content status code for succesful PUT requests
-      return next();
-    });
+        res.send(204);
+        return next();
+      });
+    } else {
+      //tldr = new TldrModel(req.body);
+      //tldr._id = url;
+      //tldr.save(function (err) {
+      TldrModel.createInstance(url, req.body, function (err) {
+        if (err) {
+          if (err.errors) {
+            return next(new restify.NotAuthorizedError('Error in update, could be validation'));
+          } else {
+            return handleInternalDBError(err, res, "Internal error in postCreateTldr");    // Unexpected error while saving
+          }
+        }
 
+        res.send(201); // should set location header to indicate URI of new resource
+        return next();
+      });
+    }
   });
 
 }
