@@ -66,48 +66,41 @@ function getTldrByUrl (req, res, next) {
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
 
-    log.warn(docs);
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
     } else {
-      return res.json(200, docs[0]);    // Success
-      //return next();
+      res.json(200, docs[0]);    // Success
+      return next();
     }
   });
 }
 
 
 
-/* Update existing tldr
- * Only update fields user has the rights to update to avoid unexpected behaviour
- * We don't need to udpate _id because if record was found _id is the same
- * If tldr did not exist, we create it
+/**
+ * Handles PUT /tldrs/:url
+ * Creates or updates the tldr, as per the spec
+ * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
+ *
  */
-function updateTldrCreateIfNeeded (req, res, next) {
-  var tldr
-    , log
-    , url;
 
-  //Retrieve _id to perform lookup in db
-  url = req.params.url;
-  log = req.log;
-  //log.warn(url);
-  //log.warn(req.body);
+function putTldrByUrl (req, res, next) {
+  var url = decodeURIComponent(req.params.url)
+    , log = req.log;
 
-  TldrModel.find({_id: decodeURIComponent(url)}, function (err, docs) {
+  TldrModel.find({_id: url}, function (err, docs) {
+    var tldr;
+
     if (err) { return handleInternalDBError(err, res, "Internal error in updateTldrCreateIfNeeded"); }
 
-    //log.warn(docs.length, 'toto');
     if (docs.length === 1) {
       tldr = docs[0];
       tldr.update(req.body);   // A tldr was found, update it
-      //log.warn(tldr);
     } else {
       tldr = TldrModel.createInstance(req.body);   // No tldr was found, create it
       tldr._id = url;
     }
 
-    //log.warn(tldr);
     tldr.save(function (err) {
       if (err) {
         if (err.errors) {
@@ -130,4 +123,4 @@ function updateTldrCreateIfNeeded (req, res, next) {
 // Module interface
 module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrByUrl = getTldrByUrl;
-module.exports.updateTldrCreateIfNeeded = updateTldrCreateIfNeeded;
+module.exports.putTldrByUrl = putTldrByUrl;

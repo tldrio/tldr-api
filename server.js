@@ -75,7 +75,7 @@ server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getTldrsWithQuery
 server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
 
 //PUT update existing tldr, create it if it doesn't exist
-server.put({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.updateTldrCreateIfNeeded);
+server.put({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.putTldrByUrl);
 
 
 // Start server
