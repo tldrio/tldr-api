@@ -29,7 +29,8 @@ TldrSchema = new Schema({
   resourceDate    : { type: Date, required: true },
   createdAt       : { type: Date, required: true },
   updatedAt       : { type: Date, required: true }
-});
+}, 
+{ strict: true });
 
 
 
@@ -40,22 +41,21 @@ TldrSchema = new Schema({
  *
  */
 
-TldrSchema.statics.createInstance = function(userInput) {
+TldrSchema.statics.createInstance = function(_id, userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance = new TldrModel(validFields);
+    , instance;
 
+  validFields._id = _id;
+  instance = new TldrModel(validFields);
   instance.cleanUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
   instance.resourceDate = new Date();
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
-  //If no title was provided use url as title
-  instance.title = instance.title || instance._id;
+  instance.title = instance.title || instance._id; //If no title was provided use url as title
 
-  return instance;
+  instance.save(callback);
 };
-
-
 
 
 
@@ -67,13 +67,15 @@ TldrSchema.statics.createInstance = function(userInput) {
  *
  */
 
-TldrSchema.methods.update = function (updates) {
+TldrSchema.methods.updateValidFields = function (updates, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+
+  self.save(callback);
 
 };
 
@@ -146,7 +148,7 @@ function resourceAuthor_validateLength (value) {
 
 // Resource Date should be defined, not empty and not be too long (later, ensure its a date)
 function resourceDate_validateLength (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 500));
 }
 
 
@@ -159,10 +161,10 @@ function resourceDate_validateLength (value) {
 
 
 TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
-
 TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
-
 TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
+//TldrSchema.path('resourceDate').validate(resourceDate_validateLength, 'resourceDate has to be non empty and less than 50 characters long');
 
 
 
