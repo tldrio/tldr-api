@@ -44,7 +44,7 @@ if (env.name === "production") {
 if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
-    log: bunyan
+    //log: bunyan
     //key: privateKey, 
     //certificate: certificate
   });
@@ -53,7 +53,7 @@ if (env.name === "test") {
     name: "tldr API",
     //key: privateKey, 
     //certificate: certificate
-    log: bunyan     // No restify logging for now
+    //log: bunyan     // No restify logging for now
   });
 }
 
@@ -74,7 +74,7 @@ server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getTldrsWithQuery
 // GET a tldr by url
 server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
 
-//PUT update existing tldr, create it if it doesn't exist
+//PUT create or update tldr
 server.put({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.putTldrByUrl);
 
 
