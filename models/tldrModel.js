@@ -33,36 +33,6 @@ TldrSchema = new Schema({
 
 
 
-
-/**
- * Statics and dynamics are defined here
- */
-
-
-
-
-/**
- * Get the array of fields a user can set when creating a tldr
- * @return {Array} Array of setable fields by user
- */
-
-TldrSchema.statics.getUserSetableFields = function () {
-  return userSetableFields;
-};
-
-
-/**
- * Get the array of fields a user can update when creating a tldr
- * @return {Array} Array of updatable fields by user
- */
-
-TldrSchema.statics.getUserUpdatableFields = function () {
-  return userUpdatableFields;
-};
-
-
-
-
 /**
  * Create a new instance of TldrModel and populate it without persisting it.
  * Only fields in userSetableFields are handled
