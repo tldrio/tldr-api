@@ -16,7 +16,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
 // Later, we may implement a retry count
-function handleInternalDBError(err, res, msg) {
+function handleInternalDBError(err, next, msg) {
   bunyan.error({error: err, message: msg});
   return next(new restify.InternalError('An internal error has occured, we are looking into it'));
 }
@@ -34,7 +34,7 @@ function getTldrByUrl (req, res, next) {
     , log = req.log;
 
   TldrModel.find({_id: url}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, res, "Internal error in getTldrByUrl"); }
+    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
       return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
@@ -61,7 +61,7 @@ function putTldrByUrl (req, res, next) {
 
   TldrModel.find({_id: url}, function (err, docs) {
     var tldr;
-    if (err) { return handleInternalDBError(err, res, "Internal error in putTldrByUrl"); }
+    if (err) { return handleInternalDBError(err, next, "Internal error in putTldrByUrl"); }
 
     if (docs.length === 1) {
       tldr = docs[0];
@@ -82,7 +82,7 @@ function putTldrByUrl (req, res, next) {
           if (err.errors) {
             return next(new restify.NotAuthorizedError('Error in update, could be validation'));
           } else {
-            return handleInternalDBError(err, res, "Internal error in postCreateTldr");    // Unexpected error while saving
+            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
           }
         }
 
