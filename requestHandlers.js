@@ -24,7 +24,7 @@ function handleInternalDBError(err, res, msg) {
 
 
 // GET all tldrs
-function getTldrsWithQuery (req, res, next) {
+function getAllTldrs (req, res, next) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
 }
 
@@ -96,6 +96,6 @@ function putTldrByUrl (req, res, next) {
 
 
 // Module interface
-module.exports.getTldrsWithQuery = getTldrsWithQuery;
+module.exports.getAllTldrs = getAllTldrs;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putTldrByUrl = putTldrByUrl;
