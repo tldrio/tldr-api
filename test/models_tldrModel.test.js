@@ -44,12 +44,6 @@ describe('TldrModel', function () {
   });
 
 
-  describe('#setters', function () {
-    it('should clean the url provided', function (done) {
-      done();
-    });
-  });
-  
   describe('#validators', function () {
 
     it('should detect missing required _id arg', function (done) {
@@ -69,7 +63,6 @@ describe('TldrModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        console.log(valErr);
 				valErr._id.should.not.equal(null);
 
         done();
@@ -213,68 +206,108 @@ describe('TldrModel', function () {
 
   describe('#createInstance', function () {
 
-    it('should clean _id and keep hostname+path only', function () {
-      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com?toto=tata&titi=tutu',
-                                          title: 'Some Title',
-                                          summary: 'Summary is good',
-                                          resourceAuthor: 'John'});
+    it('should remove querystring from url', function (done) {
+      TldrModel.createInstance('http://mydomain.com?toto=tata&titi=tutu',
+				{ title: 'Some Title'
+				, summary: 'Summary is good'
+				,	resourceAuthor: 'John'}, 
+				function (err) { 
+					if (err) { return done(err); } 
+					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
+						if (err) { return done(err); } 
 
-      tldr._id.should.equal('http://mydomain.com/');
+						var tldr = docs[0];
+						tldr._id.should.equal('http://mydomain.com/');
 
-      tldr = TldrModel.createInstance({_id: 'http://mydomain.com#anchor',
-                                          title: 'Some Title',
-                                          summary: 'Summary is good',
-                                          resourceAuthor: 'John'});
+						done();
+					});
+				});
+		});
 
-      tldr._id.should.equal('http://mydomain.com/');
+    it('should remove querystring from url', function (done) {
+      TldrModel.createInstance('http://mydomain.com#anchor',
+				{	title: 'Some Title'
+				, summary: 'Summary is good'
+				, resourceAuthor: 'John'}, 
+				function (err) { 
+					if (err) { return done(err); } 
+					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
+						if (err) { return done(err); } 
+
+						var tldr = docs[0];
+						tldr._id.should.equal('http://mydomain.com/');
+
+						done();
+					});
+				});
     });
     
 
-    it('should allow user to set _id, title, summary and resourceAuthor only', function () {
+    it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
+      TldrModel.createInstance('http://mydomain.com',
+				{ title: 'Blog NFA'
+				, summary: 'coin'
+				, resourceAuthor: 'bloup'
+				, unusedField: 'glok'}, 
+				function (err) { 
+					if (err) { return done(err); } 
+					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+						if (err) { return done(err); } 
 
-      // Test is coupled with createInstance because they are designed to work together
-      var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
-                                          , title: 'Blog NFA'
-                                          , summary: 'coin'
-                                          , resourceAuthor: 'bloup'
-                                          , unusedField: 'glok'});
+						var tldr = docs[0];
+						tldr._id.should.equal('http://mydomain.com/');
+						tldr.summary.should.equal('coin');
+						tldr.resourceAuthor.should.equal('bloup');
+						tldr.should.not.have.property('unusedField');
 
-      tldr._id.should.equal('http://mydomain.com/');
-      tldr.summary.should.equal('coin');
-      tldr.resourceAuthor.should.equal('bloup');
-      tldr.should.not.have.property('unusedField');
-
+						done();
+					});
+				});
     });
 
-    //it('should restrict the fields the user is allowed to update', function () {
+	});
 
-      //var tldr = TldrModel.createInstance({_id: 'http://mydomain.com'
-                                          //, title: 'Blog NFA'
-                                          //, summary: 'coin'
-                                          //, resourceAuthor: 'bloup'})
-        //, toUpdate = {_id: 'http://myotherdomain.com'
-          //, summary: 'new2'
-          //, title: 'Blog NeedForAir'
-          //, resourceAuthor: 'new3'
-          //, unusedField: 'new4'};
+	describe('#updateValidFields', function () {
 
-      //tldr._id.should.equal('http://mydomain.com/');
-      //tldr.summary.should.equal('coin');
-      //tldr.title.should.equal('Blog NFA');
-      //tldr.resourceAuthor.should.equal('bloup');
+		it('should restrict the fields the user is allowed to update', function (done) {
+				var updated = {_id: 'http://myotherdomain.com'
+											, summary: 'new2'
+											, title: 'Blog NeedForAir'
+											, resourceAuthor: 'new3'
+											, unusedField: 'new4'};
 
-      //// Perform update
-      //tldr.update(toUpdate);
+      TldrModel.createInstance('http://mydomain.com',
+				{ title: 'Blog NFA'
+				, summary: 'coin'
+				, resourceAuthor: 'bloup'
+				, unusedField: 'glok'}, 
+				function(err) { 
+					if (err) { return done(err); }
+					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+						if (err) { return done(err); } 
 
-      //tldr._id.should.equal('http://mydomain.com/');
-      //tldr.summary.should.equal('new2');
-      //tldr.title.should.equal('Blog NeedForAir');
-      //tldr.resourceAuthor.should.equal('new3');
-      //tldr.should.not.have.property('unusedField');
+						var tldr = docs[0];
+						tldr._id.should.equal('http://mydomain.com/');
+						tldr.summary.should.equal('coin');
+						tldr.title.should.equal('Blog NFA');
+						tldr.resourceAuthor.should.equal('bloup');
+						
+						// Perform update
+						tldr.updateValidFields(updated, function(err) { 
+							if (err) { return done(err); }
 
-    //});
+							tldr._id.should.equal('http://mydomain.com/');
+							tldr.summary.should.equal('new2');
+							tldr.title.should.equal('Blog NeedForAir');
+							tldr.resourceAuthor.should.equal('new3');
+							tldr.should.not.have.property('unusedField');
+
+							done();
+						});
+					});
+				});
+		});
 
   });
 
 });
-
