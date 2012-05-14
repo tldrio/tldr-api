@@ -67,7 +67,12 @@ function putTldrByUrl (req, res, next) {
       tldr = docs[0];
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
-          return next(new restify.NotAuthorizedError('Error in update, could be validation'));
+          if (err.errors) {
+            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
+            return next();
+          } else {
+            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+          }
         }
 
         res.send(204);
@@ -80,7 +85,8 @@ function putTldrByUrl (req, res, next) {
       TldrModel.createAndSaveInstance(url, req.body, function (err) {
         if (err) {
           if (err.errors) {
-            return next(new restify.NotAuthorizedError('Error in update, could be validation'));
+            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
+            return next();
           } else {
             return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
           }
