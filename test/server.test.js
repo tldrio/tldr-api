@@ -58,10 +58,10 @@ describe('Webserver', function () {
     //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
-    tldr1 = TldrModel.createInstance({_id: 'http://needforair.com/nutcrackers', summary: 'Awesome Blog'});
-    tldr2 = TldrModel.createInstance({_id: 'http://avc.com/mba-monday', summary: 'Fred Wilson is my God'});
-    tldr3 = TldrModel.createInstance({_id: 'http://bothsidesofthetable.com/deflationnary-economics', summary: 'Sustering is my religion'});
-    tldr4 = TldrModel.createInstance({_id: 'http://needforair.com/sopa', summary: 'Great article'});
+    tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summary: 'Awesome Blog', resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summary: 'Fred Wilson is my God', resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summary: 'Sustering is my religion', resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr4 = new TldrModel({_id: 'http://needforair.com/sopa', title: 'sopa', summary: 'Great article', resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -143,87 +143,7 @@ describe('Webserver', function () {
 
     });
 
-    it('GET the latest tldrs correctly', function (done) {
-      //tldr1.updatedAt = new Date(2020, 04, 10, 12);
-      //tldr2.updatedAt = new Date(2020, 06, 10, 12);
-      //tldr3.updatedAt = new Date(2020, 02, 10, 12);
-      //tldr4.updatedAt = new Date(2021, 00, 10, 12);
-
-      TldrModel.update({_id: tldr1._id}, {updatedAt: new Date(2020, 04, 10, 12)}, {}, function() {
-        TldrModel.update({_id: tldr2._id}, {updatedAt: new Date(2020, 06, 10, 12)}, {}, function() {
-          TldrModel.update({_id: tldr3._id}, {updatedAt: new Date(2020, 02, 10, 12)}, {}, function() {
-            TldrModel.update({_id: tldr4._id}, {updatedAt: new Date(2021, 00, 10, 12)}, {}, function() {
-              client.get('/tldrs?sort=latest&limit=2', function (err, req, res, obj) {
-                obj.length.should.equal(2);
-                _.any(obj, function(value) {return value.summary === "Great article"} ).should.equal(true);
-                _.any(obj, function(value) {return value.summary === "Fred Wilson is my God"} ).should.equal(true);
-
-                client.get('/tldrs?sort=latest&limit=12', function (err, req, res, obj) {
-                  obj.length.should.equal(4);
-
-                  done();
-                });
-              });
-            });
-          });
-        });
-      });
-
-    });
-
-
-    it('GET should not return any tldr if called with 0 or a negative number', function (done) {
-
-      client.get('/tldrs?sort=latest&limit=0', function (err, req, res, obj) {
-        obj.length.should.equal(0);
-
-        client.get('/tldrs?sort=latest&limit=-2', function (err, req, res, obj) {
-          obj.length.should.equal(0);
-
-          done();
-        });
-
-      });
-
-    });
-
-
-    it('GET should not return more than 20 tldrs', function (done) {
-      var toExecute = []
-        , i;
-
-      // Create dummy entries in the database
-      for (i = 0; i < 34; i++) {
-        (function (i) {
-          var newTldr
-            , saveTldr;
-
-          newTldr = TldrModel.createInstance({_id: 'http://test.com/'+i
-                                            , summary: 'testsummary'
-                                            , resourceAuthor: 'Me'});
-
-          saveTldr = function (callback) {
-            newTldr.save( function (err) {
-              if (err) { callback(err); }
-              callback(null);
-            });
-          };
-
-          toExecute.push(saveTldr);
-        }(i));
-      }
-
-      async.series(toExecute, function (err, results) {
-        if (err) { throw(err); }
-        client.get('/tldrs?sort=latest&limit=123', function (err, req, res, obj) {
-          obj.length.should.equal(20);
-          done();
-        });
-      });
-
-    });
-
-  });
+	});
 
 
 
@@ -231,10 +151,17 @@ describe('Webserver', function () {
   describe('Should handle PUT requests', function () {
 
     it('Should create a new tldr with PUT if it doesn\'t exist yet', function (done) {
-      var tldrData = { summary: 'A summary' };
+      var tldrData = {
+				title: 'A title',
+				summary: 'A summary',
+				resourceAuthor: 'bozo le clown',
+				resourceDate: new Date(),
+			  createdAt: new Date(),
+				updatedAt: new Date()
+			};
 
       client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.tld/somepage'), tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(204);
+        res.statusCode.should.equal(201);
         TldrModel.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
@@ -250,7 +177,7 @@ describe('Webserver', function () {
     });
 
 
-    it('Should update an existing tldr with PUT', function (done) {
+    it('Should update an existing tldr with PUT motherfucker', function (done) {
       var tldrData = { summary: 'A new summary' };
 
       client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
