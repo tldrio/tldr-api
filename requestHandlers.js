@@ -77,7 +77,7 @@ function putTldrByUrl (req, res, next) {
       //tldr = new TldrModel(req.body);
       //tldr._id = url;
       //tldr.save(function (err) {
-      TldrModel.createInstance(url, req.body, function (err) {
+      TldrModel.createAndSaveInstance(url, req.body, function (err) {
         if (err) {
           if (err.errors) {
             return next(new restify.NotAuthorizedError('Error in update, could be validation'));

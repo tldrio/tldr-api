@@ -204,10 +204,10 @@ describe('TldrModel', function () {
 
  
 
-  describe('#createInstance', function () {
+  describe('#createAndSaveInstance', function () {
 
     it('should remove querystring from url', function (done) {
-      TldrModel.createInstance('http://mydomain.com?toto=tata&titi=tutu',
+      TldrModel.createAndSaveInstance('http://mydomain.com?toto=tata&titi=tutu',
 				{ title: 'Some Title'
 				, summary: 'Summary is good'
 				,	resourceAuthor: 'John'}, 
@@ -225,7 +225,7 @@ describe('TldrModel', function () {
 		});
 
     it('should remove querystring from url', function (done) {
-      TldrModel.createInstance('http://mydomain.com#anchor',
+      TldrModel.createAndSaveInstance('http://mydomain.com#anchor',
 				{	title: 'Some Title'
 				, summary: 'Summary is good'
 				, resourceAuthor: 'John'}, 
@@ -244,7 +244,7 @@ describe('TldrModel', function () {
     
 
     it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
-      TldrModel.createInstance('http://mydomain.com',
+      TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
 				, summary: 'coin'
 				, resourceAuthor: 'bloup'
@@ -276,7 +276,7 @@ describe('TldrModel', function () {
 											, resourceAuthor: 'new3'
 											, unusedField: 'new4'};
 
-      TldrModel.createInstance('http://mydomain.com',
+      TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
 				, summary: 'coin'
 				, resourceAuthor: 'bloup'

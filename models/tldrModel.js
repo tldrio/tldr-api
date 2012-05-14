@@ -41,7 +41,7 @@ TldrSchema = new Schema({
  *
  */
 
-TldrSchema.statics.createInstance = function(_id, userInput, callback) {
+TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance;
 
