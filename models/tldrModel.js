@@ -49,10 +49,8 @@ TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
   validFields._id = _id;
   instance = new TldrModel(validFields);
   instance.normalizeUrl();
-  instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
-  instance.resourceDate = new Date();
-  instance.createdAt = new Date();
-  instance.updatedAt = new Date();
+  instance.resourceAuthor = instance.resourceAuthor || "bilbo the hobbit";
+  instance.resourceDate = instance.resourceDate || new Date();
   instance.title = instance.title || instance._id; //If no title was provided use url as title
 
   instance.save(callback);
