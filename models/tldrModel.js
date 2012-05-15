@@ -37,8 +37,9 @@ TldrSchema = new Schema({
 /**
  * Create a new instance of TldrModel and populate it without persisting it.
  * Only fields in userSetableFields are handled
+ * @param {String} _id  The decoded URL which serves as id for the tldr in db
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
- *
+ * @param {Function} callback Function to call after the creation of the tldr
  */
 
 TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
