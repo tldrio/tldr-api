@@ -48,7 +48,7 @@ TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
 
   validFields._id = _id;
   instance = new TldrModel(validFields);
-  instance.cleanUrl();
+  instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
   instance.resourceDate = new Date();
   instance.createdAt = new Date();
@@ -87,10 +87,17 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  * 
  */
 
-TldrSchema.methods.cleanUrl = function () {
+TldrSchema.methods.normalizeUrl = function () {
   var parsedUrl;
-  parsedUrl = url.parse(decodeURIComponent(this._id));
+  parsedUrl = url.parse(this._id);
   this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
+  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '') 
+    + "//" 
+    + (parsedUrl.hostname ? parsedUrl.hostname.toLowerCase().replace(/^www\./, "") : '')  // Convert scheme and host to lower case; remove www. if it exists in hostname
+    + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\/\.{1,2}\//g, "/").replace(/\/{2,}/, "/") : // Remove dot-segments; Remove duplicate slashes
+        "/" // Add trailing /
+      );
+  
   return;
 };
 
