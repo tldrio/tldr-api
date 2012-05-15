@@ -37,8 +37,9 @@ TldrSchema = new Schema({
 /**
  * Create a new instance of TldrModel and populate it without persisting it.
  * Only fields in userSetableFields are handled
+ * @param {String} _id  The decoded URL which serves as id for the tldr in db
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
- *
+ * @param {Function} callback Function to call after the creation of the tldr
  */
 
 TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
@@ -47,7 +48,7 @@ TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
 
   validFields._id = _id;
   instance = new TldrModel(validFields);
-  instance.cleanUrl();
+  instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
   instance.resourceDate = new Date();
   instance.createdAt = new Date();
@@ -86,10 +87,17 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  * 
  */
 
-TldrSchema.methods.cleanUrl = function () {
+TldrSchema.methods.normalizeUrl = function () {
   var parsedUrl;
-  parsedUrl = url.parse(decodeURIComponent(this._id));
+  parsedUrl = url.parse(this._id);
   this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
+  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '') 
+    + "//" 
+    + (parsedUrl.hostname ? parsedUrl.hostname.toLowerCase().replace(/^www\./, "") : '')  // Convert scheme and host to lower case; remove www. if it exists in hostname
+    + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\/\.{1,2}\//g, "/").replace(/\/{2,}/, "/") : // Remove dot-segments; Remove duplicate slashes
+        "/" // Add trailing /
+      );
+  
   return;
 };
 
@@ -122,11 +130,9 @@ function  id_validatePresenceOfProtocolAndHostname (value) {
 
   valid = (value !== undefined);
   if (valid) {
-    parsedUrl = url.parse(value);
-    hostname = parsedUrl.hostname;
-    protocol = parsedUrl.protocol;
-    valid = valid && (hostname !== undefined);
-    valid = valid && (protocol !== undefined);
+    // Check if Url is valid with Regex
+    var urlRegexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    return urlRegexp.test(value);
   }
   return valid;
 }

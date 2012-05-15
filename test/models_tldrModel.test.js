@@ -70,6 +70,31 @@ describe('TldrModel', function () {
 
     });
 
+    it('should accept only valid url ', function (done) {
+
+      var tldr = new TldrModel({
+          _id: 'ftp://myfile/movie.mov',
+					title: 'Blog NFA',
+					summary: 'Awesome Blog',
+          resourceAuthor: 'NFA Crew',
+          resourceDate: '2012',
+					createdAt: new Date(),
+					updatedAt: new Date()
+				})
+        , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+				valErr._id.should.not.equal(null);
+
+        done();
+      });
+
+    });
+
     it('should detect missing required createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
@@ -206,26 +231,8 @@ describe('TldrModel', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should remove querystring from url', function (done) {
-      TldrModel.createAndSaveInstance('http://mydomain.com?toto=tata&titi=tutu',
-				{ title: 'Some Title'
-				, summary: 'Summary is good'
-				,	resourceAuthor: 'John'}, 
-				function (err) { 
-					if (err) { return done(err); } 
-					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
-						if (err) { return done(err); } 
-
-						var tldr = docs[0];
-						tldr._id.should.equal('http://mydomain.com/');
-
-						done();
-					});
-				});
-		});
-
-    it('should remove querystring from url', function (done) {
-      TldrModel.createAndSaveInstance('http://mydomain.com#anchor',
+    it('should normalize url', function (done) {
+      TldrModel.createAndSaveInstance('http://www.mYdoMain.com/Toto/../Tata/.//good?toto=tata&titi=tutu#anchor',
 				{	title: 'Some Title'
 				, summary: 'Summary is good'
 				, resourceAuthor: 'John'}, 
@@ -235,7 +242,7 @@ describe('TldrModel', function () {
 						if (err) { return done(err); } 
 
 						var tldr = docs[0];
-						tldr._id.should.equal('http://mydomain.com/');
+						tldr._id.should.equal('http://mydomain.com/Toto/Tata/good');
 
 						done();
 					});
