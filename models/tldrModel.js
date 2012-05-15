@@ -130,11 +130,9 @@ function  id_validatePresenceOfProtocolAndHostname (value) {
 
   valid = (value !== undefined);
   if (valid) {
-    parsedUrl = url.parse(value);
-    hostname = parsedUrl.hostname;
-    protocol = parsedUrl.protocol;
-    valid = valid && (hostname !== undefined);
-    valid = valid && (protocol !== undefined);
+    // Check if Url is valid with Regex
+    var urlRegexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    return urlRegexp.test(value);
   }
   return valid;
 }
