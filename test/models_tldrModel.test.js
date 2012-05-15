@@ -255,7 +255,7 @@ describe('TldrModel', function () {
 				{ title: 'Blog NFA'
 				, summary: 'coin'
 				, resourceAuthor: 'bloup'
-				, unusedField: 'glok'}, 
+				, createdAt: '2012'}, 
 				function (err) { 
 					if (err) { return done(err); } 
 					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
@@ -265,7 +265,7 @@ describe('TldrModel', function () {
 						tldr._id.should.equal('http://mydomain.com/');
 						tldr.summary.should.equal('coin');
 						tldr.resourceAuthor.should.equal('bloup');
-						tldr.should.not.have.property('unusedField');
+						tldr.createdAt.should.not.equal('2012');
 
 						done();
 					});
@@ -281,13 +281,12 @@ describe('TldrModel', function () {
 											, summary: 'new2'
 											, title: 'Blog NeedForAir'
 											, resourceAuthor: 'new3'
-											, unusedField: 'new4'};
+											, createdAt: '2012'};
 
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
 				, summary: 'coin'
-				, resourceAuthor: 'bloup'
-				, unusedField: 'glok'}, 
+				, resourceAuthor: 'bloup'}, 
 				function(err) { 
 					if (err) { return done(err); }
 					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
@@ -307,7 +306,7 @@ describe('TldrModel', function () {
 							tldr.summary.should.equal('new2');
 							tldr.title.should.equal('Blog NeedForAir');
 							tldr.resourceAuthor.should.equal('new3');
-							tldr.should.not.have.property('unusedField');
+              tldr.createdAt.should.not.equal('2012');
 
 							done();
 						});
