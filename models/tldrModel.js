@@ -5,15 +5,14 @@
  */
 
 var mongoose = require('mongoose')
-  , crypto = require('crypto')
   , _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
   , url = require('url')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['url', 'summary','title', 'resourceAuthor', 'resourceDate'] // setable fields by user
-  , userUpdatableFields = ['summary', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
+  , userSetableFields = ['_id','summary','title', 'resourceAuthor'] // setable fields by user
+  , userUpdatableFields = ['summary', 'title', 'resourceAuthor'];// updatabe fields by user
 
 
 
@@ -23,93 +22,41 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema({
-	_id             : { type: String, required: true },
-	url             : { type: String, required: true },
-	title           : { type: String, required: true },
-	hostname        : { type: String, required: true },
-	summary         : { type: [String], required: true },
+  _id             : { type: String, required: true }, // url
+  title           : { type: String, required: true },
+  summary         : { type: String, required: true },
   resourceAuthor  : { type: String, required: true },
   resourceDate    : { type: Date, required: true },
   createdAt       : { type: Date, required: true },
   updatedAt       : { type: Date, required: true }
-});
-
-
-
-
-/**
- * Statics and dynamics are defined here
- */
-
+}, 
+{ strict: true });
 
 
 
 /**
- * Get the array of fields a user can set when creating a tldr
- * @return {Array} Array of setable fields by user
- */
-
-TldrSchema.statics.getUserSetableFields = function () {
-  return userSetableFields;
-};
-
-
-/**
- * Get the array of fields a user can update when creating a tldr
- * @return {Array} Array of updatable fields by user
- */
-
-TldrSchema.statics.getUserUpdatableFields = function () {
-  return userUpdatableFields;
-};
-
-
-
-
-/**
- * Compute Id (Hash) from Url with the current choice of hash function
- * @param {String} url Url to get hashed
- * @return {String} Id associated with the given url
- */
-
-TldrSchema.statics.computeIdFromUrl = function (url) {
-  var sha1 = crypto.createHash('sha1');
-  sha1.update(url, 'utf8');
-  return sha1.digest('hex');
-};
-
-
-
-
-
-/**
- * Creates a new instance of TldrModel and populates it
- * with fields in userSetableFields.
+ * Create a new instance of TldrModel and populate it without persisting it.
+ * Only fields in userSetableFields are handled
+ * @param {String} _id  The decoded URL which serves as id for the tldr in db
  * @param {JSObject} userInput Object containing the fields to set for the tldr instance
- *
+ * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createInstance = function(userInput) {
+TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance = new TldrModel(validFields);
+    , instance;
 
-  if (!instance.url) { instance.url = 'http://nonexistingdomain.com'; }
-  
-  instance.cleanUrl();
-  // _id is the hashed url
-  instance._id = TldrModel.computeIdFromUrl(instance.url);
-  instance.hostname = url.parse(instance.url).hostname;
-  instance.resourceAuthor = "bilbo le hobit";
+  validFields._id = _id;
+  instance = new TldrModel(validFields);
+  instance.normalizeUrl();
+  instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
   instance.resourceDate = new Date();
   instance.createdAt = new Date();
   instance.updatedAt = new Date();
-  //If no title was provided use url as title
-  instance.title = instance.title || instance.url;
+  instance.title = instance.title || instance._id; //If no title was provided use url as title
 
-  return instance;
+  instance.save(callback);
 };
-
-
 
 
 
@@ -121,13 +68,15 @@ TldrSchema.statics.createInstance = function(userInput) {
  *
  */
 
-TldrSchema.methods.update = function (updates) {
+TldrSchema.methods.updateValidFields = function (updates, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+
+  self.save(callback);
 
 };
 
@@ -138,9 +87,17 @@ TldrSchema.methods.update = function (updates) {
  * 
  */
 
-TldrSchema.methods.cleanUrl = function () {
-  var parsedUrl = url.parse(this.url);
-  this.url = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
+TldrSchema.methods.normalizeUrl = function () {
+  var parsedUrl;
+  parsedUrl = url.parse(this._id);
+  this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
+  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '') 
+    + "//" 
+    + (parsedUrl.hostname ? parsedUrl.hostname.toLowerCase().replace(/^www\./, "") : '')  // Convert scheme and host to lower case; remove www. if it exists in hostname
+    + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\/\.{1,2}\//g, "/").replace(/\/{2,}/, "/") : // Remove dot-segments; Remove duplicate slashes
+        "/" // Add trailing /
+      );
+  
   return;
 };
 
@@ -164,13 +121,8 @@ TldrSchema.pre('save', function(next) {
  *
  */
 
-//_id should be a 40 charachters string
-function id_validateLength (value) {
-  return ((value !== undefined) && (value.length === 40));
-}
-
-//Url should be defined, contain hostname and protocol info 
-function url_validatePresenceOfProtocolAndHostname (value) {
+//_id should be a url, containing hostname and protocol info 
+function  id_validatePresenceOfProtocolAndHostname (value) {
   var parsedUrl
     , hostname
     , protocol
@@ -178,11 +130,9 @@ function url_validatePresenceOfProtocolAndHostname (value) {
 
   valid = (value !== undefined);
   if (valid) {
-    parsedUrl = url.parse(value);
-    hostname = parsedUrl.hostname;
-    protocol = parsedUrl.protocol;
-    valid = valid && (hostname !== undefined);
-    valid = valid && (protocol !== undefined);
+    // Check if Url is valid with Regex
+    var urlRegexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
+    return urlRegexp.test(value);
   }
   return valid;
 }
@@ -197,11 +147,6 @@ function title_validateLength (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
 }
 
-//Hostname should be defined and contain at least one .
-function hostname_validatePresenceOfDot (value) {
-  return ((value !== undefined) && (value.split('.').length >= 2));
-}
-
 // Resource Author should be defined, not empty and not be too long
 function resourceAuthor_validateLength (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
@@ -209,7 +154,7 @@ function resourceAuthor_validateLength (value) {
 
 // Resource Date should be defined, not empty and not be too long (later, ensure its a date)
 function resourceDate_validateLength (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+  return ((value !== undefined) && (value.length >= 1) && (value.length <= 500));
 }
 
 
@@ -220,15 +165,14 @@ function resourceDate_validateLength (value) {
  *
  */
 
-TldrSchema.path('_id').validate(id_validateLength, '[Internal error] please report to contact@needforair.com');  // Should never happen
 
-TldrSchema.path('url').validate(url_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
-
+TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
 TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
+TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
+//TldrSchema.path('resourceDate').validate(resourceDate_validateLength, 'resourceDate has to be non empty and less than 50 characters long');
 
-TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be 4 bullet points');
 
-TldrSchema.path('hostname').validate(hostname_validatePresenceOfDot, 'hostname must be of the form domain.tld');
 
 
 // Define tldr model

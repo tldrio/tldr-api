@@ -40,25 +40,19 @@ describe('Database', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = TldrModel.createInstance({url: 'http://needforair.com/nutcrackers'
-                                         , title: 'Blog NFA'
-                                         , summary: 'Awesome Blog'})
-      , tldr2 = TldrModel.createInstance({url: 'http://avc.com/mba-monday'
-                                         , title: 'Blog AVC'
-                                         , summary: 'Fred Wilson is my God'})
-      , tldr3 = TldrModel.createInstance({url: 'http://bothsidesofthetable.com/deflationnary-economics'
-                                         , title: 'Deflat Eco'
-                                         , summary: 'Sustering is my religion'});
+    var tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summary: 'Awesome Blog', resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summary: 'Fred Wilson is my God', resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summary: 'Sustering is my religion', resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
-		  if (err) {throw done(err);}
+		  if (err) {return done(err);}
 			tldr1.save(	function (err) {
-				if (err) {throw done(err); }
+				if (err) {return done(err); }
 			  tldr2.save( function (err) {
-					if (err) {throw done(err); }
+					if (err) {return done(err); }
 			    tldr3.save( function (err) {
-			      if (err) {throw done(err); }
+			      if (err) {return done(err); }
 						done();
 			    });
 			  });
@@ -70,7 +64,7 @@ describe('Database', function () {
   afterEach(function (done) {
 
     TldrModel.remove(null, function (err) {
-      if (err) {throw done(err);}               
+      if (err) {return done(err);}
       done();
     });
 
@@ -80,7 +74,7 @@ describe('Database', function () {
   it('should return full collection', function (done) {
 
     TldrModel.find(null, function (err, docs) {
-      if (err) { throw done(err); }
+      if (err) { return done(err); }
 			docs.should.have.length(3);
 			done();
     });
@@ -90,13 +84,12 @@ describe('Database', function () {
 	// Get tldr with id 1
 	it('should return a tldr for an existing id', function (done) {
 
-    var htldrId = 'c63588884fecf318d13fc3cf3598b19f4f461d21';
+    var _id = 'http://needforair.com/nutcrackers';
 
-	  TldrModel.find( {_id: htldrId}, function (err, docs) {
-      if (err) { throw done(err); }
+	  TldrModel.find( {_id: _id}, function (err, docs) {
+      if (err) { return done(err); }
       var tldr = docs[0];
-			tldr.url.should.equal('http://needforair.com/nutcrackers');
-			tldr.hostname.should.equal('needforair.com');
+			tldr.title.should.equal('nutcrackers');
 			done();
 	  });
 
