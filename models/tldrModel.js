@@ -26,9 +26,9 @@ TldrSchema = new Schema({
   title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] },
   summary         : { type: String, required: true },
   resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
-  resourceDate    : { type: Date,   required: true, /* validate: [validateDate, 'resourceDate has to be a date'] */ },
-  createdAt       : { type: Date,   required: true, /* validate: [validateDate, 'createdAt has to be a date'], */ default: Date.now },
-  updatedAt       : { type: Date,   required: true, /* validate: [validateDate, 'updatedAt has to be a date'], */ default: Date.now }
+  resourceDate    : { type: Date,   required: true, },
+  createdAt       : { type: Date,   required: true, default: Date.now },
+  updatedAt       : { type: Date,   required: true, default: Date.now }
 }, 
 { strict: true });
 
@@ -146,13 +146,6 @@ function validateAuthor (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
 }
 
- //Resource Date should be defined, not empty and not be too long (later, ensure its a date)
- //this bitch seems like its not called
-//function validateDate (value) {
-  //console.log("OOOOOOOOOOOOOOOOOOOOOOOO");
-  //console.log(Date.parse(value));
-  //return !isNaN(Date.parse(value));
-//}
 
 
 
