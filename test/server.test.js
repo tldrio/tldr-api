@@ -58,10 +58,10 @@ describe('Webserver', function () {
     //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
-    tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summary: 'Awesome Blog', resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summary: 'Fred Wilson is my God', resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summary: 'Sustering is my religion', resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr4 = new TldrModel({_id: 'http://needforair.com/sopa', title: 'sopa', summary: 'Great article', resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullet1: 'Awesome Blog', resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullet1: 'Fred Wilson is my God', resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullet1: 'Sustering is my religion', resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr4 = new TldrModel({_id: 'http://needforair.com/sopa', title: 'sopa', summaryBullet1: 'Great article', resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -153,7 +153,7 @@ describe('Webserver', function () {
     it('Should create a new tldr with PUT if it doesn\'t exist yet', function (done) {
       var tldrData = {
 				title: 'A title',
-				summary: 'A summary',
+				summaryBullet1: 'A summary',
 				resourceAuthor: 'bozo le clown',
 				resourceDate: new Date(),
 			  createdAt: new Date(),
@@ -168,7 +168,7 @@ describe('Webserver', function () {
 
           TldrModel.find({_id: 'http://yetanotherunusedurl.tld/somepage'}, function(err, docs) {
             tldr = docs[0];
-            tldr.summary.should.equal('A summary');
+            tldr.summaryBullet1.should.equal('A summary');
 
             done();
           });
@@ -178,7 +178,7 @@ describe('Webserver', function () {
 
 
     it('Should update an existing tldr with PUT motherfucker', function (done) {
-      var tldrData = { summary: 'A new summary' };
+      var tldrData = { summaryBullet1: 'A new summary' };
 
       client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(204);
@@ -188,7 +188,7 @@ describe('Webserver', function () {
 
           TldrModel.find({_id: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
-            tldr.summary.should.equal('A new summary');
+            tldr.summaryBullet1.should.equal('A new summary');
 
             done();
           });
@@ -198,11 +198,11 @@ describe('Webserver', function () {
 
 
     it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
-      var tldrData = { summary: '' };   // Summary can't be empty
+      var tldrData = { summaryBullet1: '' };   // Summary can't be empty
 
       client.put('/tldrs/' + encodeURIComponent('http://wtf.com/'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(403);
-        assert.isNotNull(obj.summary);
+        assert.isNotNull(obj.summaryBullet1);
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs);
 
@@ -213,7 +213,7 @@ describe('Webserver', function () {
 
 
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
-      var tldrData = { summary: '' };
+      var tldrData = { summaryBullet1: '' };
 
       client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(403);
@@ -223,7 +223,7 @@ describe('Webserver', function () {
 
           TldrModel.find({_id: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
-            tldr.summary.should.equal('Fred Wilson is my God');
+            tldr.summaryBullet1.should.equal('Fred Wilson is my God');
 
             done();
           });

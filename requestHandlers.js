@@ -59,6 +59,7 @@ function putTldrByUrl (req, res, next) {
     , log = req.log;
 
 
+  console.log(req.body);
   TldrModel.find({_id: url}, function (err, docs) {
     var tldr;
     if (err) { return handleInternalDBError(err, next, "Internal error in putTldrByUrl"); }

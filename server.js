@@ -44,7 +44,6 @@ if (env.name === "production") {
 if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
-    //log: bunyan
     //key: privateKey, 
     //certificate: certificate
   });
@@ -62,6 +61,11 @@ server.use(restify.acceptParser(server.acceptable));
 server.use(restify.authorizationParser());
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
+
+server.on('after', restify.auditLogger({
+  log: bunyan
+}));
+
 
 
 /**

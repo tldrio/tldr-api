@@ -50,7 +50,7 @@ describe('TldrModel', function () {
 
       var tldr = new TldrModel({
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullet1: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
 					createdAt: new Date(),
@@ -75,7 +75,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
           _id: 'ftp://myfile/movie.mov',
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullet1: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
 					createdAt: new Date(),
@@ -100,7 +100,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
 					_id: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullet1: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012'
 				})
@@ -136,7 +136,7 @@ describe('TldrModel', function () {
 
         _.keys(err.errors).length.should.equal(2);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr.summary.should.not.equal(null);
+				valErr.summaryBullet1.should.not.equal(null);
 
         done();
       });
@@ -148,7 +148,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
           _id: 'needforair.com/nutcrackers',
           title: 'Blog NFA',
-          summary: 'Awesome Blog',
+          summaryBullet1: 'Awesome Blog',
           resourceDate: '2012',
 					createdAt: new Date(),
 					updatedAt: new Date()
@@ -172,7 +172,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
           _id: 'needforair.com/nutcrackers',
           title: 'Blog NFA',
-          summary: 'Awesome Blog',
+          summaryBullet1: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
 					createdAt: new Date(),
 					updatedAt: new Date()
@@ -197,14 +197,14 @@ describe('TldrModel', function () {
         , tldr = new TldrModel({
             _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
             title: 'Blog NFA',
-            summary: parasite,
+            summaryBullet1: parasite,
       })
         , valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.summary.should.be.a('string');
+        valErr.summaryBullet1.should.be.a('string');
         done();
       });
 
@@ -215,7 +215,7 @@ describe('TldrModel', function () {
       var tldr = new TldrModel({
         _id: 'needforair.com/nutcrackers',
         title: 'Blog NFA',
-        summary: 'Awesome Blog',
+        summaryBullet1: 'Awesome Blog',
       });
 
       tldr.save( function (err) {
@@ -234,7 +234,7 @@ describe('TldrModel', function () {
     it('should normalize url', function (done) {
       TldrModel.createAndSaveInstance('http://www.mYdoMain.com/Toto/../Tata/.//good?toto=tata&titi=tutu#anchor',
 				{	title: 'Some Title'
-				, summary: 'Summary is good'
+				, summaryBullet1: 'Summary is good'
 				, resourceAuthor: 'John'}, 
 				function (err) { 
 					if (err) { return done(err); } 
@@ -253,7 +253,7 @@ describe('TldrModel', function () {
     it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
-				, summary: 'coin'
+				, summaryBullet1: 'coin'
 				, resourceAuthor: 'bloup'
 				, unusedField: 'glok'}, 
 				function (err) { 
@@ -263,7 +263,7 @@ describe('TldrModel', function () {
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/');
-						tldr.summary.should.equal('coin');
+						tldr.summaryBullet1.should.equal('coin');
 						tldr.resourceAuthor.should.equal('bloup');
 						tldr.should.not.have.property('unusedField');
 
@@ -278,14 +278,14 @@ describe('TldrModel', function () {
 
 		it('should restrict the fields the user is allowed to update', function (done) {
 				var updated = {_id: 'http://myotherdomain.com'
-											, summary: 'new2'
+											, summaryBullet1: 'new2'
 											, title: 'Blog NeedForAir'
 											, resourceAuthor: 'new3'
 											, unusedField: 'new4'};
 
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
-				, summary: 'coin'
+				, summaryBullet1: 'coin'
 				, resourceAuthor: 'bloup'
 				, unusedField: 'glok'}, 
 				function(err) { 
@@ -295,7 +295,7 @@ describe('TldrModel', function () {
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/');
-						tldr.summary.should.equal('coin');
+						tldr.summaryBullet1.should.equal('coin');
 						tldr.title.should.equal('Blog NFA');
 						tldr.resourceAuthor.should.equal('bloup');
 						
@@ -304,7 +304,7 @@ describe('TldrModel', function () {
 							if (err) { return done(err); }
 
 							tldr._id.should.equal('http://mydomain.com/');
-							tldr.summary.should.equal('new2');
+							tldr.summaryBullet1.should.equal('new2');
 							tldr.title.should.equal('Blog NeedForAir');
 							tldr.resourceAuthor.should.equal('new3');
 							tldr.should.not.have.property('unusedField');

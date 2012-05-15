@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['_id', 'summary','title', 'resourceAuthor', 'resourceDate'] // setable fields by user
-  , userUpdatableFields = ['summary', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
+  , userSetableFields = ['_id', 'summaryBullet1','summaryBullet2','summaryBullet3','summaryBullet4','title', 'resourceAuthor', 'resourceDate'] // setable fields by user
+  , userUpdatableFields = ['summaryBullet1', 'summaryBullet2','summaryBullet3','summaryBullet4','title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
 
 
 
@@ -24,7 +24,10 @@ var mongoose = require('mongoose')
 TldrSchema = new Schema({
   _id             : { type: String, required: true }, // url
   title           : { type: String, required: true },
-  summary         : { type: String, required: true },
+  summaryBullet1  : { type: String, required: true },
+  summaryBullet2  : { type: String },
+  summaryBullet3  : { type: String },
+  summaryBullet4  : { type: String },
   resourceAuthor  : { type: String, required: true },
   resourceDate    : { type: Date, required: true },
   createdAt       : { type: Date, required: true },
@@ -139,7 +142,8 @@ function  id_validatePresenceOfProtocolAndHostname (value) {
 
 //Summaries should be an Array, non empty and not be too long
 function summary_validateLength (value) {
-  return (Object.prototype.toString.call(value) === '[object Array]' && value.length >= 1 && value.length <= 4);
+  return (value !== undefined) && (value.length >= 1) && (value.length <= 1500);
+  //return (Object.prototype.toString.call(value) === '[object Array]' && value.length >= 1 && value.length <= 4);
 }
 
 //Titles should be defined, non empty and not be too long
@@ -168,7 +172,10 @@ function resourceDate_validateLength (value) {
 
 TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
 TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
-TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('summaryBullet1').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('summaryBullet2').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('summaryBullet3').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
+TldrSchema.path('summaryBullet4').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
 TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
 //TldrSchema.path('resourceDate').validate(resourceDate_validateLength, 'resourceDate has to be non empty and less than 50 characters long');
 
