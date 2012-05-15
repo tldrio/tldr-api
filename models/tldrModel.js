@@ -22,13 +22,13 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema({
-  _id             : { type: String, required: true }, // url
-  title           : { type: String, required: true },
+  _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] }, // url
+  title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] },
   summary         : { type: String, required: true },
-  resourceAuthor  : { type: String, required: true },
-  resourceDate    : { type: Date, required: true },
-  createdAt       : { type: Date, default: Date.now, required: true },
-  updatedAt       : { type: Date, default: Date.now, required: true }
+  resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
+  resourceDate    : { type: Date,   required: true },
+  createdAt       : { type: Date,   required: true, default: Date.now },
+  updatedAt       : { type: Date,   required: true, default: Date.now }
 }, 
 { strict: true });
 
@@ -120,11 +120,8 @@ TldrSchema.pre('save', function(next) {
  */
 
 //_id should be a url, containing hostname and protocol info 
-function  id_validatePresenceOfProtocolAndHostname (value) {
-  var parsedUrl
-    , hostname
-    , protocol
-    , valid;
+function  validateUrl (value) {
+  var valid;
 
   valid = (value !== undefined);
   if (valid) {
@@ -141,17 +138,17 @@ function summary_validateLength (value) {
 }
 
 //Titles should be defined, non empty and not be too long
-function title_validateLength (value) {
+function validateTitle (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
 }
 
 // Resource Author should be defined, not empty and not be too long
-function resourceAuthor_validateLength (value) {
+function validateAuthor (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
 }
 
 // Resource Date should be defined, not empty and not be too long (later, ensure its a date)
-function resourceDate_validateLength (value) {
+function validateDate (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 500));
 }
 
@@ -164,10 +161,10 @@ function resourceDate_validateLength (value) {
  */
 
 
-TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
-TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
+//TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
+//TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
 TldrSchema.path('summary').validate(summary_validateLength, 'summary has to be non empty and less than 1500 characters long');
-TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
+//TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
 //TldrSchema.path('resourceDate').validate(resourceDate_validateLength, 'resourceDate has to be non empty and less than 50 characters long');
 
 
