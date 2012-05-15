@@ -95,7 +95,7 @@ describe('TldrModel', function () {
 
     });
 
-    it('should detect missing required createdAt and updatedAt args', function (done) {
+    it('should use default createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
 					_id: 'http://needforair.com/nutcrackers',
@@ -107,12 +107,7 @@ describe('TldrModel', function () {
 				, valErr;
 
       tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-				
-        _.keys(err.errors).length.should.equal(2);
-				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr.createdAt.should.not.equal(null);
-				valErr.updatedAt.should.not.equal(null);
+        assert.isNull(err, 'no errors');
 
         done();
       });

@@ -27,8 +27,8 @@ TldrSchema = new Schema({
   summary         : { type: String, required: true },
   resourceAuthor  : { type: String, required: true },
   resourceDate    : { type: Date, required: true },
-  createdAt       : { type: Date, required: true },
-  updatedAt       : { type: Date, required: true }
+  createdAt       : { type: Date, default: Date.now, required: true },
+  updatedAt       : { type: Date, default: Date.now, required: true }
 }, 
 { strict: true });
 
