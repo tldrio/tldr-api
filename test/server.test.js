@@ -160,13 +160,13 @@ describe('Webserver', function () {
 				updatedAt: new Date()
 			};
 
-      client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.tld/somepage'), tldrData, function(err, req, res, obj) {
+      client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/somepage'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(201);
         TldrModel.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
 
-          TldrModel.find({_id: 'http://yetanotherunusedurl.tld/somepage'}, function(err, docs) {
+          TldrModel.find({_id: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
             tldr = docs[0];
             tldr.summary.should.equal('A summary');
 
