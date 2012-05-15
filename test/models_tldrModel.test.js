@@ -224,7 +224,7 @@ describe('TldrModel', function () {
 				});
 		});
 
-    it('should remove querystring from url', function (done) {
+    it('should remove hash from url', function (done) {
       TldrModel.createAndSaveInstance('http://mydomain.com#anchor',
 				{	title: 'Some Title'
 				, summary: 'Summary is good'
@@ -236,6 +236,24 @@ describe('TldrModel', function () {
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/');
+
+						done();
+					});
+				});
+    });
+
+    it('should normalize url', function (done) {
+      TldrModel.createAndSaveInstance('http://www.mYdoMain.com/Toto/../Tata/.//good',
+				{	title: 'Some Title'
+				, summary: 'Summary is good'
+				, resourceAuthor: 'John'}, 
+				function (err) { 
+					if (err) { return done(err); } 
+					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
+						if (err) { return done(err); } 
+
+						var tldr = docs[0];
+						tldr._id.should.equal('http://mydomain.com/Toto/Tata/good');
 
 						done();
 					});
