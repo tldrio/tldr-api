@@ -70,10 +70,10 @@ describe('TldrModel', function () {
 
     });
 
-    it('should accept only valid url ', function (done) {
+    it('should accept only valid urls ', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'ftp://myfile/movie.mov',
+          _id: 'http://myfile/movie',
 					title: 'Blog NFA',
 					summary: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
@@ -117,7 +117,7 @@ describe('TldrModel', function () {
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
+          _id: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
@@ -129,7 +129,8 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
+        console.dir(err.errors);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.summary.should.not.equal(null);
 
@@ -141,7 +142,7 @@ describe('TldrModel', function () {
     it('should detect missing required resourceAuthor', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
+          _id: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           summary: 'Awesome Blog',
           resourceDate: '2012',
@@ -153,7 +154,7 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.resourceAuthor.should.not.equal(null);
 
@@ -165,7 +166,7 @@ describe('TldrModel', function () {
     it('should detect missing required resourceDate', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
+          _id: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           summary: 'Awesome Blog',
           resourceAuthor: 'NFA Crew',
@@ -177,7 +178,7 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.resourceDate.should.not.equal(null);
 
@@ -208,7 +209,7 @@ describe('TldrModel', function () {
     it('should handle wrong url formatting', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'needforair.com/nutcrackers',
+        _id: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summary: 'Awesome Blog',
       });
