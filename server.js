@@ -62,9 +62,10 @@ server.use(restify.authorizationParser());
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
 
-server.on('after', restify.auditLogger({
-  log: bunyan
-}));
+// Audi Logger
+//server.on('after', restify.auditLogger({
+  //log: bunyan
+//}));
 
 
 

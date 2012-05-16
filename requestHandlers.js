@@ -72,7 +72,7 @@ function putTldrByUrl (req, res, next) {
             res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
             return next();
           } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+            return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
           }
         }
 

@@ -22,16 +22,16 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema({
-  _id             : { type: String, required: true }, // url
-  title           : { type: String, required: true },
+  _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] }, // url
+  title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] },
   summaryBullet1  : { type: String, required: true },
   summaryBullet2  : { type: String },
   summaryBullet3  : { type: String },
   summaryBullet4  : { type: String },
-  resourceAuthor  : { type: String, required: true },
-  resourceDate    : { type: Date, required: true },
-  createdAt       : { type: Date, required: true },
-  updatedAt       : { type: Date, required: true }
+  resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
+  resourceDate    : { type: Date,   required: true, },
+  createdAt       : { type: Date,   required: true, default: Date.now },
+  updatedAt       : { type: Date,   required: true, default: Date.now }
 }, 
 { strict: true });
 
@@ -52,10 +52,8 @@ TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
   validFields._id = _id;
   instance = new TldrModel(validFields);
   instance.normalizeUrl();
-  instance.resourceAuthor = instance.resourceAuthor || "bilbo le hobit";
-  instance.resourceDate = new Date();
-  instance.createdAt = new Date();
-  instance.updatedAt = new Date();
+  instance.resourceAuthor = instance.resourceAuthor || "bilbo the hobbit";
+  instance.resourceDate = instance.resourceDate || new Date();
   instance.title = instance.title || instance._id; //If no title was provided use url as title
 
   instance.save(callback);
@@ -125,17 +123,13 @@ TldrSchema.pre('save', function(next) {
  */
 
 //_id should be a url, containing hostname and protocol info 
-function  id_validatePresenceOfProtocolAndHostname (value) {
-  var parsedUrl
-    , hostname
-    , protocol
-    , valid;
+function  validateUrl (value) {
+  var valid;
 
   valid = (value !== undefined);
   if (valid) {
     // Check if Url is valid with Regex
-    var urlRegexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-    return urlRegexp.test(value);
+    return value.match(/^(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)?(?:\w+:\w+@)?(localhost|(?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2}))|((\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)(\.(\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)){3}))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,="'\(\)_\*]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |\/.,*:;=]|%[a-f\d]{2})*)?$/i) || value.length > 2083;
   }
   return valid;
 }
@@ -147,19 +141,15 @@ function summary_validateLength (value) {
 }
 
 //Titles should be defined, non empty and not be too long
-function title_validateLength (value) {
+function validateTitle (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
 }
 
 // Resource Author should be defined, not empty and not be too long
-function resourceAuthor_validateLength (value) {
+function validateAuthor (value) {
   return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
 }
 
-// Resource Date should be defined, not empty and not be too long (later, ensure its a date)
-function resourceDate_validateLength (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 500));
-}
 
 
 
@@ -170,14 +160,10 @@ function resourceDate_validateLength (value) {
  */
 
 
-TldrSchema.path('_id').validate(id_validatePresenceOfProtocolAndHostname, 'url must be a correctly formatted url, with protocol and hostname');
-TldrSchema.path('title').validate(title_validateLength, 'Title has to be non empty and less than 150 characters');
 TldrSchema.path('summaryBullet1').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
 TldrSchema.path('summaryBullet2').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
 TldrSchema.path('summaryBullet3').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
 TldrSchema.path('summaryBullet4').validate(summary_validateLength, 'bullet summary has to be non empty and less than 1500 characters long');
-TldrSchema.path('resourceAuthor').validate(resourceAuthor_validateLength, 'resourceAuthor has to be non empty and less than 50 characters long');
-//TldrSchema.path('resourceDate').validate(resourceDate_validateLength, 'resourceDate has to be non empty and less than 50 characters long');
 
 
 
