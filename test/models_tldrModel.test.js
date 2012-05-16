@@ -130,7 +130,6 @@ describe('TldrModel', function () {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
-        console.dir(err.errors);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.summaryBullet1.should.not.equal(null);
 
@@ -220,7 +219,6 @@ describe('TldrModel', function () {
       , valErr;
 
       tldr.save( function (err) {
-        console.dir(err);
         err.name.should.equal('CastError');
         done();
       });
