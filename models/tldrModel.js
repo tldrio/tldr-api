@@ -25,9 +25,9 @@ TldrSchema = new Schema({
   _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] }, // url
   title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] },
   summaryBullet1  : { type: String, required: true, validate: [validateBulletpoint, 'bullet summary has to be non empty and less than 500 characters long'] },
-  summaryBullet2  : { type: String, validate: [validateBulletpoint, 'bullet summary has to be non empty and less than 500 characters long'] },
-  summaryBullet3  : { type: String, validate: [validateBulletpoint, 'bullet summary has to be non empty and less than 500 characters long'] },
-  summaryBullet4  : { type: String, validate: [validateBulletpoint, 'bullet summary has to be non empty and less than 500 characters long']  },
+  summaryBullet2  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long'] },
+  summaryBullet3  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long'] },
+  summaryBullet4  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long']  },
   resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
   resourceDate    : { type: Date,   required: true },
   createdAt       : { type: Date,   required: true, default: Date.now },
@@ -125,7 +125,7 @@ TldrSchema.pre('save', function(next) {
 
 //_id should be a url, containing hostname and protocol info 
 function  validateUrl (value) {
-  var valid = (value !== undefined);
+  var valid = (!_.isUndefined(value));
   if (valid) {
     // Check if Url is valid with Regex
     return value.match(/^(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)?(?:\w+:\w+@)?(localhost|(?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2}))|((\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)(\.(\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)){3}))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,="'\(\)_\*]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |\/.,*:;=]|%[a-f\d]{2})*)?$/i) || value.length > 2083;
@@ -135,17 +135,17 @@ function  validateUrl (value) {
 
 //Summaries should be an Array, non empty and not be too long
 function validateBulletpoint (value) {
-  return (value !== undefined) && (value.length >= 1) && (value.length <= 500);
+  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 500));
 }
 
 //Titles should be defined, non empty and not be too long
 function validateTitle (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 150));
+  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 150));
 }
 
 // Resource Author should be defined, not empty and not be too long
 function validateAuthor (value) {
-  return ((value !== undefined) && (value.length >= 1) && (value.length <= 50));
+  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 50));
 }
 
 
