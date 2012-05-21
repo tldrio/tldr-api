@@ -30,8 +30,9 @@ if (env.name === "production") {
   process.on('uncaughtException', function(err) {
     bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
   });
-} else {
+} else if (env.name !== "test") {
   // We stop the server to look at the logs and understand what went wrong
+  // We don't do this for tests as it messes up mocha
   process.on('uncaughtException', function(err) {
     bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
     throw err;
