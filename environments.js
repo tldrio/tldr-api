@@ -17,24 +17,28 @@ if (env.name === 'development') {
   env.databaseHost = 'localhost';
   env.databasePort = '27017';
   env.databaseName = 'dev-db';
+  env.serverPort = 8787;
 }
 
 if (env.name === 'test') {
   env.databaseHost = 'localhost';
   env.databasePort = '27017';
   env.databaseName = 'test-db';
+  env.serverPort = 8787;
 }
 
 if (env.name === 'staging') {
   env.databaseHost = 'localhost';
   env.databasePort = '27017';
   env.databaseName = 'prod-db';
+  env.serverPort = 9002;
 }
 
 if (env.name === 'master') {
   env.databaseHost = 'localhost';
   env.databasePort = '27017';
   env.databaseName = 'prod-db';
+  env.serverPort = 9001;
 }
 
 module.exports.env = env;
