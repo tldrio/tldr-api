@@ -1,3 +1,9 @@
+/*
+ * Environment related variables. 'localhost' is our local machines when in 'development', the server when in 'staging' and 'master'
+ * and can be both for 'test'
+ */
+
+
 var bunyan = require('./lib/logger').bunyan
   , env = {}      // Stores environment related data
 
@@ -7,10 +13,11 @@ var bunyan = require('./lib/logger').bunyan
 env.name = process.env.TLDR_ENV || 'development';
 bunyan.info("Environment set to %s", env.name);
 
-// Corresponds to environment='development', no "if" to ensure variables are always set
-env.databaseHost = 'localhost';
-env.databasePort = '27017';
-env.databaseName = 'dev-db';
+if (env.name === 'development') {
+  env.databaseHost = 'localhost';
+  env.databasePort = '27017';
+  env.databaseName = 'dev-db';
+}
 
 if (env.name === 'test') {
   env.databaseHost = 'localhost';
@@ -18,7 +25,13 @@ if (env.name === 'test') {
   env.databaseName = 'test-db';
 }
 
-if (env.name === 'production') {
+if (env.name === 'staging') {
+  env.databaseHost = 'localhost';
+  env.databasePort = '27017';
+  env.databaseName = 'prod-db';
+}
+
+if (env.name === 'master') {
   env.databaseHost = 'localhost';
   env.databasePort = '27017';
   env.databaseName = 'prod-db';
