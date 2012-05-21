@@ -104,7 +104,7 @@ describe('Webserver', function () {
 
       client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
-        obj._id.should.equal('http://needforair.com/sopaFAIL');   // Make test fail temporarily to test Jenkins build
+        obj._id.should.equal('http://needforair.com/sopa');
         done();
       });
 
