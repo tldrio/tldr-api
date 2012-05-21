@@ -100,7 +100,7 @@ describe('Webserver', function () {
   // Test GET requests
   describe('should handle GET request for', function () {
 
-    it('an existing tldr STAGING VERSION', function (done) {
+    it('an existing tldr', function (done) {
 
       client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
