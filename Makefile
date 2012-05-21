@@ -18,5 +18,10 @@ testSlow:
 	@ TLDR_ENV="test" ./node_modules/.bin/mocha --reporter spec --timeout 10000
 	@echo "Tests finished, setting environment back to development"
 
+test-jenkins:
+	@echo "TLDR - Launching tests. Setting environmentment to test"
+	@ TLDR_ENV="test" ./node_modules/.bin/mocha -R tap
+	@echo "Tests finished, setting environment back to development"
+
 .PHONY: test
 
