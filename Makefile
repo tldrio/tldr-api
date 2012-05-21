@@ -1,11 +1,6 @@
 test:
 	@echo "TLDR - Launching tests. Setting environment to test"
-	@ TLDR_ENV="test" ./node_modules/.bin/mocha --reporter spec 
-	@echo "Tests finished, setting environment back to development"
-
-testRemote:
-	@echo "TLDR - Launching tests on remote server. Setting environment to test"
-	@ TLDR_ENV="remote" ./node_modules/.bin/mocha --reporter spec
+	@ TLDR_ENV="test" ./node_modules/.bin/mocha --reporter spec
 	@echo "Tests finished, setting environment back to development"
 
 testPretty:
@@ -22,6 +17,7 @@ test-jenkins:
 	@echo "TLDR - Launching tests. Setting environmentment to test"
 	@ TLDR_ENV="test" ./node_modules/.bin/mocha -R tap
 	@echo "Tests finished, setting environment back to development"
+
 
 .PHONY: test
 
