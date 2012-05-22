@@ -58,6 +58,11 @@ function putTldrByUrl (req, res, next) {
   var url = decodeURIComponent(req.params.url)
     , log = req.log;
 
+  if(!req.body){
+    // Response received by client is 500. TODO : investigate why
+    res.json(400, 'body required in request');
+    return next();
+  }
 
   TldrModel.find({_id: url}, function (err, docs) {
     var tldr;
