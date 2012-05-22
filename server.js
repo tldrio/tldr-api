@@ -59,6 +59,10 @@ if (env.name === "test") {
     //certificate: certificate
     //log: bunyan     // No restify logging for now
   });
+  // Audi Logger
+  server.on('after', restify.auditLogger({
+    log: bunyan
+  }));
 }
 
 // Register restify middleware
@@ -67,10 +71,6 @@ server.use(restify.authorizationParser());
 server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
 
-// Audi Logger
-//server.on('after', restify.auditLogger({
-  //log: bunyan
-//}));
 
 
 
