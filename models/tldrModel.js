@@ -30,7 +30,7 @@ TldrSchema = new Schema({
   summaryBullet4  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long']  },
   resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
   resourceDate    : { type: Date,   required: true },
-  createdAt       : { type: Date,   required: true, default: Date.now },
+  createdAt       : { type: Date,   default: Date.now },
   updatedAt       : { type: Date,   default: Date.now }
 }, 
 { strict: true });
