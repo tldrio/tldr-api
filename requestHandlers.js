@@ -134,5 +134,6 @@ function putTldrByUrl (req, res, next) {
 
 // Module interface
 module.exports.getAllTldrs = getAllTldrs;
+module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putTldrByUrl = putTldrByUrl;
