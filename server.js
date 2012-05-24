@@ -49,17 +49,13 @@ if (env.name === "production") {
 if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
-    //key: privateKey, 
-    //certificate: certificate
   });
 } else {
   server = restify.createServer({
     name: "tldr API",
-    //key: privateKey, 
-    //certificate: certificate
     //log: bunyan     // No restify logging for now
   });
-  // Audi Logger
+  // Audit Logger
   server.on('after', restify.auditLogger({
     log: bunyan
   }));
