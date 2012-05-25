@@ -104,7 +104,7 @@ describe('Webserver', function () {
 
       client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
-        obj._id.should.equal('http://needforair.com/sopa');
+        obj._id.should.equal('http://needforair.com/sopaZZZ');
         done();
       });
 
