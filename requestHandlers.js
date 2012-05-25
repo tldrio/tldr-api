@@ -25,7 +25,7 @@ function handleInternalDBError(err, next, msg) {
 
 // GET all tldrs
 function getAllTldrs (req, res, next) {
-    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed BLBLBLBL'));
 }
 
 // GET a tldr by url
