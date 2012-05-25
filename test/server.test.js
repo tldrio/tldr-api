@@ -98,7 +98,7 @@ describe('Webserver', function () {
 
   
   // Test GET requests
-  describe('should handle GET request for ZZZZ', function () {
+  describe('should handle GET request for', function () {
 
     it('an existing tldr', function (done) {
 
