@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['_id', 'summaryBullet1','summaryBullet2','summaryBullet3','summaryBullet4','title', 'resourceAuthor', 'resourceDate'] // setable fields by user
-  , userUpdatableFields = ['summaryBullet1', 'summaryBullet2','summaryBullet3','summaryBullet4','title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
+  , userSetableFields = ['_id', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate'] // setable fields by user
+  , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
 
 
 
@@ -21,19 +21,16 @@ var mongoose = require('mongoose')
  *
  */
 
-TldrSchema = new Schema({
-  _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] }, // url
-  title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] },
-  summaryBullet1  : { type: String, required: true, validate: [validateBulletpoint, 'bullet summary has to be non empty and less than 500 characters long'] },
-  summaryBullet2  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long'] },
-  summaryBullet3  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long'] },
-  summaryBullet4  : { type: String, validate: [validateBulletpoint, 'bullet has to be non empty and less than 500 characters long']  },
-  resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] },
-  resourceDate    : { type: Date,   required: true },
-  createdAt       : { type: Date,   default: Date.now },
-  updatedAt       : { type: Date,   default: Date.now }
-}, 
-{ strict: true });
+TldrSchema = new Schema(
+  { _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] } // url
+  , title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] }
+  , summaryBullets  : { type: Array,  required: true, validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long'] }
+  , resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] }
+  , resourceDate    : { type: Date }
+  , createdAt       : { type: Date,   default: Date.now }
+  , updatedAt       : { type: Date,   default: Date.now }
+  }
+, { strict: true });
 
 
 
@@ -133,9 +130,17 @@ function  validateUrl (value) {
   return valid;
 }
 
-//Summaries should be an Array, non empty and not be too long
-function validateBulletpoint (value) {
-  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 500));
+//Summary should be an Array, non empty and not be too long
+function validateBullets (value) {
+
+  function validateBulletLength (bullet) {
+    return !bullet || (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
+  }
+
+  return (_.isArray(value) // first check if it's an array
+          && (!_.isEmpty(value) && value.length <= 5) // check size of array
+          && _.any(value) // checks that at least one bullet point is non-empty
+          && _.reduce(_.map(value, validateBulletLength), function (memo, s) { return (s && memo); }, true)); // use mapreduce to check if bullets are non-empty and not too long
 }
 
 //Titles should be defined, non empty and not be too long

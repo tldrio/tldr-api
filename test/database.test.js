@@ -40,9 +40,9 @@ describe('Database', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullet1: 'Awesome Blog', resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullet1: 'Fred Wilson is my God', resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullet1: 'Sustering is my religion', resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    var tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
