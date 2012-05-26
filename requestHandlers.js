@@ -28,6 +28,32 @@ function getAllTldrs (req, res, next) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
 }
 
+// GET tldrs with query
+function getTldrsWithQuery (req, res, next) {
+  var query = req.query
+    , method = query.sort || 'latest'
+    , limit = query.limit || 5 //TODO Better Handling of default args
+    , log = req.log;
+
+  if (_.isEmpty(req.query)) {
+    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+  }
+
+  limit = Math.max(0, Math.min(5, limit));   // Clip limit between 0 and 5
+  if (limit === 0) { limit = 5; }
+
+  if (method === 'latest') {
+    TldrModel.find({})
+    .sort('updatedAt', -1)
+    .limit(limit)
+    .run(function(err, docs) {
+      if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+      res.json(200, docs);
+      return next();
+    });
+  }
+}
+
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
   var url = decodeURIComponent(req.params.url)
@@ -108,5 +134,6 @@ function putTldrByUrl (req, res, next) {
 
 // Module interface
 module.exports.getAllTldrs = getAllTldrs;
+module.exports.getTldrsWithQuery = getTldrsWithQuery;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putTldrByUrl = putTldrByUrl;
