@@ -50,6 +50,17 @@ describe('Webserver', function () {
     db.closeDatabaseConnection(done);
   });
 
+  function saveSync(arr, idx, callback) {
+    if (idx === arr.length) {
+      return callback();
+    }
+
+    arr[idx].save(function(err) {
+      if (err) {return done(err);}
+      saveSync(arr, idx + 1, callback);
+    });
+  }
+
   beforeEach(function (done) {
     //create client to test api
     client = restify.createJsonClient({
@@ -75,11 +86,16 @@ describe('Webserver', function () {
             tldr4.save( function (err) {
               if (err) {return done(err); }
 
-              TldrModel.find({}, function(err, docs) {
-                if (err) {return done(err); }
-                numberOfTldrs = docs.length;
-                done();
-              });
+
+                //saveSync(someTldrs, 0, function() {
+
+                  TldrModel.find({}, function(err, docs) {
+                    if (err) {return done(err); }
+                    numberOfTldrs = docs.length;
+                    done();
+                  });
+
+                //});
 
             });
           });
@@ -142,6 +158,26 @@ describe('Webserver', function () {
       });
 
     });
+
+    // This test will contain all we need to test this function as it takes some time to prepare the database every time
+    it('GET tldrs with custom query', function (done) {
+      var someTldrs = []
+        , someFunctions = []
+        , i, temp;
+
+      for (i = 0; i <= 25; i += 1) {
+        someTldrs.push(new TldrModel({_id: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}));
+      }
+
+      saveSync(someTldrs, 0, function() {
+        TldrModel.find({}, function(err,docs) {
+          docs.length.should.equal(30);
+          done();
+        });
+      });
+
+    });
+
 
 	});
 

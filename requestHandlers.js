@@ -32,7 +32,7 @@ function getAllTldrs (req, res, next) {
 function getTldrsWithQuery (req, res, next) {
   var query = req.query
     , method = query.sort || 'latest'
-    , limit = query.limit || 5 //TODO Better Handling of default args
+    , limit = query.limit
     , log = req.log;
 
   if (_.isEmpty(req.query)) {
