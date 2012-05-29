@@ -60,7 +60,7 @@ TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
 
 
 /**
- * Update tldr object with the provided hash.
+ * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
  * @param {Function} callback callback to be passed to save method
