@@ -182,6 +182,111 @@ describe('TldrModel', function () {
 
     });
 
+
+    it('should reject tldrs whose summary is missing', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary is an empty array', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: [],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains empty bullets', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', '', 'amnother bullet'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains too many bullets', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', 'adad', 'amnother bullet', 'eweqweq', 'qweqwe', 'qweqweqwe'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains a bullet that\'s too long', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', 'adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee w'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
   });
 
 

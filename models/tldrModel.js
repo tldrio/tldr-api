@@ -83,14 +83,14 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 
 /**
  * Clean url of instance, removing query string and hastag
- * 
+ *
  */
 
 TldrSchema.methods.normalizeUrl = function () {
   var parsedUrl;
   parsedUrl = url.parse(this._id);
   this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
-  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '') 
+  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname.toLowerCase().replace(/^www\./, "") : '')  // Convert scheme and host to lower case; remove www. if it exists in hostname
     + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\/\.{1,2}\//g, "/").replace(/\/{2,}/, "/") : // Remove dot-segments; Remove duplicate slashes
@@ -134,7 +134,7 @@ function  validateUrl (value) {
 function validateBullets (value) {
 
   function validateBulletLength (bullet) {
-    return !bullet || (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
+    return (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
   }
 
   return (_.isArray(value) // first check if it's an array
