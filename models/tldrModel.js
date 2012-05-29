@@ -35,7 +35,7 @@ TldrSchema = new Schema(
 
 
 /**
- * Create a new instance of TldrModel and populate it without persisting it.
+ * Create a new instance of TldrModel and populate it
  * Only fields in userSetableFields are handled
  * @param {String} _id  The decoded URL which serves as id for the tldr in db
  * @param {Object} userInput Object containing the fields to set for the tldr instance
