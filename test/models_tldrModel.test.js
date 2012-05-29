@@ -11,7 +11,7 @@ var should = require('chai').should()
   , restify = require('restify')
   , sinon = require('sinon')
   , bunyan = require('../lib/logger').bunyan // Audit logger for restify
-  , mongoose = require('mongoose') // Mongoose ODM to Mongo
+  , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
@@ -50,7 +50,7 @@ describe('TldrModel', function () {
 
       var tldr = new TldrModel({
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
 					createdAt: new Date(),
@@ -70,12 +70,12 @@ describe('TldrModel', function () {
 
     });
 
-    it('should accept only valid url ', function (done) {
+    it('should accept only valid urls ', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'ftp://myfile/movie.mov',
+          _id: 'http://myfile/movie',
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
 					createdAt: new Date(),
@@ -95,24 +95,19 @@ describe('TldrModel', function () {
 
     });
 
-    it('should detect missing required createdAt and updatedAt args', function (done) {
+    it('should use default createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
 					_id: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
-					summary: 'Awesome Blog',
+					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012'
 				})
 				, valErr;
 
       tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-				
-        _.keys(err.errors).length.should.equal(2);
-				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr.createdAt.should.not.equal(null);
-				valErr.updatedAt.should.not.equal(null);
+        assert.isNull(err, 'no errors');
 
         done();
       });
@@ -122,7 +117,7 @@ describe('TldrModel', function () {
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
+          _id: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
@@ -134,9 +129,9 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr.summary.should.not.equal(null);
+				valErr.summaryBullets.should.not.equal(null);
 
         done();
       });
@@ -146,9 +141,9 @@ describe('TldrModel', function () {
     it('should detect missing required resourceAuthor', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
+          _id: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
-          summary: 'Awesome Blog',
+          summaryBullets: ['Awesome Blog'],
           resourceDate: '2012',
 					createdAt: new Date(),
 					updatedAt: new Date()
@@ -158,7 +153,7 @@ describe('TldrModel', function () {
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.resourceAuthor.should.not.equal(null);
 
@@ -167,56 +162,38 @@ describe('TldrModel', function () {
 
     });
 
-    it('should detect missing required resourceDate', function (done) {
+    it('should detect wrong type of arg for dates bitch', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'needforair.com/nutcrackers',
-          title: 'Blog NFA',
-          summary: 'Awesome Blog',
-          resourceAuthor: 'NFA Crew',
-					createdAt: new Date(),
-					updatedAt: new Date()
-      })
-        , valErr;
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(2);
-				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr.resourceDate.should.not.equal(null);
-
-        done();
-      });
-
-    });
-
-    it('should handle wrong type of arg', function (done) {
-
-      var parasite = {foo: 'bar'}
-        , tldr = new TldrModel({
-            _id: 'c63588884fecf318d13fc3cf3598b19f4f461d21',
-            title: 'Blog NFA',
-            summary: parasite,
-      })
-        , valErr;
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.summary.should.be.a('string');
-        done();
-      });
-
-    });
-
-    it('should handle wrong url formatting', function (done) {
-
-      var tldr = new TldrModel({
-        _id: 'needforair.com/nutcrackers',
+        _id: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
-        summary: 'Awesome Blog',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: 'NFA Crew',
+        createdAt: 'eiugherg',
+        updatedAt: '2012'
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('CastError');
+        done();
       });
+
+    });
+
+
+    it('should reject tldrs whose summary is missing', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
 
       tldr.save( function (err) {
         err.name.should.equal('ValidationError');
@@ -224,22 +201,107 @@ describe('TldrModel', function () {
       });
 
     });
+
+
+    it('should reject tldrs whose summary is an empty array', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: [],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains empty bullets', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', '', 'amnother bullet'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains too many bullets', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', 'adad', 'amnother bullet', 'eweqweq', 'qweqwe', 'qweqweqwe'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
+
+    it('should reject tldrs whose summary contains a bullet that\'s too long', function (done) {
+
+      var tldr = new TldrModel({
+        _id: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['weqrqweqw eqwe qwe', 'adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee w'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        done();
+      });
+
+    });
+
 
   });
 
- 
+
 
   describe('#createAndSaveInstance', function () {
 
     it('should normalize url', function (done) {
       TldrModel.createAndSaveInstance('http://www.mYdoMain.com/Toto/../Tata/.//good?toto=tata&titi=tutu#anchor',
 				{	title: 'Some Title'
-				, summary: 'Summary is good'
-				, resourceAuthor: 'John'}, 
-				function (err) { 
-					if (err) { return done(err); } 
+				, summaryBullets: ['Summary is good']
+				, resourceAuthor: 'John'},
+				function (err) {
+					if (err) { return done(err); }
 					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
-						if (err) { return done(err); } 
+						if (err) { return done(err); }
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/Toto/Tata/good');
@@ -253,19 +315,19 @@ describe('TldrModel', function () {
     it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
-				, summary: 'coin'
+				, summaryBullets: ['coin']
 				, resourceAuthor: 'bloup'
-				, unusedField: 'glok'}, 
+				, createdAt: '2012'}, 
 				function (err) { 
 					if (err) { return done(err); } 
 					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
-						if (err) { return done(err); } 
+						if (err) { return done(err); }
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/');
-						tldr.summary.should.equal('coin');
+						tldr.summaryBullets.should.include('coin');
 						tldr.resourceAuthor.should.equal('bloup');
-						tldr.should.not.have.property('unusedField');
+						tldr.createdAt.should.not.equal('2012');
 
 						done();
 					});
@@ -278,36 +340,35 @@ describe('TldrModel', function () {
 
 		it('should restrict the fields the user is allowed to update', function (done) {
 				var updated = {_id: 'http://myotherdomain.com'
-											, summary: 'new2'
+											, summaryBullets: ['new2']
 											, title: 'Blog NeedForAir'
 											, resourceAuthor: 'new3'
-											, unusedField: 'new4'};
+											, createdAt: '2012'};
 
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
-				, summary: 'coin'
-				, resourceAuthor: 'bloup'
-				, unusedField: 'glok'}, 
+				, summaryBullets: ['coin']
+				, resourceAuthor: 'bloup'}, 
 				function(err) { 
 					if (err) { return done(err); }
 					TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
-						if (err) { return done(err); } 
+						if (err) { return done(err); }
 
 						var tldr = docs[0];
 						tldr._id.should.equal('http://mydomain.com/');
-						tldr.summary.should.equal('coin');
+						tldr.summaryBullets.should.include('coin');
 						tldr.title.should.equal('Blog NFA');
 						tldr.resourceAuthor.should.equal('bloup');
 						
 						// Perform update
-						tldr.updateValidFields(updated, function(err) { 
+						tldr.updateValidFields(updated, function(err) {
 							if (err) { return done(err); }
 
 							tldr._id.should.equal('http://mydomain.com/');
-							tldr.summary.should.equal('new2');
+							tldr.summaryBullets.should.include('new2');
 							tldr.title.should.equal('Blog NeedForAir');
 							tldr.resourceAuthor.should.equal('new3');
-							tldr.should.not.have.property('unusedField');
+              tldr.createdAt.should.not.equal('2012');
 
 							done();
 						});

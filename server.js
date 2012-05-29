@@ -12,8 +12,8 @@ var restify = require('restify')
   , models = require('./models')
   , db = require('./lib/db')
   , requestHandlers = require('./requestHandlers')
-  , privateKey = fs.readFileSync('./privatekey.pem').toString()
-  , certificate = fs.readFileSync('./certificate.pem').toString()
+  //, privateKey = fs.readFileSync('./privatekey.pem').toString()
+  //, certificate = fs.readFileSync('./certificate.pem').toString()
   , env = require('./environments').env
   , server;                                 // Will store our restify server
 
@@ -49,17 +49,16 @@ if (env.name === "production") {
 if (env.name === "test") {
   server = restify.createServer({
     name: "tldr API",
-    //log: bunyan
-    //key: privateKey,
-    //certificate: certificate
   });
 } else {
   server = restify.createServer({
     name: "tldr API",
-    //key: privateKey, 
-    //certificate: certificate
     //log: bunyan     // No restify logging for now
   });
+  // Audit Logger
+  server.on('after', restify.auditLogger({
+    log: bunyan
+  }));
 }
 
 // Register restify middleware
@@ -69,12 +68,14 @@ server.use(restify.queryParser({mapParams: false}));
 server.use(restify.bodyParser({mapParams: false}));
 
 
+
+
 /**
  * Routes
  */
 
 // GET all tldrs
-server.get({path: '/tldrs', version: '0.1.0'}, requestHandlers.getAllTldrs);
+server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.getTldrsWithQuery);
 
 // GET a tldr by url
 server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
