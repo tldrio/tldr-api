@@ -172,7 +172,12 @@ describe('Webserver', function () {
       saveSync(someTldrs, 0, function() {
         TldrModel.find({}, function(err,docs) {
           docs.length.should.equal(30);
-          done();
+
+          client.get('/tldrs/?limit=3', function (err, req, res, obj) {
+            console.log(res);
+            done();
+          });
+
         });
       });
 
