@@ -33,19 +33,27 @@ function getTldrsWithQuery (req, res, next) {
   var query = req.query
     , defaultLimit = 10
     , method = query.sort || 'latest'
-    , limit = query.limit || defaultLimit;
+    , limit = query.limit || defaultLimit
+    , startat = query.startat || 0;
 
-  if (_.isEmpty(req.query)) {
+  if (_.isEmpty(query)) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
   }
 
-  limit = Math.max(0, Math.min(defaultLimit, limit));   // Clip limit between 0 and 5
+  // Clip limit between 1 and defaultLimit
+  limit = parseInt(limit);
+  if (typeof limit !== "number") { limit = defaultLimit; }
+  limit = Math.max(0, Math.min(defaultLimit, limit));
   if (limit === 0) { limit = defaultLimit; }
+
+  // startat should be at least 0
+  startat = Math.max(0, startat);
 
   if (method === 'latest') {
     TldrModel.find({})
     .sort('updatedAt', -1)
     .limit(limit)
+    .skip(startat)
     .run(function(err, docs) {
       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
       res.json(200, docs);

@@ -197,8 +197,8 @@ describe('Webserver', function () {
                   obj.length.should.equal(defaultLimit);
 
                   // Using it normally it should work! And return the 4 latest tldrs
-                  client.get('/tldrs/?method=latest&limit=4', function (err, req, res, obj) {
-                    obj.length.should.equal(4);
+                  client.get('/tldrs/?method=latest&limit=5', function (err, req, res, obj) {
+                    obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. _id; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                     _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
@@ -206,7 +206,12 @@ describe('Webserver', function () {
                     _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
                     _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
-                    done();
+                    // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
+                    client.get('/tldrs/?method=latest&limit=asd', function (err, req, res, obj) {
+                      obj.length.should.equal(defaultLimit);
+
+                      done();
+                    });
                   });
                 });
               });
