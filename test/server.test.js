@@ -50,6 +50,7 @@ describe('Webserver', function () {
     db.closeDatabaseConnection(done);
   });
 
+  // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)
   function saveSync(arr, idx, callback) {
     if (idx === arr.length) {
       return callback();
@@ -196,7 +197,7 @@ describe('Webserver', function () {
                 client.get('/tldrs/?method=latest', function (err, req, res, obj) {
                   obj.length.should.equal(defaultLimit);
 
-                  // Using it normally it should work! And return the 4 latest tldrs
+                  // Using it normally it should work! And return the 5 latest tldrs
                   client.get('/tldrs/?method=latest&limit=5', function (err, req, res, obj) {
                     obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. _id; });
