@@ -30,10 +30,11 @@ function getAllTldrs (req, res, next) {
 }
 
 // GET tldrs with query
+// For now, the only acceptable method is "latest"
 function getTldrsWithQuery (req, res, next) {
   var query = req.query
     , defaultLimit = 10
-    , method = query.sort || 'latest'
+    , method = 'latest'
     , limit = query.limit || defaultLimit
     , startat = query.startat || 0;
 
