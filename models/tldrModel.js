@@ -75,8 +75,9 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
     self[validField] = updates[validField];
   });
 
-  self.save(callback);
+  self.updatedAt = new Date();
 
+  self.save(callback);
 };
 
 
@@ -101,16 +102,6 @@ TldrSchema.methods.normalizeUrl = function () {
 };
 
 
-
-/**
- * Middlewares
- *
- */
-
-TldrSchema.pre('save', function(next) {
-  this.updatedAt = new Date();
-  next();
-});
 
 
 

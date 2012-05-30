@@ -11,7 +11,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors');
+  , customErrors = require('./lib/errors')
+  , check = require('validator').check;
 
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
@@ -29,23 +30,32 @@ function getAllTldrs (req, res, next) {
 }
 
 // GET tldrs with query
+// For now, the only acceptable method is "latest"
 function getTldrsWithQuery (req, res, next) {
   var query = req.query
-    , method = query.sort || 'latest'
-    , limit = query.limit || 5 //TODO Better Handling of default args
-    , log = req.log;
+    , defaultLimit = 10
+    , method = 'latest'
+    , limit = query.limit || defaultLimit
+    , startat = query.startat || 0;
 
-  if (_.isEmpty(req.query)) {
+  if (_.isEmpty(query)) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
   }
 
-  limit = Math.max(0, Math.min(5, limit));   // Clip limit between 0 and 5
-  if (limit === 0) { limit = 5; }
+  // Check that limit is an integer and clip it between 1 and defaultLimit
+  try { check(limit).isInt(); } catch (e) { limit = defaultLimit; }
+  limit = Math.max(0, Math.min(defaultLimit, limit));
+  if (limit === 0) { limit = defaultLimit; }
+
+  // startat should be an integer and at least 0
+  try { check(startat).isInt(); } catch (e) { startat = 0; }
+  startat = Math.max(0, startat);
 
   if (method === 'latest') {
     TldrModel.find({})
     .sort('updatedAt', -1)
     .limit(limit)
+    .skip(startat)
     .run(function(err, docs) {
       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
       res.json(200, docs);
