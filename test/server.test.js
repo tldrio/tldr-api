@@ -199,6 +199,7 @@ describe('Webserver', function () {
                   // Using it normally it should work! And return the 4 latest tldrs
                   client.get('/tldrs/?method=latest&limit=4', function (err, req, res, obj) {
                     obj.length.should.equal(4);
+                    temp = _.map(obj, function (o) { return o. _id; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                     _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                     _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
