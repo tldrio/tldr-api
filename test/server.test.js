@@ -210,19 +210,41 @@ describe('Webserver', function () {
                     client.get('/tldrs/?method=latest&limit=asd', function (err, req, res, obj) {
                       obj.length.should.equal(defaultLimit);
 
-                      done();
+                      // Called with a non-numeral value for startat, it should use 0 as a default value
+                      client.get('/tldrs/?method=latest&limit=4&startat=rew', function (err, req, res, obj) {
+                        obj.length.should.equal(4);
+                        temp = _.map(obj, function (o) { return o. _id; });
+                        _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                        _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                        _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                        _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+
+                        // With normal values for startat and limit, it should behave normally
+                        client.get('/tldrs/?method=latest&limit=4&startat=5', function (err, req, res, obj) {
+                          obj.length.should.equal(4);
+                          temp = _.map(obj, function (o) { return o. _id; });
+                          _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
+                          _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+                          _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+                          _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
+
+                          // If startat is too high, no tldr is sent
+                          client.get('/tldrs/?method=latest&limit=4&startat=55', function (err, req, res, obj) {
+                            obj.length.should.equal(0);
+
+                            done();
+                          });
+                        });
+                      });
                     });
                   });
                 });
               });
             });
           });
-
         });
       });
-
     });
-
 
 	});
 

@@ -11,7 +11,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors');
+  , customErrors = require('./lib/errors')
+  , check = require('validator').check;
 
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
@@ -40,13 +41,13 @@ function getTldrsWithQuery (req, res, next) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
   }
 
-  // Clip limit between 1 and defaultLimit
-  limit = parseInt(limit);
-  if (typeof limit !== "number") { limit = defaultLimit; }
+  // Check that limit is an integer and clip it between 1 and defaultLimit
+  try { check(limit).isInt(); } catch (e) { limit = defaultLimit; }
   limit = Math.max(0, Math.min(defaultLimit, limit));
   if (limit === 0) { limit = defaultLimit; }
 
-  // startat should be at least 0
+  // startat should be an integer and at least 0
+  try { check(startat).isInt(); } catch (e) { startat = 0; }
   startat = Math.max(0, startat);
 
   if (method === 'latest') {
