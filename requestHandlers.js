@@ -31,16 +31,16 @@ function getAllTldrs (req, res, next) {
 // GET tldrs with query
 function getTldrsWithQuery (req, res, next) {
   var query = req.query
+    , defaultLimit = 10
     , method = query.sort || 'latest'
-    , limit = query.limit
-    , log = req.log;
+    , limit = query.limit || defaultLimit;
 
   if (_.isEmpty(req.query)) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
   }
 
-  limit = Math.max(0, Math.min(5, limit));   // Clip limit between 0 and 5
-  if (limit === 0) { limit = 5; }
+  limit = Math.max(0, Math.min(defaultLimit, limit));   // Clip limit between 0 and 5
+  if (limit === 0) { limit = defaultLimit; }
 
   if (method === 'latest') {
     TldrModel.find({})

@@ -85,18 +85,11 @@ describe('Webserver', function () {
             if (err) {return done(err); }
             tldr4.save( function (err) {
               if (err) {return done(err); }
-
-
-                //saveSync(someTldrs, 0, function() {
-
-                  TldrModel.find({}, function(err, docs) {
-                    if (err) {return done(err); }
-                    numberOfTldrs = docs.length;
-                    done();
-                  });
-
-                //});
-
+              TldrModel.find({}, function(err, docs) {
+                if (err) {return done(err); }
+                numberOfTldrs = docs.length;
+                done();
+              });
             });
           });
         });
@@ -163,19 +156,60 @@ describe('Webserver', function () {
     it('GET tldrs with custom query', function (done) {
       var someTldrs = []
         , someFunctions = []
-        , i, temp;
+        , i, temp, now = new Date
+        , defaultLimit = 10;
 
       for (i = 0; i <= 25; i += 1) {
-        someTldrs.push(new TldrModel({_id: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}));
+        temp = new Date(now - 10000 * (i + 1));
+        someTldrs.push(new TldrModel({_id: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
       }
 
       saveSync(someTldrs, 0, function() {
         TldrModel.find({}, function(err,docs) {
           docs.length.should.equal(30);
 
-          client.get('/tldrs/?limit=3', function (err, req, res, obj) {
-            console.log(res);
-            done();
+          // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
+          // Forgetting method should force the handler to use "latest"
+          client.get('/tldrs/?limit=-1', function (err, req, res, obj) {
+            obj.length.should.equal(defaultLimit);
+            temp = _.map(obj, function (o) { return o. _id; });
+            _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+            _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
+            _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
+
+            // A limit for 0 should give defaultLimit objects as well
+            client.get('/tldrs/?limit=0', function (err, req, res, obj) {
+              obj.length.should.equal(defaultLimit);
+
+              // A limit greater than defaultLimit should give defaultLimit objects as well
+              client.get('/tldrs/?limit=11', function (err, req, res, obj) {
+                obj.length.should.equal(defaultLimit);
+
+                // Forgetting the limit should force the handler to return defaultLimit objects
+                client.get('/tldrs/?method=latest', function (err, req, res, obj) {
+                  obj.length.should.equal(defaultLimit);
+
+                  // Using it normally it should work! And return the 4 latest tldrs
+                  client.get('/tldrs/?method=latest&limit=4', function (err, req, res, obj) {
+                    obj.length.should.equal(4);
+                    _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                    _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                    _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                    _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                    _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+
+                    done();
+                  });
+                });
+              });
+            });
           });
 
         });
