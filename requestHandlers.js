@@ -32,7 +32,7 @@ function getAllTldrs (req, res, next) {
 /**
  * GET the latest tldrs (through route /tldrs/latest/)
  * You can specify which latest tldrs you want with the following parameters in the URL
- * @param {Integer} limit Number of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
+ * @param {Integer} number Number of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
  * @param {Integer} startat Where to start looking for tldrs. 0 to start at the latest, 5 to start after the fifth latest and so on (Optional - default: 0)
  * @param {Integer} olderthan Returned tldrs must be older than this date, which is expressed as the number of milliseconds since Epoch - it's given by the Date.getTime() method in Javascript (Optional - default: now)
  *
@@ -41,7 +41,7 @@ function getAllTldrs (req, res, next) {
 function getLatestTldrs (req, res, next) {
   var query = req.query
     , defaultLimit = 10
-    , limit = query.limit || defaultLimit
+    , limit = query.number || defaultLimit
     , startat = query.startat || 0
     , olderthan = query.olderthan;
 
