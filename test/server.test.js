@@ -171,7 +171,7 @@ describe('Webserver', function () {
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
           // Forgetting method should force the handler to use "latest"
-          client.get('/tldrs/?limit=-1', function (err, req, res, obj) {
+          client.get('/tldrs/latest/?limit=-1', function (err, req, res, obj) {
             obj.length.should.equal(defaultLimit);
             temp = _.map(obj, function (o) { return o. _id; });
             _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -186,19 +186,19 @@ describe('Webserver', function () {
             _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
             // A limit for 0 should give defaultLimit objects as well
-            client.get('/tldrs/?limit=0', function (err, req, res, obj) {
+            client.get('/tldrs/latest/?limit=0', function (err, req, res, obj) {
               obj.length.should.equal(defaultLimit);
 
               // A limit greater than defaultLimit should give defaultLimit objects as well
-              client.get('/tldrs/?limit=11', function (err, req, res, obj) {
+              client.get('/tldrs/latest/?limit=11', function (err, req, res, obj) {
                 obj.length.should.equal(defaultLimit);
 
                 // Forgetting the limit should force the handler to return defaultLimit objects
-                client.get('/tldrs/?method=latest', function (err, req, res, obj) {
+                client.get('/tldrs/latest/?method=latest', function (err, req, res, obj) {
                   obj.length.should.equal(defaultLimit);
 
                   // Using it normally it should work! And return the 5 latest tldrs
-                  client.get('/tldrs/?method=latest&limit=5', function (err, req, res, obj) {
+                  client.get('/tldrs/latest/?method=latest&limit=5', function (err, req, res, obj) {
                     obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. _id; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -208,11 +208,11 @@ describe('Webserver', function () {
                     _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
                     // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                    client.get('/tldrs/?method=latest&limit=asd', function (err, req, res, obj) {
+                    client.get('/tldrs/latest/?method=latest&limit=asd', function (err, req, res, obj) {
                       obj.length.should.equal(defaultLimit);
 
                       // Called with a non-numeral value for startat, it should use 0 as a default value
-                      client.get('/tldrs/?method=latest&limit=4&startat=rew', function (err, req, res, obj) {
+                      client.get('/tldrs/latest/?method=latest&limit=4&startat=rew', function (err, req, res, obj) {
                         obj.length.should.equal(4);
                         temp = _.map(obj, function (o) { return o. _id; });
                         _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -221,7 +221,7 @@ describe('Webserver', function () {
                         _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                         // With normal values for startat and limit, it should behave normally
-                        client.get('/tldrs/?method=latest&limit=4&startat=5', function (err, req, res, obj) {
+                        client.get('/tldrs/latest/?method=latest&limit=4&startat=5', function (err, req, res, obj) {
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. _id; });
                           _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
@@ -230,7 +230,7 @@ describe('Webserver', function () {
                           _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
                           // If startat is too high, no tldr is sent
-                          client.get('/tldrs/?method=latest&limit=4&startat=55', function (err, req, res, obj) {
+                          client.get('/tldrs/latest/?method=latest&limit=4&startat=55', function (err, req, res, obj) {
                             obj.length.should.equal(0);
 
                             done();

@@ -75,7 +75,10 @@ server.use(restify.bodyParser({mapParams: false}));
  */
 
 // GET all tldrs
-server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.getTldrsWithQuery);
+server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.getAllTldrs);
+
+// GET latest tldrs
+server.get({path: '/tldrs/latest/', version: '0.1.0'}, requestHandlers.getLatestTldrs);
 
 // GET a tldr by url
 server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
