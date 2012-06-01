@@ -158,12 +158,15 @@ describe('Webserver', function () {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date
-        , defaultLimit = 10;
+        , defaultLimit = 10
+        , older;
 
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
         someTldrs.push(new TldrModel({_id: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
       }
+
+      older = new Date(now - 10000 * (12));
 
       saveSync(someTldrs, 0, function() {
         TldrModel.find({}, function(err,docs) {
@@ -233,7 +236,29 @@ describe('Webserver', function () {
                           client.get('/tldrs/latest/?method=latest&limit=4&startat=55', function (err, req, res, obj) {
                             obj.length.should.equal(0);
 
-                            done();
+                            // If called with a correct number of milliseconds for olderthan, it works as expected (and ignores the startat parameter if any)
+                            client.get('/tldrs/latest/?method=latest&limit=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
+                              obj.length.should.equal(4);
+                              temp = _.map(obj, function (o) { return o. _id; });
+                              _.indexOf(temp, 'http://needforair.com/sopa/number12').should.not.equal(-1);
+                              _.indexOf(temp, 'http://needforair.com/sopa/number13').should.not.equal(-1);
+                              _.indexOf(temp, 'http://needforair.com/sopa/number14').should.not.equal(-1);
+                              _.indexOf(temp, 'http://needforair.com/sopa/number15').should.not.equal(-1);
+
+                              // If called with an incorrectly formated number of milliseconds (here a string), it should default to "older than now"
+                              client.get('/tldrs/latest/?method=latest&limit=6&olderthan=123er5t3e', function (err, req, res, obj) {
+                                obj.length.should.equal(6);
+                                temp = _.map(obj, function (o) { return o. _id; });
+                                _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                                _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                                _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                                _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                                _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+                                _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
+
+                                done();
+                              });
+                            });
                           });
                         });
                       });

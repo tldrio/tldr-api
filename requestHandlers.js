@@ -29,36 +29,59 @@ function getAllTldrs (req, res, next) {
     return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
 }
 
-// GET latest tldrs
+/**
+ * GET the latest tldrs (through route /tldrs/latest/)
+ * You can specify which latest tldrs you want with the following parameters in the URL
+ * @param {Integer} limit Number of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
+ * @param {Integer} startat Where to start looking for tldrs. 0 to start at the latest, 5 to start after the fifth latest and so on (Optional - default: 0)
+ * @param {Integer} olderthan Returned tldrs must be older than this date, which is expressed as the number of milliseconds since Epoch - it's given by the Date.getTime() method in Javascript (Optional - default: now)
+ *
+ * If both startat and olderthan are set, we use olderthan only.
+ */
 function getLatestTldrs (req, res, next) {
   var query = req.query
     , defaultLimit = 10
     , limit = query.limit || defaultLimit
-    , startat = query.startat || 0;
-
-  if (_.isEmpty(query)) {
-    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
-  }
+    , startat = query.startat || 0
+    , olderthan = query.olderthan;
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
   try { check(limit).isInt(); } catch (e) { limit = defaultLimit; }
   limit = Math.max(0, Math.min(defaultLimit, limit));
   if (limit === 0) { limit = defaultLimit; }
 
-  // startat should be an integer and at least 0
-  try { check(startat).isInt(); } catch (e) { startat = 0; }
-  startat = Math.max(0, startat);
+  if (olderthan) {
+    // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
+    try { check(olderthan).isInt(); } catch (e) { olderthan = (new Date()).getTime(); }
 
-  TldrModel.find({})
-   .sort('updatedAt', -1)
-   .limit(limit)
-   .skip(startat)
-   .run(function(err, docs) {
-     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
-     res.json(200, docs);
-     return next();
-   });
+    TldrModel.find({})
+     .sort('updatedAt', -1)
+     .limit(limit)
+     .$lt('updatedAt', olderthan)
+     .run(function(err, docs) {
+       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       res.json(200, docs);
+       return next();
+     });
+
+
+  } else {
+    // startat should be an integer and at least 0
+    try { check(startat).isInt(); } catch (e) { startat = 0; }
+    startat = Math.max(0, startat);
+
+    TldrModel.find({})
+     .sort('updatedAt', -1)
+     .limit(limit)
+     .skip(startat)
+     .run(function(err, docs) {
+       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       res.json(200, docs);
+       return next();
+     });
+  }
 }
+
 
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
