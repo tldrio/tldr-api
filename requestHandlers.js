@@ -123,7 +123,7 @@ function putTldrByUrl (req, res, next) {
       //tldr = new TldrModel(req.body);
       //tldr._id = url;
       //tldr.save(function (err) {
-      TldrModel.createAndSaveInstance(url, req.body, function (err) {
+      TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
             res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
@@ -133,7 +133,7 @@ function putTldrByUrl (req, res, next) {
           }
         }
 
-        res.send(201); // should set location header to indicate URI of new resource
+        res.json(201, tldr);
         return next();
       });
     }

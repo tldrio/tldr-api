@@ -157,7 +157,7 @@ describe('Webserver', function () {
     it('GET tldrs with custom query', function (done) {
       var someTldrs = []
         , someFunctions = []
-        , i, temp, now = new Date
+        , i, temp, now = new Date()
         , defaultLimit = 10;
 
       for (i = 0; i <= 25; i += 1) {
@@ -255,7 +255,7 @@ describe('Webserver', function () {
   //Test PUT Requests
   describe('Should handle PUT requests', function () {
 
-    it('Should create a new tldr with PUT if it doesn\'t exist yet', function (done) {
+    it('Should create a new tldr with PUT if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
 				title: 'A title',
 				summaryBullets: ['A summary'],
@@ -267,6 +267,8 @@ describe('Webserver', function () {
 
       client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/somepage'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(201);
+        obj.title.should.equal('A title');
+        obj.createdAt.should.not.be.null;
         TldrModel.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
