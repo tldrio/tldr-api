@@ -23,25 +23,32 @@ function handleInternalDBError(err, next, msg) {
 }
 
 
-
-// GET all tldrs
-function getAllTldrs (req, res, next) {
-    return next(new restify.NotAuthorizedError('Dumping the full tldrs db is not allowed'));
+/**
+ * Convenience route for latest tldrs
+ *
+ */
+function getLatestTldrs (req, res, next) {
+  var quantity = req.params.quantity
+    , newReq = req;
+  newReq.query.quantity = quantity;
+  searchTldrs(newReq, res, next);
 }
 
+
 /**
- * GET the latest tldrs (through route /tldrs/latest/)
- * You can specify which latest tldrs you want with the following parameters in the URL
- * @param {Integer} number Number of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
+ * Returns a search of tldrs (through route /tldrs/search/)
+ * You can specify which tldrs you want with the following parameters in the URL
+ * Currently the olderthan parameter has priority over the startat parameter
+ * @param {Integer} quantity quantity of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
  * @param {Integer} startat Where to start looking for tldrs. 0 to start at the latest, 5 to start after the fifth latest and so on (Optional - default: 0)
  * @param {Integer} olderthan Returned tldrs must be older than this date, which is expressed as the number of milliseconds since Epoch - it's given by the Date.getTime() method in Javascript (Optional - default: now)
  *
  * If both startat and olderthan are set, we use olderthan only.
  */
-function getLatestTldrs (req, res, next) {
+function searchTldrs (req, res, next) {
   var query = req.query
     , defaultLimit = 10
-    , limit = query.number || defaultLimit
+    , limit = query.quantity || defaultLimit
     , startat = query.startat || 0
     , olderthan = query.olderthan;
 
@@ -162,7 +169,7 @@ function putTldrByUrl (req, res, next) {
 
 
 // Module interface
-module.exports.getAllTldrs = getAllTldrs;
 module.exports.getLatestTldrs = getLatestTldrs;
+module.exports.searchTldrs = searchTldrs;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putTldrByUrl = putTldrByUrl;

@@ -132,18 +132,6 @@ describe('Webserver', function () {
 
     });
 
-    it('GET all the tldrs', function (done) {
-
-      client.get('/tldrs', function (err, req, res, obj) {
-        var response = JSON.parse(res.body);
-        res.statusCode.should.equal(403);
-        response.should.have.ownProperty('code');
-        response.code.should.equal('NotAuthorized');
-        done();
-      });
-
-    });
-
     it('GET a non existing route', function (done) {
 
       client.get('/nonexistingroute', function (err, req, res, obj) {
@@ -154,7 +142,7 @@ describe('Webserver', function () {
     });
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
-    it('GET tldrs with custom query', function (done) {
+    it('Search tldrs with custom query', function (done) {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date
@@ -173,7 +161,7 @@ describe('Webserver', function () {
           docs.length.should.equal(30);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
-          client.get('/tldrs/latest/?number=-1', function (err, req, res, obj) {
+          client.get('/tldrs/search/?quantity=-1', function (err, req, res, obj) {
             obj.length.should.equal(defaultLimit);
             temp = _.map(obj, function (o) { return o. _id; });
             _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -188,19 +176,19 @@ describe('Webserver', function () {
             _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
             // A limit for 0 should give defaultLimit objects as well
-            client.get('/tldrs/latest/?number=0', function (err, req, res, obj) {
+            client.get('/tldrs/search/?quantity=0', function (err, req, res, obj) {
               obj.length.should.equal(defaultLimit);
 
               // A limit greater than defaultLimit should give defaultLimit objects as well
-              client.get('/tldrs/latest/?number=11', function (err, req, res, obj) {
+              client.get('/tldrs/search/?quantity=11', function (err, req, res, obj) {
                 obj.length.should.equal(defaultLimit);
 
                 // Forgetting the limit should force the handler to return defaultLimit objects
-                client.get('/tldrs/latest/', function (err, req, res, obj) {
+                client.get('/tldrs/search/', function (err, req, res, obj) {
                   obj.length.should.equal(defaultLimit);
 
                   // Using it normally it should work! And return the 5 latest tldrs
-                  client.get('/tldrs/latest/?number=5', function (err, req, res, obj) {
+                  client.get('/tldrs/search/?quantity=5', function (err, req, res, obj) {
                     obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. _id; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -210,11 +198,11 @@ describe('Webserver', function () {
                     _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
                     // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                    client.get('/tldrs/latest/?number=asd', function (err, req, res, obj) {
+                    client.get('/tldrs/search/?quantity=asd', function (err, req, res, obj) {
                       obj.length.should.equal(defaultLimit);
 
                       // Called with a non-numeral value for startat, it should use 0 as a default value
-                      client.get('/tldrs/latest/?number=4&startat=rew', function (err, req, res, obj) {
+                      client.get('/tldrs/search/?quantity=4&startat=rew', function (err, req, res, obj) {
                         obj.length.should.equal(4);
                         temp = _.map(obj, function (o) { return o. _id; });
                         _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -223,7 +211,7 @@ describe('Webserver', function () {
                         _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                         // With normal values for startat and limit, it should behave normally
-                        client.get('/tldrs/latest/?number=4&startat=5', function (err, req, res, obj) {
+                        client.get('/tldrs/search/?quantity=4&startat=5', function (err, req, res, obj) {
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. _id; });
                           _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
@@ -232,11 +220,11 @@ describe('Webserver', function () {
                           _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
                           // If startat is too high, no tldr is sent
-                          client.get('/tldrs/latest/?number=4&startat=55', function (err, req, res, obj) {
+                          client.get('/tldrs/search/?quantity=4&startat=55', function (err, req, res, obj) {
                             obj.length.should.equal(0);
 
                             // If called with a correct number of milliseconds for olderthan, it works as expected (and ignores the startat parameter if any)
-                            client.get('/tldrs/latest/?number=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
+                            client.get('/tldrs/search/?quantity=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
                               obj.length.should.equal(4);
                               temp = _.map(obj, function (o) { return o. _id; });
                               _.indexOf(temp, 'http://needforair.com/sopa/number12').should.not.equal(-1);
@@ -245,7 +233,7 @@ describe('Webserver', function () {
                               _.indexOf(temp, 'http://needforair.com/sopa/number15').should.not.equal(-1);
 
                               // If called with an incorrectly formated number of milliseconds (here a string), it should default to "older than now"
-                              client.get('/tldrs/latest/?number=6&olderthan=123er5t3e', function (err, req, res, obj) {
+                              client.get('/tldrs/search/?quantity=6&olderthan=123er5t3e', function (err, req, res, obj) {
                                 obj.length.should.equal(6);
                                 temp = _.map(obj, function (o) { return o. _id; });
                                 _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -255,7 +243,22 @@ describe('Webserver', function () {
                                 _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
                                 _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
 
-                                done();
+                                // Convenience route should force the handler to return defaultLimit objects
+                                client.get('/tldrs/search/', function (err, req, res, obj) {
+                                  obj.length.should.equal(defaultLimit);
+
+                                  // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects
+                                  client.get('/tldrs/latest/4', function (err, req, res, obj) {
+                                    obj.length.should.equal(4);
+                                    temp = _.map(obj, function (o) { return o. _id; });
+                                    _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                                    _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                                    _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                                    _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+
+                                    done();
+                                  });
+                                });
                               });
                             });
                           });
