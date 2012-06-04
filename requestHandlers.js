@@ -11,8 +11,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors')
-  , check = require('validator').check;
+  , customErrors = require('./lib/errors');
 
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
@@ -53,13 +52,13 @@ function searchTldrs (req, res, next) {
     , olderthan = query.olderthan;
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
-  try { check(limit).isInt(); } catch (e) { limit = defaultLimit; }
+  if (isNaN(limit)) { limit = defaultLimit; }
   limit = Math.max(0, Math.min(defaultLimit, limit));
   if (limit === 0) { limit = defaultLimit; }
 
   if (olderthan) {
     // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
-    try { check(olderthan).isInt(); } catch (e) { olderthan = (new Date()).getTime(); }
+    if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
     TldrModel.find({})
      .sort('updatedAt', -1)
@@ -74,7 +73,7 @@ function searchTldrs (req, res, next) {
 
   } else {
     // startat should be an integer and at least 0
-    try { check(startat).isInt(); } catch (e) { startat = 0; }
+    if (isNaN(startat)) { startat = 0; }
     startat = Math.max(0, startat);
 
     TldrModel.find({})

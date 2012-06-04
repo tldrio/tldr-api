@@ -258,7 +258,12 @@ describe('Webserver', function () {
                                     _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
                                     _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
-                                    done();
+                                    // Empty quantity will be intepreted as 0 so will return defaultLimit tldrs
+                                    client.get('/tldrs/search/?quantity=', function (err, req, res, obj) {
+                                      obj.length.should.equal(defaultLimit);
+
+                                      done();
+                                    });
                                   });
                                 });
                               });
