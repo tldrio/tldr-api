@@ -74,11 +74,12 @@ server.use(restify.bodyParser({mapParams: false}));
  * Routes
  */
 
-// GET all tldrs
-server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.getAllTldrs);
+// Search tldrs
+server.get({path: '/tldrs/search/', version: '0.1.0'}, requestHandlers.searchTldrs);
+server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.searchTldrs); // convenience route
 
-// GET latest tldrs
-server.get({path: '/tldrs/latest/', version: '0.1.0'}, requestHandlers.getLatestTldrs);
+// GET latest tldrs (convenience route)
+server.get({path: '/tldrs/latest/:quantity', version: '0.1.0'}, requestHandlers.getLatestTldrs);
 
 // GET a tldr by url
 server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
