@@ -112,14 +112,22 @@ TldrSchema.methods.normalizeUrl = function() {
  *
  */
 
-//_id should be a url, containing hostname and protocol info 
+//_id should be a url, containing hostname and protocol info
+// This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
+// The real validation will take place with the resolve mechanism
 function  validateUrl (value) {
-  var valid = (!_.isUndefined(value));
-  if (valid) {
-    // Check if Url is valid with Regex
-    return value.match(/^(?:(?:ht|f)tp(?:s?)\:\/\/|~\/|\/)?(?:\w+:\w+@)?(localhost|(?:(?:[-\w\d{1-3}]+\.)+(?:com|org|net|gov|mil|biz|info|mobi|name|aero|jobs|edu|co\.uk|ac\.uk|it|fr|tv|museum|asia|local|travel|[a-z]{2}))|((\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)(\.(\b25[0-5]\b|\b[2][0-4][0-9]\b|\b[0-1]?[0-9]?[0-9]\b)){3}))(?::[\d]{1,5})?(?:(?:(?:\/(?:[-\w~!$+|.,="'\(\)_\*]|%[a-f\d]{2})+)+|\/)+|\?|#)?(?:(?:\?(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)(?:&(?:[-\w~!$+|.,*:]|%[a-f\d{2}])+=?(?:[-\w~!$+|.,*:=]|%[a-f\d]{2})*)*)*(?:#(?:[-\w~!$ |\/.,*:;=]|%[a-f\d]{2})*)?$/i) || value.length > 2083;
+  var isDefined = (!_.isUndefined(value))
+    , parsedUrl;
+
+  if (isDefined) {
+    parsedUrl = url.parse(value);
+
+    return (parsedUrl.protocol !== "") && ((parsedUrl.protocol === "http") || (parsedUrl.protocol === "https") || (parsedUrl.protocol === "http:") || (parsedUrl.protocol === "https:")) &&
+           (parsedUrl.hostname !== "") && (parsedUrl.hostname.indexOf(".") !== -1) &&
+           (parsedUrl.pathname !== "");
   }
-  return valid;
+
+  return false;
 }
 
 //Summary should be an Array, non empty and not be too long

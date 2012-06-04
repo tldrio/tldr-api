@@ -73,15 +73,15 @@ describe('TldrModel', function () {
 
     it('should accept only valid urls ', function (done) {
 
-      var tldr = new TldrModel({
+      var tldrData = {
           _id: 'http://myfile/movie',
 					title: 'Blog NFA',
 					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
 					createdAt: new Date(),
-					updatedAt: new Date()
-				})
+					updatedAt: new Date()}
+        , tldr = new TldrModel(tldrData)
         , valErr;
 
       tldr.save( function (err) {
@@ -91,7 +91,20 @@ describe('TldrModel', function () {
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr._id.should.not.equal(null);
 
-        done();
+        tldrData._id = "ftp://myfile.tld/movie"
+        tldr = new TldrModel(tldrData);
+        tldr.save( function (err) {
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          valErr._id.should.not.equal(null);
+
+          tldrData._id = "http://myfile.tld/movie"
+          tldr = new TldrModel(tldrData);
+          tldr.save( function (err) {
+            assert.isNull(err);
+
+            done();
+          });
+        });
       });
 
     });
