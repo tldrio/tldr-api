@@ -83,22 +83,26 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 
 
 /**
- * Clean url of instance, removing query string and hastag
+ * Clean a given url, removing query string and hastag
  *
  */
 
-TldrSchema.methods.normalizeUrl = function () {
+TldrSchema.statics.normalizeUrl = function (theUrl) {
   var parsedUrl;
-  parsedUrl = url.parse(this._id);
-  this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
+  parsedUrl = url.parse(theUrl);
+  return (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname : '')
     + (parsedUrl.pathname ? parsedUrl.pathname : '/');
-
-  return;
 };
 
-
+/**
+ * Convenience instance method that normalizes the url (field _id) of a given
+ * the instance on which it is called. Uses the static TldrModel.normalizeUrl.
+ */
+TldrSchema.methods.normalizeUrl = function() {
+  this._id = TldrModel.normalizeUrl(this._id);
+}
 
 
 

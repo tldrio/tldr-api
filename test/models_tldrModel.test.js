@@ -363,28 +363,25 @@ describe('TldrModel', function () {
   describe('methods.normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged', function (done) {
-      var tldrModel = new TldrModel({_id: "http://domain.tld/path/file.extension"});
+      var theUrl = "http://domain.tld/path/file.extension";
 
-      tldrModel.normalizeUrl();
-      tldrModel._id.should.equal("http://domain.tld/path/file.extension");
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
       done();
     });
 
     it('Should remove a trailing hash', function (done) {
-      var tldrModel = new TldrModel({_id: "http://www.domain.tld/path/file.extension/#"});
+      var theUrl = "http://www.domain.tld/path/file.extension/#";
 
-      tldrModel.normalizeUrl();
-      tldrModel._id.should.equal("http://www.domain.tld/path/file.extension/");
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
 
       done();
     });
 
     it('Should remove a trailing query', function (done) {
-      var tldrModel = new TldrModel({_id: "http://subdomain.domain.tld/path/file.extension/?arg=value&arg2=value2"});
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&arg2=value2";
 
-      tldrModel.normalizeUrl();
-      tldrModel._id.should.equal("http://subdomain.domain.tld/path/file.extension/");
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
 
       done();
     });

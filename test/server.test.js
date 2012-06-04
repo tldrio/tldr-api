@@ -367,6 +367,29 @@ describe('Webserver', function () {
       });
     });
 
+    it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
+      var tldrData = {
+				title: 'A title',
+				summaryBullets: ['A summary'],
+				resourceAuthor: 'bozo le clown',
+				resourceDate: new Date(),
+			  createdAt: new Date(),
+				updatedAt: new Date()
+			};
+
+      client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama'), tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(201);
+
+        client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama?arg=value'), function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+
+          done();
+        });
+      });
+    });
+
+
+
   });
 
 });
