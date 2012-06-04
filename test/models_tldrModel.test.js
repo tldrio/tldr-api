@@ -15,7 +15,8 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
-  , server = require('../server');
+  , server = require('../server')
+  , url = require('url');
 
 
 
@@ -293,25 +294,6 @@ describe('TldrModel', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should normalize url', function (done) {
-      TldrModel.createAndSaveInstance('http://www.mYdoMain.com/Toto/../Tata/.//good?toto=tata&titi=tutu#anchor',
-				{	title: 'Some Title'
-				, summaryBullets: ['Summary is good']
-				, resourceAuthor: 'John'},
-				function (err) {
-					if (err) { return done(err); }
-					TldrModel.find({resourceAuthor: 'John'}, function (err,docs) {
-						if (err) { return done(err); }
-
-						var tldr = docs[0];
-						tldr._id.should.equal('http://mydomain.com/Toto/Tata/good');
-
-						done();
-					});
-				});
-    });
-    
-
     it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
@@ -375,7 +357,44 @@ describe('TldrModel', function () {
 					});
 				});
 		});
+  });
+
+
+  describe('methods.normalizeUrl', function() {
+
+    it('Should keep correctly formatted urls unchanged', function (done) {
+      var tldrModel = new TldrModel({_id: "http://domain.tld/path/file.extension"});
+
+      tldrModel.normalizeUrl();
+      tldrModel._id.should.equal("http://domain.tld/path/file.extension");
+
+      done();
+    });
+
+    it('Should remove a trailing hash', function (done) {
+      var tldrModel = new TldrModel({_id: "http://www.domain.tld/path/file.extension/#"});
+
+      tldrModel.normalizeUrl();
+      tldrModel._id.should.equal("http://www.domain.tld/path/file.extension/");
+
+      done();
+    });
+
+    it('Should remove a trailing query', function (done) {
+      var tldrModel = new TldrModel({_id: "http://subdomain.domain.tld/path/file.extension/?arg=value&arg2=value2"});
+
+      tldrModel.normalizeUrl();
+      tldrModel._id.should.equal("http://subdomain.domain.tld/path/file.extension/");
+
+      done();
+    });
+
+
+
+
 
   });
+
+
 
 });

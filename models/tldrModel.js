@@ -90,13 +90,10 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 TldrSchema.methods.normalizeUrl = function () {
   var parsedUrl;
   parsedUrl = url.parse(this._id);
-  this._id = parsedUrl.protocol+ '//' + parsedUrl.hostname + parsedUrl.pathname;
   this._id = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
-    + (parsedUrl.hostname ? parsedUrl.hostname.toLowerCase().replace(/^www\./, "") : '')  // Convert scheme and host to lower case; remove www. if it exists in hostname
-    + (parsedUrl.pathname ? parsedUrl.pathname.replace(/\/\.{1,2}\//g, "/").replace(/\/{2,}/, "/") : // Remove dot-segments; Remove duplicate slashes
-        "/" // Add trailing /
-      );
+    + (parsedUrl.hostname ? parsedUrl.hostname : '')
+    + (parsedUrl.pathname ? parsedUrl.pathname : '/');
 
   return;
 };
