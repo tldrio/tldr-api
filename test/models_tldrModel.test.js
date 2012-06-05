@@ -377,8 +377,10 @@ describe('TldrModel', function () {
 
     it('Should keep correctly formatted urls unchanged', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
-
       TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
+
+      var theUrl = "http://domain.tld/path/res/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
 
       done();
     });
