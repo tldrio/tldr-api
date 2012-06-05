@@ -3,3 +3,4 @@
 *~
 .DS_Store
 logs/
+npm_debug.log
