@@ -401,10 +401,30 @@ describe('TldrModel', function () {
       done();
     });
 
-    it('Should remove a trailing hash', function (done) {
+    it('Should remove a trailing hash with its fragment', function (done) {
       var theUrl = "http://www.domain.tld/path/file.extension/#";
-
       TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
+
+      var theUrl = "http://www.domain.tld/path/file.extension/#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
+
+      var theUrl = "http://www.domain.tld/path/file.extension#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+
+      var theUrl = "http://www.domain.tld/path/file.extension#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+
+      var theUrl = "http://www.domain.tld/#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld/#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
 
       done();
     });
