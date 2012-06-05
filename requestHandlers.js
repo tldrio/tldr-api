@@ -99,7 +99,7 @@ function getTldrByUrl (req, res, next) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
-      return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
+      return next(new restify.ResourceNotFoundError('This record doesn\'t existMAAAAAASTER'));
     } else {
       res.json(200, docs[0]);    // Success
       return next();
