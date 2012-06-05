@@ -83,7 +83,8 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 
 
 /**
- * Clean a given url, removing query string and hastag
+ * Clean a given url. Policy:
+ *   * Trailing slash is to be left unchanged if a path is specified (no addition or removal). It must be added if there is no path (subdomain only) and it is missing
  *
  */
 
