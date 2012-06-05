@@ -375,12 +375,28 @@ describe('TldrModel', function () {
 
   describe('methods.normalizeUrl', function() {
 
-    it('Should keep correctly formatted urls unchanged', function (done) {
+    it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
       TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
       var theUrl = "http://domain.tld/path/res/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
+
+      done();
+    });
+
+    it('Should keep correctly formatted urls with only domain/subdomain, adding a forgotten trailing slash', function (done) {
+      var theUrl = "http://domain.tld/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/");
+
+      var theUrl = "http://domain.tld";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/");
+
+      var theUrl = "http://subdomain.domain.tld/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
+
+      var theUrl = "http://subdomain.domain.tld";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
 
       done();
     });
