@@ -87,6 +87,7 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  *   * Trailing slash is to be left unchanged if a path is specified (no addition or removal). It must be added if there is no path (subdomain only) and it is missing
  *   * Trailing fragment and hash are to be removed (this is typically done by the agent but we need to make sure at server level)
  *   * DNS part is lowercased (for normalization purposes as it is case insensitive), the path is kept as-is (can be case sensitive depending on the OS/server) - node.js does it for us
+ *   * Query string is kept (can correspond to different representations of resources like different blog posts)
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
@@ -95,7 +96,7 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
   return (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname : '')
-    + (parsedUrl.pathname ? parsedUrl.pathname : '/');
+    + (parsedUrl.path ? parsedUrl.path : '/');
 };
 
 /**

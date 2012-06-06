@@ -382,6 +382,12 @@ describe('TldrModel', function () {
       var theUrl = "http://domain.tld/path/res/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
 
+      var theUrl = "http://domain.tld/path/file.extension?arg=value&otherarg=othervalue";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension?arg=value&otherarg=othervalue");
+
+      var theUrl = "http://domain.tld/?aRg=valuEEe";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/?aRg=valuEEe");
+
       done();
     });
 
@@ -430,16 +436,8 @@ describe('TldrModel', function () {
     });
 
     it('Should lowercase the DNS part and keep the given path case', function (done) {
-      var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/?arg=value&arg2=value2";
+      var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
-
-      done();
-    });
-
-    it('Should remove a trailing query', function (done) {
-      var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&arg2=value2";
-
-      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
 
       done();
     });
