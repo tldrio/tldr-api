@@ -87,7 +87,7 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  *   * Trailing slash is to be left unchanged if a path is specified (no addition or removal). It must be added if there is no path (subdomain only) and it is missing
  *   * Trailing fragment and hash are to be removed (this is typically done by the agent but we need to make sure at server level)
  *   * DNS part is lowercased (for normalization purposes as it is case insensitive), the path is kept as-is (can be case sensitive depending on the OS/server) - node.js does it for us
- *   * Query string is kept (can correspond to different representations of resources like different blog posts)
+ *   * Query string is kept (can correspond to different representations of resources like different blog posts), and its arguments are sorted alphabetically
  *   * Default port (80) is removed, other ports are kept
  *   * URL-decoding non-reserved characters should be handled by clients (browsers do it and they are the main clients)
  *   * Uppercasing url-encoded parts (i.e. '%3a' becomes '%3A' as they are equivalent) is not handled (very rare case) --> TODO log occurences to check if really rare
@@ -95,14 +95,27 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
-  var parsedUrl;
-  parsedUrl = url.parse(theUrl);
-  return (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
+  var parsedUrl = url.parse(theUrl, true)
+    , query = parsedUrl.query
+    , queryKeys = [], result = "", key;
+
+  result = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname : '')
     + (parsedUrl.port ? (parsedUrl.port !== "80" ? ':' + parsedUrl.port : '') : '')
-    + (parsedUrl.pathname ? parsedUrl.pathname : '/')
-    + (parsedUrl.search ? (parsedUrl.search !== "?" ? parsedUrl.search : '') : '');
+    + (parsedUrl.pathname ? parsedUrl.pathname : '/');
+
+  // If there is a querystring, the arguments need to be sorted alphabetically
+  if (parsedUrl.search && (parsedUrl.search.length > 1)) {
+    for (key in query) { if (query.hasOwnProperty(key)) { queryKeys.push(key); } }
+    queryKeys.sort();
+
+    for (key = 0; key < queryKeys.length; key += 1) {
+      result += (key === 0 ? '?' : '&') + queryKeys[key] + "=" + query[queryKeys[key]];
+    }
+  }
+
+  return result;
 };
 
 /**

@@ -443,7 +443,7 @@ describe('TldrModel', function () {
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
 
 
-      var p = url.parse("http://www.example.com:80/bloup/?arr=value");
+      var p = url.parse("http://178.79.181.8:8080/bloup/?r4r=value&trr=yyy", true);
     console.log("===");
     console.log(p);
 
@@ -470,6 +470,18 @@ describe('TldrModel', function () {
       done();
     });
 
+    it('Sort the arguments of a querystring', function (done) {
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?eee=value&cd=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?cd=yto&eee=value");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value");
+
+      done();
+    });
 
 
 
