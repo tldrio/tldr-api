@@ -90,6 +90,7 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  *   * Query string is kept (can correspond to different representations of resources like different blog posts)
  *   * Default port (80) is removed, other ports are kept
  *   * URL-decoding non-reserved characters should be handled by clients (browsers do it and they are the main clients)
+ *   * Removing dot-segments should be handled by clients (browsers do it and they are the main clients)
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
