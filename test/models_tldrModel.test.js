@@ -439,8 +439,26 @@ describe('TldrModel', function () {
       var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
 
+
+      var p = url.parse("http://www.example.com:80/bloup/../rrr");
+    console.log("===");
+    console.log(p);
+
       done();
     });
+
+    it('Should remove the port if it is 80, keep it otherwise', function (done) {
+      var theUrl = "http://subdomain.domain.tld:80/path/file.extension/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
+
+      var theUrl = "http://subdomain.domain.tld:99/path/file.extension/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld:99/path/file.extension/");
+
+      done();
+    });
+
+
+
 
 
 

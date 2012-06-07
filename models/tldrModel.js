@@ -88,6 +88,8 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  *   * Trailing fragment and hash are to be removed (this is typically done by the agent but we need to make sure at server level)
  *   * DNS part is lowercased (for normalization purposes as it is case insensitive), the path is kept as-is (can be case sensitive depending on the OS/server) - node.js does it for us
  *   * Query string is kept (can correspond to different representations of resources like different blog posts)
+ *   * Default port (80) is removed, other ports are kept
+ *   * URL-decoding non-reserved characters should be handled by clients (browsers do it and they are the main clients)
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
@@ -96,6 +98,7 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
   return (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname : '')
+    + (parsedUrl.port ? (parsedUrl.port !== "80" ? ':' + parsedUrl.port : '') : '')
     + (parsedUrl.path ? parsedUrl.path : '/');
 };
 
