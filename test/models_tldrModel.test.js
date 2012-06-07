@@ -440,7 +440,7 @@ describe('TldrModel', function () {
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
 
 
-      var p = url.parse("http://www.example.com:80/bloup/../rrr");
+      var p = url.parse("http://www.example.com:80/bloup/%7frrr");
     console.log("===");
     console.log(p);
 
