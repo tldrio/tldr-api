@@ -101,7 +101,8 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
     + "//"
     + (parsedUrl.hostname ? parsedUrl.hostname : '')
     + (parsedUrl.port ? (parsedUrl.port !== "80" ? ':' + parsedUrl.port : '') : '')
-    + (parsedUrl.path ? parsedUrl.path : '/');
+    + (parsedUrl.pathname ? parsedUrl.pathname : '/')
+    + (parsedUrl.search ? (parsedUrl.search !== "?" ? parsedUrl.search : '') : '');
 };
 
 /**

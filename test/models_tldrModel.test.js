@@ -404,6 +404,9 @@ describe('TldrModel', function () {
       var theUrl = "http://subdomain.domain.tld";
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
 
+      var theUrl = "http://subdomain.domain.tld?arg=value";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/?arg=value");
+
       done();
     });
 
@@ -440,7 +443,7 @@ describe('TldrModel', function () {
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
 
 
-      var p = url.parse("http://www.example.com:80/bloup/%7frrr");
+      var p = url.parse("http://www.example.com:80/bloup/?arr=value");
     console.log("===");
     console.log(p);
 
@@ -457,6 +460,15 @@ describe('TldrModel', function () {
       done();
     });
 
+    it('Remove a querystring if there are no arguments - it is only a "?"', function (done) {
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
+
+      done();
+    });
 
 
 
