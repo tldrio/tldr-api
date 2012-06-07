@@ -86,7 +86,7 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  * Clean a given url. Policy:
  *   * Trailing slash is to be left unchanged if a path is specified (no addition or removal). It must be added if there is no path (subdomain only) and it is missing
  *   * Multiple consecutive slashes are kept as is (no collapse in one slash) since the resources may be different
- *   * Trailing fragment and hash are to be removed (this is typically done by the agent but we need to make sure at server level)
+ *   * Trailing fragment and hash are to be removed (this is typically done by the agent but we need to make sure at server level) except in the case of a fucking #! of course
  *   * DNS part is lowercased (for normalization purposes as it is case insensitive), the path is kept as-is (can be case sensitive depending on the OS/server) - node.js does it for us
  *   * Query string is kept (can correspond to different representations of resources like different blog posts), and its arguments are sorted alphabetically
  *   * Default port (80) is removed, other ports are kept
@@ -114,6 +114,10 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
     for (key = 0; key < queryKeys.length; key += 1) {
       result += (key === 0 ? '?' : '&') + queryKeys[key] + "=" + query[queryKeys[key]];
     }
+  }
+
+  if ((parsedUrl.hash) && (parsedUrl.hash.length > 2) && (parsedUrl.hash.substring(0,2) === "#!")) {
+    result += parsedUrl.hash;
   }
 
   return result;

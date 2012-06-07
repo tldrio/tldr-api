@@ -410,7 +410,7 @@ describe('TldrModel', function () {
       done();
     });
 
-    it('Should remove a trailing hash with its fragment', function (done) {
+    it('Should remove a trailing hash with its fragment except if it a #!', function (done) {
       var theUrl = "http://www.domain.tld/path/file.extension/#";
       TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
 
@@ -435,17 +435,27 @@ describe('TldrModel', function () {
       var theUrl = "http://www.domain.tld#something";
       TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
 
+      var theUrl = "http://www.domain.tld/#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!bloup");
+
+      var theUrl = "http://www.domain.tld/#!/path/to/somethingelse";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!/path/to/somethingelse");
+
+      var theUrl = "http://www.domain.tld/path#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path#!bloup");
+
+      var theUrl = "http://www.domain.tld/path?arg=value#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value#!bloup");
+
+      var theUrl = "http://www.domain.tld/path?arg=value#bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value");
+
       done();
     });
 
     it('Should lowercase the DNS part and keep the given path case', function (done) {
       var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
-
-
-      var p = url.parse("http://178.79.181.8:8080/bloup/?r4r=value&trr=yyy", true);
-    console.log("===");
-    console.log(p);
 
       done();
     });
