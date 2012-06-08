@@ -375,29 +375,124 @@ describe('TldrModel', function () {
 
   describe('methods.normalizeUrl', function() {
 
-    it('Should keep correctly formatted urls unchanged', function (done) {
+    it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
-
       TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
+      var theUrl = "http://domain.tld/path/res/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
+
+      var theUrl = "http://domain.tld/path/file.extension?arg=value&otherarg=othervalue";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension?arg=value&otherarg=othervalue");
+
+      var theUrl = "http://domain.tld/?aRg=valuEEe";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/?aRg=valuEEe");
+
       done();
     });
 
-    it('Should remove a trailing hash', function (done) {
-      var theUrl = "http://www.domain.tld/path/file.extension/#";
+    it('Should keep correctly formatted urls with only domain/subdomain, adding a forgotten trailing slash', function (done) {
+      var theUrl = "http://domain.tld/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
+      var theUrl = "http://domain.tld";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://domain.tld/");
+
+      var theUrl = "http://subdomain.domain.tld/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
+
+      var theUrl = "http://subdomain.domain.tld";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
+
+      var theUrl = "http://subdomain.domain.tld?arg=value";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/?arg=value");
+
+      done();
+    });
+
+    it('Should remove a trailing hash with its fragment except if it a #!', function (done) {
+      var theUrl = "http://www.domain.tld/path/file.extension/#";
       TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
 
+      var theUrl = "http://www.domain.tld/path/file.extension/#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension/");
+
+      var theUrl = "http://www.domain.tld/path/file.extension#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+
+      var theUrl = "http://www.domain.tld/path/file.extension#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+
+      var theUrl = "http://www.domain.tld/#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld/#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld#";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld#something";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+
+      var theUrl = "http://www.domain.tld/#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!bloup");
+
+      var theUrl = "http://www.domain.tld/#!/path/to/somethingelse";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!/path/to/somethingelse");
+
+      var theUrl = "http://www.domain.tld/path#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path#!bloup");
+
+      var theUrl = "http://www.domain.tld/path?arg=value#!bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value#!bloup");
+
+      var theUrl = "http://www.domain.tld/path?arg=value#bloup";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value");
+
       done();
     });
 
-    it('Should remove a trailing query', function (done) {
-      var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&arg2=value2";
+    it('Should lowercase the DNS part and keep the given path case', function (done) {
+      var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion/");
 
+      done();
+    });
+
+    it('Should remove the port if it is 80, keep it otherwise', function (done) {
+      var theUrl = "http://subdomain.domain.tld:80/path/file.extension/";
       TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
 
+      var theUrl = "http://subdomain.domain.tld:99/path/file.extension/";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld:99/path/file.extension/");
+
       done();
     });
+
+    it('Remove a querystring if there are no arguments - it is only a "?"', function (done) {
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
+
+      done();
+    });
+
+    it('Sort the arguments of a querystring', function (done) {
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?eee=value&cd=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?cd=yto&eee=value");
+
+      var theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto";
+      TldrModel.normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value");
+
+      done();
+    });
+
 
 
 

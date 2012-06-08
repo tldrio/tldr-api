@@ -385,7 +385,7 @@ describe('Webserver', function () {
       client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama'), tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(201);
 
-        client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama?arg=value'), function (err, req, res, obj) {
+        client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
           res.statusCode.should.equal(200);
 
           done();
