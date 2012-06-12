@@ -91,7 +91,13 @@ function searchTldrs (req, res, next) {
 
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
+  console.log("========");
+  console.log("========");
+  console.log("========");
+  console.log(req.params.url);
+
   var url = TldrModel.normalizeUrl(decodeURIComponent(req.params.url))
+
   //var url = decodeURIComponent(req.params.url)
     , log = req.log;
 
