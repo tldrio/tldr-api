@@ -91,14 +91,8 @@ function searchTldrs (req, res, next) {
 
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
-  console.log("========");
-  console.log("========");
-  console.log("========");
-  console.log(req.params.url);
-
-  var url = TldrModel.normalizeUrl(decodeURIComponent(req.params.url))
-
-  //var url = decodeURIComponent(req.params.url)
+  // parameters are already decoded by restify before being passed on to the request handlers
+  var url = TldrModel.normalizeUrl(req.params.url)
     , log = req.log;
 
   TldrModel.find({_id: url}, function (err, docs) {
@@ -123,7 +117,8 @@ function getTldrByUrl (req, res, next) {
  */
 
 function putTldrByUrl (req, res, next) {
-  var url = decodeURIComponent(req.params.url)
+  // Restify already decodes te paramters
+  var url = req.params.url
     , log = req.log;
 
   if(!req.body){
