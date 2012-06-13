@@ -141,6 +141,13 @@ describe('Webserver', function () {
 
     });
 
+    it('Should URL-decode the parameters before passing them to the request handlers', function (done) {
+      client.get('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), function(err, req, res, obj) {
+        obj._id.should.equal('http://avc.com/mba-monday');
+        done();
+      });
+    });
+
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
       var someTldrs = []
@@ -281,6 +288,9 @@ describe('Webserver', function () {
       });
 
     });
+
+
+
 
 	});
 
