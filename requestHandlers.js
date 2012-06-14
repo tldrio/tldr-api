@@ -6,7 +6,6 @@
 
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , restify = require('restify')
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
@@ -18,7 +17,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
   bunyan.error({error: err, message: msg});
-  return next(new restify.InternalError('An internal error has occured, we are looking into it'));
+  return next(new Error('An internal error has occured, we are looking into it'));
 }
 
 
@@ -99,7 +98,7 @@ function getTldrByUrl (req, res, next) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
-      return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
+      return next(new Error('This record doesn\'t exist'));
     } else {
       res.json(200, docs[0]);    // Success
       return next();

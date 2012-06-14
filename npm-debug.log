@@ -1,0 +1,38 @@
+info it worked if it ends with ok
+verbose cli [ 'node', '/usr/local/bin/npm', 'test' ]
+info using npm@1.1.23
+info using node@v0.6.18
+verbose config file /Users/Migli/.npmrc
+verbose config file /usr/local/etc/npmrc
+verbose config file /usr/local/lib/node_modules/npm/npmrc
+verbose caching /Users/Migli/Sites/tldr-api/package.json
+verbose loadDefaults tldr-api@0.1.0
+verbose run-script [ 'pretest', 'test', 'posttest' ]
+info pretest tldr-api@0.1.0
+info test tldr-api@0.1.0
+verbose unsafe-perm in lifecycle true
+silly exec sh "-c" "make test"
+silly spawning [ 'sh', [ '-c', 'make test' ], '/Users/Migli/Sites/tldr-api' ]
+info tldr-api@0.1.0 Failed to exec test script
+ERR! tldr-api@0.1.0 test: `make test`
+ERR! `sh "-c" "make test"` failed with 2
+ERR! 
+ERR! Failed at the tldr-api@0.1.0 test script.
+ERR! This is most likely a problem with the tldr-api package,
+ERR! not with npm itself.
+ERR! Tell the author that this fails on your system:
+ERR!     make test
+ERR! You can get their info via:
+ERR!     npm owner ls tldr-api
+ERR! There is likely additional logging output above.
+ERR! 
+ERR! System Darwin 11.4.0
+ERR! command "node" "/usr/local/bin/npm" "test"
+ERR! cwd /Users/Migli/Sites/tldr-api
+ERR! node -v v0.6.18
+ERR! npm -v 1.1.23
+ERR! code ELIFECYCLE
+ERR! message tldr-api@0.1.0 test: `make test`
+ERR! message `sh "-c" "make test"` failed with 2
+ERR! errno {}
+verbose exit [ 1, true ]
