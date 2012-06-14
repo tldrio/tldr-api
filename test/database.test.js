@@ -39,9 +39,9 @@ describe('Database', function () {
 	beforeEach(function (done) {
 
 		// dummy models
-    var tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
 		// clear database and repopulate
 		TldrModel.remove(null, function (err) {
@@ -83,9 +83,9 @@ describe('Database', function () {
 	// Get tldr with id 1
 	it('should return a tldr for an existing id', function (done) {
 
-    var _id = 'http://needforair.com/nutcrackers';
+    var url = 'http://needforair.com/nutcrackers';
 
-	  TldrModel.find( {_id: _id}, function (err, docs) {
+	  TldrModel.find( {url: url}, function (err, docs) {
       if (err) { return done(err); }
       var tldr = docs[0];
 			tldr.title.should.equal('nutcrackers');

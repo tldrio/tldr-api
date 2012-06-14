@@ -22,8 +22,7 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema(
-  { 
-    url             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] } // url
+  { url             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] } // url
   , title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] }
   , summaryBullets  : { type: Array,  required: true, validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long'] }
   , resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] }
@@ -142,7 +141,7 @@ TldrSchema.methods.normalizeUrl = function() {
  *
  */
 
-//url field should be a url containing hostname and protocol info
+//url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
 // The real validation will take place with the resolve mechanism
 function  validateUrl (value) {

@@ -70,10 +70,10 @@ describe('Webserver', function () {
     //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
-    tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr4 = new TldrModel({_id: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
     TldrModel.remove(null, function (err) {
@@ -114,7 +114,7 @@ describe('Webserver', function () {
 
       client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
-        obj._id.should.equal('http://needforair.com/sopa');
+        obj.url.should.equal('http://needforair.com/sopa');
         done();
       });
 
@@ -143,7 +143,7 @@ describe('Webserver', function () {
 
     it('Should URL-decode the parameters before passing them to the request handlers', function (done) {
       client.get('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), function(err, req, res, obj) {
-        obj._id.should.equal('http://avc.com/mba-monday');
+        obj.url.should.equal('http://avc.com/mba-monday');
         done();
       });
     });
@@ -158,7 +158,7 @@ describe('Webserver', function () {
 
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new TldrModel({_id: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
+        someTldrs.push(new TldrModel({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
       }
 
       older = new Date(now - 10000 * (12));
@@ -170,7 +170,7 @@ describe('Webserver', function () {
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
           client.get('/tldrs/search/?quantity=-1', function (err, req, res, obj) {
             obj.length.should.equal(defaultLimit);
-            temp = _.map(obj, function (o) { return o. _id; });
+            temp = _.map(obj, function (o) { return o.url; });
             _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
             _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
             _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -197,7 +197,7 @@ describe('Webserver', function () {
                   // Using it normally it should work! And return the 5 latest tldrs
                   client.get('/tldrs/search/?quantity=5', function (err, req, res, obj) {
                     obj.length.should.equal(5);
-                    temp = _.map(obj, function (o) { return o. _id; });
+                    temp = _.map(obj, function (o) { return o. url; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                     _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                     _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -211,7 +211,7 @@ describe('Webserver', function () {
                       // Called with a non-numeral value for startat, it should use 0 as a default value
                       client.get('/tldrs/search/?quantity=4&startat=rew', function (err, req, res, obj) {
                         obj.length.should.equal(4);
-                        temp = _.map(obj, function (o) { return o. _id; });
+                        temp = _.map(obj, function (o) { return o. url; });
                         _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                         _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                         _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -220,7 +220,7 @@ describe('Webserver', function () {
                         // With normal values for startat and limit, it should behave normally
                         client.get('/tldrs/search/?quantity=4&startat=5', function (err, req, res, obj) {
                           obj.length.should.equal(4);
-                          temp = _.map(obj, function (o) { return o. _id; });
+                          temp = _.map(obj, function (o) { return o. url; });
                           _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
                           _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
                           _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
@@ -233,7 +233,7 @@ describe('Webserver', function () {
                             // If called with a correct number of milliseconds for olderthan, it works as expected (and ignores the startat parameter if any)
                             client.get('/tldrs/search/?quantity=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
                               obj.length.should.equal(4);
-                              temp = _.map(obj, function (o) { return o. _id; });
+                              temp = _.map(obj, function (o) { return o. url; });
                               _.indexOf(temp, 'http://needforair.com/sopa/number12').should.not.equal(-1);
                               _.indexOf(temp, 'http://needforair.com/sopa/number13').should.not.equal(-1);
                               _.indexOf(temp, 'http://needforair.com/sopa/number14').should.not.equal(-1);
@@ -242,7 +242,7 @@ describe('Webserver', function () {
                               // If called with an incorrectly formated number of milliseconds (here a string), it should default to "older than now"
                               client.get('/tldrs/search/?quantity=6&olderthan=123er5t3e', function (err, req, res, obj) {
                                 obj.length.should.equal(6);
-                                temp = _.map(obj, function (o) { return o. _id; });
+                                temp = _.map(obj, function (o) { return o. url; });
                                 _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                                 _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                                 _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -257,7 +257,7 @@ describe('Webserver', function () {
                                   // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects
                                   client.get('/tldrs/latest/4', function (err, req, res, obj) {
                                     obj.length.should.equal(4);
-                                    temp = _.map(obj, function (o) { return o. _id; });
+                                    temp = _.map(obj, function (o) { return o. url; });
                                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                                     _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                                     _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -315,7 +315,7 @@ describe('Webserver', function () {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
 
-          TldrModel.find({_id: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+          TldrModel.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A summary');
 
@@ -335,7 +335,7 @@ describe('Webserver', function () {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({_id: 'http://avc.com/mba-monday'}, function(err, docs) {
+          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A new summary');
 
@@ -370,7 +370,7 @@ describe('Webserver', function () {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({_id: 'http://avc.com/mba-monday'}, function(err, docs) {
+          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('Fred Wilson is my God');
 

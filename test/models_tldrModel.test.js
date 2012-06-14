@@ -46,7 +46,7 @@ describe('TldrModel', function () {
 
   describe('#validators', function () {
 
-    it('should detect missing required _id arg', function (done) {
+    it('should detect missing required url arg', function (done) {
 
       var tldr = new TldrModel({
 					title: 'Blog NFA',
@@ -63,7 +63,7 @@ describe('TldrModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr._id.should.not.equal(null);
+				valErr.url.should.not.equal(null);
 
         done();
       });
@@ -73,7 +73,7 @@ describe('TldrModel', function () {
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
-          _id: 'http://myfile/movie',
+          url: 'http://myfile/movie',
 					title: 'Blog NFA',
 					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
@@ -88,15 +88,15 @@ describe('TldrModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				valErr._id.should.not.equal(null);
+				valErr.url.should.not.equal(null);
 
-        tldrData._id = "ftp://myfile.tld/movie"
+        tldrData.url = "ftp://myfile.tld/movie"
         tldr = new TldrModel(tldrData);
         tldr.save( function (err) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr._id.should.not.equal(null);
+          valErr.url.should.not.equal(null);
 
-          tldrData._id = "http://myfile.tld/movie"
+          tldrData.url = "http://myfile.tld/movie"
           tldr = new TldrModel(tldrData);
           tldr.save( function (err) {
             assert.isNull(err);
@@ -111,7 +111,7 @@ describe('TldrModel', function () {
     it('should use default createdAt and updatedAt args', function (done) {
 
       var tldr = new TldrModel({
-					_id: 'http://needforair.com/nutcrackers',
+					url: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
 					summaryBullets: ['Awesome Blog'],
           resourceAuthor: 'NFA Crew',
@@ -130,7 +130,7 @@ describe('TldrModel', function () {
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'http://needforair.com/nutcrackers',
+          url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
           resourceDate: '2012',
@@ -154,7 +154,7 @@ describe('TldrModel', function () {
     it('should detect missing required resourceAuthor', function (done) {
 
       var tldr = new TldrModel({
-          _id: 'http://needforair.com/nutcrackers',
+          url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           summaryBullets: ['Awesome Blog'],
           resourceDate: '2012',
@@ -178,7 +178,7 @@ describe('TldrModel', function () {
     it('should detect wrong type of arg for dates bitch', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
@@ -199,7 +199,7 @@ describe('TldrModel', function () {
     it('should reject tldrs whose summary is missing', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         resourceAuthor: 'NFA Crew',
         resourceDate: '2012',
@@ -219,7 +219,7 @@ describe('TldrModel', function () {
     it('should reject tldrs whose summary is an empty array', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: [],
         resourceAuthor: 'NFA Crew',
@@ -240,7 +240,7 @@ describe('TldrModel', function () {
     it('should reject tldrs whose summary contains empty bullets', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', '', 'amnother bullet'],
         resourceAuthor: 'NFA Crew',
@@ -261,7 +261,7 @@ describe('TldrModel', function () {
     it('should reject tldrs whose summary contains too many bullets', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', 'adad', 'amnother bullet', 'eweqweq', 'qweqwe', 'qweqweqwe'],
         resourceAuthor: 'NFA Crew',
@@ -282,7 +282,7 @@ describe('TldrModel', function () {
     it('should reject tldrs whose summary contains a bullet that\'s too long', function (done) {
 
       var tldr = new TldrModel({
-        _id: 'http://needforair.com/nutcrackers',
+        url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', 'adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee w'],
         resourceAuthor: 'NFA Crew',
@@ -306,7 +306,7 @@ describe('TldrModel', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should allow user to set _id, title, summary and resourceAuthor only', function (done) {
+    it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
       TldrModel.createAndSaveInstance('http://mydomain.com',
 				{ title: 'Blog NFA'
 				, summaryBullets: ['coin']
@@ -318,7 +318,7 @@ describe('TldrModel', function () {
 						if (err) { return done(err); }
 
 						var tldr = docs[0];
-						tldr._id.should.equal('http://mydomain.com/');
+						tldr.url.should.equal('http://mydomain.com/');
 						tldr.summaryBullets.should.include('coin');
 						tldr.resourceAuthor.should.equal('bloup');
 						tldr.createdAt.should.not.equal('2012');
@@ -333,7 +333,7 @@ describe('TldrModel', function () {
 	describe('#updateValidFields', function () {
 
 		it('should restrict the fields the user is allowed to update', function (done) {
-				var updated = {_id: 'http://myotherdomain.com'
+				var updated = {url: 'http://myotherdomain.com'
 											, summaryBullets: ['new2']
 											, title: 'Blog NeedForAir'
 											, resourceAuthor: 'new3'
@@ -349,7 +349,7 @@ describe('TldrModel', function () {
 						if (err) { return done(err); }
 
 						var tldr = docs[0];
-						tldr._id.should.equal('http://mydomain.com/');
+						tldr.url.should.equal('http://mydomain.com/');
 						tldr.summaryBullets.should.include('coin');
 						tldr.title.should.equal('Blog NFA');
 						tldr.resourceAuthor.should.equal('bloup');
@@ -358,7 +358,7 @@ describe('TldrModel', function () {
 						tldr.updateValidFields(updated, function(err) {
 							if (err) { return done(err); }
 
-							tldr._id.should.equal('http://mydomain.com/');
+							tldr.url.should.equal('http://mydomain.com/');
 							tldr.summaryBullets.should.include('new2');
 							tldr.title.should.equal('Blog NeedForAir');
 							tldr.resourceAuthor.should.equal('new3');
