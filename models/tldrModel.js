@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , TldrSchema
   , TldrModel
-  , userSetableFields = ['_id', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate'] // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate'] // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
 
 
@@ -22,7 +22,7 @@ var mongoose = require('mongoose')
  */
 
 TldrSchema = new Schema(
-  { _id             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] } // url
+  { url             : { type: String, required: true, validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname'] } // url
   , title           : { type: String, required: true, validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] }
   , summaryBullets  : { type: Array,  required: true, validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long'] }
   , resourceAuthor  : { type: String, required: true, validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] }
@@ -37,21 +37,21 @@ TldrSchema = new Schema(
 /**
  * Create a new instance of TldrModel and populate it
  * Only fields in userSetableFields are handled
- * @param {String} _id  The decoded URL which serves as id for the tldr in db
+ * @param {String} url  The decoded URL which serves as id for the tldr in db
  * @param {Object} userInput Object containing the fields to set for the tldr instance
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createAndSaveInstance = function(_id, userInput, callback) {
+TldrSchema.statics.createAndSaveInstance = function(url, userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance;
 
-  validFields._id = _id;
+  validFields.url = url;
   instance = new TldrModel(validFields);
   instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo the hobbit";
   instance.resourceDate = instance.resourceDate || new Date();
-  instance.title = instance.title || instance._id; //If no title was provided use url as title
+  instance.title = instance.title || instance.url; //If no title was provided use url as title
 
   instance.save(callback);
 };
@@ -126,11 +126,11 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
 };
 
 /**
- * Convenience instance method that normalizes the url (field _id) of a given
+ * Convenience instance method that normalizes the url (field url) of a given
  * the instance on which it is called. Uses the static TldrModel.normalizeUrl.
  */
 TldrSchema.methods.normalizeUrl = function() {
-  this._id = TldrModel.normalizeUrl(this._id);
+  this.url = TldrModel.normalizeUrl(this.url);
 }
 
 
@@ -141,7 +141,7 @@ TldrSchema.methods.normalizeUrl = function() {
  *
  */
 
-//_id should be a url, containing hostname and protocol info
+//url field should be a url containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
 // The real validation will take place with the resolve mechanism
 function  validateUrl (value) {
