@@ -10,7 +10,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , _ = require('underscore')
   , models = require('./models')
   , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors');
+  , errors = require('./lib/errors');
 
 
 // If an error occurs when retrieving from/putting to the db, inform the user gracefully
@@ -65,8 +65,7 @@ function searchTldrs (req, res, next) {
      .$lt('updatedAt', olderthan)
      .run(function(err, docs) {
        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
-       res.json(200, docs);
-       return next();
+       res.json(docs, 200);
      });
 
 
@@ -81,8 +80,7 @@ function searchTldrs (req, res, next) {
      .skip(startat)
      .run(function(err, docs) {
        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
-       res.json(200, docs);
-       return next();
+       res.json(docs, 200);
      });
   }
 }
@@ -91,20 +89,21 @@ function searchTldrs (req, res, next) {
 // GET a tldr by url
 function getTldrByUrl (req, res, next) {
   // parameters are already decoded by restify before being passed on to the request handlers
-  var url = TldrModel.normalizeUrl(req.params.url)
-    , log = req.log;
+  var url = TldrModel.normalizeUrl(req.params.url);
 
+  console.log(url);
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
+      //return next(new errors.NotFoundError('This record doesn\'t exist'));
       return next(new Error('This record doesn\'t exist'));
     } else {
-      res.json(200, docs[0]);    // Success
-      return next();
+      res.json(docs[0], 200);    // Success
     }
   });
 }
+
 
 
 
@@ -122,8 +121,8 @@ function putTldrByUrl (req, res, next) {
 
   if(!req.body){
     // Response received by client is 500. TODO : investigate why
-    res.json(400, 'body required in request');
-    return next();
+    res.json('body required in request', 400);
+    return;
   }
 
   TldrModel.find({_id: url}, function (err, docs) {
@@ -135,15 +134,14 @@ function putTldrByUrl (req, res, next) {
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
           if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
-            return next();
+            res.json( models.getAllValidationErrorsWithExplanations(err.errors), 403);
           } else {
             return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
           }
         }
-
-        res.send(204);
-        return next();
+        else {
+          res.send(204);
+        }
       });
     } else {
       //tldr = new TldrModel(req.body);
@@ -152,24 +150,28 @@ function putTldrByUrl (req, res, next) {
       TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
-            return next();
+            res.json(models.getAllValidationErrorsWithExplanations(err.errors), 403);
           } else {
             return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
           }
         }
-
-        res.json(201, tldr);
-        return next();
+        else {
+          res.json(tldr, 201);
+        }
       });
     }
   });
 
 }
 
+function handleErrors (err, req, res, next) {
+  console.log('TOTOOTOOT');
+  console.log(err);
+}
 
 // Module interface
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.searchTldrs = searchTldrs;
 module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putTldrByUrl = putTldrByUrl;
+module.exports.handleErrors = handleErrors;
