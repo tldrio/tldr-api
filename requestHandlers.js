@@ -55,6 +55,7 @@ function searchTldrs (req, res, next) {
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
   if(url) {
+    url = TldrModel.normalizeUrl(url);
     TldrModel.find({url: url}, function (err, docs) {
       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
@@ -103,24 +104,6 @@ function searchTldrs (req, res, next) {
 }
 
 
-// GET a tldr by url
-function getTldrByUrl (req, res, next) {
-  // parameters are already decoded by restify before being passed on to the request handlers
-  var url = TldrModel.normalizeUrl(req.params.url);
-
-  TldrModel.find({_id: url}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
-
-    if (docs.length === 0) {
-      next(new errors.NotFoundError('ResourceNotFound'));
-    } else {
-      res.json(200, docs[0]);    // Success
-    }
-  });
-}
-
-
-
 
 /**
  * Handles POST /tldrs
@@ -166,6 +149,7 @@ function putUpdateTldrWithId (req, res, next) {
     return next( new errors.BadRequestError('Body required in request'));
   }
 
+  // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
     if (err) { 
@@ -202,13 +186,12 @@ function putUpdateTldrWithId (req, res, next) {
  */
 
 function handleErrors (err, req, res, next) {
-  res.json(err.statusCode, err);
+  res.json(err.statusCode, err.body);
 }
 
 // Module interface
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.searchTldrs = searchTldrs;
-module.exports.getTldrByUrl = getTldrByUrl;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;

@@ -364,6 +364,8 @@ describe('Webserver', function () {
          summaryBullets: ['summary'] };   // Summary can't be empty
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        var parsedError = JSON.parse(res.body);
+        parsedError.should.have.property('url');
         res.statusCode.should.equal(403);
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs);
@@ -378,6 +380,8 @@ describe('Webserver', function () {
                      , summaryBullets: [''] };   // Summary can't be empty
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        var parsedError = JSON.parse(res.body);
+        parsedError.should.have.property('summaryBullets');
         res.statusCode.should.equal(403);
         TldrModel.find({}, function(err, docs) {
           docs.length.should.equal(numberOfTldrs);
@@ -388,45 +392,49 @@ describe('Webserver', function () {
     });
 
 
-    //it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
-      //var tldrData = { summaryBullets: [''] };
+    it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
+      var tldrData = { summaryBullets: [''] };
 
-      //client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
-        //res.statusCode.should.equal(403);
-        //TldrModel.find({}, function(err, docs) {
-          //var tldr;
-          //docs.length.should.equal(numberOfTldrs);
+      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
+        var parsedError = JSON.parse(res.body);
+        parsedError.should.have.property('summaryBullets');
+        res.statusCode.should.equal(403);
+        TldrModel.find({}, function(err, docs) {
+          var tldr;
+          docs.length.should.equal(numberOfTldrs);
 
-          //TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            //tldr = docs[0];
-            //tldr.summaryBullets.should.include('Fred Wilson is my God');
+          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            tldr = docs[0];
+            tldr.summaryBullets.should.include('Fred Wilson is my God');
 
-            //done();
-          //});
-        //});
-      //});
-    //});
+            done();
+          });
+        });
+      });
+    });
 
-    //it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
-      //var tldrData = {
-				//title: 'A title',
-				//summaryBullets: ['A summary'],
-				//resourceAuthor: 'bozo le clown',
-				//resourceDate: new Date(),
-				//createdAt: new Date(),
-				//updatedAt: new Date()
-			//};
 
-      //client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama'), tldrData, function(err, req, res, obj) {
-        //res.statusCode.should.equal(201);
+    it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
+      var tldrData = {
+        url: 'http://yetanotherunusedurl.com/yomama',
+        title: 'A title',
+        summaryBullets: ['A summary'],
+        resourceAuthor: 'bozo le clown',
+        resourceDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-        //client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
-          //res.statusCode.should.equal(200);
+      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(201);
 
-          //done();
-        //});
-      //});
-    //});
+        client.get('/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
+          res.statusCode.should.equal(200);
+
+          done();
+        });
+      });
+    });
 
 
 
