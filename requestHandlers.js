@@ -65,7 +65,7 @@ function searchTldrs (req, res, next) {
      .$lt('updatedAt', olderthan)
      .run(function(err, docs) {
        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
-       res.json(docs, 200);
+       res.json(200, docs);
      });
 
 
@@ -80,7 +80,7 @@ function searchTldrs (req, res, next) {
      .skip(startat)
      .run(function(err, docs) {
        if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
-       res.json(docs, 200);
+       res.json(200, docs);
      });
   }
 }
@@ -91,15 +91,13 @@ function getTldrByUrl (req, res, next) {
   // parameters are already decoded by restify before being passed on to the request handlers
   var url = TldrModel.normalizeUrl(req.params.url);
 
-  console.log(url);
   TldrModel.find({_id: url}, function (err, docs) {
     if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
 
     if (docs.length === 0) {
-      //return next(new errors.NotFoundError('This record doesn\'t exist'));
-      return next(new Error('This record doesn\'t exist'));
+      next(new errors.NotFoundError('ResourceNotFound'));
     } else {
-      res.json(docs[0], 200);    // Success
+      res.json(200, docs[0]);    // Success
     }
   });
 }
@@ -120,9 +118,7 @@ function putTldrByUrl (req, res, next) {
     , log = req.log;
 
   if(!req.body){
-    // Response received by client is 500. TODO : investigate why
-    res.json('body required in request', 400);
-    return;
+    return next( new errors.BadRequestError('Body required in request'));
   }
 
   TldrModel.find({_id: url}, function (err, docs) {
@@ -134,7 +130,7 @@ function putTldrByUrl (req, res, next) {
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
           if (err.errors) {
-            res.json( models.getAllValidationErrorsWithExplanations(err.errors), 403);
+            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
           } else {
             return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
           }
@@ -150,13 +146,13 @@ function putTldrByUrl (req, res, next) {
       TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
-            res.json(models.getAllValidationErrorsWithExplanations(err.errors), 403);
+            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
           } else {
             return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
           }
         }
         else {
-          res.json(tldr, 201);
+          res.json(201, tldr);
         }
       });
     }
@@ -165,8 +161,7 @@ function putTldrByUrl (req, res, next) {
 }
 
 function handleErrors (err, req, res, next) {
-  console.log('TOTOOTOOT');
-  console.log(err);
+  res.json(err.statusCode, err);
 }
 
 // Module interface

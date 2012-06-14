@@ -37,7 +37,8 @@ if (env.name === "production") {
 }
 
 //Create server
-server = express.createServer();
+//server = express.createServer();
+server = express();
 
 // Configuration
 
@@ -47,6 +48,9 @@ server.configure(function(){
   server.use(express.bodyParser());
   server.use(express.methodOverride());
   server.use(express.static(__dirname + '/public'));
+  server.use(server.router);
+  server.use(requestHandlers.handleErrors);
+  
 });
 
 server.configure('development', function(){

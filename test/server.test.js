@@ -125,8 +125,8 @@ describe('Webserver', function () {
       client.get('/tldrs/' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
-        response.should.have.ownProperty('code');
-        response.code.should.equal('ResourceNotFound');
+        response.should.have.ownProperty('message');
+        response.message.should.equal('ResourceNotFound');
         done();
       });
 
