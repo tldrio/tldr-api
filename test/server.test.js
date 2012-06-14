@@ -154,8 +154,6 @@ describe('Webserver', function () {
         , someFunctions = []
         , i, temp, now = new Date()
         , defaultLimit = 10
-        , i, temp, now = new Date
-        , defaultLimit = 10
         , older;
 
       for (i = 0; i <= 25; i += 1) {
