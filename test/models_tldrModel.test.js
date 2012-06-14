@@ -307,8 +307,9 @@ describe('TldrModel', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      TldrModel.createAndSaveInstance('http://mydomain.com',
+      TldrModel.createAndSaveInstance(
 				{ title: 'Blog NFA'
+        , url: 'http://mydomain.com'
 				, summaryBullets: ['coin']
 				, resourceAuthor: 'bloup'
 				, createdAt: '2012'}, 
@@ -339,8 +340,9 @@ describe('TldrModel', function () {
 											, resourceAuthor: 'new3'
 											, createdAt: '2012'};
 
-      TldrModel.createAndSaveInstance('http://mydomain.com',
+      TldrModel.createAndSaveInstance(
 				{ title: 'Blog NFA'
+        , url: 'http://mydomain.com'
 				, summaryBullets: ['coin']
 				, resourceAuthor: 'bloup'}, 
 				function(err) { 
@@ -372,7 +374,7 @@ describe('TldrModel', function () {
   });
 
 
-  describe('methods.normalizeUrl', function() {
+  describe('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";

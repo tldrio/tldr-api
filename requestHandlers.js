@@ -34,7 +34,7 @@ function getLatestTldrs (req, res, next) {
 
 
 /**
- * Returns a search of tldrs (through route /tldrs/search/)
+ * Returns a search of tldrs (through route /tldrs/search)
  * You can specify which tldrs you want with the following parameters in the URL
  * Currently the olderthan parameter has priority over the startat parameter
  * @param {Integer} quantity quantity of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
@@ -45,10 +45,27 @@ function getLatestTldrs (req, res, next) {
  */
 function searchTldrs (req, res, next) {
   var query = req.query
+    , url = query.url 
     , defaultLimit = 10
     , limit = query.quantity || defaultLimit
     , startat = query.startat || 0
     , olderthan = query.olderthan;
+
+
+  // If we have a url specified we don't need to go further just grab the
+  // corresponding tldr
+  if(url) {
+    TldrModel.find({url: url}, function (err, docs) {
+      if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
+
+      if (docs.length === 0) {
+        next(new errors.NotFoundError('ResourceNotFound'));
+      } else {
+        res.json(200, docs[0]);    // Success
+      }
+    });
+    return;
+  }
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
   if (isNaN(limit)) { limit = defaultLimit; }
@@ -106,13 +123,42 @@ function getTldrByUrl (req, res, next) {
 
 
 /**
- * Handles PUT /tldrs/:url
- * Creates or updates the tldr, as per the spec
+ * Handles POST /tldrs
+ * create new tldr, as per the spec
  * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
  *
  */
 
-function putTldrByUrl (req, res, next) {
+function postNewTldr (req, res, next) {
+
+  if(!req.body){
+    return next( new errors.BadRequestError('Body required in request'));
+  }
+
+
+  TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
+    if (err) {
+      if (err.errors) {
+        return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+      } else {
+        return handleInternalDBError(err, next, "Internal error in postNewTldr");    // Unexpected error while saving
+      }
+    }
+    else {
+      res.json(201, tldr);
+    }
+  });
+
+}
+
+/**
+ * Handles PUT /tldrs/:id
+ * updates the tldr, as per the spec
+ * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
+ *
+ */
+
+function putUpdateTldrWithId (req, res, next) {
   // Restify already decodes te paramters
   var url = req.params.url
     , log = req.log;
@@ -139,21 +185,7 @@ function putTldrByUrl (req, res, next) {
           res.send(204);
         }
       });
-    } else {
-
-      TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
-        if (err) {
-          if (err.errors) {
-            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
-          }
-        }
-        else {
-          res.json(201, tldr);
-        }
-      });
-    }
+    } 
   });
 
 }
@@ -171,5 +203,6 @@ function handleErrors (err, req, res, next) {
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.searchTldrs = searchTldrs;
 module.exports.getTldrByUrl = getTldrByUrl;
-module.exports.putTldrByUrl = putTldrByUrl;
+module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
+module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;

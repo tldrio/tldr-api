@@ -112,7 +112,7 @@ describe('Webserver', function () {
 
     it('an existing tldr', function (done) {
 
-      client.get('/tldrs/'+encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
+      client.get('/tldrs/search?url=' +encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
         done();
@@ -122,7 +122,7 @@ describe('Webserver', function () {
 
     it('GET a non existing tldr', function (done) {
 
-      client.get('/tldrs/' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
+      client.get('/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
         var response = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         response.should.have.ownProperty('message');
@@ -141,12 +141,6 @@ describe('Webserver', function () {
 
     });
 
-    it('Should URL-decode the parameters before passing them to the request handlers', function (done) {
-      client.get('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), function(err, req, res, obj) {
-        obj.url.should.equal('http://avc.com/mba-monday');
-        done();
-      });
-    });
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
@@ -168,7 +162,7 @@ describe('Webserver', function () {
           docs.length.should.equal(30);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
-          client.get('/tldrs/search/?quantity=-1', function (err, req, res, obj) {
+          client.get('/tldrs/search?quantity=-1', function (err, req, res, obj) {
             obj.length.should.equal(defaultLimit);
             temp = _.map(obj, function (o) { return o.url; });
             _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -183,19 +177,19 @@ describe('Webserver', function () {
             _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
             // A limit for 0 should give defaultLimit objects as well
-            client.get('/tldrs/search/?quantity=0', function (err, req, res, obj) {
+            client.get('/tldrs/search?quantity=0', function (err, req, res, obj) {
               obj.length.should.equal(defaultLimit);
 
               // A limit greater than defaultLimit should give defaultLimit objects as well
-              client.get('/tldrs/search/?quantity=11', function (err, req, res, obj) {
+              client.get('/tldrs/search?quantity=11', function (err, req, res, obj) {
                 obj.length.should.equal(defaultLimit);
 
                 // Forgetting the limit should force the handler to return defaultLimit objects
-                client.get('/tldrs/search/', function (err, req, res, obj) {
+                client.get('/tldrs/search', function (err, req, res, obj) {
                   obj.length.should.equal(defaultLimit);
 
                   // Using it normally it should work! And return the 5 latest tldrs
-                  client.get('/tldrs/search/?quantity=5', function (err, req, res, obj) {
+                  client.get('/tldrs/search?quantity=5', function (err, req, res, obj) {
                     obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. url; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -205,11 +199,11 @@ describe('Webserver', function () {
                     _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
                     // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                    client.get('/tldrs/search/?quantity=asd', function (err, req, res, obj) {
+                    client.get('/tldrs/search?quantity=asd', function (err, req, res, obj) {
                       obj.length.should.equal(defaultLimit);
 
                       // Called with a non-numeral value for startat, it should use 0 as a default value
-                      client.get('/tldrs/search/?quantity=4&startat=rew', function (err, req, res, obj) {
+                      client.get('/tldrs/search?quantity=4&startat=rew', function (err, req, res, obj) {
                         obj.length.should.equal(4);
                         temp = _.map(obj, function (o) { return o. url; });
                         _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -218,7 +212,7 @@ describe('Webserver', function () {
                         _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                         // With normal values for startat and limit, it should behave normally
-                        client.get('/tldrs/search/?quantity=4&startat=5', function (err, req, res, obj) {
+                        client.get('/tldrs/search?quantity=4&startat=5', function (err, req, res, obj) {
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. url; });
                           _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
@@ -227,11 +221,11 @@ describe('Webserver', function () {
                           _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
                           // If startat is too high, no tldr is sent
-                          client.get('/tldrs/search/?quantity=4&startat=55', function (err, req, res, obj) {
+                          client.get('/tldrs/search?quantity=4&startat=55', function (err, req, res, obj) {
                             obj.length.should.equal(0);
 
                             // If called with a correct number of milliseconds for olderthan, it works as expected (and ignores the startat parameter if any)
-                            client.get('/tldrs/search/?quantity=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
+                            client.get('/tldrs/search?quantity=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
                               obj.length.should.equal(4);
                               temp = _.map(obj, function (o) { return o. url; });
                               _.indexOf(temp, 'http://needforair.com/sopa/number12').should.not.equal(-1);
@@ -240,7 +234,7 @@ describe('Webserver', function () {
                               _.indexOf(temp, 'http://needforair.com/sopa/number15').should.not.equal(-1);
 
                               // If called with an incorrectly formated number of milliseconds (here a string), it should default to "older than now"
-                              client.get('/tldrs/search/?quantity=6&olderthan=123er5t3e', function (err, req, res, obj) {
+                              client.get('/tldrs/search?quantity=6&olderthan=123er5t3e', function (err, req, res, obj) {
                                 obj.length.should.equal(6);
                                 temp = _.map(obj, function (o) { return o. url; });
                                 _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -251,7 +245,7 @@ describe('Webserver', function () {
                                 _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
 
                                 // Convenience route should force the handler to return defaultLimit objects
-                                client.get('/tldrs/search/', function (err, req, res, obj) {
+                                client.get('/tldrs/search', function (err, req, res, obj) {
                                   obj.length.should.equal(defaultLimit);
 
                                   // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects
@@ -264,7 +258,7 @@ describe('Webserver', function () {
                                     _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                                     // Empty quantity will be intepreted as 0 so will return defaultLimit tldrs
-                                    client.get('/tldrs/search/?quantity=', function (err, req, res, obj) {
+                                    client.get('/tldrs/search?quantity=', function (err, req, res, obj) {
                                       obj.length.should.equal(defaultLimit);
 
                                       done();
@@ -290,7 +284,7 @@ describe('Webserver', function () {
 
 
 
-	});
+  });
 
 
 
@@ -299,15 +293,16 @@ describe('Webserver', function () {
 
     it('Should create a new tldr with PUT if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
-				title: 'A title',
-				summaryBullets: ['A summary'],
-				resourceAuthor: 'bozo le clown',
-				resourceDate: new Date(),
-			  createdAt: new Date(),
-				updatedAt: new Date()
-			};
+        title: 'A title',
+        url: 'http://yetanotherunusedurl.com/somepage',
+        summaryBullets: ['A summary'],
+        resourceAuthor: 'bozo le clown',
+        resourceDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/somepage'), tldrData, function(err, req, res, obj) {
+      client.post('/tldrs', tldrData, function(err, req, res, obj) {
         res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
@@ -326,80 +321,80 @@ describe('Webserver', function () {
     });
 
 
-    it('Should update an existing tldr with PUT motherfucker', function (done) {
-      var tldrData = { summaryBullets: ['A new summary'] };
+    //it('Should update an existing tldr with PUT motherfucker', function (done) {
+      //var tldrData = { summaryBullets: ['A new summary'] };
 
-      client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(204);
-        TldrModel.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs);
+      //client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
+        //res.statusCode.should.equal(204);
+        //TldrModel.find({}, function(err, docs) {
+          //var tldr;
+          //docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('A new summary');
+          //TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            //tldr = docs[0];
+            //tldr.summaryBullets.should.include('A new summary');
 
-            done();
-          });
-        });
-      });
-    });
-
-
-    it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
-      var tldrData = { summaryBullets: [''] };   // Summary can't be empty
-
-      client.put('/tldrs/' + encodeURIComponent('http://wtf.com/'), tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(403);
-        assert.isNotNull(obj.summaryBullets);
-        TldrModel.find({}, function(err, docs) {
-          docs.length.should.equal(numberOfTldrs);
-
-          done();
-        });
-      });
-    });
+            //done();
+          //});
+        //});
+      //});
+    //});
 
 
-    it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
-      var tldrData = { summaryBullets: [''] };
+    //it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
+      //var tldrData = { summaryBullets: [''] };   // Summary can't be empty
 
-      client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(403);
-        TldrModel.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs);
+      //client.put('/tldrs/' + encodeURIComponent('http://wtf.com/'), tldrData, function(err, req, res, obj) {
+        //res.statusCode.should.equal(403);
+        //assert.isNotNull(obj.summaryBullets);
+        //TldrModel.find({}, function(err, docs) {
+          //docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('Fred Wilson is my God');
+          //done();
+        //});
+      //});
+    //});
 
-            done();
-          });
-        });
-      });
-    });
 
-    it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
-      var tldrData = {
-				title: 'A title',
-				summaryBullets: ['A summary'],
-				resourceAuthor: 'bozo le clown',
-				resourceDate: new Date(),
-			  createdAt: new Date(),
-				updatedAt: new Date()
-			};
+    //it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
+      //var tldrData = { summaryBullets: [''] };
 
-      client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama'), tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(201);
+      //client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
+        //res.statusCode.should.equal(403);
+        //TldrModel.find({}, function(err, docs) {
+          //var tldr;
+          //docs.length.should.equal(numberOfTldrs);
 
-        client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
-          res.statusCode.should.equal(200);
+          //TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            //tldr = docs[0];
+            //tldr.summaryBullets.should.include('Fred Wilson is my God');
 
-          done();
-        });
-      });
-    });
+            //done();
+          //});
+        //});
+      //});
+    //});
+
+    //it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
+      //var tldrData = {
+				//title: 'A title',
+				//summaryBullets: ['A summary'],
+				//resourceAuthor: 'bozo le clown',
+				//resourceDate: new Date(),
+				//createdAt: new Date(),
+				//updatedAt: new Date()
+			//};
+
+      //client.put('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama'), tldrData, function(err, req, res, obj) {
+        //res.statusCode.should.equal(201);
+
+        //client.get('/tldrs/' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
+          //res.statusCode.should.equal(200);
+
+          //done();
+        //});
+      //});
+    //});
 
 
 

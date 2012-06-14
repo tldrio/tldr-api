@@ -67,8 +67,8 @@ server.configure('production', function(){
  */
 
 // Search tldrs
-server.get('/tldrs/search/', requestHandlers.searchTldrs);
-server.get('/tldrs/', requestHandlers.searchTldrs); // convenience route
+server.get('/tldrs/search', requestHandlers.searchTldrs);
+server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
 
 // GET latest tldrs (convenience route)
 server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
@@ -76,8 +76,11 @@ server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
 // GET a tldr by url
 server.get('/tldrs/:url', requestHandlers.getTldrByUrl);
 
-//PUT create or update tldr
-server.put('/tldrs/:url', requestHandlers.putTldrByUrl);
+//POST create tldr
+server.post('/tldrs', requestHandlers.postNewTldr);
+
+//PUT update tldr
+server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 
 // Start server

@@ -37,16 +37,14 @@ TldrSchema = new Schema(
 /**
  * Create a new instance of TldrModel and populate it
  * Only fields in userSetableFields are handled
- * @param {String} url  The decoded URL which serves as id for the tldr in db
  * @param {Object} userInput Object containing the fields to set for the tldr instance
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createAndSaveInstance = function(url, userInput, callback) {
+TldrSchema.statics.createAndSaveInstance = function(userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance;
 
-  validFields.url = url;
   instance = new TldrModel(validFields);
   instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo the hobbit";
