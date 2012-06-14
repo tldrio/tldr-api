@@ -1,21 +1,18 @@
+
 /**
- * Server for tldr
- * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Fucking Proprietary License
+ * Module dependencies.
  */
 
-
-var restify = require('restify')
+var express = require('express')
   , fs = require('fs')
-  , bunyan = require('./lib/logger').bunyan // Audit logger for restify
+  , bunyan = require('./lib/logger').bunyan // Audit logger for express
+  , db = require('./lib/db')
+  , errors = require('./lib/errors')
+  , requestHandlers = require('./requestHandlers')
+  , env = require('./environments').env
   , mongoose = require('mongoose')
   , models = require('./models')
-  , db = require('./lib/db')
-  , requestHandlers = require('./requestHandlers')
-  //, privateKey = fs.readFileSync('./privatekey.pem').toString()
-  //, certificate = fs.readFileSync('./certificate.pem').toString()
-  , env = require('./environments').env
-  , server;                                 // Will store our restify server
+  , server;                                 // Will store our express server
 
 
 
@@ -39,53 +36,43 @@ if (env.name === "production") {
   });
 }
 
+//Create server
+server = express.createServer();
 
+// Configuration
 
-/**
- * Configure
- */
+server.configure(function(){
+  server.set('views', __dirname + '/views');
+  server.set('view engine', 'jade');
+  server.use(express.bodyParser());
+  server.use(express.methodOverride());
+  server.use(express.static(__dirname + '/public'));
+});
 
-// If we're testing, avoid logging everything restify throws at us to avoid cluttering the screen
-if (env.name === "test") {
-  server = restify.createServer({
-    name: "tldr API",
-  });
-} else {
-  server = restify.createServer({
-    name: "tldr API",
-    //log: bunyan     // No restify logging for now
-  });
-  // Audit Logger
-  server.on('after', restify.auditLogger({
-    log: bunyan
-  }));
-}
+server.configure('development', function(){
+  server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
 
-// Register restify middleware
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.authorizationParser());
-server.use(restify.queryParser({mapParams: false}));
-server.use(restify.bodyParser({mapParams: false}));
-
-
-
+server.configure('production', function(){
+  server.use(express.errorHandler());
+});
 
 /**
  * Routes
  */
 
 // Search tldrs
-server.get({path: '/tldrs/search/', version: '0.1.0'}, requestHandlers.searchTldrs);
-server.get({path: '/tldrs/', version: '0.1.0'}, requestHandlers.searchTldrs); // convenience route
+server.get('/tldrs/search/', requestHandlers.searchTldrs);
+server.get('/tldrs/', requestHandlers.searchTldrs); // convenience route
 
 // GET latest tldrs (convenience route)
-server.get({path: '/tldrs/latest/:quantity', version: '0.1.0'}, requestHandlers.getLatestTldrs);
+server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
 
 // GET a tldr by url
-server.get({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.getTldrByUrl);
+server.get('/tldrs/:url', requestHandlers.getTldrByUrl);
 
 //PUT create or update tldr
-server.put({path: '/tldrs/:url', version: '0.1.0'}, requestHandlers.putTldrByUrl);
+server.put('/tldrs/:url', requestHandlers.putTldrByUrl);
 
 
 // Start server
