@@ -133,6 +133,18 @@ describe('Webserver', function () {
 
     });
 
+    it('GET with a non valid url', function (done) {
+
+      client.get('/tldrs/search?url=' + encodeURIComponent('ftp://3niggas4bitches/com'), function (err, req, res, obj) {
+        var response = JSON.parse(res.body);
+        res.statusCode.should.equal(404);
+        response.should.have.ownProperty('message');
+        response.message.should.equal('ResourceNotFound');
+        done();
+      });
+
+    });
+
     it('GET a non existing route', function (done) {
 
       client.get('/nonexistingroute', function (err, req, res, obj) {
