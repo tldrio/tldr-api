@@ -130,7 +130,8 @@ function putTldrByUrl (req, res, next) {
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
           if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
+            //res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
+            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
           } else {
             return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
           }
@@ -140,9 +141,7 @@ function putTldrByUrl (req, res, next) {
         }
       });
     } else {
-      //tldr = new TldrModel(req.body);
-      //tldr._id = url;
-      //tldr.save(function (err) {
+
       TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
@@ -159,6 +158,11 @@ function putTldrByUrl (req, res, next) {
   });
 
 }
+
+/**
+ * Handle All errors coming from next( err) calls
+ *
+ */
 
 function handleErrors (err, req, res, next) {
   res.json(err.statusCode, err);

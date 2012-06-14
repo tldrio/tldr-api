@@ -48,7 +48,9 @@ server.configure(function(){
   server.use(express.bodyParser());
   server.use(express.methodOverride());
   server.use(express.static(__dirname + '/public'));
+  // Map routes see docs why we do it here
   server.use(server.router);
+  // Use middleware to handle errors
   server.use(requestHandlers.handleErrors);
   
 });
