@@ -130,7 +130,6 @@ function putTldrByUrl (req, res, next) {
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
           if (err.errors) {
-            //res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
             return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
           } else {
             return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
@@ -145,7 +144,7 @@ function putTldrByUrl (req, res, next) {
       TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
+            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
           } else {
             return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
           }
