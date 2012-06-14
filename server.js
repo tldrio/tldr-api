@@ -37,7 +37,6 @@ if (env.name === "production") {
 }
 
 //Create server
-//server = express.createServer();
 server = express();
 
 // Configuration
