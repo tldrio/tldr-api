@@ -17,7 +17,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
 // Later, we may implement a retry count
 function handleInternalDBError(err, next, msg) {
   bunyan.error({error: err, message: msg});
-  return next(new Error('An internal error has occured, we are looking into it'));
+  return next(new errors.InternalServerError('An internal error has occured, we are looking into it'));
 }
 
 
@@ -159,33 +159,39 @@ function postNewTldr (req, res, next) {
  */
 
 function putUpdateTldrWithId (req, res, next) {
-  // Restify already decodes te paramters
-  var url = req.params.url
-    , log = req.log;
+
+  var id = req.params.id;
 
   if(!req.body){
     return next( new errors.BadRequestError('Body required in request'));
   }
 
-  TldrModel.find({_id: url}, function (err, docs) {
+  TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
-    if (err) { return handleInternalDBError(err, next, "Internal error in putTldrByUrl"); }
+    if (err) { 
+      handleInternalDBError(err, next, "Internal error in putTldrByUrl"); 
+    }
+    else {
 
-    if (docs.length === 1) {
-      tldr = docs[0];
-      tldr.updateValidFields(req.body, function (err) {
-        if (err) {
-          if (err.errors) {
-            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
-          } else {
-            return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
+      if (docs.length === 1) {
+        tldr = docs[0];
+        tldr.updateValidFields(req.body, function (err) {
+          if (err) {
+            if (err.errors) {
+              return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+            } else {
+              return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
+            }
           }
-        }
-        else {
-          res.send(204);
-        }
-      });
-    } 
+          else {
+            res.send(204);
+          }
+        });
+      } 
+      else {
+        next (new errors.NotFoundError('There is no record for this id'));
+      }
+    }
   });
 
 }

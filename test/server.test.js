@@ -71,7 +71,8 @@ describe('Webserver', function () {
 
     // dummy models
     tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    //We need an object ID for this one for PUT test
+    tldr2 = new TldrModel({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
     tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
@@ -291,7 +292,7 @@ describe('Webserver', function () {
   //Test PUT Requests
   describe('Should handle PUT requests', function () {
 
-    it('Should create a new tldr with PUT if it doesn\'t exist yet, and return it', function (done) {
+    it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
         title: 'A title',
         url: 'http://yetanotherunusedurl.com/somepage',
@@ -321,39 +322,70 @@ describe('Webserver', function () {
     });
 
 
-    //it('Should update an existing tldr with PUT motherfucker', function (done) {
-      //var tldrData = { summaryBullets: ['A new summary'] };
+    it('Should update an existing tldr with PUT motherfucker', function (done) {
+      var tldrData = { summaryBullets: ['A new summary'] };
 
-      //client.put('/tldrs/' + encodeURIComponent('http://avc.com/mba-monday'), tldrData, function(err, req, res, obj) {
-        //res.statusCode.should.equal(204);
-        //TldrModel.find({}, function(err, docs) {
-          //var tldr;
-          //docs.length.should.equal(numberOfTldrs);
+      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(204);
+        TldrModel.find({}, function(err, docs) {
+          var tldr;
+          docs.length.should.equal(numberOfTldrs);
 
-          //TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            //tldr = docs[0];
-            //tldr.summaryBullets.should.include('A new summary');
+          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            tldr = docs[0];
+            tldr.summaryBullets.should.include('A new summary');
 
-            //done();
-          //});
-        //});
-      //});
-    //});
+            done();
+          });
+        });
+      });
+    });
 
+    it('Should handle bad PUT request', function (done) {
+      var tldrData = { summaryBullets: ['A new summary'] };
 
-    //it('Shouldn\'t create a new tldr with PUT if it doesn\'t exist yet but there are validation errors', function (done) {
-      //var tldrData = { summaryBullets: [''] };   // Summary can't be empty
+      client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(500);
+        done();
+      });
+    });
 
-      //client.put('/tldrs/' + encodeURIComponent('http://wtf.com/'), tldrData, function(err, req, res, obj) {
-        //res.statusCode.should.equal(403);
-        //assert.isNotNull(obj.summaryBullets);
-        //TldrModel.find({}, function(err, docs) {
-          //docs.length.should.equal(numberOfTldrs);
+    it('Should handle PUT request with non existent', function (done) {
 
-          //done();
-        //});
-      //});
-    //});
+      var tldrData = { summaryBullets: ['A new summary'] };
+      client.put('/tldrs/222222222222222222222222', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(404);
+        done();
+      });
+    });
+
+    it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
+      var tldrData = { 
+         summaryBullets: ['summary'] };   // Summary can't be empty
+
+      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs);
+
+          done();
+        });
+      });
+    });
+
+    it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
+      var tldrData = { url: 'http://nfa.com' 
+                     , summaryBullets: [''] };   // Summary can't be empty
+
+      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        TldrModel.find({}, function(err, docs) {
+          docs.length.should.equal(numberOfTldrs);
+
+          done();
+        });
+      });
+    });
 
 
     //it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
