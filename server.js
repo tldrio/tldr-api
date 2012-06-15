@@ -7,7 +7,6 @@ var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , db = require('./lib/db')
-  , errors = require('./lib/errors')
   , requestHandlers = require('./requestHandlers')
   , env = require('./environments').env
   , mongoose = require('mongoose')
@@ -42,11 +41,7 @@ server = express();
 // Configuration
 
 server.configure(function(){
-  server.set('views', __dirname + '/views');
-  server.set('view engine', 'jade');
   server.use(express.bodyParser());
-  server.use(express.methodOverride());
-  server.use(express.static(__dirname + '/public'));
   // Map routes see docs why we do it here
   server.use(server.router);
   // Use middleware to handle errors
@@ -54,13 +49,6 @@ server.configure(function(){
   
 });
 
-server.configure('development', function(){
-  server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
-
-server.configure('production', function(){
-  server.use(express.errorHandler());
-});
 
 /**
  * Routes

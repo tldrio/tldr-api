@@ -9,16 +9,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
-  , TldrModel = models.TldrModel
-  , errors = require('./lib/errors');
-
-
-// If an error occurs when retrieving from/putting to the db, inform the user gracefully
-// Later, we may implement a retry count
-function handleInternalDBError(err, next, msg) {
-  bunyan.error({error: err, message: msg});
-  return next(new errors.InternalServerError('An internal error has occured, we are looking into it'));
-}
+  , TldrModel = models.TldrModel;
 
 
 /**
@@ -57,10 +48,12 @@ function searchTldrs (req, res, next) {
   if(url) {
     url = TldrModel.normalizeUrl(url);
     TldrModel.find({url: url}, function (err, docs) {
-      if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
+      if (err) { 
+        return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
+      }
 
       if (docs.length === 0) {
-        next(new errors.NotFoundError('ResourceNotFound'));
+        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
       } else {
         res.json(200, docs[0]);    // Success
       }
@@ -82,7 +75,7 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .$lt('updatedAt', olderthan)
      .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
        res.json(200, docs);
      });
 
@@ -97,7 +90,7 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .skip(startat)
      .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
        res.json(200, docs);
      });
   }
@@ -117,7 +110,7 @@ function getTldrById (req, res, next) {
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
     if (err) { 
-      handleInternalDBError(err, next, "Internal error in getTldrById"); 
+      return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by Id'}} );
     }
     else {
 
@@ -128,7 +121,7 @@ function getTldrById (req, res, next) {
       } 
       // There is no record for this id
       else {
-        next (new errors.NotFoundError('There is no record for this id'));
+        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
       }
     }
   });
@@ -144,16 +137,16 @@ function getTldrById (req, res, next) {
 function postNewTldr (req, res, next) {
 
   if(!req.body){
-    return next( new errors.BadRequestError('Body required in request'));
+    return next({statusCode: 400, body: {message: 'Body required in request'}} );
   }
 
 
   TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
     if (err) {
       if (err.errors) {
-        return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+        return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else {
-        return handleInternalDBError(err, next, "Internal error in postNewTldr");    // Unexpected error while saving
+        return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
       }
     }
     else {
@@ -175,14 +168,14 @@ function putUpdateTldrWithId (req, res, next) {
   var id = req.params.id;
 
   if(!req.body){
-    return next( new errors.BadRequestError('Body required in request'));
+    return next({statusCode: 400, body: {message: 'Body required in request'}} );
   }
 
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
     if (err) { 
-      handleInternalDBError(err, next, "Internal error in putTldrByUrl"); 
+      return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr for update'}} );
     }
     else {
 
@@ -191,9 +184,9 @@ function putUpdateTldrWithId (req, res, next) {
         tldr.updateValidFields(req.body, function (err) {
           if (err) {
             if (err.errors) {
-              return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+              return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
             } else {
-              return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
+              return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
             }
           }
           else {
@@ -202,7 +195,7 @@ function putUpdateTldrWithId (req, res, next) {
         });
       } 
       else {
-        next (new errors.NotFoundError('There is no record for this id'));
+        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
       }
     }
   });
