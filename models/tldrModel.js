@@ -113,7 +113,7 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
-  var parsedUrl = url.parse(theUrl, true)
+  var parsedUrl = url.parse(theUrl ? theUrl : '', true)
     , query = parsedUrl.query
     , queryKeys = [], result = "", key;
 
