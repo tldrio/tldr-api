@@ -48,15 +48,16 @@ function searchTldrs (req, res, next) {
   if(url) {
     url = TldrModel.normalizeUrl(url);
     TldrModel.find({url: url}, function (err, docs) {
+
       if (err) { 
         return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
       }
 
       if (docs.length === 0) {
         return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
-      } else {
-        res.json(200, docs[0]);    // Success
-      }
+      } 
+
+      res.json(200, docs[0]);    // Success
     });
     return;
   }
@@ -75,7 +76,10 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .$lt('updatedAt', olderthan)
      .run(function(err, docs) {
-       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
+       if (err) {
+         return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); 
+       }
+
        res.json(200, docs);
      });
 
@@ -90,7 +94,9 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .skip(startat)
      .run(function(err, docs) {
-       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
+       if (err) {
+         return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}});
+       }
        res.json(200, docs);
      });
   }
@@ -112,18 +118,15 @@ function getTldrById (req, res, next) {
     if (err) { 
       return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by Id'}} );
     }
-    else {
 
-      // We found the record
-      if (docs.length === 1) {
-        tldr = docs[0];
-        res.send(200, tldr);
-      } 
-      // There is no record for this id
-      else {
-        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
-      }
-    }
+    // We found the record
+    if (docs.length === 1) {
+      tldr = docs[0];
+      return res.send(200, tldr);
+    } 
+    
+    // There is no record for this id
+    return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
   });
 }
 
@@ -145,13 +148,13 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else {
-        return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
-      }
+      } 
+
+      return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
+      
     }
-    else {
-      res.json(201, tldr);
-    }
+
+    res.json(201, tldr);
   });
 
 }
@@ -177,26 +180,22 @@ function putUpdateTldrWithId (req, res, next) {
     if (err) { 
       return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr for update'}} );
     }
-    else {
 
-      if (docs.length === 1) {
-        tldr = docs[0];
-        tldr.updateValidFields(req.body, function (err) {
-          if (err) {
-            if (err.errors) {
-              return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-            } else {
-              return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
-            }
-          }
-          else {
-            res.send(204);
-          }
-        });
-      } 
-      else {
-        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
-      }
+    if (docs.length === 1) {
+      tldr = docs[0];
+      tldr.updateValidFields(req.body, function (err) {
+        if (err) {
+          if (err.errors) {
+            return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+          } 
+          return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
+        }
+
+        return res.send(204);
+      });
+    } else { 
+
+      return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
     }
   });
 
