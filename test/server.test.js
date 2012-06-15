@@ -354,7 +354,6 @@ describe('Webserver', function () {
       };
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        console.log('obj',obj);
         res.statusCode.should.equal(204);
         TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
