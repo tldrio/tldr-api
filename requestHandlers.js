@@ -104,6 +104,35 @@ function searchTldrs (req, res, next) {
 }
 
 
+/**
+ * GET /tldrs/:id
+ *
+ */
+
+function getTldrById (req, res, next) {
+
+  var id = req.params.id;
+
+  // We find by id here
+  TldrModel.find({_id: id}, function (err, docs) {
+    var tldr;
+    if (err) { 
+      handleInternalDBError(err, next, "Internal error in getTldrById"); 
+    }
+    else {
+
+      // We found the record
+      if (docs.length === 1) {
+        tldr = docs[0];
+        res.send(200, tldr);
+      } 
+      // There is no record for this id
+      else {
+        next (new errors.NotFoundError('There is no record for this id'));
+      }
+    }
+  });
+}
 
 /**
  * Handles POST /tldrs
@@ -191,6 +220,7 @@ function handleErrors (err, req, res, next) {
 
 // Module interface
 module.exports.getLatestTldrs = getLatestTldrs;
+module.exports.getTldrById = getTldrById;
 module.exports.searchTldrs = searchTldrs;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;

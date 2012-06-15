@@ -73,8 +73,8 @@ server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
 // GET latest tldrs (convenience route)
 server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
 
-// GET a tldr by url
-server.get('/tldrs/:url', requestHandlers.getTldrByUrl);
+// GET a tldr by id
+server.get('/tldrs/:id', requestHandlers.getTldrById);
 
 //POST create tldr
 server.post('/tldrs', requestHandlers.postNewTldr);

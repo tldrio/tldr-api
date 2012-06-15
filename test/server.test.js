@@ -111,7 +111,7 @@ describe('Webserver', function () {
   // Test GET requests
   describe('should handle GET request for', function () {
 
-    it('an existing tldr', function (done) {
+    it('an existing tldr given an url with /tldrs/search?', function (done) {
 
       client.get('/tldrs/search?url=' +encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
@@ -121,7 +121,7 @@ describe('Webserver', function () {
 
     });
 
-    it('GET a non existing tldr', function (done) {
+    it('a non existing tldr given an url with /tldrs/search?', function (done) {
 
       client.get('/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
         var response = JSON.parse(res.body);
@@ -133,7 +133,7 @@ describe('Webserver', function () {
 
     });
 
-    it('GET with a non valid url', function (done) {
+    it('a tldr with a non valid url', function (done) {
 
       client.get('/tldrs/search?url=' + encodeURIComponent('ftp://3niggas4bitches/com'), function (err, req, res, obj) {
         var response = JSON.parse(res.body);
@@ -145,7 +145,17 @@ describe('Webserver', function () {
 
     });
 
-    it('GET a non existing route', function (done) {
+    it('an existing tldr given an _id with /tldrs/:id', function (done) {
+
+      client.get('/tldrs/111111111111111111111111', function (err, req, res, obj) {
+        res.statusCode.should.equal(200);
+        obj.url.should.equal('http://avc.com/mba-monday');
+        done();
+      });
+
+    });
+
+    it('a non existing route', function (done) {
 
       client.get('/nonexistingroute', function (err, req, res, obj) {
         res.statusCode.should.equal(404);
