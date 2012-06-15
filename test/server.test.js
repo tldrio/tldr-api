@@ -311,8 +311,8 @@ describe('Webserver', function () {
 
 
 
-  //Test PUT Requests
-  describe('Should handle PUT requests', function () {
+  //Test POST Requests
+  describe('Should handle POST requests', function () {
 
     it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
@@ -342,7 +342,68 @@ describe('Webserver', function () {
         });
       });
     });
+     
+    it('Should handle POST request as PUT if tldr already exists', function (done) {
+      var tldrData = {url: 'http://needforair.com/nutcrackers'
+        , title:'Nutcrackers article'
+        , summaryBullets: ['Best Blog Ever']
+        , resourceAuthor: 'Migli'
+        , resourceDate: new Date()
+        , createdAt: new Date()
+        , updatedAt: new Date()
+      };
 
+      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+        console.log('obj',obj);
+        res.statusCode.should.equal(204);
+        TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+          var tldr = docs[0];
+          tldr.summaryBullets.should.include('Best Blog Ever');
+          tldr.title.should.equal('Nutcrackers article');
+
+          done();
+        });
+      });
+    });
+
+    it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
+      var tldrData = { 
+        summaryBullets: ['summary'] };   // Summary can't be empty
+
+        client.post('/tldrs', tldrData, function(err, req, res, obj) {
+          var parsedError = JSON.parse(res.body);
+          parsedError.should.have.property('url');
+          res.statusCode.should.equal(403);
+          TldrModel.find({}, function(err, docs) {
+            docs.length.should.equal(numberOfTldrs);
+
+            done();
+          });
+        });
+    });
+
+    it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
+      var tldrData = { url: 'http://nfa.com' 
+        , summaryBullets: [''] };   // Summary can't be empty
+
+        client.post('/tldrs', tldrData, function(err, req, res, obj) {
+          var parsedError = JSON.parse(res.body);
+          parsedError.should.have.property('summaryBullets');
+          res.statusCode.should.equal(403);
+          TldrModel.find({}, function(err, docs) {
+            docs.length.should.equal(numberOfTldrs);
+
+            done();
+          });
+        });
+    });
+
+
+  });
+
+
+  //Test PUT Requests
+  describe('Should handle PUT requests', function () {
 
     it('Should update an existing tldr with PUT motherfucker', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
@@ -381,37 +442,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = { 
-         summaryBullets: ['summary'] };   // Summary can't be empty
-
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        var parsedError = JSON.parse(res.body);
-        parsedError.should.have.property('url');
-        res.statusCode.should.equal(403);
-        TldrModel.find({}, function(err, docs) {
-          docs.length.should.equal(numberOfTldrs);
-
-          done();
-        });
-      });
-    });
-
-    it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
-      var tldrData = { url: 'http://nfa.com' 
-                     , summaryBullets: [''] };   // Summary can't be empty
-
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        var parsedError = JSON.parse(res.body);
-        parsedError.should.have.property('summaryBullets');
-        res.statusCode.should.equal(403);
-        TldrModel.find({}, function(err, docs) {
-          docs.length.should.equal(numberOfTldrs);
-
-          done();
-        });
-      });
-    });
+ 
 
 
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {

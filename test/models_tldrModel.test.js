@@ -329,7 +329,32 @@ describe('TldrModel', function () {
 				});
     });
 
-	});
+    it('should not save two tldrs with same url', function (done) {
+      var tldr = { title: 'Blog NFA'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'};
+
+        TldrModel.createAndSaveInstance(
+          tldr,
+          function (err) { 
+            if (err) { return done(err); } 
+            TldrModel.find({url: tldr.url}, function (err,docs) {
+              if (err) { return done(err); }
+
+              TldrModel.createAndSaveInstance(
+                tldr, 
+                function (err) { 
+                  err.should.not.be.null;
+                  err.code.should.equal(11000);// 11000 is the code for duplicate key
+                  done();
+                });
+            });
+          });
+    });
+
+  });
 
 	describe('#updateValidFields', function () {
 

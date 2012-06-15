@@ -41,6 +41,7 @@ server = express();
 // Configuration
 
 server.configure(function(){
+  //server.use(express.logger());
   server.use(express.bodyParser());
   // Map routes see docs why we do it here
   server.use(server.router);

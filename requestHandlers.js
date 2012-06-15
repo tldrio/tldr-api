@@ -148,13 +148,41 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } 
 
-      return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
+      } else if (err.code === 11000){ // code 11000 is for duplicate key
+  
+        var url = TldrModel.normalizeUrl(req.body.url)
+          , oldTldr;
+        TldrModel.find({url: url}, function (err, docs) {
+
+          if (err) { 
+            return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
+          }
+
+          // As we have a duplicate key docs is not empty
+          oldTldr = docs[0];
+
+          oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
+            if (err) {
+              if (err.errors) {
+                return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+              } 
+              return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
+            }
+
+            // With 204 even if a object is provided it's not sent by express
+            return res.send(204);
+          });
+
+        });
+
+      } else{
+        return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
+      }
       
+    } else {
+      res.json(201, tldr);
     }
-
-    res.json(201, tldr);
   });
 
 }
@@ -183,7 +211,7 @@ function putUpdateTldrWithId (req, res, next) {
 
     if (docs.length === 1) {
       tldr = docs[0];
-      tldr.updateValidFields(req.body, function (err) {
+      tldr.updateValidFields(req.body, function (err, updatedTldr) {
         if (err) {
           if (err.errors) {
             return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -191,6 +219,7 @@ function putUpdateTldrWithId (req, res, next) {
           return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
         }
 
+        // With 204 even if a object is provided it's not sent by express
         return res.send(204);
       });
     } else { 
