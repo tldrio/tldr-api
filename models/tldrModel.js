@@ -63,8 +63,6 @@ TldrSchema.statics.createAndSaveInstance = function(userInput, callback) {
     , instance;
 
   instance = new TldrModel(validFields);
-  // If no url was provided fill with an empty one that will trigger a validation error
-  instance.url = instance.url || '';
   instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "bilbo the hobbit";
   instance.resourceDate = instance.resourceDate || new Date();
