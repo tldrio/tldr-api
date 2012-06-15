@@ -50,13 +50,6 @@ server.configure(function(){
   
 });
 
-server.configure('development', function(){
-  server.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
-
-server.configure('production', function(){
-  server.use(express.errorHandler());
-});
 
 /**
  * Routes
