@@ -239,6 +239,17 @@ function handleErrors (err, req, res, next) {
   res.json(err.statusCode, err.body);
 }
 
+/**
+ * Add necessary headers for CORS
+ *
+ */
+
+function allowAccessOrigin (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+}
+
 // Module interface
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getTldrById = getTldrById;
@@ -246,3 +257,4 @@ module.exports.searchTldrs = searchTldrs;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
+module.exports.allowAccessOrigin = allowAccessOrigin;
