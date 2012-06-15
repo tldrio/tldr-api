@@ -13,8 +13,7 @@ var should = require('chai').should()
   , models = require('../models')
   , db = require('../lib/db')
 	, TldrModel = models.TldrModel
-  , server = require('../server')
-  , customErrors = require('../lib/errors');
+  , server = require('../server');
 
 
 

@@ -9,16 +9,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
-  , TldrModel = models.TldrModel
-  , errors = require('./lib/errors');
+  , TldrModel = models.TldrModel;
 
-
-// If an error occurs when retrieving from/putting to the db, inform the user gracefully
-// Later, we may implement a retry count
-function handleInternalDBError(err, next, msg) {
-  bunyan.error({error: err, message: msg});
-  return next(new Error('An internal error has occured, we are looking into it'));
-}
 
 
 /**
@@ -64,7 +56,7 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .$lt('updatedAt', olderthan)
      .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
        res.json(200, docs);
      });
 
@@ -79,7 +71,7 @@ function searchTldrs (req, res, next) {
      .limit(limit)
      .skip(startat)
      .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+       if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); }
        res.json(200, docs);
      });
   }
@@ -92,10 +84,10 @@ function getTldrByUrl (req, res, next) {
   var url = TldrModel.normalizeUrl(req.params.url);
 
   TldrModel.find({_id: url}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
-
+    if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error getting a Tldr by urlwhile saving'}}); }
+            
     if (docs.length === 0) {
-      next(new errors.NotFoundError('ResourceNotFound'));
+      next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
     } else {
       res.json(200, docs[0]);    // Success
     }
@@ -118,21 +110,22 @@ function putTldrByUrl (req, res, next) {
     , log = req.log;
 
   if(!req.body){
-    return next( new errors.BadRequestError('Body required in request'));
+    return next({statusCode: 400, body: {message: 'Body required in request'}} );
   }
 
   TldrModel.find({_id: url}, function (err, docs) {
     var tldr;
-    if (err) { return handleInternalDBError(err, next, "Internal error in putTldrByUrl"); }
+    if (err) {return next({statusCode: 500, body: {messsage: 'Internal Error updating a Tldr'}});}
+            
 
     if (docs.length === 1) {
       tldr = docs[0];
       tldr.updateValidFields(req.body, function (err) {
         if (err) {
           if (err.errors) {
-            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+            return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
           } else {
-            return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
+            return next({statusCode: 500, body: {messsage: 'Internal Error updating a Tldr while saving'}});
           }
         }
         else {
@@ -144,9 +137,9 @@ function putTldrByUrl (req, res, next) {
       TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
         if (err) {
           if (err.errors) {
-            return next(new errors.ForbiddenError('Input is not valid', models.getAllValidationErrorsWithExplanations(err.errors)));
+            return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
           } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
+            return next({statusCode: 500, body: {messsage: 'Internal Error creating a new Tldr'}});
           }
         }
         else {
@@ -164,7 +157,7 @@ function putTldrByUrl (req, res, next) {
  */
 
 function handleErrors (err, req, res, next) {
-  res.json(err.statusCode, err);
+  res.json(err.statusCode, err.body);
 }
 
 // Module interface
