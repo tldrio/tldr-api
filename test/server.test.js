@@ -133,18 +133,6 @@ describe('Webserver', function () {
 
     });
 
-    it('a tldr with a non valid url', function (done) {
-
-      client.get('/tldrs/search?url=' + encodeURIComponent('ftp://3niggas4bitches/com'), function (err, req, res, obj) {
-        var response = JSON.parse(res.body);
-        res.statusCode.should.equal(404);
-        response.should.have.ownProperty('message');
-        response.message.should.equal('ResourceNotFound');
-        done();
-      });
-
-    });
-
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
 
       client.get('/tldrs/111111111111111111111111', function (err, req, res, obj) {

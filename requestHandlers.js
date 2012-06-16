@@ -31,12 +31,13 @@ function getLatestTldrs (req, res, next) {
  * @param {Integer} quantity quantity of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
  * @param {Integer} startat Where to start looking for tldrs. 0 to start at the latest, 5 to start after the fifth latest and so on (Optional - default: 0)
  * @param {Integer} olderthan Returned tldrs must be older than this date, which is expressed as the number of milliseconds since Epoch - it's given by the Date.getTime() method in Javascript (Optional - default: now)
+ * @param {String} url If set, this handler will return the tldr (if any) whose url is the url parameter
  *
  * If both startat and olderthan are set, we use olderthan only.
  */
 function searchTldrs (req, res, next) {
   var query = req.query
-    , url = query.url 
+    , url = query.url
     , defaultLimit = 10
     , limit = query.quantity || defaultLimit
     , startat = query.startat || 0
@@ -45,20 +46,20 @@ function searchTldrs (req, res, next) {
 
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
-  if(url) {
+  if (url) {
     url = TldrModel.normalizeUrl(url);
     TldrModel.find({url: url}, function (err, docs) {
-
-      if (err) { 
+      if (err) {
         return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
       }
 
       if (docs.length === 0) {
         return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
-      } 
+      }
 
-      res.json(200, docs[0]);    // Success
+      return res.json(200, docs[0]);    // Success
     });
+
     return;
   }
 
@@ -115,7 +116,7 @@ function getTldrById (req, res, next) {
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
-    if (err) { 
+    if (err) {
       return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by Id'}} );
     }
 
@@ -123,8 +124,8 @@ function getTldrById (req, res, next) {
     if (docs.length === 1) {
       tldr = docs[0];
       return res.send(200, tldr);
-    } 
-    
+    }
+
     // There is no record for this id
     return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
   });
@@ -150,7 +151,8 @@ function postNewTldr (req, res, next) {
         return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
 
       } else if (err.code === 11000){ // code 11000 is for duplicate key
-  
+
+        // TODO: Use a put here !!!
         var url = TldrModel.normalizeUrl(req.body.url)
           , oldTldr;
         TldrModel.find({url: url}, function (err, docs) {
@@ -179,7 +181,7 @@ function postNewTldr (req, res, next) {
       } else{
         return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
       }
-      
+
     } else {
       res.json(201, tldr);
     }
@@ -205,7 +207,7 @@ function putUpdateTldrWithId (req, res, next) {
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
-    if (err) { 
+    if (err) {
       return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr for update'}} );
     }
 
@@ -215,15 +217,14 @@ function putUpdateTldrWithId (req, res, next) {
         if (err) {
           if (err.errors) {
             return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-          } 
+          }
           return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
         }
 
-        // With 204 even if a object is provided it's not sent by express
+        // With 204 even if a object is provided it's not sent by express (204 is "no content")
         return res.send(204);
       });
-    } else { 
-
+    } else {
       return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
     }
   });
@@ -231,7 +232,7 @@ function putUpdateTldrWithId (req, res, next) {
 }
 
 /**
- * Handle All errors coming from next( err) calls
+ * Handle All errors coming from next(err) calls
  *
  */
 
