@@ -73,13 +73,18 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 
-// Start server
+// Connect to database and start server
 if (module.parent === null) { // Code to execute only when running as main
-  server.listen(env.serverPort, function (){
-    bunyan.info('Server %s launched at %s', server.name, server.url);
+  db.connectToDatabase(function() {
+    bunyan.info('Connection to database successful');
+
+    server.listen(env.serverPort, function (){
+      bunyan.info('Server %s launched at %s', server.name, server.url);
+    });
   });
-  db.connectToDatabase();
 }
+
+
 
 // exports
 module.exports = server;
