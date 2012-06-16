@@ -330,7 +330,7 @@ describe('Webserver', function () {
         });
       });
     });
-     
+
     it('Should handle POST request as PUT if tldr already exists', function (done) {
       var tldrData = {url: 'http://needforair.com/nutcrackers'
         , title:'Nutcrackers article'
@@ -354,7 +354,7 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = { 
+      var tldrData = {
         summaryBullets: ['summary'] };   // Summary can't be empty
 
         client.post('/tldrs', tldrData, function(err, req, res, obj) {
