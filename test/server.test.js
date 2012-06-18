@@ -77,7 +77,7 @@ describe('Webserver', function () {
     tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
-    TldrModel.remove(null, function (err) {
+    TldrModel.remove({}, function (err) {
       if (err) {return done(err);}
       tldr1.save(	function (err) {
         if (err) {return done(err); }
@@ -90,6 +90,7 @@ describe('Webserver', function () {
               TldrModel.find({}, function(err, docs) {
                 if (err) {return done(err); }
                 numberOfTldrs = docs.length;
+                console.log('number of tldrs ', numberOfTldrs);
                 done();
               });
             });
@@ -101,19 +102,21 @@ describe('Webserver', function () {
   });
 
   afterEach(function (done) {
-    TldrModel.remove(null, function (err) {
+    TldrModel.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
   });
 
-  
+
   // Test GET requests
   describe('should handle GET request for', function () {
 
     it('an existing tldr given an url with /tldrs/search?', function (done) {
+      console.log('toto');
 
-      client.get('/tldrs/search?url=' +encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
+      client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
+        console.log('titi');
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
         done();

@@ -26,22 +26,21 @@ TldrSchema = new Schema(
          , unique: true
          , required: true
          , validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname']
-         } // url
+         , set: normalizeUrl
+         }
   , title: { type: String
-           , required: true
-           , validate: [validateTitle, 'Title has to be non empty and less than 150 characters'] 
+           , validate: [validateTitle, 'Title has to be non empty and less than 150 characters']
            }
   , summaryBullets: { type: Array
                     , required: true
-                    , validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long'] 
+                    , validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long']
                     }
   , resourceAuthor: { type: String
-                    , required: true
-                    , validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long'] 
+                    , validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long']
                     }
   , resourceDate: { type: Date }
   , createdAt: { type: Date
-               ,   default: Date.now
+               , default: Date.now
                }
   , updatedAt: { type: Date
                , default: Date.now
@@ -50,6 +49,24 @@ TldrSchema = new Schema(
 , { strict: true });
 
 
+TldrSchema.statics.upsert = function (conditions, updates, callback) {
+  this.update(conditions, updates, { upsert: true }, callback);
+};
+
+
+TldrSchema.statics.createOrUpdate = function (userInput, callback) {
+  var conditions
+    , updates = {}
+    , validFields = _.pick(userInput, userSetableFields);
+
+  conditions = { url: normalizeUrl(userInput.url) };
+
+  _.each( validFields, function (validField) {
+    updates[validField] = userInput[validField];
+  });
+
+  this.upsert(conditions, updates, callback);
+};
 
 /**
  * Create a new instance of TldrModel and populate it
@@ -58,18 +75,18 @@ TldrSchema = new Schema(
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createAndSaveInstance = function(userInput, callback) {
-  var validFields = _.pick(userInput, userSetableFields)
-    , instance;
+//TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
+  //var validFields = _.pick(userInput, userSetableFields)
+    //, instance;
 
-  instance = new TldrModel(validFields);
-  instance.normalizeUrl();
-  instance.resourceAuthor = instance.resourceAuthor || "Unknown Author";
-  instance.resourceDate = instance.resourceDate || new Date();
-  instance.title = instance.title || 'Unknown Title'; //If no title was provided use url as title
+  //instance = new TldrModel(validFields);
+  //instance.normalizeUrl();
+  //instance.resourceAuthor = instance.resourceAuthor || "Unknown Author";
+  //instance.resourceDate = instance.resourceDate || new Date();
+  //instance.title = instance.title || 'Unknown Title'; //If no title was provided use url as title
 
-  instance.save(callback);
-};
+  //instance.save(callback);
+//};
 
 
 
@@ -113,16 +130,18 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  * @param {String} theUrl url to be normalized
  */
 
-TldrSchema.statics.normalizeUrl = function (theUrl) {
-  var parsedUrl = url.parse(theUrl ? theUrl : '', true)
+function normalizeUrl (theUrl) {
+  var parsedUrl = url.parse(theUrl || '', true)
     , query = parsedUrl.query
-    , queryKeys = [], result = "", key;
+    , queryKeys = []
+    , nUrl = ""
+    , key;
 
-  result = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
+  nUrl = (parsedUrl.protocol ? parsedUrl.protocol.toLowerCase() : '')
     + "//"
-    + (parsedUrl.hostname ? parsedUrl.hostname : '')
+    + (parsedUrl.hostname || '')
     + (parsedUrl.port ? (parsedUrl.port !== "80" ? ':' + parsedUrl.port : '') : '')
-    + (parsedUrl.pathname ? parsedUrl.pathname : '/');
+    + (parsedUrl.pathname || '/');
 
   // If there is a querystring, the arguments need to be sorted alphabetically
   if (parsedUrl.search && (parsedUrl.search.length > 1)) {
@@ -130,24 +149,24 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
     queryKeys.sort();
 
     for (key = 0; key < queryKeys.length; key += 1) {
-      result += (key === 0 ? '?' : '&') + queryKeys[key] + "=" + query[queryKeys[key]];
+      nUrl += (key === 0 ? '?' : '&') + queryKeys[key] + "=" + query[queryKeys[key]];
     }
   }
 
   if ((parsedUrl.hash) && (parsedUrl.hash.length > 2) && (parsedUrl.hash.substring(0,2) === "#!")) {
-    result += parsedUrl.hash;
+    nUrl += parsedUrl.hash;
   }
 
-  return result;
-};
+  return nUrl;
+}
 
 /**
  * Convenience instance method that normalizes the url (field url) of a given
  * the instance on which it is called. Uses the static TldrModel.normalizeUrl.
  */
 TldrSchema.methods.normalizeUrl = function () {
-  this.url = TldrModel.normalizeUrl(this.url);
-}
+  this.url = normalizeUrl(this.url);
+};
 
 
 
@@ -207,4 +226,4 @@ TldrModel = mongoose.model('tldr', TldrSchema);
 
 // Export TldrModel
 module.exports.TldrModel = TldrModel;
-
+module.exports.normalizeUrl = normalizeUrl;
