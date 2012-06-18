@@ -78,9 +78,9 @@ server.configure(function(){
   // Store db Instance in server. Avoid multiple instantiation
   // in test files
   server.db = new dbObject( server.set('dbHost')
-                   , server.set('dbName')
-                   , server.set('dbPort')
-                   );
+                          , server.set('dbName')
+                          , server.set('dbPort')
+                          );
   server.use(requestHandlers.allowAccessOrigin);
   //server.use(express.logger());
   server.use(express.bodyParser());
