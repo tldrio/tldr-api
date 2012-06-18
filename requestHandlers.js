@@ -131,6 +131,41 @@ function getTldrById (req, res, next) {
   });
 }
 
+
+/**
+ * Convenience function to factor code betweet PUT and POST on 
+ * already existing tldr
+ *
+ */
+
+function internalUpdateCb (err, docs, req, res, next) {
+
+  var oldTldr;
+
+  if (err) { 
+    return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
+  }
+
+  if (docs.length === 1) {
+    oldTldr = docs[0];
+
+    oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
+      if (err) {
+        if (err.errors) {
+          return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+        } 
+        return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
+      }
+
+      // With 204 even if a object is provided it's not sent by express
+      return res.send(204);});
+  } else {
+    return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
+  }
+}
+
+
+
 /**
  * Handles POST /tldrs
  * create new tldr, as per the spec
@@ -152,29 +187,11 @@ function postNewTldr (req, res, next) {
 
       } else if (err.code === 11000){ // code 11000 is for duplicate key
 
-        // TODO: Use a put here !!!
-        var url = TldrModel.normalizeUrl(req.body.url)
-          , oldTldr;
+        var url = TldrModel.normalizeUrl(req.body.url);
+
         TldrModel.find({url: url}, function (err, docs) {
 
-          if (err) { 
-            return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
-          }
-
-          // As we have a duplicate key docs is not empty
-          oldTldr = docs[0];
-
-          oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
-            if (err) {
-              if (err.errors) {
-                return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-              } 
-              return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
-            }
-
-            // With 204 even if a object is provided it's not sent by express
-            return res.send(204);
-          });
+          internalUpdateCb(err, docs, req, res, next);
 
         });
 
@@ -206,27 +223,7 @@ function putUpdateTldrWithId (req, res, next) {
 
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
-    var tldr;
-    if (err) {
-      return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr for update'}} );
-    }
-
-    if (docs.length === 1) {
-      tldr = docs[0];
-      tldr.updateValidFields(req.body, function (err, updatedTldr) {
-        if (err) {
-          if (err.errors) {
-            return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-          }
-          return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
-        }
-
-        // With 204 even if a object is provided it's not sent by express (204 is "no content")
-        return res.send(204);
-      });
-    } else {
-      return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
-    }
+    internalUpdateCb(err, docs, req, res, next);
   });
 
 }
