@@ -40,26 +40,49 @@ if (env.name === "production") {
 server = express();
 
 // Configuration
-
 server.configure(function(){
   server.use(requestHandlers.allowAccessOrigin);
-  //server.use(express.logger());
- var ;
-  server.use(express.cookieParser());
-  server.use(express.session({ secret: "keyboard cat", store: new RedisStore }));
 
+  // Parse body
   server.use(express.bodyParser());
-  // Map routes see docs why we do it here
+
+  // Parse cookie data and use redis to store session data
+  server.use(express.cookieParser());
+  server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
+                             , key: "tldr.io cookie"                // Name of our cookie
+                             , store: new RedisStore }));           // Store to use
+
+  // Map routes before error handling
   server.use(server.router);
+
   // Use middleware to handle errors
   server.use(requestHandlers.handleErrors);
-  
+
 });
 
 
 /**
  * Routes
  */
+
+server.get('/test', function(req, res, next) {
+
+  if (req.session.myVar) {
+    req.session.myVar += 1;
+  } else {
+    req.session.myVar = 1;
+  }
+
+    res.json(200, {"message": "ca marche " + req.session.myVar});
+
+});
+
+server.get('/retest', function(req, res, next) {
+  req.session.myVar = 1;
+
+  res.json(200, {"message": "ca marche -- re"});
+});
+
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);
