@@ -191,9 +191,7 @@ function postNewTldr (req, res, next) {
         var url = TldrModel.normalizeUrl(req.body.url);
 
         TldrModel.find({url: url}, function (err, docs) {
-
           internalUpdateCb(err, docs, req, res, next);
-
         });
 
       } else {
