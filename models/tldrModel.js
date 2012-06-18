@@ -41,7 +41,7 @@ TldrSchema = new Schema(
                     }
   , resourceDate: { type: Date }
   , createdAt: { type: Date
-               ,   default: Date.now 
+               ,   default: Date.now
                }
   , updatedAt: { type: Date
                , default: Date.now
@@ -108,8 +108,9 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
  *   * URL-decoding non-reserved characters should be handled by clients (browsers do it and they are the main clients)
  *   * Uppercasing url-encoded parts (i.e. '%3a' becomes '%3A' as they are equivalent) is not handled (very rare case) --> TODO log occurences to check if really rare
  *   * Removing dot-segments should be handled by clients (browsers do it and they are the main clients)
- * 
+ *
  * Guidelines followed (in part): http://en.wikipedia.org/wiki/URL_normalization
+ * @param {String} theUrl url to be normalized
  */
 
 TldrSchema.statics.normalizeUrl = function (theUrl) {
@@ -144,7 +145,7 @@ TldrSchema.statics.normalizeUrl = function (theUrl) {
  * Convenience instance method that normalizes the url (field url) of a given
  * the instance on which it is called. Uses the static TldrModel.normalizeUrl.
  */
-TldrSchema.methods.normalizeUrl = function() {
+TldrSchema.methods.normalizeUrl = function () {
   this.url = TldrModel.normalizeUrl(this.url);
 }
 
