@@ -142,7 +142,7 @@ function internalUpdateCb (err, docs, req, res, next) {
 
   var oldTldr;
 
-  if (err) { 
+  if (err) {
     return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
   }
 
@@ -153,7 +153,7 @@ function internalUpdateCb (err, docs, req, res, next) {
       if (err) {
         if (err.errors) {
           return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-        } 
+        }
         return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
       }
 
