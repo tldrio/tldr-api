@@ -9,7 +9,6 @@ var express = require('express')
   , dbObject = require('./lib/db')
   , db
   , requestHandlers = require('./requestHandlers')
-  , env = require('./environments').env
   , mongoose = require('mongoose')
   , models = require('./models')
   , server;                                 // Will store our express server
