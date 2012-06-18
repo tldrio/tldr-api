@@ -11,7 +11,8 @@ var express = require('express')
   , env = require('./environments').env
   , mongoose = require('mongoose')
   , models = require('./models')
-  , server;                                 // Will store our express server
+  , serve                               // Will store our express serverr
+  , RedisStore = require('connect-redis')(express);   // Will manage the connection to our Redis store
 
 
 
@@ -43,6 +44,10 @@ server = express();
 server.configure(function(){
   server.use(requestHandlers.allowAccessOrigin);
   //server.use(express.logger());
+ var ;
+  server.use(express.cookieParser());
+  server.use(express.session({ secret: "keyboard cat", store: new RedisStore }));
+
   server.use(express.bodyParser());
   // Map routes see docs why we do it here
   server.use(server.router);
