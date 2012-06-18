@@ -14,27 +14,6 @@ var express = require('express')
   , server;                                 // Will store our express server
 
 
-
-/**
- * Last wall of defense. If an exception makes its way to the top, the service shouldn't
- * stop, but log a fatal error and send an email to us.
- * Of course, this piece of code should NEVER have to be called.
- */
-
-if (env.name === "production") {
-  // The process needs to keep on running
-  process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
-  });
-} else if (env.name !== "test") {
-  // We stop the server to look at the logs and understand what went wrong
-  // We don't do this for tests as it messes up mocha
-  process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
-    throw err;
-  });
-}
-
 //Create server
 server = express();
 
@@ -49,6 +28,31 @@ server.configure(function(){
   // Use middleware to handle errors
   server.use(requestHandlers.handleErrors);
   
+});
+
+
+/**
+ * process.on('uncaughtException') 
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called.
+ */
+
+server.configure('staging', 'production', function () {
+  // The process needs to keep on running
+  process.on('uncaughtException', function(err) {
+    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+  });
+});
+
+server.configure('development', function () {
+  // We stop the server to look at the logs and understand what went wrong
+  // We don't do this for tests as it messes up mocha
+  // The process needs to keep on running
+  process.on('uncaughtException', function(err) {
+    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+    throw err;
+  });
 });
 
 
