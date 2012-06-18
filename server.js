@@ -40,15 +40,12 @@ server = express();
 
 // Configuration
 
-server.configure(function(){
+server.configure(function () {
   server.use(requestHandlers.allowAccessOrigin);
   //server.use(express.logger());
   server.use(express.bodyParser());
-  // Map routes see docs why we do it here
-  server.use(server.router);
-  // Use middleware to handle errors
-  server.use(requestHandlers.handleErrors);
-  
+  server.use(server.router); // Map routes see docs why we do it here
+  server.use(requestHandlers.handleErrors); // Use middleware to handle errors
 });
 
 
