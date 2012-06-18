@@ -66,7 +66,7 @@ TldrSchema.statics.createAndSaveInstance = function(userInput, callback) {
   instance.normalizeUrl();
   instance.resourceAuthor = instance.resourceAuthor || "Unknown Author";
   instance.resourceDate = instance.resourceDate || new Date();
-  instance.title = instance.title || instance.url; //If no title was provided use url as title
+  instance.title = instance.title || 'Unknown Title'; //If no title was provided use url as title
 
   instance.save(callback);
 };
