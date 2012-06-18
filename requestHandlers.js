@@ -186,7 +186,7 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000){ // code 11000 is for duplicate key
+      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
 
         var url = TldrModel.normalizeUrl(req.body.url);
 
