@@ -6,7 +6,8 @@
 var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
-  , db = require('./lib/db')
+  , dbObject = require('./lib/db')
+  , db
   , requestHandlers = require('./requestHandlers')
   , env = require('./environments').env
   , mongoose = require('mongoose')
@@ -19,17 +20,35 @@ server = express();
 
 // Configuration
 
-server.configure(function(){
-  server.use(requestHandlers.allowAccessOrigin);
-  //server.use(express.logger());
-  server.use(express.bodyParser());
-  // Map routes see docs why we do it here
-  server.use(server.router);
-  // Use middleware to handle errors
-  server.use(requestHandlers.handleErrors);
-  
+
+
+server.configure('development', function () {
+  server.set('dbHost', 'localhost');
+  server.set('dbPort', '27017');
+  server.set('dbName', 'dev-db');
+  server.set('svPort', 8787);
 });
 
+server.configure('test', function () {
+  server.set('dbHost', 'localhost');
+  server.set('dbPort', '27017');
+  server.set('dbName', 'test-db');
+  server.set('svPort', 8787);
+});
+
+server.configure('staging', function () {
+  server.set('dbHost', 'localhost');
+  server.set('dbPort', '27017');
+  server.set('dbName', 'prod-db');
+  server.set('svPort', 9002);
+});
+
+server.configure('production', function () {
+  server.set('dbHost', 'localhost');
+  server.set('dbPort', '27017');
+  server.set('dbName', 'prod-db');
+  server.set('svPort', 9001);
+});
 
 /**
  * process.on('uncaughtException') 
@@ -37,6 +56,7 @@ server.configure(function(){
  * stop, but log a fatal error and send an email to us.
  * Of course, this piece of code should NEVER have to be called.
  */
+
 
 server.configure('staging', 'production', function () {
   // The process needs to keep on running
@@ -55,6 +75,22 @@ server.configure('development', function () {
   });
 });
 
+server.configure(function(){
+  // Store db Instance in server. Avoid multiple instantiation
+  // in test files
+  server.db = new dbObject( server.set('dbHost')
+                   , server.set('dbName')
+                   , server.set('dbPort')
+                   );
+  server.use(requestHandlers.allowAccessOrigin);
+  //server.use(express.logger());
+  server.use(express.bodyParser());
+  // Map routes see docs why we do it here
+  server.use(server.router);
+  // Use middleware to handle errors
+  server.use(requestHandlers.handleErrors);
+  
+});
 
 /**
  * Routes
@@ -79,12 +115,12 @@ server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 // Connect to database and start server
 if (module.parent === null) { // Code to execute only when running as main
-  db.connectToDatabase(function() {
+  server.db.connectToDatabase(function() {
     bunyan.info('Connection to database successful');
 
-    server.listen(env.serverPort, function (){
-      bunyan.info('Server %s launched at %s', server.name, server.url);
-    });
+    //server.listen(server.set('svPort'), function (){
+      //bunyan.info('Server %s launched at %s', server.name, server.url);
+    //});
   });
 }
 

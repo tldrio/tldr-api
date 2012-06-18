@@ -12,9 +12,9 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
-  , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server')
+  , db = server.db
   , url = require('url');
 
 
