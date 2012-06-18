@@ -10,7 +10,7 @@ var bunyan = require('./lib/logger').bunyan
 
 // Define environment
 // Default environment is development
-env.name = process.env.TLDR_ENV || 'development';
+env.name = process.env.NODE_ENV || 'development';
 bunyan.info("Environment set to %s", env.name);
 
 if (env.name === 'development') {
