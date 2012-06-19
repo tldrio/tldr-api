@@ -56,8 +56,13 @@ function searchTldrs (req, res, next) {
       if (docs.length === 0) {
         return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
       }
-
-      return res.json(200, docs[0]);    // Success
+      
+      // Success
+      if (req.accepts('text/html')) {
+        return res.render('page', docs[0]); // Send the html tldr page
+      } else { // We return json by default 
+        return res.json(200, docs[0]);    
+      }
     });
 
     return;
@@ -124,10 +129,8 @@ function getTldrById (req, res, next) {
 
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
-    } else if (req.accepts('application/json') ) {
+    } else {  // Send json by default
       return res.send(200, tldr); // We serve the raw tldr data
-    } else { 
-      return next({ statusCode: 403, body: { message: 'The Accept header should contain text/html or application/json' } } );
     }
 
   });
