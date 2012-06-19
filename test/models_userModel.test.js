@@ -143,7 +143,7 @@ describe('UserModel', function () {
       });
     });
 
-    it('should lowercase login', function (done) {
+    it('should lowercase login when saving a valid tldr', function (done) {
       var user = new UserModel({ login: "lOGin@Email.com"
                                , name: "A name"
                                , password: "supersecret!"
@@ -161,6 +161,40 @@ describe('UserModel', function () {
         });
       });
     });
+
+    it('should not validated a name that\'s too long', function (done) {
+      var user = new UserModel({ login: "login@email.com"
+                               , password: "supersecret!"
+                               , name: "Zr qer qwer wqer qwer weqr wqe wqe wqr ew"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.name.should.not.equal(null);
+        done();
+      });
+    });
+
+    it('should use a default value if the name is missing', function (done) {
+      var user = new UserModel({ login: "lOGin@Email.com"
+                               , password: "supersecret!"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        UserModel.find({login: "login@email.com"}, function(err, docs) {
+          docs.length.should.equal(1);
+          docs[0].name.should.equal("");
+
+          done();
+        });
+      });
+    });
+
 
 
 

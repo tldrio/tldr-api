@@ -22,7 +22,8 @@ UserSchema = new Schema(
            , set: toLowerCase
            }
   , name: { type: String
-          , validated: [validateName, 'name must have between 1 and 100 characters']
+          , default: ''
+          , validate: [validateName, 'name must have between 1 and 100 characters']
           }
   , password: { type: String
               , required: true
@@ -52,7 +53,7 @@ function validateLogin (value) {
 }
 
 function validateName (value) {
-  return true;
+  return (value.length <= 40);
 }
 
 
