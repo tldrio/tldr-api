@@ -85,7 +85,6 @@ server.configure('development', function () {
  * Main server configuration
  * All handlers to be defined here
  */
-
 server.configure(function () {
   server.use(requestHandlers.allowAccessOrigin);
 
@@ -96,7 +95,7 @@ server.configure(function () {
   server.use(express.cookieParser());
   server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
                              , key: "tldr.io cookie"                // Name of our cookie
-                             , store: new RedisStore }));           // Store to use
+                             , store: new RedisStore() }));           // Store to use
 
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
@@ -106,7 +105,6 @@ server.configure(function () {
 /**
  * Routes
  */
-
 server.get('/test', function(req, res, next) {
 
   if (req.session.myVar) {
@@ -123,6 +121,31 @@ server.get('/retest', function(req, res, next) {
   req.session.myVar = 1;
 
   res.json(200, {"message": "ca marche -- re"});
+});
+
+
+server.get('/login', function(req, res, next) {
+  res.send(200, '<form method="POST" action="http://localhost:8787/login"><input type="text" name="login"><input type="submit" value="Gogogo"></form>');
+});
+
+server.post('/login', function(req, res, next) {
+  req.session.authenticatedUser = "louis";
+  res.send(200, 'OK done');
+});
+
+server.get('/whoshere', function (req, res, next) {
+  if (req.session && req.session.authenticatedUser && (req.session.authenticatedUser !== "")) {
+    res.send(200, "You are logged in as : " + req.session.authenticatedUser);
+  } else {
+    res.send(200, "You are not logged in");
+  }
+});
+
+server.get('/logout', function (req, res, next) {
+  if (req.session && req.session.authenticatedUser) {
+    req.session.destroy();
+  }
+  res.send(200, "You are now logged out");
 });
 
 

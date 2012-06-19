@@ -68,7 +68,6 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
         instance.save(callback);
       });
     });
-
   } else {
     instance = new UserModel(validFields);
     instance.save(callback);
