@@ -5,8 +5,7 @@
 */
 
 
-var mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , bunyan = require('./lib/logger').bunyan
+var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
@@ -114,30 +113,24 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-
-  if (req.headers.accept === 'text/html') {
-    // We serve the tldr Page
-
-    return res.send(200, '<html> Tldr Page</html>');
-  } else if (req.headers.accept === 'application/json') {
-    // We serve the raw tldr data
-
-    TldrModel.find({_id: id}, function (err, docs) {
-      var tldr;
-      if (err) {
-        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
-      }
-
-      // We found the record
-      if (docs.length === 1) {
-        tldr = docs[0];
-        return res.send(200, tldr);
-      }
-
+  TldrModel.findById( id, function (err, tldr) {
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+    }
+    if(!tldr){
       // There is no record for this id
       return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
-    });
-  }
+    }
+
+    if (req.accepts('text/html')) {
+      return res.render('page', tldr); // We serve the tldr Page
+    } else if (req.accepts('application/json') ) {
+      return res.send(200, tldr); // We serve the raw tldr data
+    } else { 
+      return next({ statusCode: 403, body: { message: 'The Accept header should contain text/html or application/json' } } );
+    }
+
+  });
 }
 
 
