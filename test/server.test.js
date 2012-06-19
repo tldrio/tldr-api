@@ -313,7 +313,7 @@ describe('Webserver', function () {
       };
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(200);
+        res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
         TldrModel.find({}, function(err, docs) {
@@ -341,7 +341,7 @@ describe('Webserver', function () {
       };
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(200);
+        res.statusCode.should.equal(204);
         TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
           tldr.summaryBullets.should.include('Best Blog Ever');

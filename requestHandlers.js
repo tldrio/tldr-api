@@ -167,38 +167,6 @@ function internalUpdateCb (err, docs, req, res, next) {
 }
 
 
-/**
- * Convenience function to factor code betweet PUT and POST on
- * already existing tldr
- *
- */
-
-function createOrUpdate (req, res, next) {
-
-    TldrModel.createOrUpdate(req.body, function (err) {
-      var url;
-
-      if (err) {
-        if (err.errors) {
-          return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-        }
-        return next({ statusCode: 500, body: { message: 'Internal Error while updating Tldr' } } );
-      }
-
-      // send back tldr
-      // we have to find it because findAndModify is not yet in Mongoose
-      url = normalizeUrl(req.body.url);
-      TldrModel.findOne({ url: url }, function (err, tldr) {
-        if (err) {
-          return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
-        }
-        return res.json(200, tldr);
-      });
-    });
-
-}
-
-
 
 /**
  * Handles POST /tldrs
@@ -214,28 +182,26 @@ function postNewTldr (req, res, next) {
     return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
 
-  createOrUpdate(req, res, next);
+  TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
+    if (err) {
+      if (err.errors) {
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
 
-  //TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
-    //if (err) {
-      //if (err.errors) {
-        //return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      //} else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
+        var url = normalizeUrl(req.body.url);
 
-        //var url = normalizeUrl(req.body.url);
+        TldrModel.find({url: url}, function (err, docs) {
+          internalUpdateCb(err, docs, req, res, next);
+        });
 
-        //TldrModel.find({url: url}, function (err, docs) {
-          //internalUpdateCb(err, docs, req, res, next);
-        //});
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning Tldr ' } } );
+      }
 
-      //} else {
-        //return next({ statusCode: 500, body: { message: 'Internal Error while creatning Tldr ' } } );
-      //}
-
-    //} else {
-      //res.json(201, tldr);
-    //}
-  //});
+    } else {
+      res.json(201, tldr);
+    }
+  });
 
 }
 

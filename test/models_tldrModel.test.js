@@ -152,30 +152,6 @@ describe('TldrModel', function () {
 
     });
 
-    //it('should detect missing required resourceAuthor', function (done) {
-
-      //var tldr = new TldrModel({
-          //url: 'http://needforair.com/nutcrackers',
-          //title: 'Blog NFA',
-          //summaryBullets: ['Awesome Blog'],
-          //resourceDate: '2012',
-					//createdAt: new Date(),
-					//updatedAt: new Date()
-      //})
-        //, valErr;
-
-      //tldr.save( function (err) {
-        //err.name.should.equal('ValidationError');
-
-        //_.keys(err.errors).length.should.equal(1);
-				//valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-				//valErr.resourceAuthor.should.not.equal(null);
-
-        //done();
-      //});
-
-    //});
-
     it('should detect wrong type of arg for dates bitch', function (done) {
 
       var tldr = new TldrModel({
@@ -305,99 +281,99 @@ describe('TldrModel', function () {
 
 
 
-  //describe('#createAndSaveInstance', function () {
+  describe('#createAndSaveInstance', function () {
 
-    //it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      //TldrModel.createAndSaveInstance(
-				//{ title: 'Blog NFA'
-        //, url: 'http://mydomain.com'
-				//, summaryBullets: ['coin']
-				//, resourceAuthor: 'bloup'
-				//, createdAt: '2012'}, 
-				//function (err) { 
-					//if (err) { return done(err); } 
-					//TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
-						//if (err) { return done(err); }
+    it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
+      TldrModel.createAndSaveInstance(
+        { title: 'Blog NFA'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'}, 
+        function (err) { 
+          if (err) { return done(err); } 
+          TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+            if (err) { return done(err); }
 
-						//var tldr = docs[0];
-						//tldr.url.should.equal('http://mydomain.com/');
-						//tldr.summaryBullets.should.include('coin');
-						//tldr.resourceAuthor.should.equal('bloup');
-						//tldr.createdAt.should.not.equal('2012');
+            var tldr = docs[0];
+            tldr.url.should.equal('http://mydomain.com/');
+            tldr.summaryBullets.should.include('coin');
+            tldr.resourceAuthor.should.equal('bloup');
+            tldr.createdAt.should.not.equal('2012');
 
-						//done();
-					//});
-				//});
-    //});
+            done();
+          });
+        });
+    });
 
-    //it('should not save two tldrs with same url', function (done) {
-      //var tldr = { title: 'Blog NFA'
-        //, url: 'http://mydomain.com'
-        //, summaryBullets: ['coin']
-        //, resourceAuthor: 'bloup'
-        //, createdAt: '2012'};
+    it('should not save two tldrs with same url', function (done) {
+      var tldr = { title: 'Blog NFA'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'};
 
-        //TldrModel.createAndSaveInstance(
-          //tldr,
-          //function (err) { 
-            //if (err) { return done(err); } 
-            //TldrModel.find({url: tldr.url}, function (err,docs) {
-              //if (err) { return done(err); }
+        TldrModel.createAndSaveInstance(
+          tldr,
+          function (err) { 
+            if (err) { return done(err); } 
+            TldrModel.find({url: tldr.url}, function (err,docs) {
+              if (err) { return done(err); }
 
-              //TldrModel.createAndSaveInstance(
-                //tldr, 
-                //function (err) { 
-                  //err.should.not.be.null;
-                  //err.code.should.equal(11000);// 11000 is the code for duplicate key
-                  //done();
-                //});
-            //});
-          //});
-    //});
+              TldrModel.createAndSaveInstance(
+                tldr, 
+                function (err) { 
+                  err.should.not.be.null;
+                  err.code.should.equal(11000);// 11000 is the code for duplicate key
+                  done();
+                });
+            });
+          });
+    });
 
-  //});
+  });
 
-	//describe('#updateValidFields', function () {
+  describe('#updateValidFields', function () {
 
-		//it('should restrict the fields the user is allowed to update', function (done) {
-				//var updated = {url: 'http://myotherdomain.com'
-											//, summaryBullets: ['new2']
-											//, title: 'Blog NeedForAir'
-											//, resourceAuthor: 'new3'
-											//, createdAt: '2012'};
+    it('should restrict the fields the user is allowed to update', function (done) {
+        var updated = {url: 'http://myotherdomain.com'
+                      , summaryBullets: ['new2']
+                      , title: 'Blog NeedForAir'
+                      , resourceAuthor: 'new3'
+                      , createdAt: '2012'};
 
-      //TldrModel.createAndSaveInstance(
-				//{ title: 'Blog NFA'
-        //, url: 'http://mydomain.com'
-				//, summaryBullets: ['coin']
-				//, resourceAuthor: 'bloup'},
-				//function(err) {
-					//if (err) { return done(err); }
-					//TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
-						//if (err) { return done(err); }
+      TldrModel.createAndSaveInstance(
+        { title: 'Blog NFA'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'},
+        function(err) {
+          if (err) { return done(err); }
+          TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+            if (err) { return done(err); }
 
-						//var tldr = docs[0];
-						//tldr.url.should.equal('http://mydomain.com/');
-						//tldr.summaryBullets.should.include('coin');
-						//tldr.title.should.equal('Blog NFA');
-						//tldr.resourceAuthor.should.equal('bloup');
-						
-						//// Perform update
-						//tldr.updateValidFields(updated, function(err) {
-							//if (err) { return done(err); }
+            var tldr = docs[0];
+            tldr.url.should.equal('http://mydomain.com/');
+            tldr.summaryBullets.should.include('coin');
+            tldr.title.should.equal('Blog NFA');
+            tldr.resourceAuthor.should.equal('bloup');
+            
+            // Perform update
+            tldr.updateValidFields(updated, function(err) {
+              if (err) { return done(err); }
 
-							//tldr.url.should.equal('http://mydomain.com/');
-							//tldr.summaryBullets.should.include('new2');
-							//tldr.title.should.equal('Blog NeedForAir');
-							//tldr.resourceAuthor.should.equal('new3');
-              //tldr.createdAt.should.not.equal('2012');
+              tldr.url.should.equal('http://mydomain.com/');
+              tldr.summaryBullets.should.include('new2');
+              tldr.title.should.equal('Blog NeedForAir');
+              tldr.resourceAuthor.should.equal('new3');
+              tldr.createdAt.should.not.equal('2012');
 
-							//done();
-						//});
-					//});
-				//});
-		//});
-  //});
+              done();
+            });
+          });
+        });
+    });
+  });
 
 
   describe('#normalizeUrl', function() {

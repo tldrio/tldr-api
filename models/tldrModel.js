@@ -51,18 +51,6 @@ TldrSchema = new Schema(
 
 
 
-TldrSchema.statics.createOrUpdate = function (userInput, callback) {
-  var conditions
-    , updates;
-
-  conditions = { url: normalizeUrl(userInput.url) };
-  updates =  _.pick(userInput, userSetableFields);
-  //console.dir(updates);
-
-  // findAndModify will be available in Mongoose 3.x, which is unstable for now
-  this.update(conditions, updates, { upsert: true }, callback);
-};
-
 /**
  * Create a new instance of TldrModel and populate it
  * Only fields in userSetableFields are handled
