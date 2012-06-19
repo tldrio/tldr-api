@@ -162,7 +162,7 @@ describe('UserModel', function () {
       });
     });
 
-    it('should not validated a name that\'s too long', function (done) {
+    it('should not validate a name that\'s too long', function (done) {
       var user = new UserModel({ login: "login@email.com"
                                , password: "supersecret!"
                                , name: "Zr qer qwer wqer qwer weqr wqe wqe wqr ew"
@@ -195,6 +195,22 @@ describe('UserModel', function () {
       });
     });
 
+    it('should not validate a user whose password is too short', function (done) {
+      var user = new UserModel({ login: "login@email.com"
+                               , password: "secre"
+                               , name: "wqr ew"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.password.should.not.equal(null);
+        done();
+      });
+    });
 
 
 

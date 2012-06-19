@@ -27,6 +27,7 @@ UserSchema = new Schema(
           }
   , password: { type: String
               , required: true
+              , validate: [validatePassword, 'password must be at least 6 characters long']
               }
   }
 , { strict: true });
@@ -44,6 +45,7 @@ function toLowerCase(value) {
 /*
  * Validators
  */
+// Email regex comes from node-validator and can be used by clients
 function validateLogin (value) {
   if (value) {
     return value.match(/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/);
@@ -56,6 +58,9 @@ function validateName (value) {
   return (value.length <= 40);
 }
 
+function validatePassword (value) {
+  return (value ? value.length >= 6 : false);
+}
 
 
 
