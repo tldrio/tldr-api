@@ -12,7 +12,7 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger').bunyan // Audit logger
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
-  , normalizeUrl = require('../models/tldrModel').normalizeUrl
+  , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , db = require('../lib/db')
   , TldrModel = models.TldrModel
   , server = require('../server')
@@ -91,13 +91,13 @@ describe('TldrModel', function () {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "ftp://myfile.tld/movie"
+          tldrData.url = "ftp://myfile.tld/movie";
           tldr = new TldrModel(tldrData);
         tldr.save( function (err) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "http://myfile.tld/movie"
+          tldrData.url = "http://myfile.tld/movie";
           tldr = new TldrModel(tldrData);
           tldr.save( function (err) {
             assert.isNull(err);

@@ -15,8 +15,7 @@ var should = require('chai').should()
   , db = require('../lib/db')
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel
-  , customUtils = require('../lib/customUtils');
+  , TldrModel = models.TldrModel;
 
 
 
@@ -90,7 +89,6 @@ describe('Webserver', function () {
               TldrModel.find({}, function(err, docs) {
                 if (err) {return done(err); }
                 numberOfTldrs = docs.length;
-                console.log('number of tldrs ', numberOfTldrs);
                 done();
               });
             });
@@ -113,10 +111,8 @@ describe('Webserver', function () {
   describe('should handle GET request for', function () {
 
     it('an existing tldr given an url with /tldrs/search?', function (done) {
-      console.log('toto');
 
       client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
-        console.log('titi');
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
         done();
@@ -334,7 +330,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should handle POST request as PUT if tldr already exists', function (done) {
+    it('Should handle POST request as an update if tldr already exists', function (done) {
       var tldrData = {url: 'http://needforair.com/nutcrackers'
         , title:'Nutcrackers article'
         , summaryBullets: ['Best Blog Ever']
