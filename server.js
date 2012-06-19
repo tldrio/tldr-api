@@ -49,13 +49,12 @@ server.configure('production', function () {
   server.set('svPort', 9001);
 });
 
+
 /**
- * process.on('uncaughtException') 
  * Last wall of defense. If an exception makes its way to the top, the service shouldn't
- * stop, but log a fatal error and send an email to us.
+ * stop if it is run in production, but log a fatal error and send an email to us.
  * Of course, this piece of code should NEVER have to be called.
  */
-
 
 server.configure('staging', 'production', function () {
   // The process needs to keep on running
@@ -74,6 +73,12 @@ server.configure('development', function () {
   });
 });
 
+
+/*
+ * Main server configuration
+ * All handlers to be defined here
+ */
+
 server.configure(function(){
   // Store db Instance in server. Avoid multiple instantiation
   // in test files
@@ -88,8 +93,8 @@ server.configure(function(){
   server.use(server.router);
   // Use middleware to handle errors
   server.use(requestHandlers.handleErrors);
-  
 });
+
 
 /**
  * Routes
@@ -112,7 +117,9 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 
-// Connect to database and start server
+/*
+ * Connect to database, then start server
+ */
 if (module.parent === null) { // Code to execute only when running as main
   server.db.connectToDatabase(function() {
     bunyan.info('Connection to database successful');
