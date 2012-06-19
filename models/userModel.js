@@ -47,6 +47,18 @@ function toLowerCase(value) {
 }
 
 
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
+console.log(uuid.v4());
 
 /*
  * Create a User instance and save it to the database
