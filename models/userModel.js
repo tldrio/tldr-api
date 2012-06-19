@@ -8,7 +8,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , _ = require('underscore')
   , UserSchema, UserModel
-  , uuid = require('node-uuid')
+  , bcrypt = require('bcrypt')
   , userSetableFields = ['login', 'name', 'password'] // setable fields by user
   , userUpdatableFields = ['login', 'name', 'password'];// updatabe fields by user
 
@@ -33,9 +33,6 @@ UserSchema = new Schema(
               , required: true
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
-  , salt: { type: String
-          , validate: [validateSalt, 'salt must be a 128 bits long uuid']
-          }
   }
 , { strict: true });
 
@@ -46,7 +43,6 @@ UserSchema = new Schema(
 function toLowerCase(value) {
   return value.toLowerCase();
 }
-
 
 
 /*
@@ -61,8 +57,6 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
   if (validatePassword(validFields.password)) {
-    // Salt is a 128 bits long client-unique string
-    validFields.salt = uuid.v4();
 
   }
 
@@ -89,11 +83,6 @@ function validateName (value) {
 
 function validatePassword (value) {
   return (value ? value.length >= 6 : false);
-}
-
-// TODO: real validator and update tests
-function validateSalt (value) {
-  return true;
 }
 
 
