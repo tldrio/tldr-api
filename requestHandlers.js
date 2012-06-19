@@ -107,29 +107,37 @@ function searchTldrs (req, res, next) {
 
 /**
  * GET /tldrs/:id
- *
+ * We query tldr by id here
  */
 
 function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  // We find by id here
-  TldrModel.find({_id: id}, function (err, docs) {
-    var tldr;
-    if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
-    }
 
-    // We found the record
-    if (docs.length === 1) {
-      tldr = docs[0];
-      return res.send(200, tldr);
-    }
+  if (req.headers.accept === 'text/html') {
+    // We serve the tldr Page
 
-    // There is no record for this id
-    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
-  });
+    return res.send(200, '<html> Tldr Page</html>');
+  } else if (req.headers.accept === 'application/json') {
+    // We serve the raw tldr data
+
+    TldrModel.find({_id: id}, function (err, docs) {
+      var tldr;
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      }
+
+      // We found the record
+      if (docs.length === 1) {
+        tldr = docs[0];
+        return res.send(200, tldr);
+      }
+
+      // There is no record for this id
+      return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+    });
+  }
 }
 
 

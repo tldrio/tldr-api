@@ -15,7 +15,8 @@ var should = require('chai').should()
   , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , rootUrl = 'http://localhost:8686';
 
 
 
@@ -292,6 +293,18 @@ describe('Webserver', function () {
     });
 
 
+    it('Should serve tldr-page', function (done) {
+      client = restify.createStringClient({ url: client.url.href
+                                          , accept: 'text/html'});
+
+      client.get('/tldrs/111111111111111111111111', function (err, req, res, data) {
+        res.statusCode.should.equal(200);
+        res.headers['content-type'].should.contain('text/html');
+        done();
+      });
+
+    });
+    
 
 
   });
