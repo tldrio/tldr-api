@@ -293,7 +293,7 @@ describe('Webserver', function () {
     });
 
 
-    it('Should serve tldr-page', function (done) {
+    it('Should serve tldr-page if accept header is text/html', function (done) {
       client = restify.createStringClient({ url: client.url.href
                                           , accept: 'text/html'});
 

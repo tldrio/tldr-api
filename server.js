@@ -10,6 +10,7 @@ var express = require('express')
   , requestHandlers = require('./requestHandlers')
   , mongoose = require('mongoose')
   , models = require('./models')
+  , consolidate = require('consolidate')
   , server;                                 // Will store our express server
 
 
