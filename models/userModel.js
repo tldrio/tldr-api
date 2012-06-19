@@ -23,6 +23,9 @@ UserSchema = new Schema(
   , name: { type: String
           , validated: [validateName, 'name must have between 1 and 100 characters']
           }
+  , password: { type: String
+              , required: true
+              }
   }
 , { strict: true });
 
