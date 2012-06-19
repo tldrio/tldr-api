@@ -143,8 +143,8 @@ describe('UserModel', function () {
       });
     });
 
-    it('should lowercase login as almost all email addresses are case-insensitive', function (done) {
-      var user = new UserModel({ login: "login@email.com"
+    it('should lowercase login', function (done) {
+      var user = new UserModel({ login: "lOGin@Email.com"
                                , name: "A name"
                                , password: "supersecret!"
                                })
@@ -153,7 +153,11 @@ describe('UserModel', function () {
       user.save(function(err) {
         UserModel.find({login: "login@email.com"}, function(err, docs) {
           docs.length.should.equal(1);
-          done();
+
+          UserModel.find({login: "lOGin@Email.com"}, function(err, docs) {
+            docs.length.should.equal(0);
+            done();
+          });
         });
       });
     });
