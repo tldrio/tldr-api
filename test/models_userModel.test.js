@@ -45,7 +45,6 @@ describe('UserModel', function () {
   describe('#validators', function () {
 
     it('should accept only valid emails as login', function (done) {
-      console.log("Called");
       done();
     });
 
