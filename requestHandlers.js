@@ -6,20 +6,11 @@
 
 
 var mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , restify = require('restify')
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
-  , TldrModel = models.TldrModel
-  , customErrors = require('./lib/errors');
-
-
-// If an error occurs when retrieving from/putting to the db, inform the user gracefully
-// Later, we may implement a retry count
-function handleInternalDBError(err, next, msg) {
-  bunyan.error({error: err, message: msg});
-  return next(new restify.InternalError('An internal error has occured, we are looking into it'));
-}
+  , normalizeUrl = require('./lib/customUtils').normalizeUrl
+  , TldrModel = models.TldrModel;
 
 
 /**
@@ -35,21 +26,43 @@ function getLatestTldrs (req, res, next) {
 
 
 /**
- * Returns a search of tldrs (through route /tldrs/search/)
+ * Returns a search of tldrs (through route /tldrs/search)
  * You can specify which tldrs you want with the following parameters in the URL
  * Currently the olderthan parameter has priority over the startat parameter
  * @param {Integer} quantity quantity of tldrs to be fetched. Can't be greater than 10 (Optional - default: 10)
  * @param {Integer} startat Where to start looking for tldrs. 0 to start at the latest, 5 to start after the fifth latest and so on (Optional - default: 0)
  * @param {Integer} olderthan Returned tldrs must be older than this date, which is expressed as the number of milliseconds since Epoch - it's given by the Date.getTime() method in Javascript (Optional - default: now)
+ * @param {String} url If set, this handler will return the tldr (if any) whose url is the url parameter
  *
  * If both startat and olderthan are set, we use olderthan only.
  */
 function searchTldrs (req, res, next) {
   var query = req.query
+    , url = query.url
     , defaultLimit = 10
     , limit = query.quantity || defaultLimit
     , startat = query.startat || 0
     , olderthan = query.olderthan;
+
+
+  // If we have a url specified we don't need to go further just grab the
+  // corresponding tldr
+  if (url) {
+    url = normalizeUrl(url);
+    TldrModel.find({url: url}, function (err, docs) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+      }
+
+      if (docs.length === 0) {
+        return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+      }
+
+      return res.json(200, docs[0]);    // Success
+    });
+
+    return;
+  }
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
   if (isNaN(limit)) { limit = defaultLimit; }
@@ -63,11 +76,13 @@ function searchTldrs (req, res, next) {
     TldrModel.find({})
      .sort('updatedAt', -1)
      .limit(limit)
-     .$lt('updatedAt', olderthan)
-     .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+     .lt('updatedAt', olderthan)
+     .exec(function(err, docs) {
+       if (err) {
+         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
+       }
+
        res.json(200, docs);
-       return next();
      });
 
 
@@ -80,97 +95,163 @@ function searchTldrs (req, res, next) {
      .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
-     .run(function(err, docs) {
-       if (err) { return handleInternalDBError(err, next, "Internal error in getTldrsWithQuery"); }
+     .exec(function(err, docs) {
+       if (err) {
+         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
+       }
        res.json(200, docs);
-       return next();
      });
   }
 }
 
 
-// GET a tldr by url
-function getTldrByUrl (req, res, next) {
-  // parameters are already decoded by restify before being passed on to the request handlers
-  var url = TldrModel.normalizeUrl(req.params.url)
-    , log = req.log;
+/**
+ * GET /tldrs/:id
+ *
+ */
 
-  TldrModel.find({_id: url}, function (err, docs) {
-    if (err) { return handleInternalDBError(err, next, "Internal error in getTldrByUrl"); }
+function getTldrById (req, res, next) {
 
-    if (docs.length === 0) {
-      return next(new restify.ResourceNotFoundError('This record doesn\'t exist'));
-    } else {
-      res.json(200, docs[0]);    // Success
-      return next();
+  var id = req.params.id;
+
+  // We find by id here
+  TldrModel.find({_id: id}, function (err, docs) {
+    var tldr;
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
     }
+
+    // We found the record
+    if (docs.length === 1) {
+      tldr = docs[0];
+      return res.send(200, tldr);
+    }
+
+    // There is no record for this id
+    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
   });
+}
+
+
+/**
+ * Convenience function to factor code betweet PUT and POST on
+ * already existing tldr
+ *
+ */
+
+function internalUpdateCb (err, docs, req, res, next) {
+
+  var oldTldr;
+
+  if (err) {
+    return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+  }
+
+  if (docs.length === 1) {
+    oldTldr = docs[0];
+
+    oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
+      if (err) {
+        if (err.errors) {
+          return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+        }
+        return next({ statusCode: 500, body: { message: 'Internal Error while updating Tldr' } } );
+      }
+
+      // With 204 even if a object is provided it's not sent by express
+      return res.send(204);
+    });
+  } else {
+    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+  }
 }
 
 
 
 /**
- * Handles PUT /tldrs/:url
- * Creates or updates the tldr, as per the spec
+ * Handles POST /tldrs
+ * create new tldr, as per the spec
  * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
+ * oldest POST wins if there are concurrent POSTs
  *
  */
 
-function putTldrByUrl (req, res, next) {
-  // Restify already decodes te paramters
-  var url = req.params.url
-    , log = req.log;
+function postNewTldr (req, res, next) {
 
-  if(!req.body){
-    // Response received by client is 500. TODO : investigate why
-    res.json(400, 'body required in request');
-    return next();
+  if (!req.body) {
+    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
 
-  TldrModel.find({_id: url}, function (err, docs) {
-    var tldr;
-    if (err) { return handleInternalDBError(err, next, "Internal error in putTldrByUrl"); }
+  TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
+    if (err) {
+      if (err.errors) {
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
 
-    if (docs.length === 1) {
-      tldr = docs[0];
-      tldr.updateValidFields(req.body, function (err) {
-        if (err) {
-          if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
-            return next();
-          } else {
-            return handleInternalDBError(err, next, "Internal error in putTldrByUrl");    // Unexpected error while saving
-          }
-        }
+        var url = normalizeUrl(req.body.url);
 
-        res.send(204);
-        return next();
-      });
+        TldrModel.find({url: url}, function (err, docs) {
+          internalUpdateCb(err, docs, req, res, next);
+        });
+
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning Tldr ' } } );
+      }
+
     } else {
-      //tldr = new TldrModel(req.body);
-      //tldr._id = url;
-      //tldr.save(function (err) {
-      TldrModel.createAndSaveInstance(url, req.body, function (err, tldr) {
-        if (err) {
-          if (err.errors) {
-            res.json(403, models.getAllValidationErrorsWithExplanations(err.errors));
-            return next();
-          } else {
-            return handleInternalDBError(err, next, "Internal error in postCreateTldr");    // Unexpected error while saving
-          }
-        }
-
-        res.json(201, tldr);
-        return next();
-      });
+      res.json(201, tldr);
     }
   });
 
 }
 
+/**
+ * Handles PUT /tldrs/:id
+ * updates the tldr, as per the spec
+ * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
+ *
+ */
+
+function putUpdateTldrWithId (req, res, next) {
+
+  var id = req.params.id;
+
+  if (!req.body) {
+    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
+  }
+
+  // We find by id here
+  TldrModel.find({ _id: id }, function (err, docs) {
+    internalUpdateCb(err, docs, req, res, next);
+  });
+
+}
+
+/**
+ * Handle All errors coming from next(err) calls
+ *
+ */
+
+function handleErrors (err, req, res, next) {
+  res.json(err.statusCode, err.body);
+}
+
+/**
+ * Add necessary headers for CORS
+ *
+ */
+
+function allowAccessOrigin (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  next();
+}
 
 // Module interface
 module.exports.getLatestTldrs = getLatestTldrs;
+module.exports.getTldrById = getTldrById;
 module.exports.searchTldrs = searchTldrs;
-module.exports.getTldrByUrl = getTldrByUrl;
-module.exports.putTldrByUrl = putTldrByUrl;
+module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
+module.exports.postNewTldr = postNewTldr;
+module.exports.handleErrors = handleErrors;
+module.exports.allowAccessOrigin = allowAccessOrigin;

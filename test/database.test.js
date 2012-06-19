@@ -7,15 +7,13 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
-  , restify = require('restify')
   , sinon = require('sinon')
-  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
+  , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')
-  , db = require('../lib/db')
 	, TldrModel = models.TldrModel
   , server = require('../server')
-  , customErrors = require('../lib/errors');
+	, db = server.db;
 
 
 
@@ -37,63 +35,63 @@ describe('Database', function () {
     db.closeDatabaseConnection(done);
   });
 
-	beforeEach(function (done) {
+  beforeEach(function (done) {
 
-		// dummy models
-    var tldr1 = new TldrModel({_id: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr2 = new TldrModel({_id: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr3 = new TldrModel({_id: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    // dummy models
+    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
-		// clear database and repopulate
-		TldrModel.remove(null, function (err) {
-		  if (err) {return done(err);}
-			tldr1.save(	function (err) {
-				if (err) {return done(err); }
-			  tldr2.save( function (err) {
-					if (err) {return done(err); }
-			    tldr3.save( function (err) {
-			      if (err) {return done(err); }
-						done();
-			    });
-			  });
-			});
-		});
+    // clear database and repopulate
+    TldrModel.remove({}, function (err) {
+      if (err) {return done(err);}
+      tldr1.save(function (err) {
+        if (err) {return done(err); }
+        tldr2.save( function (err) {
+          if (err) {return done(err); }
+          tldr3.save( function (err) {
+            if (err) {return done(err); }
+            done();
+          });
+        });
+      });
+    });
 
-	});
+  });
 
   afterEach(function (done) {
 
-    TldrModel.remove(null, function (err) {
+    TldrModel.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
 
   });
 
-	// Check that all 3 records are in the db
+  // Check that all 3 records are in the db
   it('should return full collection', function (done) {
 
     TldrModel.find(null, function (err, docs) {
       if (err) { return done(err); }
-			docs.should.have.length(3);
-			done();
+      docs.should.have.length(3);
+      done();
     });
 
   });
 
-	// Get tldr with id 1
-	it('should return a tldr for an existing id', function (done) {
+  // Get tldr with id 1
+  it('should return a tldr for an existing id', function (done) {
 
-    var _id = 'http://needforair.com/nutcrackers';
+    var url = 'http://needforair.com/nutcrackers';
 
-	  TldrModel.find( {_id: _id}, function (err, docs) {
+    TldrModel.find( {url: url}, function (err, docs) {
       if (err) { return done(err); }
       var tldr = docs[0];
-			tldr.title.should.equal('nutcrackers');
-			done();
-	  });
+      tldr.title.should.equal('nutcrackers');
+      done();
+    });
 
-	});
+  });
 
 });
 
