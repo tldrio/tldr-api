@@ -313,7 +313,7 @@ describe('Webserver', function () {
       };
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(201);
+        res.statusCode.should.equal(200);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
         TldrModel.find({}, function(err, docs) {
@@ -341,7 +341,7 @@ describe('Webserver', function () {
       };
 
       client.post('/tldrs', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(204);
+        res.statusCode.should.equal(200);
         TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
           tldr.summaryBullets.should.include('Best Blog Ever');
@@ -353,13 +353,12 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = {
-        summaryBullets: ['summary'] };   // Summary can't be empty
+      var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
         client.post('/tldrs', tldrData, function(err, req, res, obj) {
+          res.statusCode.should.equal(403);
           var parsedError = JSON.parse(res.body);
           parsedError.should.have.property('url');
-          res.statusCode.should.equal(403);
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
