@@ -19,6 +19,7 @@ server = express();
 
 /*
  * Environments declaration
+ * Express' default environment is 'development'
  */
 server.configure('development', function () {
   server.set('envName', 'development');
