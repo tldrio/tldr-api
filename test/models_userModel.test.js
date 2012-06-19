@@ -143,6 +143,23 @@ describe('UserModel', function () {
       });
     });
 
+    it('should lowercase login as almost all email addresses are case-insensitive', function (done) {
+      var user = new UserModel({ login: "login@email.com"
+                               , name: "A name"
+                               , password: "supersecret!"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        UserModel.find({login: "login@email.com"}, function(err, docs) {
+          docs.length.should.equal(1);
+          done();
+        });
+      });
+    });
+
+
+
 
   });
 
