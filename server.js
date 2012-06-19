@@ -20,7 +20,6 @@ server = express();
  * Environments declaration
  */
 server.configure('development', function () {
-  server.set('envName', 'development');
   server.set('dbHost', 'localhost');
   server.set('dbPort', '27017');
   server.set('dbName', 'dev-db');
@@ -28,7 +27,6 @@ server.configure('development', function () {
 });
 
 server.configure('test', function () {
-  server.set('envName', 'test');
   server.set('dbHost', 'localhost');
   server.set('dbPort', '27017');
   server.set('dbName', 'test-db');
@@ -36,7 +34,6 @@ server.configure('test', function () {
 });
 
 server.configure('staging', function () {
-  server.set('envName', 'staging');
   server.set('dbHost', 'localhost');
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
@@ -44,7 +41,6 @@ server.configure('staging', function () {
 });
 
 server.configure('production', function () {
-  server.set('envName', 'production');
   server.set('dbHost', 'localhost');
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
@@ -126,7 +122,7 @@ if (module.parent === null) { // Code to execute only when running as main
     bunyan.info('Connection to database successful');
 
     server.listen(server.set('svPort'), function (){
-      bunyan.info('Server %s launched in %s environment, on port %s', server.name, server.set('envName'), server.set('svPort'));
+      bunyan.info('Server %s launched in %s environment, on port %s', server.name, server.set('env'), server.set('svPort'));
     });
   });
 }
