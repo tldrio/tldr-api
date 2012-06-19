@@ -7,7 +7,6 @@ var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , dbObject = require('./lib/db')
-  , db
   , requestHandlers = require('./requestHandlers')
   , mongoose = require('mongoose')
   , models = require('./models')
@@ -16,7 +15,6 @@ var express = require('express')
 
 //Create server
 server = express();
-
 
 /*
  * Environments declaration
@@ -50,6 +48,13 @@ server.configure('production', function () {
 });
 
 
+// Store db Instance in server. Avoid multiple instantiation
+// in test files
+server.db = new dbObject( server.set('dbHost')
+                        , server.set('dbName')
+                        , server.set('dbPort')
+                        );
+
 /**
  * Last wall of defense. If an exception makes its way to the top, the service shouldn't
  * stop if it is run in production, but log a fatal error and send an email to us.
@@ -80,12 +85,6 @@ server.configure('development', function () {
  */
 
 server.configure(function(){
-  // Store db Instance in server. Avoid multiple instantiation
-  // in test files
-  server.db = new dbObject( server.set('dbHost')
-                          , server.set('dbName')
-                          , server.set('dbPort')
-                          );
   server.use(requestHandlers.allowAccessOrigin);
   //server.use(express.logger());
   server.use(express.bodyParser());
@@ -124,9 +123,9 @@ if (module.parent === null) { // Code to execute only when running as main
   server.db.connectToDatabase(function() {
     bunyan.info('Connection to database successful');
 
-    //server.listen(server.set('svPort'), function (){
-      //bunyan.info('Server %s launched at %s', server.name, server.url);
-    //});
+    server.listen(server.set('svPort'), function (){
+      bunyan.info('Server %s launched', server.name);
+    });
   });
 }
 
