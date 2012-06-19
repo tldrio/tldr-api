@@ -6,7 +6,11 @@
 
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
-  , UserSchema, UserModel;
+  , _ = require('underscore')
+  , UserSchema, UserModel
+  , uuid = require('node-uuid')
+  , userSetableFields = ['login', 'name', 'password'] // setable fields by user
+  , userUpdatableFields = ['login', 'name', 'password'];// updatabe fields by user
 
 
 /**
@@ -29,6 +33,8 @@ UserSchema = new Schema(
               , required: true
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
+  , salt: { type: String
+          }
   }
 , { strict: true });
 
@@ -39,6 +45,28 @@ UserSchema = new Schema(
 function toLowerCase(value) {
   return value.toLowerCase();
 }
+
+
+
+/*
+ * Create a User instance and save it to the database
+ * Part of the password's validation has to occur here as Mongoose's setters are called before the
+ * validator, so using the standard way any password would be considered valid
+ */
+UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
+  var validFields = _.pick(userInput, userSetableFields)
+    , instance;
+
+  // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
+  // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
+  if (validatePassword(validFields.password)) {
+    // Salt and hash password
+  }
+
+  instance = new UserModel(validFields);
+  instance.save(callback);
+};
+
 
 
 

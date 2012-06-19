@@ -211,10 +211,32 @@ describe('UserModel', function () {
         done();
       });
     });
+  });
 
 
+
+  describe('#createAndSaveInstance', function () {
+
+    it('should not be able to save a user whose password is not valid', function (done) {
+      var userData = { name: "A name"
+                               , password: "short"
+                               , login: "valid@login.com"
+                     }
+        , valErr;
+
+      UserModel.createAndSaveInstance(userData, function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.password.should.not.equal(null);
+        done();
+      });
+    });
 
 
   });
+
+
 
 });
