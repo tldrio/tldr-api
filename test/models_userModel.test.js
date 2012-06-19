@@ -15,7 +15,8 @@ var should = require('chai').should()
   , UserModel = models.UserModel
   , server = require('../server')
   , db = server.db
-  , url = require('url');
+  , url = require('url')
+  , bcrypt = require('bcrypt');
 
 
 
@@ -233,6 +234,30 @@ describe('UserModel', function () {
         done();
       });
     });
+
+    it('should save a user whose password is valid', function (done) {
+      var userData = { name: "A name"
+                               , password: "notTOOshort"
+                               , login: "valid@login.com"
+                     };
+
+      UserModel.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+
+        UserModel.find({login: "valid@login.com"}, function(err, docs) {
+          docs.should.have.length(1);
+
+          // compareSync used here since these are tests. Do not use in production
+          bcrypt.compareSync('notTOshort', docs[0].password).should.equal(false);
+          bcrypt.compareSync('notTOOshort', docs[0].password).should.equal(true);
+          bcrypt.compareSync('notTOOOshort', docs[0].password).should.equal(false);
+
+          done();
+        });
+      });
+    });
+
+
 
 
   });

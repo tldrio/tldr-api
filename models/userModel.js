@@ -56,12 +56,21 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
+  // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
+  // The '10' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
   if (validatePassword(validFields.password)) {
+    bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(validFields.password, salt, function (err, hash) {
+        validFields.password = hash;
+        instance = new UserModel(validFields);
+        instance.save(callback);
+      });
+    });
 
+  } else {
+    instance = new UserModel(validFields);
+    instance.save(callback);
   }
-
-  instance = new UserModel(validFields);
-  instance.save(callback);
 };
 
 
