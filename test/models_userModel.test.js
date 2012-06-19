@@ -44,9 +44,105 @@ describe('UserModel', function () {
 
   describe('#validators', function () {
 
-    it('should accept only valid emails as login', function (done) {
-      done();
+    it('should not save a user that has no login', function (done) {
+      var user = new UserModel({ name: "A name"
+                               , password: "supersecret!"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.login.should.not.equal(null);
+        done();
+      });
     });
+
+    it('should not save a user that has no password', function (done) {
+      var user = new UserModel({ login: "login@email.com"
+                               , name: "A name"
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.password.should.not.equal(null);
+        done();
+      });
+    });
+
+    it('should only save a user if his login is a valid email address', function (done) {
+      var userData = { password: "supersecret!"
+                               , name: "A name"
+                               }
+        , valErr, user;
+
+      // Test 1: no arobase
+      userData.login = "noarobase";
+      user = new UserModel(userData);
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.login.should.not.equal(null);
+
+        // Test 2: no domain
+        userData.login = "user@";
+        user = new UserModel(userData);
+        user.save(function(err) {
+          err.name.should.equal('ValidationError');
+
+          _.keys(err.errors).length.should.equal(1);
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          valErr.login.should.not.equal(null);
+
+          // Test 3: incomplete domain
+          userData.login = "user@domain";
+          user = new UserModel(userData);
+          user.save(function(err) {
+            err.name.should.equal('ValidationError');
+
+            _.keys(err.errors).length.should.equal(1);
+            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+            valErr.login.should.not.equal(null);
+
+            // Test 4: no user
+            userData.login = "@domain.tld";
+            user = new UserModel(userData);
+            user.save(function(err) {
+              err.name.should.equal('ValidationError');
+
+              _.keys(err.errors).length.should.equal(1);
+              valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+              valErr.login.should.not.equal(null);
+
+              // Test 5: correct email #1
+              userData.login = "user@domain.tld";
+              user = new UserModel(userData);
+              user.save(function(err) {
+                assert.isNull(err);
+
+                // Test 6: correct email #2
+                userData.login = "firstname.name@subdomain.domain.tld";
+                user = new UserModel(userData);
+                user.save(function(err) {
+                  assert.isNull(err);
+
+                  done()
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
 
   });
 
