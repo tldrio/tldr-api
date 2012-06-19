@@ -34,6 +34,7 @@ UserSchema = new Schema(
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
   , salt: { type: String
+          , validate: [validateSalt, 'salt must be a 128 bits long uuid']
           }
   }
 , { strict: true });
@@ -47,18 +48,6 @@ function toLowerCase(value) {
 }
 
 
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
-console.log(uuid.v4());
 
 /*
  * Create a User instance and save it to the database
@@ -72,14 +61,14 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
   if (validatePassword(validFields.password)) {
-    // Salt and hash password
+    // Salt is a 128 bits long client-unique string
+    validFields.salt = uuid.v4();
+
   }
 
   instance = new UserModel(validFields);
   instance.save(callback);
 };
-
-
 
 
 /*
@@ -102,6 +91,10 @@ function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
+// TODO: real validator and update tests
+function validateSalt (value) {
+  return true;
+}
 
 
 // Define user model
