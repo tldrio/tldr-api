@@ -17,10 +17,10 @@ var express = require('express')
 //Create server
 server = express();
 
-// Configuration
 
-
-
+/*
+ * Environments declaration
+ */
 server.configure('development', function () {
   server.set('dbHost', 'localhost');
   server.set('dbPort', '27017');
