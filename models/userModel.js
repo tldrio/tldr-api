@@ -48,6 +48,6 @@ function validateName (value) {
 UserModel = mongoose.model('user', UserSchema);
 
 // Export UserModel
-module.exports.UserModel = UserModel;
+module.exports = UserModel;
 
 

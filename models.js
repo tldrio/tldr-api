@@ -4,7 +4,8 @@
  * Fucking Proprietary License
  */
 
-var TldrModelDefinition = require('./models/tldrModel')
+var TldrModel = require('./models/tldrModel')
+  , UserModel = require('./models/userModel')
 	, _ = require('underscore');
 
 
@@ -27,7 +28,8 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 
 
 // Export models
-module.exports.TldrModel = TldrModelDefinition.TldrModel;
+module.exports.TldrModel = TldrModel;
+module.exports.UserModel = UserModel;
 
 // Export general purpose functions for models
 module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;

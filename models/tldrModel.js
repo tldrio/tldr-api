@@ -205,5 +205,5 @@ function validateAuthor (value) {
 TldrModel = mongoose.model('tldr', TldrSchema);
 
 // Export TldrModel
-module.exports.TldrModel = TldrModel;
+module.exports = TldrModel;
 
