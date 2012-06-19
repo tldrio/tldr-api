@@ -9,6 +9,7 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
+  , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , TldrModel = models.TldrModel;
 
 
@@ -47,14 +48,14 @@ function searchTldrs (req, res, next) {
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
   if (url) {
-    url = TldrModel.normalizeUrl(url);
+    url = normalizeUrl(url);
     TldrModel.find({url: url}, function (err, docs) {
       if (err) {
-        return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
       }
 
       if (docs.length === 0) {
-        return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
+        return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
       }
 
       return res.json(200, docs[0]);    // Success
@@ -75,10 +76,10 @@ function searchTldrs (req, res, next) {
     TldrModel.find({})
      .sort('updatedAt', -1)
      .limit(limit)
-     .$lt('updatedAt', olderthan)
-     .run(function(err, docs) {
+     .lt('updatedAt', olderthan)
+     .exec(function(err, docs) {
        if (err) {
-         return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}}); 
+         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
        }
 
        res.json(200, docs);
@@ -94,9 +95,9 @@ function searchTldrs (req, res, next) {
      .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
-     .run(function(err, docs) {
+     .exec(function(err, docs) {
        if (err) {
-         return next({statusCode: 500, body: {messsage: 'Internal Error executing query'}});
+         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
        }
        res.json(200, docs);
      });
@@ -117,7 +118,7 @@ function getTldrById (req, res, next) {
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
     if (err) {
-      return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by Id'}} );
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
     }
 
     // We found the record
@@ -127,13 +128,13 @@ function getTldrById (req, res, next) {
     }
 
     // There is no record for this id
-    return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
+    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
   });
 }
 
 
 /**
- * Convenience function to factor code betweet PUT and POST on 
+ * Convenience function to factor code betweet PUT and POST on
  * already existing tldr
  *
  */
@@ -143,7 +144,7 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    return next({statusCode: 500, body: {message: 'Internal Error while getting Tldr by url'}} );
+    return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
   }
 
   if (docs.length === 1) {
@@ -152,15 +153,16 @@ function internalUpdateCb (err, docs, req, res, next) {
     oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
       if (err) {
         if (err.errors) {
-          return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+          return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
         }
-        return next({statusCode: 500, body: {message: 'Internal Error while updating Tldr'}} );
+        return next({ statusCode: 500, body: { message: 'Internal Error while updating Tldr' } } );
       }
 
       // With 204 even if a object is provided it's not sent by express
-      return res.send(204);});
+      return res.send(204);
+    });
   } else {
-    return next({statusCode: 404, body: {message: 'ResourceNotFound'}} );
+    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
   }
 }
 
@@ -170,33 +172,30 @@ function internalUpdateCb (err, docs, req, res, next) {
  * Handles POST /tldrs
  * create new tldr, as per the spec
  * http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.6
+ * oldest POST wins if there are concurrent POSTs
  *
  */
 
 function postNewTldr (req, res, next) {
 
-  if(!req.body){
-    return next({statusCode: 400, body: {message: 'Body required in request'}} );
+  if (!req.body) {
+    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
-
 
   TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
     if (err) {
       if (err.errors) {
-        return next({statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
 
-      } else if (err.code === 11000){ // code 11000 is for duplicate key
-
-        var url = TldrModel.normalizeUrl(req.body.url);
+        var url = normalizeUrl(req.body.url);
 
         TldrModel.find({url: url}, function (err, docs) {
-
           internalUpdateCb(err, docs, req, res, next);
-
         });
 
-      } else{
-        return next({statusCode: 500, body: {message: 'Internal Error while creatning Tldr '}} );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning Tldr ' } } );
       }
 
     } else {
@@ -217,12 +216,12 @@ function putUpdateTldrWithId (req, res, next) {
 
   var id = req.params.id;
 
-  if(!req.body){
-    return next({statusCode: 400, body: {message: 'Body required in request'}} );
+  if (!req.body) {
+    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
 
   // We find by id here
-  TldrModel.find({_id: id}, function (err, docs) {
+  TldrModel.find({ _id: id }, function (err, docs) {
     internalUpdateCb(err, docs, req, res, next);
   });
 

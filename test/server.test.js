@@ -12,11 +12,10 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
   , models = require('../models')
-  , db = require('../lib/db')
+  , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel
-  , customUtils = require('../lib/customUtils');
+  , TldrModel = models.TldrModel;
 
 
 
@@ -77,7 +76,7 @@ describe('Webserver', function () {
     tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
-    TldrModel.remove(null, function (err) {
+    TldrModel.remove({}, function (err) {
       if (err) {return done(err);}
       tldr1.save(	function (err) {
         if (err) {return done(err); }
@@ -101,19 +100,19 @@ describe('Webserver', function () {
   });
 
   afterEach(function (done) {
-    TldrModel.remove(null, function (err) {
+    TldrModel.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
   });
 
-  
+
   // Test GET requests
   describe('should handle GET request for', function () {
 
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
-      client.get('/tldrs/search?url=' +encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
+      client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
         done();
@@ -331,7 +330,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should handle POST request as PUT if tldr already exists', function (done) {
+    it('Should handle POST request as an update if tldr already exists', function (done) {
       var tldrData = {url: 'http://needforair.com/nutcrackers'
         , title:'Nutcrackers article'
         , summaryBullets: ['Best Blog Ever']
@@ -354,13 +353,12 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = {
-        summaryBullets: ['summary'] };   // Summary can't be empty
+      var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
         client.post('/tldrs', tldrData, function(err, req, res, obj) {
+          res.statusCode.should.equal(403);
           var parsedError = JSON.parse(res.body);
           parsedError.should.have.property('url');
-          res.statusCode.should.equal(403);
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
