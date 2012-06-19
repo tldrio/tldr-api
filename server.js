@@ -113,6 +113,22 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 //PUT update tldr
 server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
+// GET a tldr by id
+server.get('/rendering', function (req, res, next) {
+  console.log('Rendering');
+  debugger;
+  var tldr = {
+    title: 'A title',
+    url: 'http://yetanotherunusedurl.com/somepage',
+    summaryBullets: ['A summary'],
+    resourceAuthor: 'bozo le clown',
+    resourceDate: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  res.render('page', tldr);
+});
+
 
 /*
  * Connect to database, then start server

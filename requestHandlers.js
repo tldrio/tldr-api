@@ -233,7 +233,16 @@ function putUpdateTldrWithId (req, res, next) {
  */
 
 function handleErrors (err, req, res, next) {
-  res.json(err.statusCode, err.body);
+  if (err.statusCode && err.body) {
+    return res.json(err.statusCode, err.body);
+  } else if (err.message) {
+    bunyan.error(err);
+    return res.send(500, err.message);
+  } else {
+    bunyan.error(err);
+    return res.send(500, 'Unknown error');
+  }
+
 }
 
 /**
