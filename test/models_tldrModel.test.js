@@ -13,9 +13,9 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
-  , db = require('../lib/db')
   , TldrModel = models.TldrModel
   , server = require('../server')
+  , db = server.db
   , url = require('url');
 
 
