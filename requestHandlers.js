@@ -257,27 +257,37 @@ function logUserIn(req, res, next) {
   }
 
   UserModel.find({ login: req.body.login }, function(err, docs) {
-    if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } );
-    }
+    if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
 
-    if (docs.length === 0) {
-      return next({ statusCode: 401, body: { message: 'Login not found' } });
-    }
+    if (docs.length === 0) { return next({ statusCode: 401, body: { message: 'Login not found' } }); }
 
+    // User was found in database, check if password is correct
     bcrypt.compare(req.body.password, docs[0].password, function(err, valid) {
-      if (err) {
-        return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } );
-      }
+      if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
 
       if (valid) {
-        return res.json(200, { message: "Login successful" });
+        req.session.loggedUser = { login: docs[0].login, name: docs[0].name };
+        return res.json(200, { message: "Login successful", loggedUser: req.session.loggedUser });
       } else {
         return res.json(200, { message: "Wrong passsword" });
       }
     });
   });
 }
+
+
+/*
+ * Log user out
+ */
+function logUserOut(req, res, next) {
+  req.session.destroy();
+
+  if (req.session && req.session.loggedUser) {
+    res.json(500, { message: "Internal error during logout" });
+  } else {
+    res.json(200, { message: "Log out successful" });
+  }
+};
 
 
 /**
@@ -310,3 +320,4 @@ module.exports.handleErrors = handleErrors;
 module.exports.allowAccessOrigin = allowAccessOrigin;
 module.exports.createNewUser = createNewUser;
 module.exports.logUserIn = logUserIn;
+module.exports.logUserOut = logUserOut;

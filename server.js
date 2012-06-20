@@ -97,22 +97,26 @@ server.configure(function () {
  * Routes
  */
 
+// User management
+server.post('/users/create', requestHandlers.createNewUser);
+server.post('/users/login', requestHandlers.logUserIn);
+server.get('/users/logout', requestHandlers.logUserOut);
 
+// Search tldrs
+server.get('/tldrs/search', requestHandlers.searchTldrs);
+server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
 
-server.get('/whoshere', function (req, res, next) {
-  if (req.session && req.session.authenticatedUser && (req.session.authenticatedUser !== "")) {
-    res.send(200, "You are logged in as : " + req.session.authenticatedUser);
-  } else {
-    res.send(200, "You are not logged in");
-  }
-});
+// GET latest tldrs (convenience route)
+server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
 
-server.get('/logout', function (req, res, next) {
-  if (req.session && req.session.authenticatedUser) {
-    req.session.destroy();
-  }
-  res.send(200, "You are now logged out");
-});
+// GET a tldr by id
+server.get('/tldrs/:id', requestHandlers.getTldrById);
+
+//POST create tldr
+server.post('/tldrs', requestHandlers.postNewTldr);
+
+//PUT update tldr
+server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 
 // Needed for now, for test purposes. Will be handled by a website widget afterwards
@@ -132,27 +136,15 @@ server.get('/users/login', function(req, res, next) {
               + '<input type="submit" value="Gogogo"></form>');
 });
 
+// The same as the two above!
+server.get('/users/whoshere', function (req, res, next) {
+  if (req.session && req.session.loggedUser) {
+    res.json(200, { message: "You are logged in", loggedUser: req.session.loggedUser });
+  } else {
+    res.json(200, { message: "You are not logged in" });
+  }
+});
 
-
-// User management
-server.post('/users/create', requestHandlers.createNewUser);
-server.post('/users/login', requestHandlers.logUserIn);
-
-// Search tldrs
-server.get('/tldrs/search', requestHandlers.searchTldrs);
-server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
-
-// GET latest tldrs (convenience route)
-server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
-
-// GET a tldr by id
-server.get('/tldrs/:id', requestHandlers.getTldrById);
-
-//POST create tldr
-server.post('/tldrs', requestHandlers.postNewTldr);
-
-//PUT update tldr
-server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 
 /*
