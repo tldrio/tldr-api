@@ -70,15 +70,6 @@ server.configure('staging', 'production', function () {
   });
 });
 
-server.configure('development', function () {
-  // We stop the server to look at the logs and understand what went wrong
-  // We don't do this for tests as it messes up mocha
-  // The process needs to keep on running
-  process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
-    throw err;
-  });
-});
 
 
 /*
@@ -106,14 +97,7 @@ server.configure(function () {
  * Routes
  */
 
-server.get('/login', function(req, res, next) {
-  res.send(200, '<form method="POST" action="http://localhost:8787/login"><input type="text" name="login"><input type="submit" value="Gogogo"></form>');
-});
 
-server.post('/login', function(req, res, next) {
-  req.session.authenticatedUser = "louis";
-  res.send(200, 'OK done');
-});
 
 server.get('/whoshere', function (req, res, next) {
   if (req.session && req.session.authenticatedUser && (req.session.authenticatedUser !== "")) {
@@ -122,9 +106,6 @@ server.get('/whoshere', function (req, res, next) {
     res.send(200, "You are not logged in");
   }
 });
-
-
-
 
 server.get('/logout', function (req, res, next) {
   if (req.session && req.session.authenticatedUser) {
@@ -143,11 +124,19 @@ server.get('/users/create', function(req, res, next) {
               + '<input type="submit" value="Gogogo"></form>');
 });
 
+// Also needed for now for test purposes. Will be handled by a website/BM widget afterwards
+server.get('/users/login', function(req, res, next) {
+  res.send(200, '<form method="POST" action="http://localhost:8787/users/login">'
+              + 'Login (email address): <input type="text" name="login"><br />'
+              + 'Password: <input type="text" name="password"><br />'
+              + '<input type="submit" value="Gogogo"></form>');
+});
+
 
 
 // User management
 server.post('/users/create', requestHandlers.createNewUser);
-
+server.post('/users/login', requestHandlers.logUserIn);
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);

@@ -11,7 +11,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , TldrModel = models.TldrModel
-  , UserModel = models.UserModel;
+  , UserModel = models.UserModel
+  , bcrypt = require('bcrypt');
 
 
 /**
@@ -231,9 +232,7 @@ function putUpdateTldrWithId (req, res, next) {
 
 /*
  * Creates a user if valid information is entered
- *
  */
-
 function createNewUser(req, res, next) {
   UserModel.createAndSaveInstance(req.body, function(err) {
     if (err) {
@@ -248,6 +247,37 @@ function createNewUser(req, res, next) {
   });
 }
 
+
+/*
+ * Logs in a user if a valid password is entered
+ */
+function logUserIn(req, res, next) {
+  if (!req.body || !req.body.login || !req.body.password) {
+    return next({ statusCode: 401, body: { message: 'Login or password missing' } });
+  }
+
+  UserModel.find({ login: req.body.login }, function(err, docs) {
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } );
+    }
+
+    if (docs.length === 0) {
+      return next({ statusCode: 401, body: { message: 'Login not found' } });
+    }
+
+    bcrypt.compare(req.body.password, docs[0].password, function(err, res) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } );
+      }
+
+      if (res) {
+        return res.json(200, { message: "Login successful" });
+      } else {
+        return res.json(200, { message: "Wrong passsword" });
+      }
+    });
+  });
+}
 
 
 /**
@@ -279,3 +309,4 @@ module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.allowAccessOrigin = allowAccessOrigin;
 module.exports.createNewUser = createNewUser;
+module.exports.logUserIn = logUserIn;

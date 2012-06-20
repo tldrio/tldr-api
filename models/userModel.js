@@ -75,6 +75,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 };
 
 
+
 /*
  * Validators
  */
