@@ -45,6 +45,10 @@ function searchTldrs (req, res, next) {
     , olderthan = query.olderthan;
 
 
+  // For testing purposes
+  console.log("----");
+  console.log(url);
+
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
   if (url) {
