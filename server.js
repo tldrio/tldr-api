@@ -91,7 +91,7 @@ server.configure(function () {
   server.use(express.bodyParser());
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
-  server.engine('mustache', consolidate.hogan); // Assign Hogan engin to .mustach files
+  server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
   server.set('view engine', 'mustache'); // Set mustache as the default extension
   server.set('views', __dirname + '/views');
 });
