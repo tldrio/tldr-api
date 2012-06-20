@@ -275,10 +275,37 @@ describe('UserModel', function () {
       });
     });
 
+  });
+
+
+  describe('should not return the password field as part of the session usable data', function () {
+
+    it('should save a user whose password is valid', function (done) {
+      var userData = { name: "A name"
+                               , password: "notTOOshort"
+                               , login: "valid@login.com"
+                     }
+        , sessionUsableFields;
+
+      UserModel.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+
+        UserModel.find({login: "valid@login.com"}, function(err, docs) {
+          docs.should.have.length(1);
+          sessionUsableFields = docs[0].getSessionUsableFields();
+
+          assert.isDefined(sessionUsableFields.name);
+          assert.isDefined(sessionUsableFields.login);
+          assert.isUndefined(sessionUsableFields.password);
+
+          done();
+        });
+      });
+    });
+
 
 
   });
-
 
 
 });
