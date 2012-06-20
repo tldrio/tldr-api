@@ -27,6 +27,9 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
 
+  // Cookie options
+  server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
+
   // Other redis default options are fine for now
   server.set('redisDb', 0);
 });
@@ -36,6 +39,9 @@ server.configure('test', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
+
+  // Cookie options
+  server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
 
   // Other redis default options are fine for now
   server.set('redisDb', 9);
@@ -47,6 +53,9 @@ server.configure('staging', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
 
+  // Cookie options
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
+
   // Other redis default options are fine for now
   server.set('redisDb', 0);
 });
@@ -56,6 +65,9 @@ server.configure('production', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
+
+  // Cookie options
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
 
   // Other redis default options are fine for now
   server.set('redisDb', 0);
@@ -97,14 +109,20 @@ server.configure(function () {
   // Parse cookie data and use redis to store session data
   server.use(express.cookieParser());
   server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
+
                              , key: "tldr_session"                  // Name of our cookie
+
                              , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
                                                                     // when we use another path such as '/user'. Seems like an issue with Chrome
+
                                        , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
                                                                     // why it increases the risks of XSS cookie theft)
-                                       , maxAge: 7*24*3600*1000     // Sets a 7 days persistent cookie
+
+                                       , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
+                                                                    // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
+                                                                    // i.e. every request made that resends the cookie
                                        }
-                             , store: new RedisStore( { db: server.set('redisDb') } ) }));         // Store to use
+                             , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
 
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
