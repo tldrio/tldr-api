@@ -10,7 +10,8 @@ var mongoose = require('mongoose') // Mongoose ODM to Mongo
   , _ = require('underscore')
   , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , UserModel = models.UserModel;
 
 
 /**
@@ -227,6 +228,28 @@ function putUpdateTldrWithId (req, res, next) {
 
 }
 
+
+/*
+ * Creates a user if valid information is entered
+ *
+ */
+
+function createNewUser(req, res, next) {
+  UserModel.createAndSaveInstance(req.body, function(err) {
+    if (err) {
+      if (err.errors) {
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning new user account ' } } );
+      }
+    }
+
+    return res.json(201, { message: 'User created successfully' });
+  });
+}
+
+
+
 /**
  * Handle All errors coming from next(err) calls
  *
@@ -255,3 +278,4 @@ module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.allowAccessOrigin = allowAccessOrigin;
+module.exports.createNewUser = createNewUser;

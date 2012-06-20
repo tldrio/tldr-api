@@ -257,6 +257,23 @@ describe('UserModel', function () {
       });
     });
 
+    it('should only save the authorized user fields', function (done) {
+      var userData = { name: "A name"
+                               , password: "notTOOshort"
+                               , login: "another@login.com"
+                               , nonValidField: "some value"
+                     };
+      // Try to save data with a non authorized field that will not be saved
+      UserModel.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+        UserModel.find({login: "another@login.com"}, function(err, docs) {
+          docs.should.have.length(1);
+          assert.isUndefined(docs[0].nonValidField);
+
+          done();
+        });
+      });
+    });
 
 
 

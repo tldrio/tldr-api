@@ -105,24 +105,6 @@ server.configure(function () {
 /**
  * Routes
  */
-server.get('/test', function(req, res, next) {
-
-  if (req.session.myVar) {
-    req.session.myVar += 1;
-  } else {
-    req.session.myVar = 1;
-  }
-
-    res.json(200, {"message": "ca marche " + req.session.myVar});
-
-});
-
-server.get('/retest', function(req, res, next) {
-  req.session.myVar = 1;
-
-  res.json(200, {"message": "ca marche -- re"});
-});
-
 
 server.get('/login', function(req, res, next) {
   res.send(200, '<form method="POST" action="http://localhost:8787/login"><input type="text" name="login"><input type="submit" value="Gogogo"></form>');
@@ -141,12 +123,30 @@ server.get('/whoshere', function (req, res, next) {
   }
 });
 
+
+
+
 server.get('/logout', function (req, res, next) {
   if (req.session && req.session.authenticatedUser) {
     req.session.destroy();
   }
   res.send(200, "You are now logged out");
 });
+
+
+// Needed for now, for test purposes. Will be handled by a website widget afterwards
+server.get('/users/create', function(req, res, next) {
+  res.send(200, '<form method="POST" action="http://localhost:8787/users/create">'
+              + 'Login (email address): <input type="text" name="login"><br />'
+              + 'Real name: <input type="text" name="name"><br />'
+              + 'Password :<input type="text" name="password"><br />'
+              + '<input type="submit" value="Gogogo"></form>');
+});
+
+
+
+// User management
+server.post('/users/create', requestHandlers.createNewUser);
 
 
 // Search tldrs
