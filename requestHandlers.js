@@ -265,12 +265,12 @@ function logUserIn(req, res, next) {
       return next({ statusCode: 401, body: { message: 'Login not found' } });
     }
 
-    bcrypt.compare(req.body.password, docs[0].password, function(err, res) {
+    bcrypt.compare(req.body.password, docs[0].password, function(err, valid) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } );
       }
 
-      if (res) {
+      if (valid) {
         return res.json(200, { message: "Login successful" });
       } else {
         return res.json(200, { message: "Wrong passsword" });
