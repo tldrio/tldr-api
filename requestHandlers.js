@@ -266,7 +266,8 @@ function logUserIn(req, res, next) {
       if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
 
       if (valid) {
-        req.session.loggedUser = { login: docs[0].login, name: docs[0].name };
+        // Store in the session the fields that we may need to use
+        req.session.loggedUser = docs[0].getSessionUsableFields();
         return res.json(200, { message: "Login successful", loggedUser: req.session.loggedUser });
       } else {
         return res.json(200, { message: "Wrong passsword" });
@@ -283,6 +284,7 @@ function logUserOut(req, res, next) {
   req.session.destroy();
 
   if (req.session && req.session.loggedUser) {
+    // Should not happen, but we do need a check here. This may even need to throw an unhandled exception , as this test should never be satisfied
     res.json(500, { message: "Internal error during logout" });
   } else {
     res.json(200, { message: "Log out successful" });
