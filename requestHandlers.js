@@ -118,6 +118,10 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
+  console.log("===== By ID");
+  console.log(id);
+
+
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
