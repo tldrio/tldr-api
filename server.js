@@ -104,7 +104,7 @@ server.configure(function () {
                                                                     // why it increases the risks of XSS cookie theft)
                                        , maxAge: 7*24*3600*1000     // Sets a 7 days persistent cookie
                                        }
-                             , store: new RedisStore() }));         // Store to use
+                             , store: new RedisStore( { db: server.set('redisDb') } ) }));         // Store to use
 
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
