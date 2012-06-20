@@ -26,6 +26,9 @@ server.configure('development', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
+
+  // Other redis default options are fine for now
+  server.set('redisDb', 0);
 });
 
 server.configure('test', function () {
@@ -33,6 +36,9 @@ server.configure('test', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
+
+  // Other redis default options are fine for now
+  server.set('redisDb', 9);
 });
 
 server.configure('staging', function () {
@@ -40,6 +46,9 @@ server.configure('staging', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
+
+  // Other redis default options are fine for now
+  server.set('redisDb', 0);
 });
 
 server.configure('production', function () {
@@ -47,6 +56,9 @@ server.configure('production', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
+
+  // Other redis default options are fine for now
+  server.set('redisDb', 0);
 });
 
 
@@ -85,12 +97,12 @@ server.configure(function () {
   // Parse cookie data and use redis to store session data
   server.use(express.cookieParser());
   server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
-                             , key: "tldr_session"                // Name of our cookie
-                             , cookie: { path: '/'
-                                       , httpOnly: true             // true means that it cannot be accessed by javascript, only through HTTP/HTTPS
-                                                                    // We probably need to set it to false for the widgets to work (look into it
-                                                                    // when we build the login widget)
-                                       , maxAge: null               // Sets a session cookie (it gets erased after browser is closed)
+                             , key: "tldr_session"                  // Name of our cookie
+                             , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
+                                                                    // when we use another path such as '/user'. Seems like an issue with Chrome
+                                       , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
+                                                                    // why it increases the risks of XSS cookie theft)
+                                       , maxAge: 7*24*3600*1000     // Sets a 7 days persistent cookie
                                        }
                              , store: new RedisStore() }));         // Store to use
 
