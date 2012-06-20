@@ -85,8 +85,14 @@ server.configure(function () {
   // Parse cookie data and use redis to store session data
   server.use(express.cookieParser());
   server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
-                             , key: "tldr.io cookie"                // Name of our cookie
-                             , store: new RedisStore() }));           // Store to use
+                             , key: "tldr_session"                // Name of our cookie
+                             , cookie: { path: '/'
+                                       , httpOnly: true             // true means that it cannot be accessed by javascript, only through HTTP/HTTPS
+                                                                    // We probably need to set it to false for the widgets to work (look into it
+                                                                    // when we build the login widget)
+                                       , maxAge: null               // Sets a session cookie (it gets erased after browser is closed)
+                                       }
+                             , store: new RedisStore() }));         // Store to use
 
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
