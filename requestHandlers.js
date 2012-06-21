@@ -120,7 +120,14 @@ function getTldrById (req, res, next) {
 
   TldrModel.findById( id, function (err, tldr) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
+      // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
+      // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
+      if (err.message === "Invalid ObjectId") {
+        return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      }
     }
     if(!tldr){
       // There is no record for this id
@@ -148,7 +155,11 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    if (err.message === "Invalid ObjectId") {
+      return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+    } else {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    }
   }
 
   if (docs.length === 1) {
@@ -256,7 +267,8 @@ function handleErrors (err, req, res, next) {
 
 function allowAccessOrigin (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
   next();
 }
 

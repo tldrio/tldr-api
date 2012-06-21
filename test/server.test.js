@@ -143,6 +143,16 @@ describe('Webserver', function () {
 
     });
 
+    it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
+
+      client.get('/tldrs/invalidId', function (err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        assert.isNotNull(obj._id);
+        done();
+      });
+
+    });
+
     it('a non existing route', function (done) {
 
       client.get('/nonexistingroute', function (err, req, res, obj) {
@@ -427,7 +437,7 @@ describe('Webserver', function () {
       var tldrData = { summaryBullets: ['A new summary'] };
 
       client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(500);
+        res.statusCode.should.equal(403);
         done();
       });
     });
