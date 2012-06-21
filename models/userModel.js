@@ -27,7 +27,7 @@ UserSchema = new Schema(
            , set: toLowerCase
            }
   , name: { type: String
-          , default: ''
+          , default: 'Anonymous'
           , validate: [validateName, 'name must have between 1 and 100 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance

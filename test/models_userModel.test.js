@@ -189,7 +189,7 @@ describe('UserModel', function () {
       user.save(function(err) {
         UserModel.find({login: "login@email.com"}, function(err, docs) {
           docs.length.should.equal(1);
-          docs[0].name.should.equal("");
+          docs[0].name.should.equal('Anonymous');
 
           done();
         });
