@@ -46,8 +46,8 @@ describe('UserModel', function () {
   describe('#validators', function () {
 
     it('should not save a user that has no login', function (done) {
-      var user = new UserModel({ name: "A name"
-                               , password: "supersecret!"
+      var user = new UserModel({ name: 'A name'
+                               , password: 'supersecret!'
                                })
         , valErr;
 
@@ -62,8 +62,8 @@ describe('UserModel', function () {
     });
 
     it('should not save a user that has no password', function (done) {
-      var user = new UserModel({ login: "login@email.com"
-                               , name: "A name"
+      var user = new UserModel({ login: 'login@email.com'
+                               , name: 'A name'
                                })
         , valErr;
 
@@ -78,13 +78,13 @@ describe('UserModel', function () {
     });
 
     it('should only save a user if his login is a valid email address', function (done) {
-      var userData = { password: "supersecret!"
-                               , name: "A name"
+      var userData = { password: 'supersecret!'
+                               , name: 'A name'
                                }
         , valErr, user;
 
       // Test 1: no arobase
-      userData.login = "noarobase";
+      userData.login = 'noarobase';
       user = new UserModel(userData);
       user.save(function(err) {
         err.name.should.equal('ValidationError');
@@ -94,7 +94,7 @@ describe('UserModel', function () {
         valErr.login.should.equal('login must be a properly formatted email address');
 
         // Test 2: no domain
-        userData.login = "user@";
+        userData.login = 'user@';
         user = new UserModel(userData);
         user.save(function(err) {
           err.name.should.equal('ValidationError');
@@ -104,7 +104,7 @@ describe('UserModel', function () {
           valErr.login.should.equal('login must be a properly formatted email address');
 
           // Test 3: incomplete domain
-          userData.login = "user@domain";
+          userData.login = 'user@domain';
           user = new UserModel(userData);
           user.save(function(err) {
             err.name.should.equal('ValidationError');
@@ -114,7 +114,7 @@ describe('UserModel', function () {
             valErr.login.should.equal('login must be a properly formatted email address');
 
             // Test 4: no user
-            userData.login = "@domain.tld";
+            userData.login = '@domain.tld';
             user = new UserModel(userData);
             user.save(function(err) {
               err.name.should.equal('ValidationError');
@@ -124,13 +124,13 @@ describe('UserModel', function () {
               valErr.login.should.equal('login must be a properly formatted email address');
 
               // Test 5: correct email #1
-              userData.login = "user@domain.tld";
+              userData.login = 'user@domain.tld';
               user = new UserModel(userData);
               user.save(function(err) {
                 assert.isNull(err);
 
                 // Test 6: correct email #2
-                userData.login = "firstname.name@subdomain.domain.tld";
+                userData.login = 'firstname.name@subdomain.domain.tld';
                 user = new UserModel(userData);
                 user.save(function(err) {
                   assert.isNull(err);
@@ -145,17 +145,17 @@ describe('UserModel', function () {
     });
 
     it('should lowercase login when saving a valid tldr', function (done) {
-      var user = new UserModel({ login: "lOGin@Email.com"
-                               , name: "A name"
-                               , password: "supersecret!"
+      var user = new UserModel({ login: 'lOGin@Email.com'
+                               , name: 'A name'
+                               , password: 'supersecret!'
                                })
         , valErr;
 
       user.save(function(err) {
-        UserModel.find({login: "login@email.com"}, function(err, docs) {
+        UserModel.find({login: 'login@email.com'}, function(err, docs) {
           docs.length.should.equal(1);
 
-          UserModel.find({login: "lOGin@Email.com"}, function(err, docs) {
+          UserModel.find({login: 'lOGin@Email.com'}, function(err, docs) {
             docs.length.should.equal(0);
             done();
           });
@@ -164,9 +164,9 @@ describe('UserModel', function () {
     });
 
     it('should not validate a name that\'s too long', function (done) {
-      var user = new UserModel({ login: "login@email.com"
-                               , password: "supersecret!"
-                               , name: "Zr qer qwer wqer qwer weqr wqe wqe wqr ew"
+      var user = new UserModel({ login: 'login@email.com'
+                               , password: 'supersecret!'
+                               , name: 'Zr qer qwer wqer qwer weqr wqe wqe wqr ew'
                                })
         , valErr;
 
@@ -181,13 +181,13 @@ describe('UserModel', function () {
     });
 
     it('should use a default value if the name is missing', function (done) {
-      var user = new UserModel({ login: "lOGin@Email.com"
-                               , password: "supersecret!"
+      var user = new UserModel({ login: 'lOGin@Email.com'
+                               , password: 'supersecret!'
                                })
         , valErr;
 
       user.save(function(err) {
-        UserModel.find({login: "login@email.com"}, function(err, docs) {
+        UserModel.find({login: 'login@email.com'}, function(err, docs) {
           docs.length.should.equal(1);
           docs[0].name.should.equal('Anonymous');
 
@@ -197,9 +197,9 @@ describe('UserModel', function () {
     });
 
     it('should not validate a user whose password is too short', function (done) {
-      var user = new UserModel({ login: "login@email.com"
-                               , password: "secre"
-                               , name: "wqr ew"
+      var user = new UserModel({ login: 'login@email.com'
+                               , password: 'secre'
+                               , name: 'wqr ew'
                                })
         , valErr;
 
@@ -219,9 +219,9 @@ describe('UserModel', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
-      var userData = { name: "A name"
-                               , password: "short"
-                               , login: "valid@login.com"
+      var userData = { name: 'A name'
+                               , password: 'short'
+                               , login: 'valid@login.com'
                      }
         , valErr;
 
@@ -236,15 +236,15 @@ describe('UserModel', function () {
     });
 
     it('should save a user whose password is valid', function (done) {
-      var userData = { name: "A name"
-                               , password: "notTOOshort"
-                               , login: "valid@login.com"
+      var userData = { name: 'A name'
+                               , password: 'notTOOshort'
+                               , login: 'valid@login.com'
                      };
 
       UserModel.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
 
-        UserModel.find({login: "valid@login.com"}, function(err, docs) {
+        UserModel.find({login: 'valid@login.com'}, function(err, docs) {
           docs.should.have.length(1);
 
           // compareSync used here since these are tests. Do not use in production
@@ -258,15 +258,15 @@ describe('UserModel', function () {
     });
 
     it('should only save the authorized user fields', function (done) {
-      var userData = { name: "A name"
-                               , password: "notTOOshort"
-                               , login: "another@login.com"
-                               , nonValidField: "some value"
+      var userData = { name: 'A name'
+                               , password: 'notTOOshort'
+                               , login: 'another@login.com'
+                               , nonValidField: 'some value'
                      };
       // Try to save data with a non authorized field that will not be saved
       UserModel.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
-        UserModel.find({login: "another@login.com"}, function(err, docs) {
+        UserModel.find({login: 'another@login.com'}, function(err, docs) {
           docs.should.have.length(1);
           assert.isUndefined(docs[0].nonValidField);
 
@@ -281,16 +281,16 @@ describe('UserModel', function () {
   describe('should not return the password field as part of the session usable data', function () {
 
     it('should save a user whose password is valid', function (done) {
-      var userData = { name: "A name"
-                               , password: "notTOOshort"
-                               , login: "valid@login.com"
+      var userData = { name: 'A name'
+                               , password: 'notTOOshort'
+                               , login: 'valid@login.com'
                      }
         , sessionUsableFields;
 
       UserModel.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
 
-        UserModel.find({login: "valid@login.com"}, function(err, docs) {
+        UserModel.find({login: 'valid@login.com'}, function(err, docs) {
           docs.should.have.length(1);
           sessionUsableFields = docs[0].getSessionUsableFields();
 

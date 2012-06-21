@@ -175,9 +175,9 @@ server.get('/users/login', function(req, res, next) {
 // The same as the two above!
 server.get('/users/whoshere', function (req, res, next) {
   if (req.session && req.session.loggedUser) {
-    res.json(200, { message: "You are logged in", loggedUser: req.session.loggedUser });
+    res.json(200, { message: 'You are logged in', loggedUser: req.session.loggedUser });
   } else {
-    res.json(200, { message: "You are not logged in" });
+    res.json(200, { message: 'You are not logged in' });
   }
 });
 
