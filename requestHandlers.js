@@ -152,7 +152,11 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    if (err.message === "Invalid ObjectId") {
+      return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+    } else {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    }
   }
 
   if (docs.length === 1) {

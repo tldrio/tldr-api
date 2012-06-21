@@ -423,7 +423,7 @@ describe('Webserver', function () {
       var tldrData = { summaryBullets: ['A new summary'] };
 
       client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(500);
+        res.statusCode.should.equal(403);
         done();
       });
     });
