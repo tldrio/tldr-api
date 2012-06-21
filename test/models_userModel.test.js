@@ -56,7 +56,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.login.should.not.equal(null);
+        valErr.login.should.equal('required');
         done();
       });
     });
@@ -72,7 +72,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.not.equal(null);
+        valErr.password.should.equal('required');
         done();
       });
     });
@@ -91,7 +91,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.login.should.not.equal(null);
+        valErr.login.should.equal('login must be a properly formatted email address');
 
         // Test 2: no domain
         userData.login = "user@";
@@ -101,7 +101,7 @@ describe('UserModel', function () {
 
           _.keys(err.errors).length.should.equal(1);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr.login.should.not.equal(null);
+          valErr.login.should.equal('login must be a properly formatted email address');
 
           // Test 3: incomplete domain
           userData.login = "user@domain";
@@ -111,7 +111,7 @@ describe('UserModel', function () {
 
             _.keys(err.errors).length.should.equal(1);
             valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-            valErr.login.should.not.equal(null);
+            valErr.login.should.equal('login must be a properly formatted email address');
 
             // Test 4: no user
             userData.login = "@domain.tld";
@@ -121,7 +121,7 @@ describe('UserModel', function () {
 
               _.keys(err.errors).length.should.equal(1);
               valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-              valErr.login.should.not.equal(null);
+              valErr.login.should.equal('login must be a properly formatted email address');
 
               // Test 5: correct email #1
               userData.login = "user@domain.tld";
@@ -175,7 +175,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.name.should.not.equal(null);
+        valErr.name.should.equal('name must have between 1 and 100 characters');
         done();
       });
     });
@@ -208,7 +208,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.not.equal(null);
+        valErr.password.should.equal('password must be at least 6 characters long');
         done();
       });
     });
@@ -230,7 +230,7 @@ describe('UserModel', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.not.equal(null);
+        valErr.password.should.equal('password must be at least 6 characters long');
         done();
       });
     });
