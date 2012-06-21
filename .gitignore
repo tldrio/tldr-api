@@ -4,3 +4,4 @@
 .DS_Store
 logs/
 npm_debug.log
+node_modules/bcrypt
