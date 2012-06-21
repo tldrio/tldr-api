@@ -104,6 +104,7 @@ function validateLogin (value) {
   }
 }
 
+
 function validateName (value) {
   return (value.length <= 40);
 }
@@ -112,6 +113,9 @@ function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
+UserSchema.statics.validateLogin = validateLogin;
+UserSchema.statics.validateName = validateName;
+UserSchema.statics.validatePassword = validatePassword;
 
 // Define user model
 UserModel = mongoose.model('user', UserSchema);

@@ -77,70 +77,30 @@ describe('UserModel', function () {
       });
     });
 
-    it('should only save a user if his login is a valid email address', function (done) {
+    it('validate email address - login', function (done) {
+
+      // Unit test the rule
+      assert.isNull(UserModel.validateLogin('noarobase'));
+      assert.isNull(UserModel.validateLogin('user@'));
+      assert.isNull(UserModel.validateLogin('user@domain'));
+      assert.isNull(UserModel.validateLogin('@domain.tld'));
+      assert.isNotNull(UserModel.validateLogin('user@domain.tld'));
+      assert.isNotNull(UserModel.validateLogin('firstname.name@subdomain.domain.tld'));
+
+      // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
-                               , name: 'A name'
-                               }
+                     , name: 'A name'
+                     , login: 'badlogin'
+                     }
         , valErr, user;
 
-      // Test 1: no arobase
-      userData.login = 'noarobase';
       user = new UserModel(userData);
       user.save(function(err) {
         err.name.should.equal('ValidationError');
-
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.login.should.equal('login must be a properly formatted email address');
-
-        // Test 2: no domain
-        userData.login = 'user@';
-        user = new UserModel(userData);
-        user.save(function(err) {
-          err.name.should.equal('ValidationError');
-
-          _.keys(err.errors).length.should.equal(1);
-          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr.login.should.equal('login must be a properly formatted email address');
-
-          // Test 3: incomplete domain
-          userData.login = 'user@domain';
-          user = new UserModel(userData);
-          user.save(function(err) {
-            err.name.should.equal('ValidationError');
-
-            _.keys(err.errors).length.should.equal(1);
-            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-            valErr.login.should.equal('login must be a properly formatted email address');
-
-            // Test 4: no user
-            userData.login = '@domain.tld';
-            user = new UserModel(userData);
-            user.save(function(err) {
-              err.name.should.equal('ValidationError');
-
-              _.keys(err.errors).length.should.equal(1);
-              valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-              valErr.login.should.equal('login must be a properly formatted email address');
-
-              // Test 5: correct email #1
-              userData.login = 'user@domain.tld';
-              user = new UserModel(userData);
-              user.save(function(err) {
-                assert.isNull(err);
-
-                // Test 6: correct email #2
-                userData.login = 'firstname.name@subdomain.domain.tld';
-                user = new UserModel(userData);
-                user.save(function(err) {
-                  assert.isNull(err);
-
-                  done()
-                });
-              });
-            });
-          });
-        });
+        done();
       });
     });
 
@@ -170,6 +130,10 @@ describe('UserModel', function () {
                                })
         , valErr;
 
+      //Unit test the rule
+      assert.isFalse(UserModel.validateName('Zr qer qwer wqer qwer weqr wqe wqe wqr ew'));
+
+      // Check integration into Mongoose
       user.save(function(err) {
         err.name.should.equal('ValidationError');
 
@@ -203,6 +167,10 @@ describe('UserModel', function () {
                                })
         , valErr;
 
+      //Unit test the rule
+      assert.isFalse(UserModel.validatePassword('secre'));
+
+      // Check integration into Mongoose
       user.save(function(err) {
         err.name.should.equal('ValidationError');
 
