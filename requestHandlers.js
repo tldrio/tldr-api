@@ -117,8 +117,16 @@ function getTldrById (req, res, next) {
   // We find by id here
   TldrModel.find({_id: id}, function (err, docs) {
     var tldr;
+
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
+      // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
+      // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
+      if (err.message === "Invalid ObjectId") {
+        return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      }
     }
 
     // We found the record
