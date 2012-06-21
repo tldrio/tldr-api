@@ -188,8 +188,8 @@ describe('UserModel', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
       var userData = { name: 'A name'
-                               , password: 'short'
-                               , login: 'valid@login.com'
+                     , password: 'short'
+                     , login: 'valid@login.com'
                      }
         , valErr;
 
@@ -205,8 +205,8 @@ describe('UserModel', function () {
 
     it('should save a user whose password is valid', function (done) {
       var userData = { name: 'A name'
-                               , password: 'notTOOshort'
-                               , login: 'valid@login.com'
+                     , password: 'notTOOshort'
+                     , login: 'valid@login.com'
                      };
 
       UserModel.createAndSaveInstance(userData, function(err) {
@@ -227,9 +227,9 @@ describe('UserModel', function () {
 
     it('should only save the authorized user fields', function (done) {
       var userData = { name: 'A name'
-                               , password: 'notTOOshort'
-                               , login: 'another@login.com'
-                               , nonValidField: 'some value'
+                     , password: 'notTOOshort'
+                     , login: 'another@login.com'
+                     , nonValidField: 'some value'
                      };
       // Try to save data with a non authorized field that will not be saved
       UserModel.createAndSaveInstance(userData, function(err) {
@@ -250,8 +250,8 @@ describe('UserModel', function () {
 
     it('should save a user whose password is valid', function (done) {
       var userData = { name: 'A name'
-                               , password: 'notTOOshort'
-                               , login: 'valid@login.com'
+                     , password: 'notTOOshort'
+                     , login: 'valid@login.com'
                      }
         , sessionUsableFields;
 
