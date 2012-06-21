@@ -10,7 +10,7 @@ var express = require('express')
   , requestHandlers = require('./requestHandlers')
   , mongoose = require('mongoose')
   , models = require('./models')
-  , serve                               // Will store our express serverr
+  , server                               // Will store our express serverr
   , RedisStore = require('connect-redis')(express);   // Will manage the connection to our Redis store
 
 
