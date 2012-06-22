@@ -9,7 +9,9 @@ var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , UserModel = models.UserModel
+  , bcrypt = require('bcrypt');
 
 
 /**
@@ -242,6 +244,69 @@ function putUpdateTldrWithId (req, res, next) {
 
 }
 
+
+/*
+ * Creates a user if valid information is entered
+ */
+function createNewUser(req, res, next) {
+  UserModel.createAndSaveInstance(req.body, function(err) {
+    if (err) {
+      if (err.errors) {
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning new user account ' } } );
+      }
+    }
+
+    return res.json(201, { message: 'User created successfully' });
+  });
+}
+
+
+/*
+ * Logs in a user if a valid password is entered
+ */
+function logUserIn(req, res, next) {
+  if (!req.body || !req.body.login || !req.body.password) {
+    return next({ statusCode: 401, body: { message: 'Login or password missing' } });
+  }
+
+  UserModel.find({ login: req.body.login }, function(err, docs) {
+    if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
+
+    if (docs.length === 0) { return next({ statusCode: 401, body: { message: 'Login not found' } }); }
+
+    // User was found in database, check if password is correct
+    bcrypt.compare(req.body.password, docs[0].password, function(err, valid) {
+      if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
+
+      if (valid) {
+        // Store in the session the fields that we may need to use
+        req.session.loggedUser = docs[0].getSessionUsableFields();
+        return res.json(200, { message: "Login successful", loggedUser: req.session.loggedUser });
+      } else {
+        return res.json(200, { message: "Wrong passsword" });
+      }
+    });
+  });
+}
+
+
+/*
+ * Log user out
+ */
+function logUserOut(req, res, next) {
+  req.session.destroy();
+
+  if (req.session && req.session.loggedUser) {
+    // Should not happen, but we do need a check here. This may even need to throw an unhandled exception , as this test should never be satisfied
+    res.json(500, { message: "Internal error during logout" });
+  } else {
+    res.json(200, { message: "Log out successful" });
+  }
+};
+
+
 /**
  * Handle All errors coming from next(err) calls
  *
@@ -280,3 +345,6 @@ module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.allowAccessOrigin = allowAccessOrigin;
+module.exports.createNewUser = createNewUser;
+module.exports.logUserIn = logUserIn;
+module.exports.logUserOut = logUserOut;
