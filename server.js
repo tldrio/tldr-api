@@ -73,6 +73,7 @@ server.configure('development', function () {
   // We stop the server to look at the logs and understand what went wrong
   // We don't do this for tests as it messes up mocha
   // The process needs to keep on running
+  server.use(express.logger());
   process.on('uncaughtException', function(err) {
     bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
     throw err;
@@ -87,7 +88,6 @@ server.configure('development', function () {
 
 server.configure(function () {
   server.use(requestHandlers.allowAccessOrigin);
-  //server.use(express.logger());
   server.use(express.bodyParser());
   server.use(server.router); // Map routes see docs why we do it here
   server.use(requestHandlers.handleErrors); // Use middleware to handle errors
