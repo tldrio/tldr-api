@@ -344,7 +344,7 @@ function handleCORSLocal (req, res, next) {
 
 function handleCORSProd (req, res, next) {
   console.log(req.headers.origin);
-  res.header("Access-Control-Allow-Origin", "http://tldr.io");
+  res.header("Access-Control-Allow-Origin", "http://tldr.io, http://bookmarklet.tldr.io");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
   next();
