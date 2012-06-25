@@ -5,12 +5,13 @@
 */
 
 
-var mongoose = require('mongoose') // Mongoose ODM to Mongo
-  , bunyan = require('./lib/logger').bunyan
+var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , UserModel = models.UserModel
+  , bcrypt = require('bcrypt');
 
 
 /**
@@ -57,8 +58,13 @@ function searchTldrs (req, res, next) {
       if (docs.length === 0) {
         return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
       }
-
-      return res.json(200, docs[0]);    // Success
+      
+      // Success
+      if (req.accepts('text/html')) {
+        return res.render('page', docs[0]); // Send the html tldr page
+      } else { // We return json by default 
+        return res.json(200, docs[0]);    
+      }
     });
 
     return;
@@ -107,28 +113,35 @@ function searchTldrs (req, res, next) {
 
 /**
  * GET /tldrs/:id
- *
+ * We query tldr by id here
  */
 
 function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  // We find by id here
-  TldrModel.find({_id: id}, function (err, docs) {
-    var tldr;
+  TldrModel.findById( id, function (err, tldr) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
+      // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
+      // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
+      if (err.message === "Invalid ObjectId") {
+        return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+      }
+    }
+    if(!tldr){
+      // There is no record for this id
+      return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
     }
 
-    // We found the record
-    if (docs.length === 1) {
-      tldr = docs[0];
-      return res.send(200, tldr);
+    if (req.accepts('text/html')) {
+      return res.render('page', tldr); // We serve the tldr Page
+    } else {  // Send json by default
+      return res.send(200, tldr); // We serve the raw tldr data
     }
 
-    // There is no record for this id
-    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
   });
 }
 
@@ -144,7 +157,11 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    if (err.message === "Invalid ObjectId") {
+      return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+    } else {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+    }
   }
 
   if (docs.length === 1) {
@@ -227,13 +244,85 @@ function putUpdateTldrWithId (req, res, next) {
 
 }
 
+
+/*
+ * Creates a user if valid information is entered
+ */
+function createNewUser(req, res, next) {
+  UserModel.createAndSaveInstance(req.body, function(err) {
+    if (err) {
+      if (err.errors) {
+        return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else {
+        return next({ statusCode: 500, body: { message: 'Internal Error while creatning new user account ' } } );
+      }
+    }
+
+    return res.json(201, { message: 'User created successfully' });
+  });
+}
+
+
+/*
+ * Logs in a user if a valid password is entered
+ */
+function logUserIn(req, res, next) {
+  if (!req.body || !req.body.login || !req.body.password) {
+    return next({ statusCode: 401, body: { message: 'Login or password missing' } });
+  }
+
+  UserModel.find({ login: req.body.login }, function(err, docs) {
+    if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
+
+    if (docs.length === 0) { return next({ statusCode: 401, body: { message: 'Login not found' } }); }
+
+    // User was found in database, check if password is correct
+    bcrypt.compare(req.body.password, docs[0].password, function(err, valid) {
+      if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
+
+      if (valid) {
+        // Store in the session the fields that we may need to use
+        req.session.loggedUser = docs[0].getSessionUsableFields();
+        return res.json(200, { message: "Login successful", loggedUser: req.session.loggedUser });
+      } else {
+        return res.json(200, { message: "Wrong passsword" });
+      }
+    });
+  });
+}
+
+
+/*
+ * Log user out
+ */
+function logUserOut(req, res, next) {
+  req.session.destroy();
+
+  if (req.session && req.session.loggedUser) {
+    // Should not happen, but we do need a check here. This may even need to throw an unhandled exception , as this test should never be satisfied
+    res.json(500, { message: "Internal error during logout" });
+  } else {
+    res.json(200, { message: "Log out successful" });
+  }
+};
+
+
 /**
  * Handle All errors coming from next(err) calls
  *
  */
 
 function handleErrors (err, req, res, next) {
-  res.json(err.statusCode, err.body);
+  if (err.statusCode && err.body) {
+    return res.json(err.statusCode, err.body);
+  } else if (err.message) {
+    bunyan.error(err);
+    return res.send(500, err.message);
+  } else {
+    bunyan.error(err);
+    return res.send(500, 'Unknown error');
+  }
+
 }
 
 /**
@@ -242,8 +331,10 @@ function handleErrors (err, req, res, next) {
  */
 
 function allowAccessOrigin (req, res, next) {
+  //res.header("Access-Control-Allow-Origin", "http://localhost:8888");
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
   next();
 }
 
@@ -255,3 +346,6 @@ module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.allowAccessOrigin = allowAccessOrigin;
+module.exports.createNewUser = createNewUser;
+module.exports.logUserIn = logUserIn;
+module.exports.logUserOut = logUserOut;

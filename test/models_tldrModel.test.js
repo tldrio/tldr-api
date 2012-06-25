@@ -1,7 +1,7 @@
 /**
  * TldrModel tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Fucking Proprietary License
+ * Proprietary License
  */
 
 

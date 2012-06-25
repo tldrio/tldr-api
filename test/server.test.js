@@ -15,7 +15,8 @@ var should = require('chai').should()
   , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel;
+  , TldrModel = models.TldrModel
+  , rootUrl = 'http://localhost:8686';
 
 
 
@@ -137,6 +138,16 @@ describe('Webserver', function () {
       client.get('/tldrs/111111111111111111111111', function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
+        done();
+      });
+
+    });
+
+    it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
+
+      client.get('/tldrs/invalidId', function (err, req, res, obj) {
+        res.statusCode.should.equal(403);
+        assert.isNotNull(obj._id);
         done();
       });
 
@@ -292,6 +303,19 @@ describe('Webserver', function () {
     });
 
 
+    it('Should serve tldr-page if accept header is text/html', function (done) {
+      client = restify.createStringClient({ url: client.url.href
+                                          , accept: 'text/html'});
+
+      client.get('/tldrs/111111111111111111111111', function (err, req, res, data) {
+        res.statusCode.should.equal(200);
+        res.headers['content-type'].should.contain('text/html');
+        res.body.should.contain('<div id="page-container">');
+        done();
+      });
+
+    });
+    
 
 
   });
@@ -413,7 +437,7 @@ describe('Webserver', function () {
       var tldrData = { summaryBullets: ['A new summary'] };
 
       client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
-        res.statusCode.should.equal(500);
+        res.statusCode.should.equal(403);
         done();
       });
     });
