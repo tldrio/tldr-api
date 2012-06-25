@@ -326,13 +326,24 @@ function handleErrors (err, req, res, next) {
 }
 
 /**
- * Add necessary headers for CORS
+ * Add specific headers for CORS for dev env
  *
  */
 
-function allowAccessOrigin (req, res, next) {
-  //res.header("Access-Control-Allow-Origin", "http://localhost:8888");
-  res.header("Access-Control-Allow-Origin", "*");
+function handleCORSLocal (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:8888");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  next();
+}
+
+/**
+ * Add specific headers for CORS for prod env
+ *
+ */
+
+function handleCORSProd (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://bookmarklet.tldr.io");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
   next();
@@ -345,7 +356,8 @@ module.exports.searchTldrs = searchTldrs;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
-module.exports.allowAccessOrigin = allowAccessOrigin;
+module.exports.handleCORSLocal = handleCORSLocal;
+module.exports.handleCORSProd = handleCORSProd;
 module.exports.createNewUser = createNewUser;
 module.exports.logUserIn = logUserIn;
 module.exports.logUserOut = logUserOut;
