@@ -310,7 +310,7 @@ describe('Webserver', function () {
       client.get('/tldrs/111111111111111111111111', function (err, req, res, data) {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
-        res.body.should.contain('<div id="page-container">');
+        res.body.should.contain('<div id="tldr-container">');
         done();
       });
 
