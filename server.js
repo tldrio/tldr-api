@@ -138,6 +138,7 @@ server.configure(function () {
   server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
   server.set('view engine', 'mustache'); // Set mustache as the default extension
   server.set('views', __dirname + '/views');
+  server.use(express.static(__dirname + '/css'));
 });
 
 
