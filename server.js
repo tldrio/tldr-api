@@ -31,7 +31,7 @@ server.configure('development', function () {
   // Cookie options
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
 });
 
@@ -44,7 +44,7 @@ server.configure('test', function () {
   // Cookie options
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 9);
 });
 
@@ -57,7 +57,7 @@ server.configure('staging', function () {
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
 });
 
@@ -70,7 +70,7 @@ server.configure('production', function () {
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
 });
 
