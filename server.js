@@ -18,6 +18,24 @@ var express = require('express')
 server = express(); // Instantiate server
 
 
+/**
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop if it is run in production, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called
+ *
+ * For development, we want the server to stop to understand what went wrong
+ *
+ * We don't do this for tests as it messes up mocha
+ * The process needs to keep on running
+ */
+server.configure('staging', 'production', function () {
+  // The process needs to keep on running
+  process.on('uncaughtException', function(err) {
+    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+  });
+});
+
+
 /*
  * Environments declaration
  * Express' default environment is 'development'
@@ -33,6 +51,9 @@ server.configure('development', function () {
 
   // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSLocal);
+  server.use(express.logger());
 });
 
 server.configure('test', function () {
@@ -59,6 +80,8 @@ server.configure('staging', function () {
 
   // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSProd);
 });
 
 server.configure('production', function () {
@@ -72,6 +95,8 @@ server.configure('production', function () {
 
   // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSProd);
 });
 
 
@@ -82,27 +107,6 @@ server.db = new dbObject( server.set('dbHost')
                         , server.set('dbPort')
                         );
 
-/**
- * Last wall of defense. If an exception makes its way to the top, the service shouldn't
- * stop if it is run in production, but log a fatal error and send an email to us.
- * Of course, this piece of code should NEVER have to be called.
- */
-
-server.configure('staging', 'production', function () {
-  // The process needs to keep on running
-  process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
-  });
-  server.use(requestHandlers.handleCORSProd);
-});
-
-server.configure('development', function () {
-  // We stop the server to look at the logs and understand what went wrong
-  // We don't do this for tests as it messes up mocha
-  // The process needs to keep on running
-  server.use(requestHandlers.handleCORSLocal);
-  server.use(express.logger());
-});
 
 
 /*
