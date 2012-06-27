@@ -262,20 +262,6 @@ function createNewUser(req, res, next) {
 }
 
 
-/*
- * Log user out
- */
-function logUserOut(req, res, next) {
-  req.session.destroy();
-
-  if (req.session && req.session.loggedUser) {
-    // Should not happen, but we do need a check here. This may even need to throw an unhandled exception , as this test should never be satisfied
-    res.json(500, { message: "Internal error during logout" });
-  } else {
-    res.json(200, { message: "Log out successful" });
-  }
-};
-
 
 /**
  * Handle All errors coming from next(err) calls
@@ -330,4 +316,3 @@ module.exports.handleErrors = handleErrors;
 module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
 module.exports.createNewUser = createNewUser;
-module.exports.logUserOut = logUserOut;

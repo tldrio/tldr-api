@@ -155,7 +155,7 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
 
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
-//server.use(passport.session());
+server.use(passport.session());
 
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors
@@ -180,7 +180,7 @@ server.post('/users/login', passport.authenticate('local', { successRedirect: "/
                                                            , failureFlash: false }));
 
 
-server.get('/users/logout', requestHandlers.logUserOut);
+server.get('/users/logout', authorization.logUserOut);
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);
@@ -218,8 +218,8 @@ server.get('/users/login', function(req, res, next) {
 
 // The same as the two above!
 server.get('/users/whoshere', function (req, res, next) {
-  if (req.session && req.session.loggedUser) {
-    res.json(200, { message: 'You are logged in', loggedUser: req.session.loggedUser });
+  if (req.user) {
+    res.json(200, { message: 'You are logged in', loggedUser: req.user });
   } else {
     res.json(200, { message: 'You are not logged in' });
   }
