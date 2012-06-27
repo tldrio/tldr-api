@@ -8,7 +8,6 @@ var UserModel = require('./models').UserModel
  * Note: this is NOT a Connect middleware, hence the different signature
  */
 function authenticateUser(login, password, done) {
-  console.log("Authenticating user");
   UserModel.find({ login: login }, function(err, docs) {
     if (err) { return done(err); }
 
@@ -19,10 +18,8 @@ function authenticateUser(login, password, done) {
       if (err) { return done(err); }
 
       if (valid) {
-        console.log("OK - good password");
         return done(null, docs[0]);
       } else {
-        console.log("NOT OK - bad password");
         return done(null, false, { message: "Invalid password" });
       }
     });
@@ -33,7 +30,7 @@ function authenticateUser(login, password, done) {
 /*
  * As name implies, logs user out
  */
-function logUserOut() {
+function logUserOut(req, res, next) {
   var name = req.user.name;
 
   req.logOut();
@@ -45,8 +42,6 @@ function logUserOut() {
  * Serializes an authenticated user. Here, we simply store the user's _id to deserialize him later
  */
 function serializeUser(user, done) {
-  console.log("serialize User called");
-  console.log(user);
   done(null, user._id);
 };
 
@@ -55,7 +50,6 @@ function serializeUser(user, done) {
  * Deserializes an authenticated user. Here, we simply get him from the users collection
  */
 function deserializeUser(_id, done) {
-  console.log("DEserialize User called");
   UserModel.findOne({_id: _id}, function (err, user) {
     done(err, user);
   });

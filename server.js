@@ -179,7 +179,6 @@ server.post('/users/login', passport.authenticate('local', { successRedirect: "/
                                                            , failureRedirect: "/users/login"
                                                            , failureFlash: false }));
 
-
 server.get('/users/logout', authorization.logUserOut);
 
 // Search tldrs
