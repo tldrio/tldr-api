@@ -14,7 +14,8 @@ var express = require('express')
   , server                               // Will store our express serverr
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
-  , LocalStrategy = require('passport-local').Strategy;
+  , LocalStrategy = require('passport-local').Strategy
+  , authorization = require('./authorization');
 
 
 server = express(); // Instantiate server
@@ -110,6 +111,22 @@ server.db = new dbObject( server.set('dbHost')
                         );
 
 
+/*
+ * Authentication strategy
+ * and declaration of serialization/deserialization methods
+ */
+passport.use(new LocalStrategy({
+    usernameField: 'login',
+    passwordField: 'password'
+    }
+  , authorization.authenticateUser
+));
+
+passport.serializeUser(authorization.serializeUser);
+
+passport.deserializeUser(authorization.deserializeUser);
+
+
 
 /*
  * Main server configuration
@@ -136,6 +153,10 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
                                      }
                            , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
 
+// Use Passport for authentication and sessions
+server.use(passport.initialize());
+//server.use(passport.session());
+
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors
 
@@ -152,7 +173,13 @@ server.use(express.static(__dirname + '/css'));
 
 // User management
 server.post('/users', requestHandlers.createNewUser);
-server.post('/users/login', requestHandlers.logUserIn);
+//server.post('/users/login', requestHandlers.logUserIn);
+
+server.post('/users/login', passport.authenticate('local', { successRedirect: "/"
+                                                           , failureRedirect: "/users/login"
+                                                           , failureFlash: false }));
+
+
 server.get('/users/logout', requestHandlers.logUserOut);
 
 // Search tldrs
