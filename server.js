@@ -220,7 +220,7 @@ server.get('/users/whoshere', function (req, res, next) {
   if (req.user) {
     res.json(200, { message: 'You are logged in', loggedUser: req.user });
   } else {
-    res.json(200, { message: 'You are not logged in' });
+    res.json(401, { message: 'You are not logged in' });
   }
 });
 
