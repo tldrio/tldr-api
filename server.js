@@ -12,7 +12,9 @@ var express = require('express')
   , models = require('./models')
   , consolidate = require('consolidate')
   , server                               // Will store our express serverr
-  , RedisStore = require('connect-redis')(express);   // Will manage the connection to our Redis store
+  , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
+  , passport = require('passport')
+  , LocalStrategy = require('passport-local').Strategy;
 
 
 server = express(); // Instantiate server
@@ -37,7 +39,7 @@ server.configure('staging', 'production', function () {
 
 
 /*
- * Environments declaration
+ * Environments declaration and 
  * Express' default environment is 'development'
  */
 server.configure('development', function () {
