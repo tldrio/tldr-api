@@ -115,37 +115,35 @@ server.db = new dbObject( server.set('dbHost')
  * Main server configuration
  * All handlers to be defined here
  */
-server.configure(function () {
-  // Parse body
-  server.use(express.bodyParser());
+// Parse body
+server.use(express.bodyParser());
 
-  // Parse cookie data and use redis to store session data
-  server.use(express.cookieParser());
-  server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
+// Parse cookie data and use redis to store session data
+server.use(express.cookieParser());
+server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
 
-                             , key: "tldr_session"                  // Name of our cookie
+                           , key: "tldr_session"                  // Name of our cookie
 
-                             , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
-                                                                    // when we use another path such as '/user'. Seems like an issue with Chrome
+                           , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
+                                                                  // when we use another path such as '/user'. Seems like an issue with Chrome
 
-                                       , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
-                                                                    // why it increases the risks of XSS cookie theft)
+                                     , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
+                                                                  // why it increases the risks of XSS cookie theft)
 
-                                       , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
-                                                                    // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
-                                                                    // i.e. every request made that resends the cookie
-                                       }
-                             , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
+                                     , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
+                                                                  // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
+                                                                  // i.e. every request made that resends the cookie
+                                     }
+                           , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
 
-  server.use(server.router); // Map routes see docs why we do it here
-  server.use(requestHandlers.handleErrors); // Use middleware to handle errors
+server.use(server.router); // Map routes see docs why we do it here
+server.use(requestHandlers.handleErrors); // Use middleware to handle errors
 
-  // Used for HTML templating
-  server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
-  server.set('view engine', 'mustache'); // Set mustache as the default extension
-  server.set('views', __dirname + '/views');
-  server.use(express.static(__dirname + '/css'));
-});
+// Used for HTML templating
+server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
+server.set('view engine', 'mustache'); // Set mustache as the default extension
+server.set('views', __dirname + '/views');
+server.use(express.static(__dirname + '/css'));
 
 
 /**
