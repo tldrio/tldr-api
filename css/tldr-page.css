@@ -6,7 +6,7 @@ body {
 
 
 #tldr-container {
-  background-color: #f0f1f2;
+  background-color: #ececec;
   border: 1px solid #D9D9D9;
   border-radius: 2px;
   box-shadow: rgba(0, 0, 0, 0.1) 0 0 2px 0px;
@@ -28,7 +28,7 @@ h2 {
   
 }
 
-#tldr-author-data {
+#tldr-resource-data {
   color: #bababa;
   font-family: 'Helvetica Neue', Helvetica, Verdana, Arial, sans-serif;
   font-size: 16px;
