@@ -290,6 +290,8 @@ function handleCORSLocal (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:8888");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+                                                            // Works with xhr's withCredentials option set to true
   next();
 }
 
@@ -299,10 +301,11 @@ function handleCORSLocal (req, res, next) {
  */
 
 function handleCORSProd (req, res, next) {
-  console.log(req.headers.origin);
   res.header("Access-Control-Allow-Origin", "http://tldr.io");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+                                                            // Works with xhr's withCredentials option set to true
   next();
 }
 

@@ -144,8 +144,7 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
                            , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
                                                                   // when we use another path such as '/user'. Seems like an issue with Chrome
 
-                                     , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
-                                                                  // why it increases the risks of XSS cookie theft)
+                                     , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS
 
                                      , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
                                                                   // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
