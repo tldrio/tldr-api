@@ -152,8 +152,11 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
 
                            , key: "tldr_session"                  // Name of our cookie
 
-                           , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
-                                                                  // when we use another path such as '/user'. Seems like an issue with Chrome
+                           , cookie: { path: '/'                  // Cookie is resent for all pages. Strange: there was a bug when I used "/users"
+                                                                  // Anyway since connect-session can be pretty stupid, any call outside /users created a new
+                                                                  // entry in the Redis store, which is a dumb memory leak. Adding xhr: {withCredentials: true}
+                                                                  // to the parameters of the $.ajax client calls enables the same session for all calls, thus
+                                                                  // eliminating the memory leak
 
                                      , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS
 
