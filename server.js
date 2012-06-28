@@ -152,7 +152,7 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
 
                            , key: "tldr_session"                  // Name of our cookie
 
-                           , cookie: { path: '/users'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
+                           , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
                                                                   // when we use another path such as '/user'. Seems like an issue with Chrome
 
                                      , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS

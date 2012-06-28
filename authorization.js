@@ -34,10 +34,15 @@ function authenticateUser(login, password, done) {
  * As name implies, logs user out
  */
 function logUserOut(req, res, next) {
-  var name = req.user.name;
+  var name = req.user ? req.user.name : null;
 
   req.logOut();
-  return res.json(200, { message: "User " + name + " logged out successfully" });
+
+  if (name) {
+    return res.json(200, { message: "User " + name + " logged out successfully" });
+  } else {
+    return res.json(400, { message: "No user was logged in!" });
+  }
 }
 
 
