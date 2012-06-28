@@ -85,6 +85,7 @@ server.configure('staging', function () {
   server.set('redisDb', 0);
 
   server.use(requestHandlers.handleCORSProd);
+  server.use(express.logger());
 });
 
 server.configure('production', function () {
@@ -100,6 +101,7 @@ server.configure('production', function () {
   server.set('redisDb', 0);
 
   server.use(requestHandlers.handleCORSProd);
+  server.use(express.logger());
 });
 
 
@@ -135,13 +137,22 @@ passport.deserializeUser(authorization.deserializeUser);
 // Parse body
 server.use(express.bodyParser());
 
+// Middleware to send a dummy empty favicon so as to be able to debug easily
+server.use(function(req, res, next) {
+  if (req.url === "/favicon.ico") {
+    return res.send(200, "");
+  } else {
+    return next();
+  }
+});
+
 // Parse cookie data and use redis to store session data
 server.use(express.cookieParser());
 server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
 
                            , key: "tldr_session"                  // Name of our cookie
 
-                           , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
+                           , cookie: { path: '/users'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
                                                                   // when we use another path such as '/user'. Seems like an issue with Chrome
 
                                      , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS
