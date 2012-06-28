@@ -262,6 +262,18 @@ function createNewUser(req, res, next) {
 }
 
 
+/*
+ * Returns the logged user if there is a logged user, or a 401 error if nobody is logged
+ */
+function getLoggedUser(req, res, nex) {
+  if (req.user) {
+    res.json(200, req.user );
+  } else {
+    res.json(401, { message: 'You are not logged in' });
+  }
+}
+
+
 
 /**
  * Handle All errors coming from next(err) calls
@@ -278,7 +290,6 @@ function handleErrors (err, req, res, next) {
     bunyan.error(err);
     return res.send(500, 'Unknown error');
   }
-
 }
 
 /**
@@ -319,3 +330,4 @@ module.exports.handleErrors = handleErrors;
 module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
 module.exports.createNewUser = createNewUser;
+module.exports.getLoggedUser = getLoggedUser;

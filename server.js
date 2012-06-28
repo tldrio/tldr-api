@@ -190,8 +190,9 @@ server.post('/users', requestHandlers.createNewUser);
 
 server.post('/users/login', passport.authenticate('local', { successRedirect: "/"
                                                            , failureRedirect: "/users/login"
-                                                           , failureFlash: false }));
+                                                           , failureFlash: false } ));
 
+server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/logout', authorization.logUserOut);
 
 // Search tldrs
@@ -228,14 +229,6 @@ server.get('/users/login', function(req, res, next) {
               + '<input type="submit" value="Gogogo"></form>');
 });
 
-// The same as the two above!
-server.get('/users/whoshere', function (req, res, next) {
-  if (req.user) {
-    res.json(200, { message: 'You are logged in', loggedUser: req.user });
-  } else {
-    res.json(401, { message: 'You are not logged in' });
-  }
-});
 
 
 
