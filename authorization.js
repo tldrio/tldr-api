@@ -30,21 +30,6 @@ function authenticateUser(login, password, done) {
 }
 
 
-/*
- * As name implies, logs user out
- */
-function logUserOut(req, res, next) {
-  var name = req.user ? req.user.name : null;
-
-  req.logOut();
-
-  if (name) {
-    return res.json(200, { message: "User " + name + " logged out successfully" });
-  } else {
-    return res.json(400, { message: "No user was logged in!" });
-  }
-}
-
 
 /*
  * Serializes an authenticated user. Here, we simply store the user's _id to deserialize him later
@@ -67,4 +52,3 @@ function deserializeUser(_id, done) {
 module.exports.authenticateUser = authenticateUser;
 module.exports.serializeUser = serializeUser;
 module.exports.deserializeUser = deserializeUser;
-module.exports.logUserOut = logUserOut;

@@ -193,7 +193,7 @@ server.post('/users/login', passport.authenticate('local', { successRedirect: "/
                                                            , failureFlash: false } ));
 
 server.get('/users/you', requestHandlers.getLoggedUser);
-server.get('/users/logout', authorization.logUserOut);
+server.get('/users/logout', requestHandlers.logUserOut);
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);

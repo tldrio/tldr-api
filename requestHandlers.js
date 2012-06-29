@@ -274,6 +274,21 @@ function getLoggedUser(req, res, nex) {
 }
 
 
+/*
+ * As name implies, logs user out
+ */
+function logUserOut(req, res, next) {
+  var name = req.user ? req.user.name : null;
+
+  req.logOut();
+
+  if (name) {
+    return res.json(200, { message: "User " + name + " logged out successfully" });
+  } else {
+    return res.json(400, { message: "No user was logged in!" });
+  }
+}
+
 
 /**
  * Handle All errors coming from next(err) calls
@@ -329,5 +344,6 @@ module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
-module.exports.createNewUser = createNewUser;
+module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
+module.exports.createNewUser = createNewUser;
