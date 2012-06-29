@@ -195,9 +195,10 @@ server.post('/users/login', function(req, res, next) {
     if (err) { return next(err) }
 
     if (!user) {
-      if (req.authFailedDueToUnknownUser) { return res.json(401, { message: 'UnknownUser' }) }
-      if (req.authFailedDueToInvalidPassword) { return res.json(401, { message: 'InvalidPassword' }) }
-      return res.json(401, { message: 'MissingCredentials' });
+      return res.json(401, { UnknownUser: req.authFailedDueToUnknownUser ? true : false
+                           , InvalidPassword: req.authFailedDueToInvalidPassword ? true : false
+                           , MissingCredentials: (req.authFailedDueToInvalidPassword || req.authFailedDueToUnknownUser) ? false : true
+                           });
     }
 
     req.logIn(user, function(err) {
