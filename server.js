@@ -192,13 +192,16 @@ server.post('/users', requestHandlers.createNewUser);
 // Handles a user connection and credentials check. Due to shortcomings in passport, not possible to completely put it in request handlers
 server.post('/users/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
+    var errorToSend;
+
     if (err) { return next(err) }
 
     if (!user) {
-      return res.json(401, { UnknownUser: req.authFailedDueToUnknownUser ? true : false
-                           , InvalidPassword: req.authFailedDueToInvalidPassword ? true : false
-                           , MissingCredentials: (req.authFailedDueToInvalidPassword || req.authFailedDueToUnknownUser) ? false : true
-                           });
+      errorToSend = { UnknownUser: req.authFailedDueToUnknownUser ? true : false
+                    , InvalidPassword: req.authFailedDueToInvalidPassword ? true : false
+                    , MissingCredentials: (req.authFailedDueToInvalidPassword || req.authFailedDueToUnknownUser) ? false : true
+                    };
+      return res.json(401, errorToSend);
     }
 
     req.logIn(user, function(err) {
