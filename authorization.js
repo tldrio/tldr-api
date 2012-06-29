@@ -13,7 +13,7 @@ function authenticateUser(req, login, password, done) {
 
     if (docs.length === 0) {
       req.authFailedDueToUnknownUser = true;   // Enables us to tell the client what didn't work
-      return done(null, false, { message: "UnknownUser" });
+      return done(null, false, {});
     }
 
     // User was found in database, check if password is correct
@@ -24,7 +24,7 @@ function authenticateUser(req, login, password, done) {
         return done(null, docs[0]);
       } else {
         req.authFailedDueToInvalidPassword = true;   // Enables us to tell the client what didn't work
-        return done(null, false, { message: "InvalidPassword" });
+        return done(null, false, {});
       }
     });
   });

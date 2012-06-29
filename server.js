@@ -188,23 +188,16 @@ server.use(express.static(__dirname + '/css'));
 
 // User management
 server.post('/users', requestHandlers.createNewUser);
-//server.post('/users/login', requestHandlers.logUserIn);
 
-//server.post('/users/login', passport.authenticate('local', {failureFlash: true} ), requestHandlers.postLogIn);
-
-//server.post('/users/login', passport.authenticate('local', { successRedirect: "/users/you"
-                                                           //, failureRedirect: "/users/you"
-                                                           //, failureFlash: true } ));
-
-
+// Handles a user connection and credentials check. Due to shortcomings in passport, not possible to completely put it in request handlers
 server.post('/users/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     if (err) { return next(err) }
 
     if (!user) {
-      console.log(req.authFailedDueToUnknownUser);
-      console.log(req.authFailedDueToInvalidPassword);
-      return res.json(401, { message: 'NO' })
+      if (req.authFailedDueToUnknownUser) { return res.json(401, { message: 'UnknownUser' }) }
+      if (req.authFailedDueToInvalidPassword) { return res.json(401, { message: 'InvalidPassword' }) }
+      return res.json(401, { message: 'MissingCredentials' });
     }
 
     req.logIn(user, function(err) {
@@ -221,7 +214,7 @@ server.get('/users/logout', requestHandlers.logUserOut);
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);
-server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
+server.get('/tldrs', requestHandlers.searchTldrs); // Convenience route
 
 // GET latest tldrs (convenience route)
 server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
