@@ -12,7 +12,7 @@ function authenticateUser(req, login, password, done) {
     if (err) { return done(err); }
 
     if (docs.length === 0) {
-      req.authFailedDueToUnknownUser = true;   // Enables us to tell the client what didn't work
+      req.authFailedDueToUnknownUser = true;    // Enables us to tell the client what didn't work
       return done(null, false);
     }
 
@@ -23,7 +23,7 @@ function authenticateUser(req, login, password, done) {
       if (valid) {
         return done(null, docs[0]);
       } else {
-        req.authFailedDueToInvalidPassword = true;   // Enables us to tell the client what didn't work
+        req.authFailedDueToInvalidPassword = true;    // Enables us to tell the client what didn't work
         return done(null, false);
       }
     });
