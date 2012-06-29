@@ -269,6 +269,9 @@ function getLoggedUser(req, res, nex) {
   if (req.user) {
     res.json(200, req.user );
   } else {
+
+    //var xxxxx = req.flash('error');
+    debugger;
     res.json(401, { message: 'You are not logged in' });
   }
 }
@@ -290,12 +293,25 @@ function logUserOut(req, res, next) {
 }
 
 
+/*
+ * Right after a successful login, postLogIn is called
+ */
+function postLogIn(req, res, next) {
+  if (req.user) {
+    res.json(200, req.user);
+  } else {
+    res.json(500, { message: "Something went wrong in the authentication" });   // Should never be called as this request handler is called after a successful auth.
+  }
+
+}
+
+
 /**
  * Handle All errors coming from next(err) calls
  *
  */
-
 function handleErrors (err, req, res, next) {
+  debugger;
   if (err.statusCode && err.body) {
     return res.json(err.statusCode, err.body);
   } else if (err.message) {
@@ -347,3 +363,4 @@ module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.createNewUser = createNewUser;
+module.exports.postLogIn =postLogIn;

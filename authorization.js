@@ -12,7 +12,7 @@ function authenticateUser(login, password, done) {
   UserModel.find({ login: login }, function(err, docs) {
     if (err) { return done(err); }
 
-    if (docs.length === 0) { return done(null, false, { message: "Unknown user" }); }
+    if (docs.length === 0) { return done(null, false, { flash: "Unknown user" }); }
 
     // User was found in database, check if password is correct
     bcrypt.compare(password, docs[0].password, function(err, valid) {

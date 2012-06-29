@@ -15,7 +15,8 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , authorization = require('./authorization');
+  , authorization = require('./authorization')
+  , flash = require('connect-flash');
 
 
 server = express(); // Instantiate server
@@ -166,6 +167,8 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
                                      }
                            , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
 
+server.use(flash());
+
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
 server.use(passport.session());
@@ -188,9 +191,11 @@ server.use(express.static(__dirname + '/css'));
 server.post('/users', requestHandlers.createNewUser);
 //server.post('/users/login', requestHandlers.logUserIn);
 
+//server.post('/users/login', passport.authenticate('local', {failureFlash: true} ), requestHandlers.postLogIn);
+
 server.post('/users/login', passport.authenticate('local', { successRedirect: "/users/you"
-                                                           , failureRedirect: "/users/login"
-                                                           , failureFlash: false } ));
+                                                           , failureRedirect: "/users/you"
+                                                           , failureFlash: true } ));
 
 server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/logout', requestHandlers.logUserOut);
