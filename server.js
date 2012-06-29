@@ -188,7 +188,7 @@ server.use(express.static(__dirname + '/css'));
 server.post('/users', requestHandlers.createNewUser);
 //server.post('/users/login', requestHandlers.logUserIn);
 
-server.post('/users/login', passport.authenticate('local', { successRedirect: "/"
+server.post('/users/login', passport.authenticate('local', { successRedirect: "/users/you"
                                                            , failureRedirect: "/users/login"
                                                            , failureFlash: false } ));
 
