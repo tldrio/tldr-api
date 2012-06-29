@@ -269,10 +269,7 @@ function getLoggedUser(req, res, nex) {
   if (req.user) {
     res.json(200, req.user );
   } else {
-
-    //var xxxxx = req.flash('error');
-    debugger;
-    res.json(401, { message: 'You are not logged in' });
+    return res.json(401, { message: 'You are not logged in' });
   }
 }
 

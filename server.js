@@ -15,8 +15,7 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , authorization = require('./authorization')
-  , flash = require('connect-flash');
+  , authorization = require('./authorization');
 
 
 server = express(); // Instantiate server
@@ -119,8 +118,9 @@ server.db = new dbObject( server.set('dbHost')
  * and declaration of serialization/deserialization methods
  */
 passport.use(new LocalStrategy({
-    usernameField: 'login',
-    passwordField: 'password'
+      usernameField: 'login'
+    , passwordField: 'password'
+    , passReqToCallback: true   // Why the fuck wasn't this life-saving option NOT documented ?
     }
   , authorization.authenticateUser
 ));
@@ -167,7 +167,6 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
                                      }
                            , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
 
-server.use(flash());
 
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
@@ -193,9 +192,29 @@ server.post('/users', requestHandlers.createNewUser);
 
 //server.post('/users/login', passport.authenticate('local', {failureFlash: true} ), requestHandlers.postLogIn);
 
-server.post('/users/login', passport.authenticate('local', { successRedirect: "/users/you"
-                                                           , failureRedirect: "/users/you"
-                                                           , failureFlash: true } ));
+//server.post('/users/login', passport.authenticate('local', { successRedirect: "/users/you"
+                                                           //, failureRedirect: "/users/you"
+                                                           //, failureFlash: true } ));
+
+
+server.post('/users/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { return next(err) }
+
+    if (!user) {
+      console.log(req.authFailedDueToUnknownUser);
+      console.log(req.authFailedDueToInvalidPassword);
+      return res.json(401, { message: 'NO' })
+    }
+
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+
+      return res.json(200, user);
+    });
+  })(req, res, next);
+});
+
 
 server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/logout', requestHandlers.logUserOut);

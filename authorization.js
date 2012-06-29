@@ -7,23 +7,24 @@ var UserModel = require('./models').UserModel
  * See Passport doc to understand the signature
  * Note: this is NOT a Connect middleware, hence the different signature
  */
-function authenticateUser(login, password, done) {
-  console.log("AUTH CALLED");
+function authenticateUser(req, login, password, done) {
   UserModel.find({ login: login }, function(err, docs) {
     if (err) { return done(err); }
 
-    if (docs.length === 0) { return done(null, false, { flash: "Unknown user" }); }
+    if (docs.length === 0) {
+      req.authFailedDueToUnknownUser = true;   // Enables us to tell the client what didn't work
+      return done(null, false, { message: "UnknownUser" });
+    }
 
     // User was found in database, check if password is correct
     bcrypt.compare(password, docs[0].password, function(err, valid) {
       if (err) { return done(err); }
 
       if (valid) {
-        console.log("valid");
         return done(null, docs[0]);
       } else {
-        console.log("non valid");
-        return done(null, false, { message: "Invalid password" });
+        req.authFailedDueToInvalidPassword = true;   // Enables us to tell the client what didn't work
+        return done(null, false, { message: "InvalidPassword" });
       }
     });
   });
