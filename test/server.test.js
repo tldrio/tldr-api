@@ -573,6 +573,14 @@ describe('Webserver', function () {
       });
     });
 
+    it('Should be able to login with a right username and password', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "anotheruser@nfa.com", password: "supersecret" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+        done();
+      });
+    });
 
 
 
