@@ -573,6 +573,8 @@ describe('Webserver', function () {
       });
     });
 
+    // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
+    // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
     it('Should be able to login with a right username and password', function (done) {
       var obj;
 
@@ -580,8 +582,8 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
         obj = JSON.parse(body);
-        assert.isDefined(body.message);
-        assert.isUndefined(body.login);
+        assert.isDefined(obj.message);
+        assert.isUndefined(obj.login);
 
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/login'
@@ -596,7 +598,28 @@ describe('Webserver', function () {
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
             obj.login.should.equal("user1@nfa.com");
-            done();
+
+            request.get({ headers: {"Accept": "application/json"}
+                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+              response.statusCode.should.equal(200);
+
+              request.get({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+                obj = JSON.parse(body);
+                assert.isDefined(obj.message);
+                assert.isUndefined(obj.login);
+
+                request.get({ headers: {"Accept": "application/json"}
+                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                  response.statusCode.should.equal(400);
+
+                  done();
+                });
+              });
+            });
           });
         });
       });
