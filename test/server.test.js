@@ -112,25 +112,14 @@ describe('Webserver', function () {
   // Test GET requests
   describe('should handle GET request for', function () {
 
+    // Use request to test our API instead of restify
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
-      client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
+      request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
+        var obj = JSON.parse(body);
+        response.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
-        done();
-      });
-
-    });
-
-    it('TEST AITH REQUEST', function (done) {
-
-      request.get({json: true, url: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa')}, function (error, response, body) {
-        console.log("======");
-        console.log(error);
-        console.log("======");
-        console.log(response);
-        console.log("======");
-        console.log(body);
         done();
       });
 
