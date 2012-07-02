@@ -540,9 +540,38 @@ describe('Webserver', function () {
         body.UnknownUser.should.equal(true);
         done();
       });
-
     });
 
+    it('Should not be able to login with a missing part of the credentials', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "anotheruser@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(true);
+        body.InvalidPassword.should.equal(false);
+        body.UnknownUser.should.equal(false);
+
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { password: "anothe" } }, function (error, response, body) {
+          response.statusCode.should.equal(401);
+          body.MissingCredentials.should.equal(true);
+          body.InvalidPassword.should.equal(false);
+          body.UnknownUser.should.equal(false);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/login'
+                       , json: {} }, function (error, response, body) {
+            response.statusCode.should.equal(401);
+            body.MissingCredentials.should.equal(true);
+            body.InvalidPassword.should.equal(false);
+            body.UnknownUser.should.equal(false);
+
+            done();
+          });
+        });
+      });
+    });
 
 
 
