@@ -62,7 +62,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
   // The '10' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
   if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
         instance = new UserModel(validFields);

@@ -6,7 +6,7 @@
 
 var mongoose = require('mongoose')
   , _ = require('underscore')
-  , bunyan = require('../lib/logger').bunyan // Audit logger for restify
+  , bunyan = require('../lib/logger').bunyan
   , url = require('url')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Schema = mongoose.Schema

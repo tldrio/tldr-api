@@ -104,7 +104,7 @@ describe('UserModel', function () {
       });
     });
 
-    it('should lowercase login when saving a valid tldr', function (done) {
+    it('should lowercase login when saving a valid user', function (done) {
       var user = new UserModel({ login: 'lOGin@Email.com'
                                , name: 'A name'
                                , password: 'supersecret!'
