@@ -138,7 +138,7 @@ function getTldrById (req, res, next) {
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
-      return res.send(200, tldr); // We serve the raw tldr data
+      return res.json(200, tldr); // We serve the raw tldr data
     }
 
   });
