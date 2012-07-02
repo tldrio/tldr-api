@@ -516,17 +516,39 @@ describe('Webserver', function () {
   });
 
 
-  //describe('Test authentication and session', function() {
+  describe('Test authentication and session', function() {
+
+    it('Should not be able to login as User One with a wrong password', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(false);
+        body.InvalidPassword.should.equal(true);
+        body.UnknownUser.should.equal(false);
+        done();
+      });
+    });
+
+    it('Should not be able to login with a wrong username', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(false);
+        body.InvalidPassword.should.equal(false);
+        body.UnknownUser.should.equal(true);
+        done();
+      });
+
+    });
 
 
 
 
 
 
-
-
-
-  //});
+  });
 
 });
 
