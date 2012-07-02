@@ -8,7 +8,6 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
-  , restify = require('restify')
   , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
   , models = require('../models')
@@ -73,11 +72,6 @@ describe('Webserver', function () {
   }
 
   beforeEach(function (done) {
-    //create client to test api
-    client = restify.createJsonClient({
-      url: 'http://localhost:' + 8686,
-    });
-    //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
     tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
@@ -121,7 +115,6 @@ describe('Webserver', function () {
   // Test GET requests
   describe('should handle GET request for', function () {
 
-    // Use request to test our API instead of restify
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
       request.get({ headers: {"Accept": "application/json"}
@@ -333,10 +326,7 @@ describe('Webserver', function () {
 
 
     it('Should serve tldr-page if accept header is text/html', function (done) {
-      client = restify.createStringClient({ url: client.url.href
-                                          , accept: 'text/html'});
-
-      client.get('/tldrs/111111111111111111111111', function (err, req, res, data) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
         res.body.should.contain('<div id="tldr-container">');
@@ -344,8 +334,6 @@ describe('Webserver', function () {
       });
 
     });
-    
-
 
   });
 
@@ -365,7 +353,7 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
@@ -393,7 +381,7 @@ describe('Webserver', function () {
         , updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
         TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
@@ -408,10 +396,9 @@ describe('Webserver', function () {
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
       var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
-        client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(403);
-          var parsedError = JSON.parse(res.body);
-          parsedError.should.have.property('url');
+          obj.should.have.property('url');
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
@@ -424,9 +411,8 @@ describe('Webserver', function () {
       var tldrData = { url: 'http://nfa.com' 
         , summaryBullets: [''] };   // Summary can't be empty
 
-        client.post('/tldrs', tldrData, function(err, req, res, obj) {
-          var parsedError = JSON.parse(res.body);
-          parsedError.should.have.property('summaryBullets');
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          obj.should.have.property('summaryBullets');
           res.statusCode.should.equal(403);
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
@@ -446,7 +432,7 @@ describe('Webserver', function () {
     it('Should update an existing tldr with PUT motherfucker', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
 
-      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
         TldrModel.find({}, function(err, docs) {
           var tldr;
@@ -465,7 +451,7 @@ describe('Webserver', function () {
     it('Should handle bad PUT request', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
 
-      client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
         res.statusCode.should.equal(403);
         done();
       });
@@ -474,7 +460,7 @@ describe('Webserver', function () {
     it('Should handle PUT request with non existent', function (done) {
 
       var tldrData = { summaryBullets: ['A new summary'] };
-      client.put('/tldrs/222222222222222222222222', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
         res.statusCode.should.equal(404);
         done();
       });
@@ -486,9 +472,8 @@ describe('Webserver', function () {
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
       var tldrData = { summaryBullets: [''] };
 
-      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
-        var parsedError = JSON.parse(res.body);
-        parsedError.should.have.property('summaryBullets');
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
+        obj.should.have.property('summaryBullets');
         res.statusCode.should.equal(403);
         TldrModel.find({}, function(err, docs) {
           var tldr;
@@ -516,10 +501,10 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(201);
 
-        client.get('/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
+        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
           res.statusCode.should.equal(200);
 
           done();
