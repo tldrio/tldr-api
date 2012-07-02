@@ -26,7 +26,6 @@
 , "devDependencies": { "mocha": "1.1.x"
                      , "chai": "1.0.x"
                      , "sinon": "1.3.x"
-                     , "restify": "1.4.x"
                      , "request": "2.9.x"
                      }
 , "scripts": { "test": "make test" }
