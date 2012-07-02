@@ -170,7 +170,7 @@ describe('Webserver', function () {
 
     it('a non existing route', function (done) {
 
-      client.get('/nonexistingroute', function (err, req, res, obj) {
+      request.get({uri: rootUrl + '/nonexistingroute'}, function (err, res, body) {
         res.statusCode.should.equal(404);
         done();
       });
