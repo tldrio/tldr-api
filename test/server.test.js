@@ -574,14 +574,33 @@ describe('Webserver', function () {
     });
 
     it('Should be able to login with a right username and password', function (done) {
-      request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
-                   , json: { login: "anotheruser@nfa.com", password: "supersecret" } }, function (error, response, body) {
-        response.statusCode.should.equal(200);
-        done();
+      var obj;
+
+      request.get({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+        obj = JSON.parse(body);
+        assert.isDefined(body.message);
+        assert.isUndefined(body.login);
+
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { login: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+          response.statusCode.should.equal(200);
+          body.login.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+          request.get({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.login.should.equal("user1@nfa.com");
+            done();
+          });
+        });
       });
     });
-
 
 
 
