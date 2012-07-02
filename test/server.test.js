@@ -16,7 +16,8 @@ var should = require('chai').should()
   , mongoose = require('mongoose')
   , async = require('async')
   , TldrModel = models.TldrModel
-  , rootUrl = 'http://localhost:8686';
+  , rootUrl = 'http://localhost:8686'
+  , request = require('request');
 
 
 
@@ -116,6 +117,20 @@ describe('Webserver', function () {
       client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
+        done();
+      });
+
+    });
+
+    it('TEST AITH REQUEST', function (done) {
+
+      request.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (error, response, body) {
+        console.log("======");
+        console.log(error);
+        console.log("======");
+        console.log(response);
+        console.log("======");
+        console.log(body);
         done();
       });
 
