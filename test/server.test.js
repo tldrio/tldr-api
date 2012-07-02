@@ -16,6 +16,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose')
   , async = require('async')
   , TldrModel = models.TldrModel
+  , UserModel = models.UserModel
   , rootUrl = 'http://localhost:8686'
   , request = require('request');
 
@@ -44,7 +45,15 @@ describe('Webserver', function () {
   // before mocha quits 
 
   before(function (done) {
-    db.connectToDatabase(done);
+    db.connectToDatabase(function() {
+      UserModel.remove({}, function(err) {
+        if (err) { return done(err); }
+        UserModel.createAndSaveInstance({login: "user1@nfa.com", name: "User One", password: "supersecret"}, function(err) {
+          if (err) { return done(err); }
+          done();
+        });
+      });
+    });
   });
 
   after(function (done) {
@@ -79,17 +88,17 @@ describe('Webserver', function () {
 
     // clear database and repopulate
     TldrModel.remove({}, function (err) {
-      if (err) {return done(err);}
+      if (err) { return done(err); }
       tldr1.save(	function (err) {
-        if (err) {return done(err); }
+        if (err) { return done(err); }
         tldr2.save( function (err) {
-          if (err) {return done(err); }
+          if (err) { return done(err); }
           tldr3.save( function (err) {
-            if (err) {return done(err); }
+            if (err) { return done(err); }
             tldr4.save( function (err) {
-              if (err) {return done(err); }
+              if (err) { return done(err); }
               TldrModel.find({}, function(err, docs) {
-                if (err) {return done(err); }
+                if (err) { return done(err); }
                 numberOfTldrs = docs.length;
                 done();
               });
@@ -506,8 +515,18 @@ describe('Webserver', function () {
 
   });
 
+
+  //describe('Test authentication and session', function() {
+
+
+
+
+
+
+
+
+
+  //});
+
 });
-
-
-
 
