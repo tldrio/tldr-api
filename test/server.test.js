@@ -136,11 +136,11 @@ describe('Webserver', function () {
 
     it('a non existing tldr given an url with /tldrs/search?', function (done) {
 
-      client.get('/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
-        var response = JSON.parse(res.body);
+      request.get({ uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com') }, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(404);
-        response.should.have.ownProperty('message');
-        response.message.should.equal('ResourceNotFound');
+        obj.should.have.ownProperty('message');
+        obj.message.should.equal('ResourceNotFound');
         done();
       });
 
@@ -148,7 +148,8 @@ describe('Webserver', function () {
 
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
 
-      client.get('/tldrs/111111111111111111111111', function (err, req, res, obj) {
+      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
         done();
@@ -158,7 +159,8 @@ describe('Webserver', function () {
 
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
 
-      client.get('/tldrs/invalidId', function (err, req, res, obj) {
+      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/invalidId'}, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(403);
         assert.isNotNull(obj._id);
         done();
