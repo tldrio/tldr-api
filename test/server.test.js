@@ -124,7 +124,7 @@ describe('Webserver', function () {
 
     it('TEST AITH REQUEST', function (done) {
 
-      request.get({json: true, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa')}, function (error, response, body) {
+      request.get({json: true, url: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa')}, function (error, response, body) {
         console.log("======");
         console.log(error);
         console.log("======");
