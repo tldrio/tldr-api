@@ -8,7 +8,6 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
-  , restify = require('restify')
   , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
   , models = require('../models')
@@ -16,7 +15,9 @@ var should = require('chai').should()
   , mongoose = require('mongoose')
   , async = require('async')
   , TldrModel = models.TldrModel
-  , rootUrl = 'http://localhost:8686';
+  , UserModel = models.UserModel
+  , rootUrl = 'http://localhost:8686'
+  , request = require('request');
 
 
 
@@ -43,7 +44,15 @@ describe('Webserver', function () {
   // before mocha quits 
 
   before(function (done) {
-    db.connectToDatabase(done);
+    db.connectToDatabase(function() {
+      UserModel.remove({}, function(err) {
+        if (err) { return done(err); }
+        UserModel.createAndSaveInstance({login: "user1@nfa.com", name: "User One", password: "supersecret"}, function(err) {
+          if (err) { return done(err); }
+          done();
+        });
+      });
+    });
   });
 
   after(function (done) {
@@ -63,11 +72,6 @@ describe('Webserver', function () {
   }
 
   beforeEach(function (done) {
-    //create client to test api
-    client = restify.createJsonClient({
-      url: 'http://localhost:' + 8686,
-    });
-    //client.basicAuth('Magellan', 'VascoDeGama');
 
     // dummy models
     tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
@@ -78,17 +82,17 @@ describe('Webserver', function () {
 
     // clear database and repopulate
     TldrModel.remove({}, function (err) {
-      if (err) {return done(err);}
+      if (err) { return done(err); }
       tldr1.save(	function (err) {
-        if (err) {return done(err); }
+        if (err) { return done(err); }
         tldr2.save( function (err) {
-          if (err) {return done(err); }
+          if (err) { return done(err); }
           tldr3.save( function (err) {
-            if (err) {return done(err); }
+            if (err) { return done(err); }
             tldr4.save( function (err) {
-              if (err) {return done(err); }
+              if (err) { return done(err); }
               TldrModel.find({}, function(err, docs) {
-                if (err) {return done(err); }
+                if (err) { return done(err); }
                 numberOfTldrs = docs.length;
                 done();
               });
@@ -113,8 +117,10 @@ describe('Webserver', function () {
 
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
-      client.get('/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa'), function (err, req, res, obj) {
-        res.statusCode.should.equal(200);
+      request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
+        var obj = JSON.parse(body);
+        response.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
         done();
       });
@@ -123,11 +129,11 @@ describe('Webserver', function () {
 
     it('a non existing tldr given an url with /tldrs/search?', function (done) {
 
-      client.get('/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com'), function (err, req, res, obj) {
-        var response = JSON.parse(res.body);
+      request.get({ uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com') }, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(404);
-        response.should.have.ownProperty('message');
-        response.message.should.equal('ResourceNotFound');
+        obj.should.have.ownProperty('message');
+        obj.message.should.equal('ResourceNotFound');
         done();
       });
 
@@ -135,7 +141,8 @@ describe('Webserver', function () {
 
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
 
-      client.get('/tldrs/111111111111111111111111', function (err, req, res, obj) {
+      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
         done();
@@ -145,7 +152,8 @@ describe('Webserver', function () {
 
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
 
-      client.get('/tldrs/invalidId', function (err, req, res, obj) {
+      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/invalidId'}, function (err, res, body) {
+        var obj = JSON.parse(res.body);
         res.statusCode.should.equal(403);
         assert.isNotNull(obj._id);
         done();
@@ -155,7 +163,7 @@ describe('Webserver', function () {
 
     it('a non existing route', function (done) {
 
-      client.get('/nonexistingroute', function (err, req, res, obj) {
+      request.get({uri: rootUrl + '/nonexistingroute'}, function (err, res, body) {
         res.statusCode.should.equal(404);
         done();
       });
@@ -169,7 +177,7 @@ describe('Webserver', function () {
         , someFunctions = []
         , i, temp, now = new Date()
         , defaultLimit = 10
-        , older;
+        , older, obj;
 
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
@@ -183,7 +191,8 @@ describe('Webserver', function () {
           docs.length.should.equal(30);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
-          client.get('/tldrs/search?quantity=-1', function (err, req, res, obj) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=-1'}, function (err, res, body) {
+            obj = JSON.parse(res.body);
             obj.length.should.equal(defaultLimit);
             temp = _.map(obj, function (o) { return o.url; });
             _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -198,19 +207,23 @@ describe('Webserver', function () {
             _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
             // A limit for 0 should give defaultLimit objects as well
-            client.get('/tldrs/search?quantity=0', function (err, req, res, obj) {
+            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=0'}, function (err, res, body) {
+              obj = JSON.parse(res.body);
               obj.length.should.equal(defaultLimit);
 
               // A limit greater than defaultLimit should give defaultLimit objects as well
-              client.get('/tldrs/search?quantity=11', function (err, req, res, obj) {
+              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=11'}, function (err, res, body) {
+                obj = JSON.parse(res.body);
                 obj.length.should.equal(defaultLimit);
 
                 // Forgetting the limit should force the handler to return defaultLimit objects
-                client.get('/tldrs/search', function (err, req, res, obj) {
+                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search'}, function (err, res, body) {
+                  obj = JSON.parse(res.body);
                   obj.length.should.equal(defaultLimit);
 
                   // Using it normally it should work! And return the 5 latest tldrs
-                  client.get('/tldrs/search?quantity=5', function (err, req, res, obj) {
+                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=5'}, function (err, res, body) {
+                    obj = JSON.parse(res.body);
                     obj.length.should.equal(5);
                     temp = _.map(obj, function (o) { return o. url; });
                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -220,11 +233,13 @@ describe('Webserver', function () {
                     _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
                     // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                    client.get('/tldrs/search?quantity=asd', function (err, req, res, obj) {
+                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=asd'}, function (err, res, body) {
+                      obj = JSON.parse(res.body);
                       obj.length.should.equal(defaultLimit);
 
                       // Called with a non-numeral value for startat, it should use 0 as a default value
-                      client.get('/tldrs/search?quantity=4&startat=rew', function (err, req, res, obj) {
+                      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=4&startat=rew'}, function (err, res, body) {
+                        obj = JSON.parse(res.body);
                         obj.length.should.equal(4);
                         temp = _.map(obj, function (o) { return o. url; });
                         _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -233,7 +248,8 @@ describe('Webserver', function () {
                         _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                         // With normal values for startat and limit, it should behave normally
-                        client.get('/tldrs/search?quantity=4&startat=5', function (err, req, res, obj) {
+                        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=4&startat=5'}, function (err, res, body) {
+                          obj = JSON.parse(res.body);
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. url; });
                           _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
@@ -242,11 +258,13 @@ describe('Webserver', function () {
                           _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
                           // If startat is too high, no tldr is sent
-                          client.get('/tldrs/search?quantity=4&startat=55', function (err, req, res, obj) {
+                          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=4&startat=55'}, function (err, res, body) {
+                            obj = JSON.parse(res.body);
                             obj.length.should.equal(0);
 
                             // If called with a correct number of milliseconds for olderthan, it works as expected (and ignores the startat parameter if any)
-                            client.get('/tldrs/search?quantity=4&startat=3&olderthan='+older.getTime(), function (err, req, res, obj) {
+                            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=4&startat=3&olderthan=' + older.getTime()}, function (err, res, body) {
+                              obj = JSON.parse(res.body);
                               obj.length.should.equal(4);
                               temp = _.map(obj, function (o) { return o. url; });
                               _.indexOf(temp, 'http://needforair.com/sopa/number12').should.not.equal(-1);
@@ -255,7 +273,8 @@ describe('Webserver', function () {
                               _.indexOf(temp, 'http://needforair.com/sopa/number15').should.not.equal(-1);
 
                               // If called with an incorrectly formated number of milliseconds (here a string), it should default to "older than now"
-                              client.get('/tldrs/search?quantity=6&olderthan=123er5t3e', function (err, req, res, obj) {
+                              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity=6&olderthan=123er5t3e'}, function (err, res, body) {
+                                obj = JSON.parse(res.body);
                                 obj.length.should.equal(6);
                                 temp = _.map(obj, function (o) { return o. url; });
                                 _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -266,11 +285,13 @@ describe('Webserver', function () {
                                 _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
 
                                 // Convenience route should force the handler to return defaultLimit objects
-                                client.get('/tldrs/search', function (err, req, res, obj) {
+                                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search'}, function (err, res, body) {
+                                  obj = JSON.parse(res.body);
                                   obj.length.should.equal(defaultLimit);
 
                                   // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects
-                                  client.get('/tldrs/latest/4', function (err, req, res, obj) {
+                                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4'}, function (err, res, body) {
+                                    obj = JSON.parse(res.body);
                                     obj.length.should.equal(4);
                                     temp = _.map(obj, function (o) { return o. url; });
                                     _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
@@ -279,7 +300,8 @@ describe('Webserver', function () {
                                     _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                                     // Empty quantity will be intepreted as 0 so will return defaultLimit tldrs
-                                    client.get('/tldrs/search?quantity=', function (err, req, res, obj) {
+                                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity='}, function (err, res, body) {
+                                      obj = JSON.parse(res.body);
                                       obj.length.should.equal(defaultLimit);
 
                                       done();
@@ -304,10 +326,7 @@ describe('Webserver', function () {
 
 
     it('Should serve tldr-page if accept header is text/html', function (done) {
-      client = restify.createStringClient({ url: client.url.href
-                                          , accept: 'text/html'});
-
-      client.get('/tldrs/111111111111111111111111', function (err, req, res, data) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
         res.body.should.contain('<div id="tldr-container">');
@@ -315,8 +334,6 @@ describe('Webserver', function () {
       });
 
     });
-    
-
 
   });
 
@@ -336,7 +353,7 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
@@ -364,7 +381,7 @@ describe('Webserver', function () {
         , updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
         TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
@@ -379,10 +396,9 @@ describe('Webserver', function () {
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
       var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
-        client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(403);
-          var parsedError = JSON.parse(res.body);
-          parsedError.should.have.property('url');
+          obj.should.have.property('url');
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
@@ -395,9 +411,8 @@ describe('Webserver', function () {
       var tldrData = { url: 'http://nfa.com' 
         , summaryBullets: [''] };   // Summary can't be empty
 
-        client.post('/tldrs', tldrData, function(err, req, res, obj) {
-          var parsedError = JSON.parse(res.body);
-          parsedError.should.have.property('summaryBullets');
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          obj.should.have.property('summaryBullets');
           res.statusCode.should.equal(403);
           TldrModel.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
@@ -417,7 +432,7 @@ describe('Webserver', function () {
     it('Should update an existing tldr with PUT motherfucker', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
 
-      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
         TldrModel.find({}, function(err, docs) {
           var tldr;
@@ -436,7 +451,7 @@ describe('Webserver', function () {
     it('Should handle bad PUT request', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
 
-      client.put('/tldrs/thisisnotandobjetid', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
         res.statusCode.should.equal(403);
         done();
       });
@@ -445,7 +460,7 @@ describe('Webserver', function () {
     it('Should handle PUT request with non existent', function (done) {
 
       var tldrData = { summaryBullets: ['A new summary'] };
-      client.put('/tldrs/222222222222222222222222', tldrData, function(err, req, res, obj) {
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
         res.statusCode.should.equal(404);
         done();
       });
@@ -457,9 +472,8 @@ describe('Webserver', function () {
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
       var tldrData = { summaryBullets: [''] };
 
-      client.put('/tldrs/111111111111111111111111', tldrData, function(err, req, res, obj) {
-        var parsedError = JSON.parse(res.body);
-        parsedError.should.have.property('summaryBullets');
+      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
+        obj.should.have.property('summaryBullets');
         res.statusCode.should.equal(403);
         TldrModel.find({}, function(err, docs) {
           var tldr;
@@ -487,10 +501,10 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      client.post('/tldrs', tldrData, function(err, req, res, obj) {
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(201);
 
-        client.get('/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr'), function (err, req, res, obj) {
+        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
           res.statusCode.should.equal(200);
 
           done();
@@ -502,8 +516,119 @@ describe('Webserver', function () {
 
   });
 
+
+  describe('Test authentication and session', function() {
+
+    it('Should not be able to login as User One with a wrong password', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(false);
+        body.InvalidPassword.should.equal(true);
+        body.UnknownUser.should.equal(false);
+        done();
+      });
+    });
+
+    it('Should not be able to login with a wrong username', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(false);
+        body.InvalidPassword.should.equal(false);
+        body.UnknownUser.should.equal(true);
+        done();
+      });
+    });
+
+    it('Should not be able to login with a missing part of the credentials', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { login: "anotheruser@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        body.MissingCredentials.should.equal(true);
+        body.InvalidPassword.should.equal(false);
+        body.UnknownUser.should.equal(false);
+
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { password: "anothe" } }, function (error, response, body) {
+          response.statusCode.should.equal(401);
+          body.MissingCredentials.should.equal(true);
+          body.InvalidPassword.should.equal(false);
+          body.UnknownUser.should.equal(false);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/login'
+                       , json: {} }, function (error, response, body) {
+            response.statusCode.should.equal(401);
+            body.MissingCredentials.should.equal(true);
+            body.InvalidPassword.should.equal(false);
+            body.UnknownUser.should.equal(false);
+
+            done();
+          });
+        });
+      });
+    });
+
+    // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
+    // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
+    it('Should be able to login with a right username and password', function (done) {
+      var obj;
+
+      request.get({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+        obj = JSON.parse(body);
+        assert.isDefined(obj.message);
+        assert.isUndefined(obj.login);
+
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { login: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+          response.statusCode.should.equal(200);
+          body.login.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+          request.get({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.login.should.equal("user1@nfa.com");
+
+            request.get({ headers: {"Accept": "application/json"}
+                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+              response.statusCode.should.equal(200);
+
+              request.get({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+                obj = JSON.parse(body);
+                assert.isDefined(obj.message);
+                assert.isUndefined(obj.login);
+
+                request.get({ headers: {"Accept": "application/json"}
+                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                  response.statusCode.should.equal(400);
+
+                  done();
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+
+
+  });
+
 });
-
-
-
 

@@ -12,14 +12,35 @@ var express = require('express')
   , models = require('./models')
   , consolidate = require('consolidate')
   , server                               // Will store our express serverr
-  , RedisStore = require('connect-redis')(express);   // Will manage the connection to our Redis store
+  , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
+  , passport = require('passport')
+  , LocalStrategy = require('passport-local').Strategy
+  , authorization = require('./authorization');
 
 
 server = express(); // Instantiate server
 
 
+/**
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop if it is run in production, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called
+ *
+ * For development, we want the server to stop to understand what went wrong
+ *
+ * We don't do this for tests as it messes up mocha
+ * The process needs to keep on running
+ */
+server.configure('staging', 'production', function () {
+  // The process needs to keep on running
+  process.on('uncaughtException', function(err) {
+    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+  });
+});
+
+
 /*
- * Environments declaration
+ * Environments declaration and 
  * Express' default environment is 'development'
  */
 server.configure('development', function () {
@@ -31,8 +52,11 @@ server.configure('development', function () {
   // Cookie options
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSLocal);
+  server.use(express.logger());
 });
 
 server.configure('test', function () {
@@ -44,7 +68,7 @@ server.configure('test', function () {
   // Cookie options
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 9);
 });
 
@@ -57,8 +81,11 @@ server.configure('staging', function () {
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSProd);
+  server.use(express.logger());
 });
 
 server.configure('production', function () {
@@ -70,8 +97,11 @@ server.configure('production', function () {
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
 
-  // Other redis default options are fine for now
+  // Redis DB #. Other redis default options are fine for now
   server.set('redisDb', 0);
+
+  server.use(requestHandlers.handleCORSProd);
+  server.use(express.logger());
 });
 
 
@@ -82,64 +112,74 @@ server.db = new dbObject( server.set('dbHost')
                         , server.set('dbPort')
                         );
 
-/**
- * Last wall of defense. If an exception makes its way to the top, the service shouldn't
- * stop if it is run in production, but log a fatal error and send an email to us.
- * Of course, this piece of code should NEVER have to be called.
+
+/*
+ * Authentication strategy
+ * and declaration of serialization/deserialization methods
  */
+passport.use(new LocalStrategy({
+      usernameField: 'login'
+    , passwordField: 'password'
+    , passReqToCallback: true   // Why the fuck wasn't this life-saving option NOT documented ?
+    }
+  , authorization.authenticateUser
+));
 
-server.configure('staging', 'production', function () {
-  // The process needs to keep on running
-  process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
-  });
-  server.use(requestHandlers.handleCORSProd);
-});
+passport.serializeUser(authorization.serializeUser);
 
-server.configure('development', function () {
-  // We stop the server to look at the logs and understand what went wrong
-  // We don't do this for tests as it messes up mocha
-  // The process needs to keep on running
-  server.use(requestHandlers.handleCORSLocal);
-  server.use(express.logger());
-});
+passport.deserializeUser(authorization.deserializeUser);
+
 
 
 /*
  * Main server configuration
  * All handlers to be defined here
  */
-server.configure(function () {
-  // Parse body
-  server.use(express.bodyParser());
+// Parse body
+server.use(express.bodyParser());
 
-  // Parse cookie data and use redis to store session data
-  server.use(express.cookieParser());
-  server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
-
-                             , key: "tldr_session"                  // Name of our cookie
-
-                             , cookie: { path: '/'                  // Cookie is resent for all pages - TODO: understand why cookie is automatically regenerated
-                                                                    // when we use another path such as '/user'. Seems like an issue with Chrome
-
-                                       , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS (TODO: understand
-                                                                    // why it increases the risks of XSS cookie theft)
-
-                                       , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
-                                                                    // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
-                                                                    // i.e. every request made that resends the cookie
-                                       }
-                             , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
-
-  server.use(server.router); // Map routes see docs why we do it here
-  server.use(requestHandlers.handleErrors); // Use middleware to handle errors
-
-  // Used for HTML templating
-  server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
-  server.set('view engine', 'mustache'); // Set mustache as the default extension
-  server.set('views', __dirname + '/views');
-  server.use(express.static(__dirname + '/css'));
+// Middleware to send a dummy empty favicon so as to be able to debug easily
+server.use(function(req, res, next) {
+  if (req.url === "/favicon.ico") {
+    return res.send(200, "");
+  } else {
+    return next();
+  }
 });
+
+// Parse cookie data and use redis to store session data
+server.use(express.cookieParser());
+server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
+
+                           , key: "tldr_session"                  // Name of our cookie
+
+                           , cookie: { path: '/'                  // Cookie is resent for all pages. Strange: there was a bug when I used "/users"
+                                                                  // Anyway since connect-session can be pretty stupid, any call outside /users created a new
+                                                                  // entry in the Redis store, which is a dumb memory leak. Adding xhr: {withCredentials: true}
+                                                                  // to the parameters of the $.ajax client calls enables the same session for all calls, thus
+                                                                  // eliminating the memory leak
+
+                                     , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS
+
+                                     , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
+                                                                  // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
+                                                                  // i.e. every request made that resends the cookie
+                                     }
+                           , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
+
+
+// Use Passport for authentication and sessions
+server.use(passport.initialize());
+server.use(passport.session());
+
+server.use(server.router); // Map routes see docs why we do it here
+server.use(requestHandlers.handleErrors); // Use middleware to handle errors
+
+// Used for HTML templating
+server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
+server.set('view engine', 'mustache'); // Set mustache as the default extension
+server.set('views', __dirname + '/views');
+server.use(express.static(__dirname + '/css'));
 
 
 /**
@@ -148,12 +188,37 @@ server.configure(function () {
 
 // User management
 server.post('/users', requestHandlers.createNewUser);
-server.post('/users/login', requestHandlers.logUserIn);
+
+// Handles a user connection and credentials check. Due to shortcomings in passport, not possible to completely put it in request handlers
+server.post('/users/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    var errorToSend;
+
+    if (err) { return next(err) }
+
+    if (!user) {
+      errorToSend = { UnknownUser: req.authFailedDueToUnknownUser ? true : false
+                    , InvalidPassword: req.authFailedDueToInvalidPassword ? true : false
+                    , MissingCredentials: (req.authFailedDueToInvalidPassword || req.authFailedDueToUnknownUser) ? false : true
+                    };
+      return res.json(401, errorToSend);
+    }
+
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+
+      return res.json(200, user);
+    });
+  })(req, res, next);
+});
+
+
+server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/logout', requestHandlers.logUserOut);
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);
-server.get('/tldrs', requestHandlers.searchTldrs); // convenience route
+server.get('/tldrs', requestHandlers.searchTldrs); // Convenience route
 
 // GET latest tldrs (convenience route)
 server.get('/tldrs/latest/:quantity', requestHandlers.getLatestTldrs);
@@ -185,14 +250,6 @@ server.get('/users/login', function(req, res, next) {
               + '<input type="submit" value="Gogogo"></form>');
 });
 
-// The same as the two above!
-server.get('/users/whoshere', function (req, res, next) {
-  if (req.session && req.session.loggedUser) {
-    res.json(200, { message: 'You are logged in', loggedUser: req.session.loggedUser });
-  } else {
-    res.json(200, { message: 'You are not logged in' });
-  }
-});
 
 
 

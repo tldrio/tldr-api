@@ -1,17 +1,16 @@
 /**
  * Request Handlers for tldr
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Fucking Proprietary License
+ * Proprietary License
 */
 
 
 var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
-  , models = require('./models')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
+  , models = require('./models')
   , TldrModel = models.TldrModel
-  , UserModel = models.UserModel
-  , bcrypt = require('bcrypt');
+  , UserModel = models.UserModel;
 
 
 /**
@@ -139,7 +138,7 @@ function getTldrById (req, res, next) {
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
-      return res.send(200, tldr); // We serve the raw tldr data
+      return res.json(200, tldr); // We serve the raw tldr data
     }
 
   });
@@ -264,55 +263,52 @@ function createNewUser(req, res, next) {
 
 
 /*
- * Logs in a user if a valid password is entered
+ * Returns the logged user if there is a logged user, or a 401 error if nobody is logged
  */
-function logUserIn(req, res, next) {
-  if (!req.body || !req.body.login || !req.body.password) {
-    return next({ statusCode: 401, body: { message: 'Login or password missing' } });
+function getLoggedUser(req, res, nex) {
+  if (req.user) {
+    res.json(200, req.user );
+  } else {
+    return res.json(401, { message: 'You are not logged in' });
   }
-
-  UserModel.find({ login: req.body.login }, function(err, docs) {
-    if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
-
-    if (docs.length === 0) { return next({ statusCode: 401, body: { message: 'Login not found' } }); }
-
-    // User was found in database, check if password is correct
-    bcrypt.compare(req.body.password, docs[0].password, function(err, valid) {
-      if (err) { return next({ statusCode: 500, body: { message: 'Internal Error while fetching your account' } } ); }
-
-      if (valid) {
-        // Store in the session the fields that we may need to use
-        req.session.loggedUser = docs[0].getSessionUsableFields();
-        return res.json(200, { message: "Login successful", loggedUser: req.session.loggedUser });
-      } else {
-        return res.json(200, { message: "Wrong passsword" });
-      }
-    });
-  });
 }
 
 
 /*
- * Log user out
+ * As name implies, logs user out
  */
 function logUserOut(req, res, next) {
-  req.session.destroy();
+  var name = req.user ? req.user.name : null;
 
-  if (req.session && req.session.loggedUser) {
-    // Should not happen, but we do need a check here. This may even need to throw an unhandled exception , as this test should never be satisfied
-    res.json(500, { message: "Internal error during logout" });
+  req.logOut();
+
+  if (name) {
+    return res.json(200, { message: "User " + name + " logged out successfully" });
   } else {
-    res.json(200, { message: "Log out successful" });
+    return res.json(400, { message: "No user was logged in!" });
   }
-};
+}
+
+
+/*
+ * Right after a successful login, postLogIn is called
+ */
+function postLogIn(req, res, next) {
+  if (req.user) {
+    res.json(200, req.user);
+  } else {
+    res.json(500, { message: "Something went wrong in the authentication" });   // Should never be called as this request handler is called after a successful auth.
+  }
+
+}
 
 
 /**
  * Handle All errors coming from next(err) calls
  *
  */
-
 function handleErrors (err, req, res, next) {
+  debugger;
   if (err.statusCode && err.body) {
     return res.json(err.statusCode, err.body);
   } else if (err.message) {
@@ -322,7 +318,6 @@ function handleErrors (err, req, res, next) {
     bunyan.error(err);
     return res.send(500, 'Unknown error');
   }
-
 }
 
 /**
@@ -334,6 +329,8 @@ function handleCORSLocal (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:8888");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+                                                            // Works with xhr's withCredentials option set to true
   next();
 }
 
@@ -343,10 +340,11 @@ function handleCORSLocal (req, res, next) {
  */
 
 function handleCORSProd (req, res, next) {
-  console.log(req.headers.origin);
   res.header("Access-Control-Allow-Origin", "http://tldr.io");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
   res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+                                                            // Works with xhr's withCredentials option set to true
   next();
 }
 
@@ -359,6 +357,7 @@ module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
-module.exports.createNewUser = createNewUser;
-module.exports.logUserIn = logUserIn;
 module.exports.logUserOut = logUserOut;
+module.exports.getLoggedUser = getLoggedUser;
+module.exports.createNewUser = createNewUser;
+module.exports.postLogIn =postLogIn;
