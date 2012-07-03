@@ -28,7 +28,7 @@
           <a class="brand" href="#">TLDR.io</a>
           <ul class="nav">
             <li class="active">
-              <a href="http://tldr.io">Home</a>
+              <a href="http://tldr.io" target="_blank">Home</a>
             </li>
           </ul>
         </div>
@@ -42,7 +42,7 @@
     <div id="tldr-container">
 
       <div id="tldr-title">
-        <h2 >{{title}}</h2>
+        <h2 ><a href={{url}} target="_blank"> {{title}} </a></h2>
 
       <div id="tldr-resource-data">
         by <span id="tldr-resourceAuthor">
@@ -65,5 +65,9 @@
       </div>
 
     </div>
+
+    <a href="{{url}}" target="_blank" id="resource-button" class="btn btn-primary" >Access Resource</a>
+
+    <script src="../tldr-page.js"></script>
   </body>
 </html>

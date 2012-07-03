@@ -67,4 +67,12 @@ ul {
   font-variant: normal;
   font-weight: normal;
   line-height: 12px;
+
+}
+
+#resource-button {
+  margin: 24px auto;
+  display: block;
+  height: 29px;
+  width: 120px;
 }
