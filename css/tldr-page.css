@@ -4,15 +4,18 @@ body {
   background-color: #e4e5e6;
 }
 
+#main-container {
+  width: 610px;
+  margin: 0 auto;
+
+}
 
 #tldr-container {
   background-color: #ececec;
   border: 1px solid #D9D9D9;
   border-radius: 2px;
   box-shadow: rgba(0, 0, 0, 0.1) 0 0 2px 0px;
-  margin: 0 auto;
   padding: 20px;
-  width: 570px;
   -webkit-border-radius: 2px;
   -webkit-box-shadow: rgba(0, 0, 0, 0.1) 0 0 2px 0px;
 }
@@ -71,8 +74,14 @@ ul {
 }
 
 #resource-button {
-  margin: 24px auto;
+  margin-top: 24px;
   display: block;
   height: 29px;
   width: 120px;
+  position: absolute;
+  left: 61%;
+}
+
+#widget-bookmarklet {
+  margin-top: 16px;
 }

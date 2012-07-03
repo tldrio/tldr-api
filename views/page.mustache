@@ -38,35 +38,39 @@
 
 
 
-    <!--Container for Tldr-->
-    <div id="tldr-container">
+    <section id="main-container">
+      <!--Container for Tldr-->
+      <div id="tldr-container">
 
-      <div id="tldr-title">
-        <h2 ><a href={{url}} target="_blank" class="resource-link"> {{title}} </a></h2>
+        <div id="tldr-title">
+          <h2 ><a href={{url}} target="_blank" class="resource-link"> {{title}} </a></h2>
 
-      <div id="tldr-resource-data">
-        by <span id="tldr-resourceAuthor">
-          {{resourceAuthor}}
-        </span>
-        - <span id="tldr-resourceDate">
-          {{createdAt}}
-        </span>
+          <div id="tldr-resource-data">
+            by <span id="tldr-resourceAuthor">
+              {{resourceAuthor}}
+            </span>
+            - <span id="tldr-resourceDate">
+              {{createdAt}}
+            </span>
+          </div>
+        </div>
+
+        <ul>
+          {{#summaryBullets}}
+          <li class="tldr-bullet">{{.}}</p>
+          {{/summaryBullets}}
+        </ul>
+
+        <div id="tldr-edition-data">
+          Edited by <span> Toto</span> on <span> 25th June 2012</span>
+        </div>
+
       </div>
-      </div>
+      <a href="{{url}}" target="_blank" id="resource-button" class="resource-link btn btn-primary" >Access Resource</a>
 
-      <ul>
-        {{#summaryBullets}}
-        <li class="tldr-bullet">{{.}}</p>
-        {{/summaryBullets}}
-      </ul>
+    </section>
 
-      <div id="tldr-edition-data">
-        Edited by <span> Toto</span> on <span> 25th June 2012</span>
-      </div>
-
-    </div>
-
-    <a href="{{url}}" target="_blank" id="resource-button" class="resource-link btn btn-primary" >Access Resource</a>
+    
 
     <script {{{scriptData}}} ></script>
   </body>
