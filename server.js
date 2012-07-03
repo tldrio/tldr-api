@@ -48,6 +48,7 @@ server.configure('development', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
+  server.set('serverDomain', 'http://localhost:8787');
 
   // Cookie options
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
@@ -64,6 +65,7 @@ server.configure('test', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
+  server.set('serverDomain', 'http://localhost:8787');
 
   // Cookie options
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
@@ -77,6 +79,7 @@ server.configure('staging', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
+  server.set('serverDomain', 'api.tldr.io/staging');
 
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
@@ -93,6 +96,7 @@ server.configure('production', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
+  server.set('serverDomain', 'api.tldr.io');
 
   // Cookie options
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
@@ -235,7 +239,7 @@ server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 // Needed for now, for test purposes. Will be handled by a website widget afterwards
 server.get('/users/create', function(req, res, next) {
-  res.send(200, '<form method="POST" action="http://localhost:8787/users">'
+  res.send(200, '<form method="POST" action="' + server.set('serverDomain') + '/users">'
               + 'Login (email address): <input type="text" name="login"><br />'
               + 'Real name: <input type="text" name="name"><br />'
               + 'Password :<input type="text" name="password"><br />'
@@ -244,7 +248,7 @@ server.get('/users/create', function(req, res, next) {
 
 // Also needed for now for test purposes. Will be handled by a website/BM widget afterwards
 server.get('/users/login', function(req, res, next) {
-  res.send(200, '<form method="POST" action="http://localhost:8787/users/login">'
+  res.send(200, '<form method="POST" action="' + server.set('serverDomain') + '/users/login">'
               + 'Login (email address): <input type="text" name="login"><br />'
               + 'Password: <input type="text" name="password"><br />'
               + '<input type="submit" value="Gogogo"></form>');
