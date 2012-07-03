@@ -239,7 +239,7 @@ server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
 // Needed for now, for test purposes. Will be handled by a website widget afterwards
 server.get('/users/create', function(req, res, next) {
-  res.send(200, '<form method="POST" action="' + server.set('serverDomain') + '/users">'
+  res.send(200, '<form method="POST" action="/users">'
               + 'Login (email address): <input type="text" name="login"><br />'
               + 'Real name: <input type="text" name="name"><br />'
               + 'Password :<input type="text" name="password"><br />'
@@ -248,7 +248,7 @@ server.get('/users/create', function(req, res, next) {
 
 // Also needed for now for test purposes. Will be handled by a website/BM widget afterwards
 server.get('/users/login', function(req, res, next) {
-  res.send(200, '<form method="POST" action="' + server.set('serverDomain') + '/users/login">'
+  res.send(200, '<form method="POST" action="/users/login">'
               + 'Login (email address): <input type="text" name="login"><br />'
               + 'Password: <input type="text" name="password"><br />'
               + '<input type="submit" value="Gogogo"></form>');
