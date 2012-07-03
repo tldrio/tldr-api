@@ -59,11 +59,8 @@ function searchTldrs (req, res, next) {
       }
       
       // Success
-      if (req.accepts('text/html')) {
-        return res.render('page', docs[0]); // Send the html tldr page
-      } else { // We return json by default 
-        return res.json(200, docs[0]);    
-      }
+      internalContentNegociationForTldr(req, res, docs[0]);
+
     });
 
     return;
@@ -135,13 +132,24 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
     }
 
+    internalContentNegociationForTldr(req, res, tldr);
+
+  });
+}
+
+function internalContentNegociationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
+      console.log('tlt', process.env.NODE_ENV, process.env);
+      if(process.env.NODE_ENV === "production" ) {
+        tldr.scriptData = 'src="toto.js" ';
+      } else {
+        // dev or test 
+        tldr.scriptData = 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"';
+      }
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
-
-  });
 }
 
 
