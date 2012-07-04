@@ -265,6 +265,7 @@ describe('UserModel', function () {
           assert.isDefined(sessionUsableFields.name);
           assert.isDefined(sessionUsableFields.login);
           assert.isUndefined(sessionUsableFields.password);
+          assert.isUndefined(sessionUsableFields._id);
 
           done();
         });

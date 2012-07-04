@@ -267,7 +267,7 @@ function createNewUser(req, res, next) {
  */
 function getLoggedUser(req, res, nex) {
   if (req.user) {
-    res.json(200, req.user );
+    res.json(200, req.user.getSessionUsableFields());
   } else {
     return res.json(401, { message: 'You are not logged in' });
   }

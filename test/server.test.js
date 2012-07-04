@@ -592,6 +592,8 @@ describe('Webserver', function () {
 
           response.statusCode.should.equal(200);
           body.login.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+          assert.isUndefined(body.password);
+          assert.isUndefined(body._id);
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -599,6 +601,8 @@ describe('Webserver', function () {
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
             obj.login.should.equal("user1@nfa.com");
+            assert.isUndefined(obj.password);
+            assert.isUndefined(obj._id);
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
