@@ -576,7 +576,7 @@ describe('Webserver', function () {
 
     // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
     // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
-    it('Should be able to login with a right username and password', function (done) {
+    it('Should be able to login with a right username and password and only send the session usable data', function (done) {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
