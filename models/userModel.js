@@ -113,6 +113,7 @@ function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
+// why is this needed?
 UserSchema.statics.validateLogin = validateLogin;
 UserSchema.statics.validateName = validateName;
 UserSchema.statics.validatePassword = validatePassword;
