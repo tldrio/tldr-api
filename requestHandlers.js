@@ -290,19 +290,6 @@ function logUserOut(req, res, next) {
 }
 
 
-/*
- * Right after a successful login, postLogIn is called
- */
-function postLogIn(req, res, next) {
-  if (req.user) {
-    res.json(200, req.user);
-  } else {
-    res.json(500, { message: "Something went wrong in the authentication" });   // Should never be called as this request handler is called after a successful auth.
-  }
-
-}
-
-
 /**
  * Handle All errors coming from next(err) calls
  *
@@ -360,4 +347,3 @@ module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.createNewUser = createNewUser;
-module.exports.postLogIn =postLogIn;
