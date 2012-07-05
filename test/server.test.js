@@ -576,7 +576,7 @@ describe('Webserver', function () {
 
     // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
     // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
-    it('Should be able to login with a right username and password', function (done) {
+    it('Should be able to login with a right username and password and only send the session usable data', function (done) {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
@@ -592,6 +592,8 @@ describe('Webserver', function () {
 
           response.statusCode.should.equal(200);
           body.login.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+          assert.isUndefined(body.password);
+          assert.isUndefined(body._id);
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -599,6 +601,8 @@ describe('Webserver', function () {
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
             obj.login.should.equal("user1@nfa.com");
+            assert.isUndefined(obj.password);
+            assert.isUndefined(obj._id);
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {

@@ -267,7 +267,7 @@ function createNewUser(req, res, next) {
  */
 function getLoggedUser(req, res, nex) {
   if (req.user) {
-    res.json(200, req.user );
+    res.json(200, req.user.getSessionUsableFields());
   } else {
     return res.json(401, { message: 'You are not logged in' });
   }
@@ -287,19 +287,6 @@ function logUserOut(req, res, next) {
   } else {
     return res.json(400, { message: "No user was logged in!" });
   }
-}
-
-
-/*
- * Right after a successful login, postLogIn is called
- */
-function postLogIn(req, res, next) {
-  if (req.user) {
-    res.json(200, req.user);
-  } else {
-    res.json(500, { message: "Something went wrong in the authentication" });   // Should never be called as this request handler is called after a successful auth.
-  }
-
 }
 
 
@@ -360,4 +347,3 @@ module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.createNewUser = createNewUser;
-module.exports.postLogIn =postLogIn;

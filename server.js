@@ -211,7 +211,7 @@ server.post('/users/login', function(req, res, next) {
     req.logIn(user, function(err) {
       if (err) { return next(err); }
 
-      return res.json(200, user);
+      return res.json(200, user.getSessionUsableFields());
     });
   })(req, res, next);
 });
