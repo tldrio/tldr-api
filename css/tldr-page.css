@@ -28,7 +28,7 @@ h2 {
   font-variant: normal;
   font-weight: bold;
   line-height: 32px;
-  
+
 }
 
 #tldr-resource-data {
@@ -55,7 +55,7 @@ h2 {
   font-weight: normal;
   height: 32px;
   line-height: 18px;
-  
+
 }
 
 ul {
@@ -80,8 +80,30 @@ ul {
   width: 120px;
   position: absolute;
   left: 61%;
+
 }
 
 #widget-bookmarklet {
   margin-top: 16px;
+  margin-left: 20px;
+}
+
+#widget-install-description {
+  width: 270px;
+  padding-left: 9px;
+  font-family: 'Helvetica Neue', Helvetica, Verdana, Arial, sans-serif;
+  font-size: 15px;
+  height: 32px;
+  line-height: 18px;
+  margin-top:6px;
+}
+
+
+#widget-comment-action{
+  padding-left: 9px;
+  width: 400px;
+  font-family: 'Helvetica Neue', Helvetica, Verdana, Arial, sans-serif;
+  font-size: 15px;
+  height: 32px;
+  line-height: 18px;
 }
