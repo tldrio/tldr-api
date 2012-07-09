@@ -260,7 +260,7 @@ describe('UserModel', function () {
 
         UserModel.find({login: 'valid@login.com'}, function(err, docs) {
           docs.should.have.length(1);
-          sessionUsableFields = docs[0].getSessionUsableFields();
+          sessionUsableFields = docs[0].getAuthorizedFields();
 
           assert.isDefined(sessionUsableFields.name);
           assert.isDefined(sessionUsableFields.login);
