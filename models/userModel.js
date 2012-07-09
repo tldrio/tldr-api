@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
   , bcrypt = require('bcrypt')
   , userSetableFields = ['email', 'name', 'password']      // setable fields by user
   , userUpdatableFields = ['email', 'name', 'password']    // updatabe fields by user
-  , sessionUsableFields = ['email', 'name'];
+  , authorizedFields = ['email', 'name'];
 
 
 /**
@@ -77,14 +77,14 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
 
 /*
- * Return the part of a user's data that we may need to use in a session. Typically, the password is not part of it.
+ * Return the part of a user's data that we may need to use in a client
  */
 UserSchema.methods.getAuthorizedFields = function () {
   // this is the selected UserModel, so this._doc contains the actual data
-  var sessionUsableKeys = _.intersection(_.keys(this._doc), sessionUsableFields)
+  var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
-  _.each( sessionUsableKeys, function (key) {
+  _.each( usableKeys, function (key) {
     res[key] = self._doc[key];
   });
 
