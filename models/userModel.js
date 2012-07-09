@@ -9,9 +9,9 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , UserSchema, UserModel
   , bcrypt = require('bcrypt')
-  , userSetableFields = ['email', 'name', 'password']      // setable fields by user
-  , userUpdatableFields = ['email', 'name', 'password']    // updatabe fields by user
-  , authorizedFields = ['email', 'name'];
+  , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
+  , authorizedFields = ['email', 'username'];
 
 
 /**
@@ -26,9 +26,9 @@ UserSchema = new Schema(
            , validate: [validateLogin, 'email must be a properly formatted email address']
            , set: toLowerCase
            }
-  , name: { type: String
+  , username: { type: String
           , default: 'Anonymous'
-          , validate: [validateName, 'name must have between 1 and 100 characters']
+          , validate: [validateName, 'username must have between 1 and 100 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   , password: { type: String

@@ -47,7 +47,7 @@ describe('Webserver', function () {
     db.connectToDatabase(function() {
       UserModel.remove({}, function(err) {
         if (err) { return done(err); }
-        UserModel.createAndSaveInstance({email: "user1@nfa.com", name: "User One", password: "supersecret"}, function(err) {
+        UserModel.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
           if (err) { return done(err); }
           done();
         });
