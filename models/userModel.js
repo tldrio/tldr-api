@@ -9,9 +9,9 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , UserSchema, UserModel
   , bcrypt = require('bcrypt')
-  , userSetableFields = ['login', 'name', 'password']      // setable fields by user
-  , userUpdatableFields = ['login', 'name', 'password']    // updatabe fields by user
-  , sessionUsableFields = ['login', 'name'];
+  , userSetableFields = ['email', 'name', 'password']      // setable fields by user
+  , userUpdatableFields = ['email', 'name', 'password']    // updatabe fields by user
+  , sessionUsableFields = ['email', 'name'];
 
 
 /**
@@ -20,10 +20,10 @@ var mongoose = require('mongoose')
  */
 
 UserSchema = new Schema(
-  { login: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+  { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
-           , validate: [validateLogin, 'login must be a properly formatted email address']
+           , validate: [validateLogin, 'email must be a properly formatted email address']
            , set: toLowerCase
            }
   , name: { type: String

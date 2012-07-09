@@ -47,7 +47,7 @@ describe('Webserver', function () {
     db.connectToDatabase(function() {
       UserModel.remove({}, function(err) {
         if (err) { return done(err); }
-        UserModel.createAndSaveInstance({login: "user1@nfa.com", name: "User One", password: "supersecret"}, function(err) {
+        UserModel.createAndSaveInstance({email: "user1@nfa.com", name: "User One", password: "supersecret"}, function(err) {
           if (err) { return done(err); }
           done();
         });
@@ -519,10 +519,10 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to login as User One with a wrong password', function (done) {
+    it('Should not be able to email as User One with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
-                   , json: { login: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
+                   , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
         body.MissingCredentials.should.equal(false);
         body.InvalidPassword.should.equal(true);
@@ -531,10 +531,10 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to login with a wrong username', function (done) {
+    it('Should not be able to email with a wrong username', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
-                   , json: { login: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
+                   , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
         body.MissingCredentials.should.equal(false);
         body.InvalidPassword.should.equal(false);
@@ -543,10 +543,10 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to login with a missing part of the credentials', function (done) {
+    it('Should not be able to email with a missing part of the credentials', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
-                   , json: { login: "anotheruser@nfa.com" } }, function (error, response, body) {
+                   , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
         body.MissingCredentials.should.equal(true);
         body.InvalidPassword.should.equal(false);
@@ -576,7 +576,7 @@ describe('Webserver', function () {
 
     // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
     // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
-    it('Should be able to login with a right username and password and only send the session usable data', function (done) {
+    it('Should be able to email with a right username and password and only send the session usable data', function (done) {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
@@ -584,14 +584,14 @@ describe('Webserver', function () {
 
         obj = JSON.parse(body);
         assert.isDefined(obj.message);
-        assert.isUndefined(obj.login);
+        assert.isUndefined(obj.email);
 
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/login'
-                     , json: { login: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+                     , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
           response.statusCode.should.equal(200);
-          body.login.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
           assert.isUndefined(body.password);
           assert.isUndefined(body._id);
 
@@ -600,7 +600,7 @@ describe('Webserver', function () {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
-            obj.login.should.equal("user1@nfa.com");
+            obj.email.should.equal("user1@nfa.com");
             assert.isUndefined(obj.password);
             assert.isUndefined(obj._id);
 
@@ -614,7 +614,7 @@ describe('Webserver', function () {
 
                 obj = JSON.parse(body);
                 assert.isDefined(obj.message);
-                assert.isUndefined(obj.login);
+                assert.isUndefined(obj.email);
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
