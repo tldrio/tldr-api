@@ -253,7 +253,7 @@ function createNewUser(req, res, next) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else {
-        return next({ statusCode: 500, body: { message: 'Internal Error while creatning new user account ' } } );
+        return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account ' } } );
       }
     }
 
