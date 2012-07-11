@@ -104,25 +104,6 @@ describe('UserModel', function () {
       });
     });
 
-    it('should lowercase email when saving a valid user', function (done) {
-      var user = new UserModel({ email: 'eMAil@Email.com'
-                               , username: 'A name'
-                               , password: 'supersecret!'
-                               })
-        , valErr;
-
-      user.save(function(err) {
-        UserModel.find({email: 'email@email.com'}, function(err, docs) {
-          docs.length.should.equal(1);
-
-          UserModel.find({email: 'lOGin@Email.com'}, function(err, docs) {
-            docs.length.should.equal(0);
-            done();
-          });
-        });
-      });
-    });
-
     it('should not validate a name that\'s too long', function (done) {
       var user = new UserModel({ email: 'email@email.com'
                                , password: 'supersecret!'
@@ -141,22 +122,6 @@ describe('UserModel', function () {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.username.should.equal('username must have between 1 and 100 characters');
         done();
-      });
-    });
-
-    it('should use a default value if the name is missing', function (done) {
-      var user = new UserModel({ email: 'emAIL@Email.com'
-                               , password: 'supersecret!'
-                               })
-        , valErr;
-
-      user.save(function(err) {
-        UserModel.find({email: 'email@email.com'}, function(err, docs) {
-          docs.length.should.equal(1);
-          docs[0].username.should.equal('Anonymous');
-
-          done();
-        });
       });
     });
 
@@ -203,7 +168,7 @@ describe('UserModel', function () {
       });
     });
 
-    it('use the email as the default value for the username', function (done) {
+    it('lowercase the email and use it as the default value for the username', function (done) {
       var userData = { password: 'notTOOshort'
                      , email: 'vaLId@email.com'
                      };

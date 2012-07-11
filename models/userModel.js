@@ -23,10 +23,9 @@ UserSchema = new Schema(
            , unique: true
            , required: true
            , validate: [validateLogin, 'email must be a properly formatted email address']
-           , set: toLowerCase
            }
   , username: { type: String
-          , default: 'Anonymous'
+          , required: true
           , validate: [validateName, 'username must have between 1 and 100 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
@@ -39,16 +38,11 @@ UserSchema = new Schema(
 , { strict: true });
 
 
-/*
- * Setters
- */
-function toLowerCase(value) {
-  return value.toLowerCase();
-}
 
 
 /*
  * Create a User instance and save it to the database
+ * All defaults are located here instead of in the schema or in setters
  * Part of the password's validation has to occur here as Mongoose's setters are called before the
  * validator, so using the standard way any password would be considered valid
  */
