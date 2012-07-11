@@ -278,12 +278,12 @@ function getLoggedUser(req, res, nex) {
  * As name implies, logs user out
  */
 function logUserOut(req, res, next) {
-  var name = req.user ? req.user.name : null;
+  var username = req.user ? req.user.username : null;
 
   req.logOut();
 
-  if (name) {
-    return res.json(200, { message: "User " + name + " logged out successfully" });
+  if (username) {
+    return res.json(200, { message: "User " + username + " logged out successfully" });
   } else {
     return res.json(400, { message: "No user was logged in!" });
   }

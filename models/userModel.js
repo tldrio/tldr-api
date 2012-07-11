@@ -9,9 +9,9 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , UserSchema, UserModel
   , bcrypt = require('bcrypt')
-  , userSetableFields = ['login', 'name', 'password']      // setable fields by user
-  , userUpdatableFields = ['login', 'name', 'password']    // updatabe fields by user
-  , sessionUsableFields = ['login', 'name'];
+  , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
+  , authorizedFields = ['email', 'username'];
 
 
 /**
@@ -20,15 +20,15 @@ var mongoose = require('mongoose')
  */
 
 UserSchema = new Schema(
-  { login: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+  { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
-           , validate: [validateLogin, 'login must be a properly formatted email address']
+           , validate: [validateLogin, 'email must be a properly formatted email address']
            , set: toLowerCase
            }
-  , name: { type: String
+  , username: { type: String
           , default: 'Anonymous'
-          , validate: [validateName, 'name must have between 1 and 100 characters']
+          , validate: [validateName, 'username must have between 1 and 100 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   , password: { type: String
@@ -77,14 +77,14 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
 
 /*
- * Return the part of a user's data that we may need to use in a session. Typically, the password is not part of it.
+ * Return the part of a user's data that we may need to use in a client
  */
 UserSchema.methods.getAuthorizedFields = function () {
   // this is the selected UserModel, so this._doc contains the actual data
-  var sessionUsableKeys = _.intersection(_.keys(this._doc), sessionUsableFields)
+  var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
-  _.each( sessionUsableKeys, function (key) {
+  _.each( usableKeys, function (key) {
     res[key] = self._doc[key];
   });
 
