@@ -259,7 +259,10 @@ function createNewUser(req, res, next) {
       }
     }
 
-    return res.json(201, { message: 'User created successfully' });
+    // this.emitted.complete[0] is the UserModel that was just saved
+    // I found this while debuggging this function. I think access to the instance
+    // that was just saved really is a missing feature in Mongoose
+    return res.json(201, this.emitted.complete[0].getAuthorizedFields());
   });
 }
 
