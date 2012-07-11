@@ -225,6 +225,25 @@ describe('UserModel', function () {
       });
     });
 
+    it('should not save a user with the same email twice', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      UserModel.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+        userData.password = "bloupbloup";
+        userData.username = "a username";
+
+        UserModel.createAndSaveInstance(userData, function(err) {
+          err.code.should.equal(11000);   // Duplicate key
+          done();
+        });
+      });
+
+    });
+
     it('should only save the authorized user fields', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
