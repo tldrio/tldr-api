@@ -203,6 +203,23 @@ describe('UserModel', function () {
       });
     });
 
+    it('use the email as the default value for the username', function (done) {
+      var userData = { password: 'notTOOshort'
+                     , email: 'vaLId@email.com'
+                     };
+
+      UserModel.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+
+        UserModel.find({email: 'valid@email.com'}, function(err, docs) {
+          docs.should.have.length(1);
+          docs[0].username.should.equal("valid@email.com");
+
+          done();
+        });
+      });
+    });
+
     it('should save a user whose password is valid', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
@@ -219,6 +236,8 @@ describe('UserModel', function () {
           bcrypt.compareSync('notTOshort', docs[0].password).should.equal(false);
           bcrypt.compareSync('notTOOshort', docs[0].password).should.equal(true);
           bcrypt.compareSync('notTOOOshort', docs[0].password).should.equal(false);
+
+          docs[0].username.should.equal("A name");
 
           done();
         });
@@ -241,7 +260,6 @@ describe('UserModel', function () {
           done();
         });
       });
-
     });
 
     it('should only save the authorized user fields', function (done) {
@@ -261,7 +279,6 @@ describe('UserModel', function () {
         });
       });
     });
-
   });
 
 

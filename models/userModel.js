@@ -18,7 +18,6 @@ var mongoose = require('mongoose')
  * Schema
  *
  */
-
 UserSchema = new Schema(
   { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
@@ -65,6 +64,10 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
+        validFields.email = validFields.email.toLowerCase();   // Redundant with the setter, but the setter also works with direct saves so we keep both
+        if (! validFields.username || (validFields.username.length === 0) ) {
+          validFields.username = validFields.email;
+        }
         instance = new UserModel(validFields);
         instance.save(callback);
       });
