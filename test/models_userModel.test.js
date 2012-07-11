@@ -77,6 +77,22 @@ describe('UserModel', function () {
       });
     });
 
+    it('should not save a user that has no username', function (done) {
+      var user = new UserModel({ email: 'email@email.com'
+                               , password: 'Axcxxname'
+                               })
+        , valErr;
+
+      user.save(function(err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.username.should.equal('required');
+        done();
+      });
+    });
+
     it('validate email address - email', function (done) {
 
       // Unit test the rule
