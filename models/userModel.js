@@ -103,7 +103,7 @@ function validateLogin (value) {
 
 
 function validateName (value) {
-  return (value.length <= 40);
+  return (value && value.length <= 40);
 }
 
 function validatePassword (value) {
