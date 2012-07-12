@@ -37,7 +37,10 @@ describe('Models', function () {
   beforeEach(function (done) {
     User.remove( function (err) {
       if (err) {throw done(err);}
-      done();
+      Tldr.remove(function (err) {
+        if (err) {throw done(err);}
+        done();
+      })
     });
   });
 
@@ -107,9 +110,29 @@ describe('Models', function () {
       });
     });
 
-    it('should not link anything if the tldr or the creator is not supplied', function (done) {
-      // code ...
-      done();
+    it('should not link anything and throw an error if the tldr or the creator is not supplied', function (done) {
+      var userData = { username: 'A name'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret!'
+                     }
+        , tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
+          (function() { models.setTldrCreator(tldr1); }).should.throw();
+          (function() { models.setTldrCreator(null, user); }).should.throw();
+          (function() { models.setTldrCreator(undefined, user); }).should.throw();
+
+          done();
+        });
+      })
     });
 
 

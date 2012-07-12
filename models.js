@@ -36,7 +36,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
  * @return {void}
  */
 function setTldrCreator(theTldr, creator, callback) {
-  if (! theTldr || ! creator) {return;}
+  if (! theTldr || ! creator) {throw {message: "Unexpected: arguments are not correct"};}
 
   theTldr.creator = creator;
   theTldr.save(function(err, tldr) {
