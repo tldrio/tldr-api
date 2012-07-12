@@ -218,6 +218,8 @@ server.post('/users/login', function(req, res, next) {
 
 
 server.get('/users/you', requestHandlers.getLoggedUser);
+server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
+
 server.get('/users/logout', requestHandlers.logUserOut);
 
 // Search tldrs

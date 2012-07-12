@@ -215,7 +215,12 @@ function postNewTldr (req, res, next) {
       }
 
     } else {
-      res.json(201, tldr);
+      // If a user is logged, he gets to be the tldr's creator
+      if (req.user) {
+        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr) } );
+      } else {
+        return res.json(201, tldr);
+      }
     }
   });
 
@@ -270,9 +275,23 @@ function createNewUser(req, res, next) {
 /*
  * Returns the logged user if there is a logged user, or a 401 error if nobody is logged
  */
-function getLoggedUser(req, res, nex) {
+function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
+  } else {
+    return res.json(401, { message: 'You are not logged in' });
+  }
+}
+
+
+/*
+ * Returns the tldrs created by the logged user. If nobody is logged, returns a 401.
+ */
+function getLoggedUserCreatedTldrs(req, res, next) {
+  if (req.user) {
+    req.user.getCreatedTldrs(function(tldrs) {
+      return res.json(200, tldrs);
+    });
   } else {
     return res.json(401, { message: 'You are not logged in' });
   }
@@ -351,4 +370,5 @@ module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
+module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.createNewUser = createNewUser;
