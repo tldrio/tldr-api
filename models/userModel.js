@@ -9,26 +9,24 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , UserSchema, UserModel
   , bcrypt = require('bcrypt')
-  , userSetableFields = ['login', 'name', 'password']      // setable fields by user
-  , userUpdatableFields = ['login', 'name', 'password']    // updatabe fields by user
-  , sessionUsableFields = ['login', 'name'];
+  , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
+  , authorizedFields = ['email', 'username'];
 
 
 /**
  * Schema
  *
  */
-
 UserSchema = new Schema(
-  { login: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+  { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
-           , validate: [validateLogin, 'login must be a properly formatted email address']
-           , set: toLowerCase
+           , validate: [validateEmail, 'email must be a properly formatted email address']
            }
-  , name: { type: String
-          , default: 'Anonymous'
-          , validate: [validateName, 'name must have between 1 and 100 characters']
+  , username: { type: String
+          , required: true
+          , validate: [validateUsername, 'username must have between 1 and 30 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   , password: { type: String
@@ -40,16 +38,11 @@ UserSchema = new Schema(
 , { strict: true });
 
 
-/*
- * Setters
- */
-function toLowerCase(value) {
-  return value.toLowerCase();
-}
 
 
 /*
  * Create a User instance and save it to the database
+ * All defaults are located here instead of in the schema or in setters
  * Part of the password's validation has to occur here as Mongoose's setters are called before the
  * validator, so using the standard way any password would be considered valid
  */
@@ -65,6 +58,10 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
+        validFields.email = validFields.email.toLowerCase();   // Redundant with the setter, but the setter also works with direct saves so we keep both
+        if (!validFields.username || (validFields.username.length === 0) ) {
+          validFields.username = validFields.email;
+        }
         instance = new UserModel(validFields);
         instance.save(callback);
       });
@@ -77,14 +74,14 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
 
 /*
- * Return the part of a user's data that we may need to use in a session. Typically, the password is not part of it.
+ * Return the part of a user's data that we may need to use in a client
  */
 UserSchema.methods.getAuthorizedFields = function () {
   // this is the selected UserModel, so this._doc contains the actual data
-  var sessionUsableKeys = _.intersection(_.keys(this._doc), sessionUsableFields)
+  var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
-  _.each( sessionUsableKeys, function (key) {
+  _.each( usableKeys, function (key) {
     res[key] = self._doc[key];
   });
 
@@ -96,25 +93,27 @@ UserSchema.methods.getAuthorizedFields = function () {
  * Validators
  */
 // Email regex comes from node-validator and can be used by clients
-function validateLogin (value) {
+function validateEmail (value) {
   if (value) {
+    // returns null in case of no match, hence the if/else
     return value.match(/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/);
   } else {
     return false;
   }
 }
 
-
-function validateName (value) {
-  return (value.length <= 40);
+// Username should be non empty and less than 30 characters long
+function validateUsername (value) {
+  return (value && value.length <= 30);
 }
 
+// password should be non empty and longer than 6 characters
 function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
-UserSchema.statics.validateLogin = validateLogin;
-UserSchema.statics.validateName = validateName;
+UserSchema.statics.validateEmail = validateEmail;
+UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
 // Define user model
