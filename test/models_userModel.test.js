@@ -100,12 +100,12 @@ describe('User', function () {
     it('validate email address - email', function (done) {
 
       // Unit test the rule
-      assert.isNull(User.validateLogin('noarobase'));
-      assert.isNull(User.validateLogin('user@'));
-      assert.isNull(User.validateLogin('user@domain'));
-      assert.isNull(User.validateLogin('@domain.tld'));
-      assert.isNotNull(User.validateLogin('user@domain.tld'));
-      assert.isNotNull(User.validateLogin('firstname.name@subdomain.domain.tld'));
+      assert.isNull(UserModel.validateEmail('noarobase'));
+      assert.isNull(UserModel.validateEmail('user@'));
+      assert.isNull(UserModel.validateEmail('user@domain'));
+      assert.isNull(UserModel.validateEmail('@domain.tld'));
+      assert.isNotNull(UserModel.validateEmail('user@domain.tld'));
+      assert.isNotNull(UserModel.validateEmail('firstname.name@subdomain.domain.tld'));
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
@@ -124,15 +124,15 @@ describe('User', function () {
       });
     });
 
-    it('should not validate a name that\'s too long', function (done) {
-      var user = new User({ email: 'email@email.com'
+    it('should not validate a username that\'s too long', function (done) {
+      var user = new UserModel({ email: 'email@email.com'
                                , password: 'supersecret!'
-                               , username: 'Zr qer qwer wqer qwer weqr wqe wqe wqr ew'
+                               , username: '0123456789012345678901234567890'
                                })
         , valErr;
 
-      //Unit test the rule
-      assert.isFalse(User.validateName('Zr qer qwer wqer qwer weqr wqe wqe wqr ew'));
+      //Unit test the rule (there is 31 characters in there)
+      assert.isFalse(UserModel.validateUsername('0123456789012345678901234567890'));
 
       // Check integration into Mongoose
       user.save(function(err) {
@@ -140,7 +140,7 @@ describe('User', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.username.should.equal('username must have between 1 and 100 characters');
+        valErr.username.should.equal('username must have between 1 and 30 characters');
         done();
       });
     });
