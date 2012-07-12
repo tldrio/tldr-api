@@ -1,4 +1,4 @@
-var UserModel = require('./models').UserModel
+var User = require('./models').User
   , bcrypt = require('bcrypt');
 
 
@@ -8,7 +8,7 @@ var UserModel = require('./models').UserModel
  * Note: this is NOT a Connect middleware, hence the different signature
  */
 function authenticateUser(req, email, password, done) {
-  UserModel.find({ email: email }, function(err, docs) {
+  User.find({ email: email }, function(err, docs) {
     if (err) { return done(err); }
 
     if (docs.length === 0) {
@@ -44,7 +44,7 @@ function serializeUser(user, done) {
  * Deserializes an authenticated user. Here, we simply get him from the users collection
  */
 function deserializeUser(_id, done) {
-  UserModel.findOne({_id: _id}, function (err, user) {
+  User.findOne({_id: _id}, function (err, user) {
     done(err, user);
   });
 };

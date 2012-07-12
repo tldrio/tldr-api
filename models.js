@@ -5,7 +5,7 @@
  */
 
 var Tldr = require('./models/tldrModel')
-  , UserModel = require('./models/userModel')
+  , User = require('./models/userModel')
 	, _ = require('underscore');
 
 
@@ -29,7 +29,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 
 // Export models
 module.exports.Tldr = Tldr;
-module.exports.UserModel = UserModel;
+module.exports.User = User;
 
 // Export general purpose functions for models
 module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;

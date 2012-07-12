@@ -15,7 +15,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose')
   , async = require('async')
   , Tldr = models.Tldr
-  , UserModel = models.UserModel
+  , User = models.User
   , rootUrl = 'http://localhost:8686'
   , request = require('request');
 
@@ -45,9 +45,9 @@ describe('Webserver', function () {
 
   before(function (done) {
     db.connectToDatabase(function() {
-      UserModel.remove({}, function(err) {
+      User.remove({}, function(err) {
         if (err) { return done(err); }
-        UserModel.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
+        User.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
           if (err) { return done(err); }
           done();
         });

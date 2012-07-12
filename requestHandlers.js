@@ -10,7 +10,7 @@ var bunyan = require('./lib/logger').bunyan
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
   , Tldr = models.Tldr
-  , UserModel = models.UserModel;
+  , User = models.User;
 
 
 /**
@@ -248,7 +248,7 @@ function putUpdateTldrWithId (req, res, next) {
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
-  UserModel.createAndSaveInstance(req.body, function(err) {
+  User.createAndSaveInstance(req.body, function(err) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -259,7 +259,7 @@ function createNewUser(req, res, next) {
       }
     }
 
-    // this.emitted.complete[0] is the UserModel that was just saved
+    // this.emitted.complete[0] is the User that was just saved
     // I found this while debuggging this function. I think access to the instance
     // that was just saved really is a missing feature in Mongoose
     return res.json(201, this.emitted.complete[0].getAuthorizedFields());

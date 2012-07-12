@@ -7,7 +7,7 @@
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , _ = require('underscore')
-  , UserSchema, UserModel
+  , UserSchema, User
   , bcrypt = require('bcrypt')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
@@ -62,12 +62,12 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
         if (! validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
-        instance = new UserModel(validFields);
+        instance = new User(validFields);
         instance.save(callback);
       });
     });
   } else {
-    instance = new UserModel(validFields);
+    instance = new User(validFields);
     instance.save(callback);
   }
 };
@@ -77,7 +77,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
  * Return the part of a user's data that we may need to use in a client
  */
 UserSchema.methods.getAuthorizedFields = function () {
-  // this is the selected UserModel, so this._doc contains the actual data
+  // this is the selected User, so this._doc contains the actual data
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
@@ -115,8 +115,8 @@ UserSchema.statics.validateName = validateName;
 UserSchema.statics.validatePassword = validatePassword;
 
 // Define user model
-UserModel = mongoose.model('user', UserSchema);
+User = mongoose.model('user', UserSchema);
 
-// Export UserModel
-module.exports = UserModel;
+// Export User
+module.exports = User;
 
