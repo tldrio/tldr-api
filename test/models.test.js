@@ -51,6 +51,7 @@ describe('Models', function () {
                           });
 
       user.save(function(err) {
+        assert.isNull(err);
         done();
       });
     });
