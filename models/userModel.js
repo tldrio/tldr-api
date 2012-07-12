@@ -22,11 +22,11 @@ UserSchema = new Schema(
   { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
-           , validate: [validateLogin, 'email must be a properly formatted email address']
+           , validate: [validateEmail, 'email must be a properly formatted email address']
            }
   , username: { type: String
           , required: true
-          , validate: [validateName, 'username must have between 1 and 100 characters']
+          , validate: [validateUsername, 'username must have between 1 and 30 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   , password: { type: String
@@ -59,7 +59,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
         validFields.email = validFields.email.toLowerCase();   // Redundant with the setter, but the setter also works with direct saves so we keep both
-        if (! validFields.username || (validFields.username.length === 0) ) {
+        if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
         instance = new UserModel(validFields);
@@ -93,25 +93,27 @@ UserSchema.methods.getAuthorizedFields = function () {
  * Validators
  */
 // Email regex comes from node-validator and can be used by clients
-function validateLogin (value) {
+function validateEmail (value) {
   if (value) {
+    // returns null in case of no match, hence the if/else
     return value.match(/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/);
   } else {
     return false;
   }
 }
 
-
-function validateName (value) {
-  return (value && value.length <= 40);
+// Username should be non empty and less than 30 characters long
+function validateUsername (value) {
+  return (value && value.length <= 30);
 }
 
+// password should be non empty and longer than 6 characters
 function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
-UserSchema.statics.validateLogin = validateLogin;
-UserSchema.statics.validateName = validateName;
+UserSchema.statics.validateEmail = validateEmail;
+UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
 // Define user model
