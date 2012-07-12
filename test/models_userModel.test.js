@@ -100,12 +100,12 @@ describe('User', function () {
     it('validate email address - email', function (done) {
 
       // Unit test the rule
-      assert.isNull(UserModel.validateEmail('noarobase'));
-      assert.isNull(UserModel.validateEmail('user@'));
-      assert.isNull(UserModel.validateEmail('user@domain'));
-      assert.isNull(UserModel.validateEmail('@domain.tld'));
-      assert.isNotNull(UserModel.validateEmail('user@domain.tld'));
-      assert.isNotNull(UserModel.validateEmail('firstname.name@subdomain.domain.tld'));
+      assert.isNull(User.validateEmail('noarobase'));
+      assert.isNull(User.validateEmail('user@'));
+      assert.isNull(User.validateEmail('user@domain'));
+      assert.isNull(User.validateEmail('@domain.tld'));
+      assert.isNotNull(User.validateEmail('user@domain.tld'));
+      assert.isNotNull(User.validateEmail('firstname.name@subdomain.domain.tld'));
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
@@ -125,14 +125,14 @@ describe('User', function () {
     });
 
     it('should not validate a username that\'s too long', function (done) {
-      var user = new UserModel({ email: 'email@email.com'
+      var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: '0123456789012345678901234567890'
                                })
         , valErr;
 
       //Unit test the rule (there is 31 characters in there)
-      assert.isFalse(UserModel.validateUsername('0123456789012345678901234567890'));
+      assert.isFalse(User.validateUsername('0123456789012345678901234567890'));
 
       // Check integration into Mongoose
       user.save(function(err) {
