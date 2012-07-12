@@ -32,17 +32,18 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
  *
  * @param {Object} theTldr tldr that will be assigned a creator
  * @param {Object} creator the tldr creator
+ * @param {Function} callback callback to be when all linking is done
  * @return {void}
  */
-function setTldrCreator(theTldr, creator) {
+function setTldrCreator(theTldr, creator, callback) {
   if (! theTldr || ! creator) {return;}
 
   theTldr.creator = creator;
   theTldr.save(function(err, tldr) {
     if (err) {throw err;}
 
-    creator.tldrsCreated.push();
-    creator.save();
+    creator.tldrsCreated.push(tldr);
+    creator.save(callback);
   });
 }
 
@@ -54,3 +55,4 @@ module.exports.User = User;
 
 // Export general purpose functions for models
 module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;
+module.exports.setTldrCreator = setTldrCreator;
