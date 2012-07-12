@@ -10,10 +10,11 @@ var mongoose = require('mongoose')
   , url = require('url')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId
   , TldrSchema
   , Tldr
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate'] // setable fields by user
-  , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
+  , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];     // updatabe fields by user
 
 
 
@@ -47,8 +48,7 @@ TldrSchema = new Schema(
                , default: Date.now
                }
                , required: false
-  , creatorId: { type: String
-               }
+  , creator: { type: ObjectId, ref: 'User' }   // See mongoose doc - populate
   }
 , { strict: true });
 

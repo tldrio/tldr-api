@@ -6,6 +6,7 @@
 
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId
   , _ = require('underscore')
   , UserSchema, User
   , bcrypt = require('bcrypt')
@@ -29,11 +30,12 @@ UserSchema = new Schema(
           , validate: [validateName, 'username must have between 1 and 100 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
+  // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
               , required: true
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
-  // No need to store the salt, bcrypt already stores it in the hash
+  , tldrsCreated: [{type: ObjectId, ref: 'Tldr'}]
   }
 , { strict: true });
 
