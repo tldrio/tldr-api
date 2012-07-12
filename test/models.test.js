@@ -44,7 +44,7 @@ describe('Models', function () {
 
   describe('setTldrCreator', function () {
 
-    it('Should work correctly', function (done) {
+    it('Should link multiple tldrs with their creator', function (done) {
       var userData = { username: 'A name'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
@@ -66,22 +66,53 @@ describe('Models', function () {
                        updatedAt: new Date()
                      };
 
-
-
       User.createAndSaveInstance(userData, function(err, user) {
         Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
           Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
             models.setTldrCreator(tldr1, user, function(err) {
               models.setTldrCreator(tldr2, user, function(err) {
-                consople.log(tldr1.creator);
+                // Linking should have put the correct ObjectIds in the objects, not the referenced objects themselves
+                tldr1.creator.should.equal(user._id);
+                tldr2.creator.should.equal(user._id);
+                user.tldrsCreated.indexOf(tldr1._id).should.not.equal(-1);
+                user.tldrsCreated.indexOf(tldr2._id).should.not.equal(-1);
 
-                done();
+                // Using find() and populate, we should get all referenced objects themselves
+                User.findOne({email: 'valid@email.com'})
+                  .populate('tldrsCreated')
+                  .exec(function (err, refoundUser) {
+                    // We get the tldrs objects, in the order they were linked
+                    refoundUser.tldrsCreated[0].url.should.equal('http://myfile.com/movie');
+                    refoundUser.tldrsCreated[1].url.should.equal('http://another.com/movie');
+
+                    // We can also populate the creator field
+                    Tldr.findOne({url: 'http://myfile.com/movie'})
+                      .populate('creator')
+                      .exec(function (err, refoundTldr1) {
+                        refoundTldr1.creator.email.should.equal('valid@email.com');
+
+                        Tldr.findOne({url: 'http://another.com/movie'})
+                          .populate('creator')
+                          .exec(function (err, refoundTldr1) {
+                            refoundTldr1.creator.email.should.equal('valid@email.com');
+
+                            done();
+                          });
+                      });
+                  });
               });
             });
           });
         });
       });
     });
+
+    it('should not link anything if the tldr or the creator is not supplied', function (done) {
+      // code ...
+      done();
+    });
+
+
 
   });
 

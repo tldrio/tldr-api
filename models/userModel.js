@@ -35,7 +35,7 @@ UserSchema = new Schema(
               , required: true
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
-  , tldrsCreated: [{type: ObjectId, ref: 'Tldr'}]
+  , tldrsCreated: [{type: ObjectId, ref: 'tldr'}]   // See mongoose doc - populate
   }
 , { strict: true });
 

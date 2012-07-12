@@ -48,7 +48,7 @@ TldrSchema = new Schema(
                , default: Date.now
                }
                , required: false
-  , creator: { type: ObjectId, ref: 'User' }   // See mongoose doc - populate
+  , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
   }
 , { strict: true });
 
