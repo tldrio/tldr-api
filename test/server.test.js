@@ -576,7 +576,7 @@ describe('Webserver', function () {
 
     // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
     // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
-    it('Should be able to email with a right username and password and only send the session usable data', function (done) {
+    it('Should be able to log in with a right username and password and only send the session usable data', function (done) {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
@@ -629,6 +629,79 @@ describe('Webserver', function () {
         });
       });
     });
+
+
+    it('should be able to attribute a tldr when the creator is logged and get all tldrs created by the logged user', function (done) {
+      var tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData2 = { url: 'http://another.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData3 = { url: 'http://another.com/again',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesdsaasd', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/tldrs'
+                   , json: tldrData1 }, function (error, response, body) {
+
+        Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
+          assert.isUndefined(tldr.creator);   // No user was logged in, so this tldr has no creator
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/login'
+                       , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+            body.email.should.equal("user1@nfa.com");   // Login successful as User 1
+            request.post({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/tldrs'
+                         , json: tldrData2 }, function (error, response, body) {
+
+              Tldr.findOne({url: 'http://another.com/movie'}, function(err, tldr) {
+                tldr.creator.toString().length.should.equal(24);   // Should be an ObjectId, hence length of 24
+                request.post({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/tldrs'
+                             , json: tldrData3 }, function (error, response, body) {
+
+                  request.get({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+
+                    obj = JSON.parse(body);
+                    obj[0].url.should.equal("http://another.com/movie");
+                    obj[1].url.should.equal("http://another.com/again");
+
+                    request.get({ headers: {"Accept": "application/json"}
+                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                      // Logout in case we have other tests after this one
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
 
 
 
