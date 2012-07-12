@@ -543,7 +543,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to email with a missing part of the credentials', function (done) {
+    it('Should not be able to log in with a missing part of the credentials', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
@@ -702,6 +702,28 @@ describe('Webserver', function () {
       });
     });
 
+    it('should be able to create a new user and send to the client the authorized fields', function (done) {
+      var userNumber;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          // Only the data we want to send is sent
+          body.email.should.equal("valid@email.com");
+          body.username.should.equal("Louiiis");
+          assert.isUndefined(body._id);
+          assert.isUndefined(body.password);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(userNumber + 1);   // The user really is created
+            done();
+          });
+        });
+      });
+    });
 
 
 
