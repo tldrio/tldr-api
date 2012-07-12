@@ -120,4 +120,3 @@ UserModel = mongoose.model('user', UserSchema);
 // Export UserModel
 module.exports = UserModel;
 
-

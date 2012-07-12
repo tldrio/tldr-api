@@ -1,5 +1,5 @@
 /**
- * TldrModel tests
+ * Tldr tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
  */
@@ -13,7 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
-  , TldrModel = models.TldrModel
+  , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
   , url = require('url');
@@ -27,7 +27,7 @@ var should = require('chai').should()
  */
 
 
-describe('TldrModel', function () {
+describe('Tldr', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -38,7 +38,7 @@ describe('TldrModel', function () {
   });
 
   beforeEach(function (done) {
-    TldrModel.remove( function (err) {
+    Tldr.remove( function (err) {
       if (err) {throw done(err);}
       done();
     });
@@ -49,7 +49,7 @@ describe('TldrModel', function () {
 
     it('should detect missing required url arg', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
@@ -81,7 +81,7 @@ describe('TldrModel', function () {
         resourceDate: '2012',
         createdAt: new Date(),
         updatedAt: new Date()}
-        , tldr = new TldrModel(tldrData)
+        , tldr = new Tldr(tldrData)
         , valErr;
 
         tldr.save( function (err) {
@@ -92,13 +92,13 @@ describe('TldrModel', function () {
           valErr.url.should.not.equal(null);
 
           tldrData.url = "ftp://myfile.tld/movie";
-          tldr = new TldrModel(tldrData);
+          tldr = new Tldr(tldrData);
         tldr.save( function (err) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
           tldrData.url = "http://myfile.tld/movie";
-          tldr = new TldrModel(tldrData);
+          tldr = new Tldr(tldrData);
           tldr.save( function (err) {
             assert.isNull(err);
 
@@ -111,7 +111,7 @@ describe('TldrModel', function () {
 
     it('should use default createdAt and updatedAt args', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
 					url: 'http://needforair.com/nutcrackers',
 					title: 'Blog NFA',
 					summaryBullets: ['Awesome Blog'],
@@ -130,7 +130,7 @@ describe('TldrModel', function () {
     
     it('should detect missing required summary arg', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
           url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
@@ -154,7 +154,7 @@ describe('TldrModel', function () {
 
     it('should detect wrong type of arg for dates bitch', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
@@ -175,7 +175,7 @@ describe('TldrModel', function () {
 
     it('should reject tldrs whose summary is missing', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         resourceAuthor: 'NFA Crew',
@@ -195,7 +195,7 @@ describe('TldrModel', function () {
 
     it('should reject tldrs whose summary is an empty array', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: [],
@@ -216,7 +216,7 @@ describe('TldrModel', function () {
 
     it('should reject tldrs whose summary contains empty bullets', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', '', 'amnother bullet'],
@@ -237,7 +237,7 @@ describe('TldrModel', function () {
 
     it('should reject tldrs whose summary contains too many bullets', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', 'adad', 'amnother bullet', 'eweqweq', 'qweqwe', 'qweqweqwe'],
@@ -258,7 +258,7 @@ describe('TldrModel', function () {
 
     it('should reject tldrs whose summary contains a bullet that\'s too long', function (done) {
 
-      var tldr = new TldrModel({
+      var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', 'adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee w'],
@@ -284,7 +284,7 @@ describe('TldrModel', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      TldrModel.createAndSaveInstance(
+      Tldr.createAndSaveInstance(
         { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
@@ -292,7 +292,7 @@ describe('TldrModel', function () {
         , createdAt: '2012'}, 
         function (err) { 
           if (err) { return done(err); } 
-          TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+          Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
 
             var tldr = docs[0];
@@ -313,14 +313,14 @@ describe('TldrModel', function () {
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
-        TldrModel.createAndSaveInstance(
+        Tldr.createAndSaveInstance(
           tldr,
           function (err) { 
             if (err) { return done(err); } 
-            TldrModel.find({url: tldr.url}, function (err,docs) {
+            Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
-              TldrModel.createAndSaveInstance(
+              Tldr.createAndSaveInstance(
                 tldr, 
                 function (err) { 
                   err.should.not.be.null;
@@ -342,14 +342,14 @@ describe('TldrModel', function () {
                       , resourceAuthor: 'new3'
                       , createdAt: '2012'};
 
-      TldrModel.createAndSaveInstance(
+      Tldr.createAndSaveInstance(
         { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'},
         function(err) {
           if (err) { return done(err); }
-          TldrModel.find({resourceAuthor: 'bloup'}, function (err,docs) {
+          Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
 
             var tldr = docs[0];

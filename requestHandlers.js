@@ -9,7 +9,7 @@ var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
-  , TldrModel = models.TldrModel
+  , Tldr = models.Tldr
   , UserModel = models.UserModel;
 
 
@@ -49,7 +49,7 @@ function searchTldrs (req, res, next) {
   // corresponding tldr
   if (url) {
     url = normalizeUrl(url);
-    TldrModel.find({url: url}, function (err, docs) {
+    Tldr.find({url: url}, function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
       }
@@ -78,7 +78,7 @@ function searchTldrs (req, res, next) {
     // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
-    TldrModel.find({})
+    Tldr.find({})
      .sort('updatedAt', -1)
      .limit(limit)
      .lt('updatedAt', olderthan)
@@ -96,7 +96,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(startat)) { startat = 0; }
     startat = Math.max(0, startat);
 
-    TldrModel.find({})
+    Tldr.find({})
      .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
@@ -119,7 +119,7 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  TldrModel.findById( id, function (err, tldr) {
+  Tldr.findById( id, function (err, tldr) {
     if (err) {
       // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
@@ -198,7 +198,7 @@ function postNewTldr (req, res, next) {
     return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
 
-  TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
+  Tldr.createAndSaveInstance(req.body, function (err, tldr) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -206,7 +206,7 @@ function postNewTldr (req, res, next) {
 
         var url = normalizeUrl(req.body.url);
 
-        TldrModel.find({url: url}, function (err, docs) {
+        Tldr.find({url: url}, function (err, docs) {
           internalUpdateCb(err, docs, req, res, next);
         });
 
@@ -237,7 +237,7 @@ function putUpdateTldrWithId (req, res, next) {
   }
 
   // We find by id here
-  TldrModel.find({ _id: id }, function (err, docs) {
+  Tldr.find({ _id: id }, function (err, docs) {
     internalUpdateCb(err, docs, req, res, next);
   });
 

@@ -14,7 +14,7 @@ var should = require('chai').should()
   , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel
+  , Tldr = models.Tldr
   , UserModel = models.UserModel
   , rootUrl = 'http://localhost:8686'
   , request = require('request');
@@ -74,14 +74,14 @@ describe('Webserver', function () {
   beforeEach(function (done) {
 
     // dummy models
-    tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr1 = new Tldr({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     //We need an object ID for this one for PUT test
-    tldr2 = new TldrModel({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
-    tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
+    tldr3 = new Tldr({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr4 = new Tldr({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) { return done(err); }
       tldr1.save(	function (err) {
         if (err) { return done(err); }
@@ -91,7 +91,7 @@ describe('Webserver', function () {
             if (err) { return done(err); }
             tldr4.save( function (err) {
               if (err) { return done(err); }
-              TldrModel.find({}, function(err, docs) {
+              Tldr.find({}, function(err, docs) {
                 if (err) { return done(err); }
                 numberOfTldrs = docs.length;
                 done();
@@ -105,7 +105,7 @@ describe('Webserver', function () {
   });
 
   afterEach(function (done) {
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
@@ -181,13 +181,13 @@ describe('Webserver', function () {
 
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new TldrModel({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
+        someTldrs.push(new Tldr({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
       }
 
       older = new Date(now - 10000 * (12));
 
       saveSync(someTldrs, 0, function() {
-        TldrModel.find({}, function(err,docs) {
+        Tldr.find({}, function(err,docs) {
           docs.length.should.equal(30);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
@@ -357,11 +357,11 @@ describe('Webserver', function () {
         res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
 
-          TldrModel.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+          Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A summary');
 
@@ -383,7 +383,7 @@ describe('Webserver', function () {
 
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
-        TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+        Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
           tldr.summaryBullets.should.include('Best Blog Ever');
           tldr.title.should.equal('Nutcrackers article');
@@ -399,7 +399,7 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(403);
           obj.should.have.property('url');
-          TldrModel.find({}, function(err, docs) {
+          Tldr.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
             done();
@@ -414,7 +414,7 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           obj.should.have.property('summaryBullets');
           res.statusCode.should.equal(403);
-          TldrModel.find({}, function(err, docs) {
+          Tldr.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
             done();
@@ -434,11 +434,11 @@ describe('Webserver', function () {
 
       request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A new summary');
 
@@ -475,11 +475,11 @@ describe('Webserver', function () {
       request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         obj.should.have.property('summaryBullets');
         res.statusCode.should.equal(403);
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('Fred Wilson is my God');
 

@@ -11,7 +11,7 @@ var mongoose = require('mongoose')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Schema = mongoose.Schema
   , TldrSchema
-  , TldrModel
+  , Tldr
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate'] // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];// updatabe fields by user
 
@@ -46,13 +46,16 @@ TldrSchema = new Schema(
   , updatedAt: { type: Date
                , default: Date.now
                }
+               , required: false
+  , creatorId: { type: String
+               }
   }
 , { strict: true });
 
 
 
 /**
- * Create a new instance of TldrModel and populate it
+ * Create a new instance of Tldr and populate it
  * Only fields in userSetableFields are handled
  * @param {Object} userInput Object containing the fields to set for the tldr instance
  * @param {Function} callback Function to call after the creation of the tldr
@@ -62,7 +65,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance;
 
-  instance = new TldrModel(validFields);
+  instance = new Tldr(validFields);
   instance.save(callback);
 };
 
@@ -146,7 +149,7 @@ function validateAuthor (value) {
 
 
 // Define tldr model
-TldrModel = mongoose.model('tldr', TldrSchema);
+Tldr = mongoose.model('tldr', TldrSchema);
 
-// Export TldrModel
-module.exports = TldrModel;
+// Export Tldr
+module.exports = Tldr;
