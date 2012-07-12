@@ -94,10 +94,6 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 };
 
 
-
-
-
-
 /**
  * Validators
  *

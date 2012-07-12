@@ -92,6 +92,22 @@ UserSchema.methods.getAuthorizedFields = function () {
 
 
 /*
+ * Get all tldrs created by the user
+ *
+ * @param {Function} callback function to be called with the results after having fetched the tldrs
+ */
+UserSchema.methods.getCreatedTldrs = function(callback) {
+  User.findOne({"_id": this._id})
+    .populate('tldrsCreated')
+    .exec(function(err, user) {
+      if (err) {throw err;}
+      callback(user.tldrsCreated);
+    });
+}
+
+
+
+/*
  * Validators
  */
 // Email regex comes from node-validator and can be used by clients

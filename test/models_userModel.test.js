@@ -13,6 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
   , User = models.User
+  , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
   , url = require('url')
@@ -38,7 +39,10 @@ describe('User', function () {
   beforeEach(function (done) {
     User.remove( function (err) {
       if (err) {throw done(err);}
-      done();
+      Tldr.remove( function(err) {
+        if (err) {throw done(err);}
+        done();
+      });
     });
   });
 
@@ -260,10 +264,6 @@ describe('User', function () {
         });
       });
     });
-  });
-
-
-  describe('should not return the password field as part of the session usable data', function () {
 
     it('should save a user whose password is valid', function (done) {
       var userData = { username: 'A name'
@@ -285,6 +285,59 @@ describe('User', function () {
           assert.isUndefined(sessionUsableFields._id);
 
           done();
+        });
+      });
+    });
+
+  });
+
+
+  describe('#getCreatedTldrs', function() {
+
+    it('Should return the array of saved tldrs if there are some', function (done) {
+      var userData = { username: 'A name'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret!'
+                     }
+        , tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData2 = { url: 'http://another.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.getCreatedTldrs(function(tldrs) {
+          _.isArray(tldrs).should.equal(true);
+          tldrs.length.should.equal(0);
+
+          Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
+            Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
+              models.setTldrCreator(tldr1, user, function(err) {
+                models.setTldrCreator(tldr2, user, function(err) {
+                  // user doesn't contain the data in his created tldrs
+                  assert.isUndefined(user.tldrsCreated[0].url);
+
+                  user.getCreatedTldrs(function(tldrs) {
+                    tldrs[0].url.should.equal('http://myfile.com/movie');
+                    tldrs[1].url.should.equal('http://another.com/movie');
+
+                    done();
+                  });
+                });
+              });
+            });
+          });
         });
       });
     });
