@@ -73,12 +73,7 @@ describe('Models', function () {
           Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
             models.setTldrCreator(tldr1, user, function(err) {
               models.setTldrCreator(tldr2, user, function(err) {
-                console.log("===========");
-                console.log(tldr1);
-                console.log("===========");
-                console.log(tldr2);
-                console.log("===========");
-                console.log(user);
+                consople.log(tldr1.creator);
 
                 done();
               });
