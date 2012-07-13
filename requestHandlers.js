@@ -288,7 +288,12 @@ function updateUserInfo(req, res, next) {
         }
       }
 
-      return res.send(200, user.getAuthorizedFields());
+      // If we have errors on password
+      if (errors) {
+        return next({ statusCode:403, body: errors });
+      } else {
+        return res.send(200, user.getAuthorizedFields());
+      }
     });
   }
 
