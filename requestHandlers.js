@@ -270,10 +270,40 @@ function createNewUser(req, res, next) {
 
 
 /*
- * Updates the logged user's info
+ * Updates the logged user's info. First tries to update password if the request contains
+ * password data, then updates the rest of the fields, and send back all errors or a success to the user
  */
 function updateUserInfo(req, res, next) {
+  // To be called after a password update, if any
+  function updateEverythingExceptPassword(errors) {
+    var errorsFromPasswordUpdate = errors || {};
 
+    req.user.updateValidFields(req.body, function(err, user) {
+      if (err) {
+        if (err.errors) {
+          // Send back a 403 with all validation errors
+          return next({ statusCode:403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+        } else {
+          return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
+        }
+      }
+
+      return res.send(200, user.getAuthorizedFields());
+    });
+  }
+
+  if (req.user) {
+    // First, check if user wants to modify username and password
+    if (req.body.currentPassword && req.body.newPassword) {
+      req.user.updatePassword(req.body.currentPassword, req.body.newPassword, function(err) {
+        updateEverythingExceptPassword(err);   // We pass any error that we got from password update
+      });
+    } else {
+      updateEverythingExceptPassword();   // No errors (yet)
+    }
+  } else {
+    return res.json(401, { message: 'You are not logged in' });
+  }
 }
 
 
