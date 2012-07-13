@@ -342,6 +342,35 @@ describe('User', function () {
       });
     });
 
+  });
+
+
+  describe('#updatePassword', function() {
+    it('should save a user whose password is valid', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+
+        User.find({email: 'valid@email.com'}, function(err, docs) {
+          docs.should.have.length(1);
+          sessionUsableFields = docs[0].getAuthorizedFields();
+
+          assert.isDefined(sessionUsableFields.username);
+          assert.isDefined(sessionUsableFields.email);
+          assert.isUndefined(sessionUsableFields.password);
+          assert.isUndefined(sessionUsableFields._id);
+
+          done();
+        });
+      });
+    });
+
+
 
 
   });
