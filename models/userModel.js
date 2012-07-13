@@ -128,34 +128,19 @@ UserSchema.methods.updatePassword = function (currentPassword, newPassword, call
 
 
 /*
- * Update a user profile
+ * Update a user profile (only updates the user updatable fields, and not the password)
  */
-//UserSchema.methods.updateValidFields = function (data, callback) {
-  //var self = this;
+UserSchema.methods.updateValidFields = function (data, callback) {
+  var self = this
+    , validUpdateFields = _.intersection(data, userUpdatableFields);
 
-  //function updateValidFieldsExceptPassword(updates) {
-    //var validUpdateFields = _.intersection(updates, userUpdatableFields);
+  _.each(validUpdateFields, function(field) {
+    self[field] = data[field];
+  });
 
-    //_.each(validUpdateFields, function(field) {
-      //self[field] = updates[field];
-    //});
+  self.save(callback);
+}
 
-    //self.save(callback);
-  //}
-
-  //// Special case if the user want to change his password, we need to check the current password before
-  //if (data.currentPassword && data.newPassword) {
-    //bcrypt.compare(data.currentPassword, self.password, function(err, valid) {
-      //if (err) {throw err;}
-
-      //if (valid) {
-
-      //}
-    //});
-  //} else {
-    //updateValidFieldsExceptPassword(data);
-  //}
-//}
 
 /*
  * Get all tldrs created by the user
