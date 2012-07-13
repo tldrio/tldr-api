@@ -346,24 +346,66 @@ describe('User', function () {
 
 
   describe('#updatePassword', function() {
-    it('should save a user whose password is valid', function (done) {
+    it('should call callback with correct error messages if password can\'t be updated', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
         , sessionUsableFields;
 
-      User.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
 
-        User.find({email: 'valid@email.com'}, function(err, docs) {
-          docs.should.have.length(1);
-          sessionUsableFields = docs[0].getAuthorizedFields();
+        user.updatePassword('incorrect', 'goodpassword', function(err) {
+          assert.isDefined(err.currentPassword);
+          assert.isUndefined(err.newPassword);
 
-          assert.isDefined(sessionUsableFields.username);
-          assert.isDefined(sessionUsableFields.email);
-          assert.isUndefined(sessionUsableFields.password);
-          assert.isUndefined(sessionUsableFields._id);
+          user.updatePassword('notTOOshort', 'badpw', function(err) {
+            assert.isUndefined(err.currentPassword);
+            assert.isDefined(err.newPassword);
+
+            user.updatePassword('badpw', 'badpw', function(err) {
+              assert.isDefined(err.currentPassword);
+              assert.isDefined(err.newPassword);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should throw if one or both parameters are missing', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        (function() {user.updatePassword(null, 'aaaaaa');}).should.throw();
+        (function() {user.updatePassword('aaaaaa');}).should.throw();
+        (function() {user.updatePassword();}).should.throw();
+        done();
+      });
+    });
+
+    it('should call callback with correct error messages if password can\'t be updated', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        user.updatePassword('notTOOshort', 'goodpassword', function(err) {
+          assert.isNull(err);
+          bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+          bcrypt.compareSync('notTOOshort', user.password).should.equal(false);
 
           done();
         });
