@@ -350,8 +350,7 @@ describe('User', function () {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
-                     }
-        , sessionUsableFields;
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -379,8 +378,7 @@ describe('User', function () {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
-                     }
-        , sessionUsableFields;
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -393,6 +391,29 @@ describe('User', function () {
     });
 
     it('should call callback with correct error messages if password can\'t be updated', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        user.updatePassword('notTOOshort', 'goodpassword', function(err) {
+          assert.isNull(err);
+          bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+          bcrypt.compareSync('notTOOshort', user.password).should.equal(false);
+
+          done();
+        });
+      });
+    });
+
+  });
+
+
+  describe('should update the user updatable fields', function() {
+    it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -411,10 +432,9 @@ describe('User', function () {
         });
       });
     });
-
-
-
-
+    
+  
+  
   });
 
 
