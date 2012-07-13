@@ -270,6 +270,14 @@ function createNewUser(req, res, next) {
 
 
 /*
+ * Updates the logged user's info
+ */
+function updateUserInfo(req, res, next) {
+
+}
+
+
+/*
  * Returns the logged user if there is a logged user, or a 401 error if nobody is logged
  */
 function getLoggedUser(req, res, next) {
@@ -369,3 +377,4 @@ module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.createNewUser = createNewUser;
+module.exports.updateUserInfo = updateUserInfo;

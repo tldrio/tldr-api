@@ -11,8 +11,8 @@ var mongoose = require('mongoose')
   , UserSchema, User
   , bcrypt = require('bcrypt')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
-  , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
-  , authorizedFields = ['email', 'username'];
+  , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username'];         // fields that can be sent to the user
 
 
 /**
@@ -90,6 +90,72 @@ UserSchema.methods.getAuthorizedFields = function () {
   return res;
 };
 
+
+/*
+ * Update a user password
+ * @param {String} currentPassword supplied by user for checking purposes
+ * @param {String} newPassword chosen by user
+ */
+UserSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
+  var self = this
+    , errors = {};
+
+  if (! currentPassword || ! newPassword) {throw {message: "Missing argument currentPassword or newPassword"};}
+
+  if (! validatePassword(newPassword)) { errors.newPassword = "New password must be at least 6 characters long" }
+
+  bcrypt.compare(currentPassword, self.password, function(err, valid) {
+    if (err) {throw err;}
+
+    if (valid) {
+      if ( ! errors.newPassword) {
+        // currentPassword is correct and newPassword is valid: we can change
+        bcrypt.genSalt(6, function(err, salt) {
+          bcrypt.hash(newPassword, salt, function (err, hash) {
+            self.password = hash;
+            self.save(callback);
+          });
+        });
+        return;  // Stop executing here to avoid calling the callback twice
+      }
+    } else {
+      errors.currentPassword = "You didn't supply the correct current password";
+    }
+
+    callback(errors);
+  });
+}
+
+
+/*
+ * Update a user profile
+ */
+//UserSchema.methods.updateValidFields = function (data, callback) {
+  //var self = this;
+
+  //function updateValidFieldsExceptPassword(updates) {
+    //var validUpdateFields = _.intersection(updates, userUpdatableFields);
+
+    //_.each(validUpdateFields, function(field) {
+      //self[field] = updates[field];
+    //});
+
+    //self.save(callback);
+  //}
+
+  //// Special case if the user want to change his password, we need to check the current password before
+  //if (data.currentPassword && data.newPassword) {
+    //bcrypt.compare(data.currentPassword, self.password, function(err, valid) {
+      //if (err) {throw err;}
+
+      //if (valid) {
+
+      //}
+    //});
+  //} else {
+    //updateValidFieldsExceptPassword(data);
+  //}
+//}
 
 /*
  * Get all tldrs created by the user
