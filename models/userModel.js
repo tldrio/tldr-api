@@ -132,7 +132,7 @@ UserSchema.methods.updatePassword = function (currentPassword, newPassword, call
  */
 UserSchema.methods.updateValidFields = function (data, callback) {
   var self = this
-    , validUpdateFields = _.intersection(data, userUpdatableFields);
+    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
 
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
@@ -173,7 +173,7 @@ function validateEmail (value) {
 
 // Username should be non empty and less than 30 characters long
 function validateUsername (value) {
-  return (value && value.length <= 30);
+  return (value && value.length <= 30 && value.length >= 1);
 }
 
 // password should be non empty and longer than 6 characters

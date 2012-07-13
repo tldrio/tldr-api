@@ -418,23 +418,50 @@ describe('User', function () {
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
-        , sessionUsableFields;
+        , newData = { username: 'Yep another name'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'};
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
+        user.username.should.equal("A name");
+        user.email.should.equal("valid@email.com");
+        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
-        user.updatePassword('notTOOshort', 'goodpassword', function(err) {
-          assert.isNull(err);
-          bcrypt.compareSync('goodpassword', user.password).should.equal(true);
-          bcrypt.compareSync('notTOOshort', user.password).should.equal(false);
+        user.updateValidFields(newData, function(err, user2) {
+          user2.username.should.equal("Yep another name");
+          user2.email.should.equal("valid@email.com");
+          bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
         });
       });
     });
-    
-  
-  
+
+    it('should NOT update the fields if they DON\'T pass validation', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'};
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.username.should.equal("A name");
+        user.email.should.equal("valid@email.com");
+        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
+
+        user.updateValidFields(newData, function(err, user2) {
+          assert.isNotNull(err);
+
+          done();
+        });
+      });
+    });
+
+
   });
 
 
