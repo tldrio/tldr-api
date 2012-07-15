@@ -34,13 +34,13 @@ server = express(); // Instantiate server
 server.configure('staging', 'production', function () {
   // The process needs to keep on running
   process.on('uncaughtException', function(err) {
-    bunyan.fatal({error: err, message: "An uncaught exception was thrown"});
+    bunyan.fatal({error: err, message: 'An uncaught exception was thrown'});
   });
 });
 
 
 /*
- * Environments declaration and 
+ * Environments declaration and
  * Express' default environment is 'development'
  */
 server.configure('development', function () {
@@ -122,7 +122,7 @@ server.db = new dbObject( server.set('dbHost')
  * and declaration of serialization/deserialization methods
  */
 passport.use(new LocalStrategy({
-      usernameField: 'login'
+      usernameField: 'email'   // Passport way of naming can't be changed ...
     , passwordField: 'password'
     , passReqToCallback: true   // Why the fuck wasn't this life-saving option NOT documented ?
     }
@@ -144,8 +144,8 @@ server.use(express.bodyParser());
 
 // Middleware to send a dummy empty favicon so as to be able to debug easily
 server.use(function(req, res, next) {
-  if (req.url === "/favicon.ico") {
-    return res.send(200, "");
+  if (req.url === '/favicon.ico') {
+    return res.send(200, '');
   } else {
     return next();
   }
@@ -153,11 +153,11 @@ server.use(function(req, res, next) {
 
 // Parse cookie data and use redis to store session data
 server.use(express.cookieParser());
-server.use(express.session({ secret: "this is da secret, dawg"    // Used for cookie encryption
+server.use(express.session({ secret: 'this is da secret, dawg'    // Used for cookie encryption
 
-                           , key: "tldr_session"                  // Name of our cookie
+                           , key: 'tldr_session'                  // Name of our cookie
 
-                           , cookie: { path: '/'                  // Cookie is resent for all pages. Strange: there was a bug when I used "/users"
+                           , cookie: { path: '/'                  // Cookie is resent for all pages. Strange: there was a bug when I used '/users'
                                                                   // Anyway since connect-session can be pretty stupid, any call outside /users created a new
                                                                   // entry in the Redis store, which is a dumb memory leak. Adding xhr: {withCredentials: true}
                                                                   // to the parameters of the $.ajax client calls enables the same session for all calls, thus
@@ -169,7 +169,8 @@ server.use(express.session({ secret: "this is da secret, dawg"    // Used for co
                                                                   // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
                                                                   // i.e. every request made that resends the cookie
                                      }
-                           , store: new RedisStore( { db: server.set('redisDb') } ) }));         // 'db' option is the Redis store to use
+                           , store: new RedisStore({ db: server.set('redisDb') }) // 'db' option is the Redis store to use
+                           }));
 
 
 // Use Passport for authentication and sessions
@@ -198,7 +199,7 @@ server.post('/users/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
     var errorToSend;
 
-    if (err) { return next(err) }
+    if (err) { return next(err); }
 
     if (!user) {
       errorToSend = { UnknownUser: req.authFailedDueToUnknownUser ? true : false
@@ -211,7 +212,7 @@ server.post('/users/login', function(req, res, next) {
     req.logIn(user, function(err) {
       if (err) { return next(err); }
 
-      return res.json(200, user.getSessionUsableFields());
+      return res.json(200, user.getAuthorizedFields());
     });
   })(req, res, next);
 });
@@ -235,24 +236,6 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 
 //PUT update tldr
 server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
-
-
-// Needed for now, for test purposes. Will be handled by a website widget afterwards
-server.get('/users/create', function(req, res, next) {
-  res.send(200, '<form method="POST" action="/users">'
-              + 'Login (email address): <input type="text" name="login"><br />'
-              + 'Real name: <input type="text" name="name"><br />'
-              + 'Password :<input type="text" name="password"><br />'
-              + '<input type="submit" value="Gogogo"></form>');
-});
-
-// Also needed for now for test purposes. Will be handled by a website/BM widget afterwards
-server.get('/users/login', function(req, res, next) {
-  res.send(200, '<form method="POST" action="/users/login">'
-              + 'Login (email address): <input type="text" name="login"><br />'
-              + 'Password: <input type="text" name="password"><br />'
-              + '<input type="submit" value="Gogogo"></form>');
-});
 
 
 
