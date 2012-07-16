@@ -51,7 +51,7 @@ server.configure('development', function () {
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
   server.locals = { scriptPath: 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"'
-                  , cssPath: 'http://localhost:8888/tldr-clients/source/css/tldr-page.css'
+                  , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
   server.use(express.logger());
@@ -73,8 +73,8 @@ server.configure('staging', function () {
   server.set('svPort', 9002);
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
-  server.locals = { scriptPath: 'http://tldr.io/staging/js/tldr-page.js'
-                  , cssPath: 'http://tldr.io/staging/css/tldr-page.css'
+  server.locals = { scriptPath: 'http://tldr.io/staging/js/page-min.js'
+                  , cssPath: 'http://tldr.io/staging/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
   server.use(express.logger());
@@ -87,8 +87,8 @@ server.configure('production', function () {
   server.set('svPort', 9001);
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
-  server.locals = { scriptPath: 'http://tldr.io/js/tldr-page.js'
-                  , cssPath: 'http://tldr.io/css/tldr-page.css'
+  server.locals = { scriptPath: 'http://tldr.io/js/page-min.js'
+                  , cssPath: 'http://tldr.io/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
   server.use(express.logger());
