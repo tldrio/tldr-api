@@ -139,13 +139,6 @@ function getTldrById (req, res, next) {
 
 function internalContentNegociationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
-      console.log('tlt', process.env.NODE_ENV, process.env);
-      if(process.env.NODE_ENV === "production" ) {
-        tldr.scriptData = 'src="toto.js" ';
-      } else {
-        // dev or test 
-        tldr.scriptData = 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"';
-      }
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
