@@ -9,8 +9,8 @@ var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
-  , TldrModel = models.TldrModel
-  , UserModel = models.UserModel;
+  , Tldr = models.Tldr
+  , User = models.User;
 
 
 /**
@@ -49,7 +49,7 @@ function searchTldrs (req, res, next) {
   // corresponding tldr
   if (url) {
     url = normalizeUrl(url);
-    TldrModel.find({url: url}, function (err, docs) {
+    Tldr.find({url: url}, function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
       }
@@ -78,7 +78,7 @@ function searchTldrs (req, res, next) {
     // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
-    TldrModel.find({})
+    Tldr.find({})
      .sort('updatedAt', -1)
      .limit(limit)
      .lt('updatedAt', olderthan)
@@ -96,7 +96,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(startat)) { startat = 0; }
     startat = Math.max(0, startat);
 
-    TldrModel.find({})
+    Tldr.find({})
      .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
@@ -119,7 +119,7 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  TldrModel.findById( id, function (err, tldr) {
+  Tldr.findById( id, function (err, tldr) {
     if (err) {
       // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
@@ -198,7 +198,7 @@ function postNewTldr (req, res, next) {
     return next({ statusCode: 400, body: { message: 'Body required in request' } } );
   }
 
-  TldrModel.createAndSaveInstance(req.body, function (err, tldr) {
+  Tldr.createAndSaveInstance(req.body, function (err, tldr) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -206,7 +206,7 @@ function postNewTldr (req, res, next) {
 
         var url = normalizeUrl(req.body.url);
 
-        TldrModel.find({url: url}, function (err, docs) {
+        Tldr.find({url: url}, function (err, docs) {
           internalUpdateCb(err, docs, req, res, next);
         });
 
@@ -215,7 +215,12 @@ function postNewTldr (req, res, next) {
       }
 
     } else {
-      res.json(201, tldr);
+      // If a user is logged, he gets to be the tldr's creator
+      if (req.user) {
+        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr) } );
+      } else {
+        return res.json(201, tldr);
+      }
     }
   });
 
@@ -237,7 +242,7 @@ function putUpdateTldrWithId (req, res, next) {
   }
 
   // We find by id here
-  TldrModel.find({ _id: id }, function (err, docs) {
+  Tldr.find({ _id: id }, function (err, docs) {
     internalUpdateCb(err, docs, req, res, next);
   });
 
@@ -248,7 +253,7 @@ function putUpdateTldrWithId (req, res, next) {
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
-  UserModel.createAndSaveInstance(req.body, function(err) {
+  User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -259,20 +264,74 @@ function createNewUser(req, res, next) {
       }
     }
 
-    // this.emitted.complete[0] is the UserModel that was just saved
-    // I found this while debuggging this function. I think access to the instance
-    // that was just saved really is a missing feature in Mongoose
-    return res.json(201, this.emitted.complete[0].getAuthorizedFields());
+    return res.json(201, user.getAuthorizedFields());
   });
+}
+
+
+/*
+ * Updates the logged user's info. First tries to update password if the request contains
+ * password data, then updates the rest of the fields, and send back all errors or a success to the user
+ */
+function updateUserInfo(req, res, next) {
+  // To be called after a password update, if any
+  function updateEverythingExceptPassword(errors) {
+    var errorsFromPasswordUpdate = errors || {};
+
+    req.user.updateValidFields(req.body, function(err, user) {
+      if (err) {
+        if (err.errors) {
+          // Send back a 403 with all validation errors
+          return next({ statusCode:403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+        } else {
+          return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
+        }
+      }
+
+      // If we have errors on password
+      if (errors) {
+        return next({ statusCode:403, body: errors });
+      } else {
+        return res.send(200, user.getAuthorizedFields());
+      }
+    });
+  }
+
+  if (req.user) {
+    // First, check if user wants to modify username and password
+    if (req.body.currentPassword && req.body.newPassword) {
+      req.user.updatePassword(req.body.currentPassword, req.body.newPassword, function(err) {
+        updateEverythingExceptPassword(err);   // We pass any error that we got from password update
+      });
+    } else {
+      updateEverythingExceptPassword();   // No errors (yet)
+    }
+  } else {
+    return res.json(401, { message: 'You are not logged in' });
+  }
 }
 
 
 /*
  * Returns the logged user if there is a logged user, or a 401 error if nobody is logged
  */
-function getLoggedUser(req, res, nex) {
+function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
+  } else {
+    return res.json(401, { message: 'You are not logged in' });
+  }
+}
+
+
+/*
+ * Returns the tldrs created by the logged user. If nobody is logged, returns a 401.
+ */
+function getLoggedUserCreatedTldrs(req, res, next) {
+  if (req.user) {
+    req.user.getCreatedTldrs(function(tldrs) {
+      return res.json(200, tldrs);
+    });
   } else {
     return res.json(401, { message: 'You are not logged in' });
   }
@@ -351,4 +410,6 @@ module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
+module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.createNewUser = createNewUser;
+module.exports.updateUserInfo = updateUserInfo;

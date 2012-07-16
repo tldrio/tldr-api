@@ -14,8 +14,8 @@ var should = require('chai').should()
   , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
-  , TldrModel = models.TldrModel
-  , UserModel = models.UserModel
+  , Tldr = models.Tldr
+  , User = models.User
   , rootUrl = 'http://localhost:8686'
   , request = require('request');
 
@@ -45,13 +45,7 @@ describe('Webserver', function () {
 
   before(function (done) {
     db.connectToDatabase(function() {
-      UserModel.remove({}, function(err) {
-        if (err) { return done(err); }
-        UserModel.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
-          if (err) { return done(err); }
-          done();
-        });
-      });
+      done();
     });
   });
 
@@ -74,14 +68,14 @@ describe('Webserver', function () {
   beforeEach(function (done) {
 
     // dummy models
-    tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr1 = new Tldr({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     //We need an object ID for this one for PUT test
-    tldr2 = new TldrModel({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
-    tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
-    tldr4 = new TldrModel({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
+    tldr3 = new Tldr({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    tldr4 = new Tldr({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) { return done(err); }
       tldr1.save(	function (err) {
         if (err) { return done(err); }
@@ -91,10 +85,16 @@ describe('Webserver', function () {
             if (err) { return done(err); }
             tldr4.save( function (err) {
               if (err) { return done(err); }
-              TldrModel.find({}, function(err, docs) {
+              Tldr.find({}, function(err, docs) {
                 if (err) { return done(err); }
                 numberOfTldrs = docs.length;
-                done();
+                User.remove({}, function(err) {
+                  if (err) { return done(err); }
+                  User.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
+                    if (err) { return done(err); }
+                    done();
+                  });
+                });
               });
             });
           });
@@ -105,7 +105,7 @@ describe('Webserver', function () {
   });
 
   afterEach(function (done) {
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
@@ -181,13 +181,13 @@ describe('Webserver', function () {
 
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new TldrModel({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
+        someTldrs.push(new Tldr({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
       }
 
       older = new Date(now - 10000 * (12));
 
       saveSync(someTldrs, 0, function() {
-        TldrModel.find({}, function(err,docs) {
+        Tldr.find({}, function(err,docs) {
           docs.length.should.equal(30);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
@@ -357,11 +357,11 @@ describe('Webserver', function () {
         res.statusCode.should.equal(201);
         obj.title.should.equal('A title');
         obj.createdAt.should.not.be.null;
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs + 1);
 
-          TldrModel.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+          Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A summary');
 
@@ -383,7 +383,7 @@ describe('Webserver', function () {
 
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
-        TldrModel.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+        Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
           var tldr = docs[0];
           tldr.summaryBullets.should.include('Best Blog Ever');
           tldr.title.should.equal('Nutcrackers article');
@@ -399,7 +399,7 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(403);
           obj.should.have.property('url');
-          TldrModel.find({}, function(err, docs) {
+          Tldr.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
             done();
@@ -414,7 +414,7 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           obj.should.have.property('summaryBullets');
           res.statusCode.should.equal(403);
-          TldrModel.find({}, function(err, docs) {
+          Tldr.find({}, function(err, docs) {
             docs.length.should.equal(numberOfTldrs);
 
             done();
@@ -434,11 +434,11 @@ describe('Webserver', function () {
 
       request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         res.statusCode.should.equal(204);
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('A new summary');
 
@@ -475,11 +475,11 @@ describe('Webserver', function () {
       request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
         obj.should.have.property('summaryBullets');
         res.statusCode.should.equal(403);
-        TldrModel.find({}, function(err, docs) {
+        Tldr.find({}, function(err, docs) {
           var tldr;
           docs.length.should.equal(numberOfTldrs);
 
-          TldrModel.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
             tldr = docs[0];
             tldr.summaryBullets.should.include('Fred Wilson is my God');
 
@@ -512,6 +512,96 @@ describe('Webserver', function () {
       });
     });
 
+    it('should be able to update the logged user\'s info', function (done) {
+      var obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { email: "bloup@nfa.com"
+                             , currentPassword: "supersecret"
+                             , newPassword: "agoodone"
+                             , username: "yepyep" } }, function (error, response, body) {
+
+          request.get({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.email.should.equal("user1@nfa.com");   // Email is not modifiable
+            obj.username.should.equal("yepyep");
+
+            request.get({ headers: {"Accept": "application/json"}
+                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+              response.statusCode.should.equal(200);
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/users/login'
+                           , json: { email: "user1@nfa.com", password: "agoodone" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+                request.get({ headers: {"Accept": "application/json"}
+                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                  done();
+                });
+              });
+            });
+           });
+         });
+      });
+    });
+
+    it('should NOT be able to update the logged user\'s info if there are validation errors, and send back the errors', function (done) {
+      var obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { email: "bloup@nfa.com"
+                             , currentPassword: "supersecretNOPE"
+                             , newPassword: "abad"
+                             , username: "" } }, function (error, response, body) {
+
+          response.statusCode.should.equal(403);
+          assert.isDefined(body.username);
+          assert.isDefined(body.currentPassword);
+          assert.isDefined(body.newPassword);
+
+            request.get({ headers: {"Accept": "application/json"}
+                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+              response.statusCode.should.equal(200);
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/users/login'
+                           , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+                body.username.should.equal("User One");
+
+                request.get({ headers: {"Accept": "application/json"}
+                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                  done();
+                });
+              });
+           });
+         });
+      });
+    });
 
 
   });
@@ -543,7 +633,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to email with a missing part of the credentials', function (done) {
+    it('Should not be able to log in with a missing part of the credentials', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
@@ -576,7 +666,7 @@ describe('Webserver', function () {
 
     // Test scenario: check who's logged (should be nobody), log in, check who's logged (user1), logout (should get a 200 logout ok),
     // test who's logged in (nobody), logout (should get a 400 nobody was logged in)
-    it('Should be able to email with a right username and password and only send the session usable data', function (done) {
+    it('Should be able to log in with a right username and password and only send the session usable data', function (done) {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
@@ -625,6 +715,101 @@ describe('Webserver', function () {
                 });
               });
             });
+          });
+        });
+      });
+    });
+
+
+    it('should be able to attribute a tldr when the creator is logged and get all tldrs created by the logged user', function (done) {
+      var tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData2 = { url: 'http://another.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData3 = { url: 'http://another.com/again',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesdsaasd', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/tldrs'
+                   , json: tldrData1 }, function (error, response, body) {
+
+        Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
+          assert.isUndefined(tldr.creator);   // No user was logged in, so this tldr has no creator
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/login'
+                       , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+            body.email.should.equal("user1@nfa.com");   // Login successful as User 1
+            request.post({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/tldrs'
+                         , json: tldrData2 }, function (error, response, body) {
+
+              Tldr.findOne({url: 'http://another.com/movie'}, function(err, tldr) {
+                tldr.creator.toString().length.should.equal(24);   // Should be an ObjectId, hence length of 24
+                request.post({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/tldrs'
+                             , json: tldrData3 }, function (error, response, body) {
+
+                  request.get({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+
+                    obj = JSON.parse(body);
+                    obj[0].url.should.equal("http://another.com/movie");
+                    obj[1].url.should.equal("http://another.com/again");
+
+                    request.get({ headers: {"Accept": "application/json"}
+                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                      // Logout in case we have other tests after this one
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('should be able to create a new user and send to the client the authorized fields', function (done) {
+      var userNumber;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          // Only the data we want to send is sent
+          body.email.should.equal("valid@email.com");
+          body.username.should.equal("Louiiis");
+          assert.isUndefined(body._id);
+          assert.isUndefined(body.password);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(userNumber + 1);   // The user really is created
+            done();
           });
         });
       });

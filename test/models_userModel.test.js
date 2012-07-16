@@ -1,5 +1,5 @@
 /**
- * UserModel tests
+ * User tests
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
  */
@@ -12,7 +12,8 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
-  , UserModel = models.UserModel
+  , User = models.User
+  , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
   , url = require('url')
@@ -25,7 +26,7 @@ var should = require('chai').should()
  */
 
 
-describe('UserModel', function () {
+describe('User', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -36,9 +37,12 @@ describe('UserModel', function () {
   });
 
   beforeEach(function (done) {
-    UserModel.remove( function (err) {
+    User.remove( function (err) {
       if (err) {throw done(err);}
-      done();
+      Tldr.remove( function(err) {
+        if (err) {throw done(err);}
+        done();
+      });
     });
   });
 
@@ -46,7 +50,7 @@ describe('UserModel', function () {
   describe('#validators', function () {
 
     it('should not save a user that has no email', function (done) {
-      var user = new UserModel({ username: 'A name'
+      var user = new User({ username: 'A name'
                                , password: 'supersecret!'
                                })
         , valErr;
@@ -62,7 +66,7 @@ describe('UserModel', function () {
     });
 
     it('should not save a user that has no password', function (done) {
-      var user = new UserModel({ email: 'email@email.com'
+      var user = new User({ email: 'email@email.com'
                                , username: 'A name'
                                })
         , valErr;
@@ -78,7 +82,7 @@ describe('UserModel', function () {
     });
 
     it('should not save a user that has no username', function (done) {
-      var user = new UserModel({ email: 'email@email.com'
+      var user = new User({ email: 'email@email.com'
                                , password: 'Axcxxname'
                                })
         , valErr;
@@ -96,12 +100,12 @@ describe('UserModel', function () {
     it('validate email address - email', function (done) {
 
       // Unit test the rule
-      assert.isNull(UserModel.validateEmail('noarobase'));
-      assert.isNull(UserModel.validateEmail('user@'));
-      assert.isNull(UserModel.validateEmail('user@domain'));
-      assert.isNull(UserModel.validateEmail('@domain.tld'));
-      assert.isNotNull(UserModel.validateEmail('user@domain.tld'));
-      assert.isNotNull(UserModel.validateEmail('firstname.name@subdomain.domain.tld'));
+      assert.isNull(User.validateEmail('noarobase'));
+      assert.isNull(User.validateEmail('user@'));
+      assert.isNull(User.validateEmail('user@domain'));
+      assert.isNull(User.validateEmail('@domain.tld'));
+      assert.isNotNull(User.validateEmail('user@domain.tld'));
+      assert.isNotNull(User.validateEmail('firstname.name@subdomain.domain.tld'));
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
@@ -110,7 +114,7 @@ describe('UserModel', function () {
                      }
         , valErr, user;
 
-      user = new UserModel(userData);
+      user = new User(userData);
       user.save(function(err) {
         err.name.should.equal('ValidationError');
         _.keys(err.errors).length.should.equal(1);
@@ -121,14 +125,14 @@ describe('UserModel', function () {
     });
 
     it('should not validate a username that\'s too long', function (done) {
-      var user = new UserModel({ email: 'email@email.com'
+      var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: '0123456789012345678901234567890'
                                })
         , valErr;
 
       //Unit test the rule (there is 31 characters in there)
-      assert.isFalse(UserModel.validateUsername('0123456789012345678901234567890'));
+      assert.isFalse(User.validateUsername('0123456789012345678901234567890'));
 
       // Check integration into Mongoose
       user.save(function(err) {
@@ -142,14 +146,14 @@ describe('UserModel', function () {
     });
 
     it('should not validate a user whose password is too short', function (done) {
-      var user = new UserModel({ email: 'email@email.com'
+      var user = new User({ email: 'email@email.com'
                                , password: 'secre'
                                , username: 'wqr ew'
                                })
         , valErr;
 
       //Unit test the rule
-      assert.isFalse(UserModel.validatePassword('secre'));
+      assert.isFalse(User.validatePassword('secre'));
 
       // Check integration into Mongoose
       user.save(function(err) {
@@ -174,7 +178,7 @@ describe('UserModel', function () {
                      }
         , valErr;
 
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
@@ -189,10 +193,10 @@ describe('UserModel', function () {
                      , email: 'vaLId@email.com'
                      };
 
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
 
-        UserModel.find({email: 'valid@email.com'}, function(err, docs) {
+        User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
           docs[0].username.should.equal("valid@email.com");
 
@@ -207,10 +211,10 @@ describe('UserModel', function () {
                      , email: 'valid@email.com'
                      };
 
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
 
-        UserModel.find({email: 'valid@email.com'}, function(err, docs) {
+        User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
 
           // compareSync used here since these are tests. Do not use in production
@@ -231,12 +235,12 @@ describe('UserModel', function () {
                      , email: 'valid@email.com'
                      };
 
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
         userData.password = "bloupbloup";
         userData.username = "a username";
 
-        UserModel.createAndSaveInstance(userData, function(err) {
+        User.createAndSaveInstance(userData, function(err) {
           err.code.should.equal(11000);   // Duplicate key
           done();
         });
@@ -250,9 +254,9 @@ describe('UserModel', function () {
                      , nonValidField: 'some value'
                      };
       // Try to save data with a non authorized field that will not be saved
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
-        UserModel.find({email: 'another@email.com'}, function(err, docs) {
+        User.find({email: 'another@email.com'}, function(err, docs) {
           docs.should.have.length(1);
           assert.isUndefined(docs[0].nonValidField);
 
@@ -260,10 +264,6 @@ describe('UserModel', function () {
         });
       });
     });
-  });
-
-
-  describe('should not return the password field as part of the session usable data', function () {
 
     it('should save a user whose password is valid', function (done) {
       var userData = { username: 'A name'
@@ -272,10 +272,10 @@ describe('UserModel', function () {
                      }
         , sessionUsableFields;
 
-      UserModel.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
 
-        UserModel.find({email: 'valid@email.com'}, function(err, docs) {
+        User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
           sessionUsableFields = docs[0].getAuthorizedFields();
 
@@ -289,6 +289,177 @@ describe('UserModel', function () {
       });
     });
 
+  });
+
+
+  describe('#getCreatedTldrs', function() {
+
+    it('Should return the array of saved tldrs if there are some', function (done) {
+      var userData = { username: 'A name'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret!'
+                     }
+        , tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , tldrData2 = { url: 'http://another.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog', 'Another bullet'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.getCreatedTldrs(function(tldrs) {
+          _.isArray(tldrs).should.equal(true);
+          tldrs.length.should.equal(0);
+
+          Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
+            Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
+              models.setTldrCreator(tldr1, user, function(err) {
+                models.setTldrCreator(tldr2, user, function(err) {
+                  // user doesn't contain the data in his created tldrs
+                  assert.isUndefined(user.tldrsCreated[0].url);
+
+                  user.getCreatedTldrs(function(tldrs) {
+                    tldrs[0].url.should.equal('http://myfile.com/movie');
+                    tldrs[1].url.should.equal('http://another.com/movie');
+
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });
+
+
+  describe('#updatePassword', function() {
+    it('should call callback with correct error messages if password can\'t be updated', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        user.updatePassword('incorrect', 'goodpassword', function(err) {
+          assert.isDefined(err.currentPassword);
+          assert.isUndefined(err.newPassword);
+
+          user.updatePassword('notTOOshort', 'badpw', function(err) {
+            assert.isUndefined(err.currentPassword);
+            assert.isDefined(err.newPassword);
+
+            user.updatePassword('badpw', 'badpw', function(err) {
+              assert.isDefined(err.currentPassword);
+              assert.isDefined(err.newPassword);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should throw if one or both parameters are missing', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        (function() {user.updatePassword(null, 'aaaaaa');}).should.throw();
+        (function() {user.updatePassword('aaaaaa');}).should.throw();
+        (function() {user.updatePassword();}).should.throw();
+        done();
+      });
+    });
+
+    it('should call callback with correct error messages if password can\'t be updated', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        user.updatePassword('notTOOshort', 'goodpassword', function(err) {
+          assert.isNull(err);
+          bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+          bcrypt.compareSync('notTOOshort', user.password).should.equal(false);
+
+          done();
+        });
+      });
+    });
+
+  });
+
+
+  describe('should update the user updatable fields', function() {
+    it('should update the fields if they pass validation', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , newData = { username: 'Yep another name'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'};
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.username.should.equal("A name");
+        user.email.should.equal("valid@email.com");
+        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
+
+        user.updateValidFields(newData, function(err, user2) {
+          user2.username.should.equal("Yep another name");
+          user2.email.should.equal("valid@email.com");
+          bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
+
+          done();
+        });
+      });
+    });
+
+    it('should NOT update the fields if they DON\'T pass validation', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'};
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.username.should.equal("A name");
+        user.email.should.equal("valid@email.com");
+        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
+
+        user.updateValidFields(newData, function(err, user2) {
+          assert.isNotNull(err);
+
+          done();
+        });
+      });
+    });
 
 
   });
