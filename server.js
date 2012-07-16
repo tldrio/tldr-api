@@ -191,8 +191,13 @@ server.use(express.static(__dirname + '/css'));
  * Routes
  */
 
-// User management
+// User creation
 server.post('/users', requestHandlers.createNewUser);
+
+// Get/set personal information
+server.get('/users/you', requestHandlers.getLoggedUser);
+server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
+server.put('/users/you', requestHandlers.updateUserInfo);
 
 // Handles a user connection and credentials check. Due to shortcomings in passport, not possible to completely put it in request handlers
 server.post('/users/login', function(req, res, next) {
@@ -217,9 +222,8 @@ server.post('/users/login', function(req, res, next) {
   })(req, res, next);
 });
 
-
-server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/logout', requestHandlers.logUserOut);
+
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);

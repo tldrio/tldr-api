@@ -6,12 +6,13 @@
 
 var mongoose = require('mongoose')
   , Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId
   , _ = require('underscore')
-  , UserSchema, UserModel
+  , UserSchema, User
   , bcrypt = require('bcrypt')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
-  , userUpdatableFields = ['email', 'username', 'password']    // updatabe fields by user
-  , authorizedFields = ['email', 'username'];
+  , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username'];         // fields that can be sent to the user
 
 
 /**
@@ -29,11 +30,12 @@ UserSchema = new Schema(
           , validate: [validateUsername, 'username must have between 1 and 30 characters']
           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
+  // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
               , required: true
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
-  // No need to store the salt, bcrypt already stores it in the hash
+  , tldrsCreated: [{type: ObjectId, ref: 'tldr'}]   // See mongoose doc - populate
   }
 , { strict: true });
 
@@ -62,12 +64,12 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
-        instance = new UserModel(validFields);
+        instance = new User(validFields);
         instance.save(callback);
       });
     });
   } else {
-    instance = new UserModel(validFields);
+    instance = new User(validFields);
     instance.save(callback);
   }
 };
@@ -77,7 +79,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
  * Return the part of a user's data that we may need to use in a client
  */
 UserSchema.methods.getAuthorizedFields = function () {
-  // this is the selected UserModel, so this._doc contains the actual data
+  // this is the selected User, so this._doc contains the actual data
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
@@ -87,6 +89,73 @@ UserSchema.methods.getAuthorizedFields = function () {
 
   return res;
 };
+
+
+/*
+ * Update a user password
+ * @param {String} currentPassword supplied by user for checking purposes
+ * @param {String} newPassword chosen by user
+ */
+UserSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
+  var self = this
+    , errors = {};
+
+  if (! currentPassword || ! newPassword) {throw {message: "Missing argument currentPassword or newPassword"};}
+
+  if (! validatePassword(newPassword)) { errors.newPassword = "New password must be at least 6 characters long" }
+
+  bcrypt.compare(currentPassword, self.password, function(err, valid) {
+    if (err) {throw err;}
+
+    if (valid) {
+      if ( ! errors.newPassword) {
+        // currentPassword is correct and newPassword is valid: we can change
+        bcrypt.genSalt(6, function(err, salt) {
+          bcrypt.hash(newPassword, salt, function (err, hash) {
+            self.password = hash;
+            self.save(callback);
+          });
+        });
+        return;  // Stop executing here to avoid calling the callback twice
+      }
+    } else {
+      errors.currentPassword = "You didn't supply the correct current password";
+    }
+
+    callback(errors);
+  });
+}
+
+
+/*
+ * Update a user profile (only updates the user updatable fields, and not the password)
+ */
+UserSchema.methods.updateValidFields = function (data, callback) {
+  var self = this
+    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
+
+  _.each(validUpdateFields, function(field) {
+    self[field] = data[field];
+  });
+
+  self.save(callback);
+}
+
+
+/*
+ * Get all tldrs created by the user
+ *
+ * @param {Function} callback function to be called with the results after having fetched the tldrs
+ */
+UserSchema.methods.getCreatedTldrs = function(callback) {
+  User.findOne({"_id": this._id})
+    .populate('tldrsCreated')
+    .exec(function(err, user) {
+      if (err) {throw err;}
+      callback(user.tldrsCreated);
+    });
+}
+
 
 
 /*
@@ -104,7 +173,7 @@ function validateEmail (value) {
 
 // Username should be non empty and less than 30 characters long
 function validateUsername (value) {
-  return (value && value.length <= 30);
+  return (value && value.length <= 30 && value.length >= 1);
 }
 
 // password should be non empty and longer than 6 characters
@@ -117,9 +186,8 @@ UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
 // Define user model
-UserModel = mongoose.model('user', UserSchema);
+User = mongoose.model('user', UserSchema);
 
-// Export UserModel
-module.exports = UserModel;
-
+// Export User
+module.exports = User;
 

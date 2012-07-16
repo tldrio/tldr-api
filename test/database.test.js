@@ -11,7 +11,7 @@ var should = require('chai').should()
   , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')
-	, TldrModel = models.TldrModel
+	, Tldr = models.Tldr
   , server = require('../server')
 	, db = server.db;
 
@@ -38,12 +38,12 @@ describe('Database', function () {
   beforeEach(function (done) {
 
     // dummy models
-    var tldr1 = new TldrModel({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr2 = new TldrModel({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
-      , tldr3 = new TldrModel({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
+    var tldr1 = new Tldr({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr2 = new Tldr({url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()})
+      , tldr3 = new Tldr({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
     // clear database and repopulate
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) {return done(err);}
       tldr1.save(function (err) {
         if (err) {return done(err); }
@@ -61,7 +61,7 @@ describe('Database', function () {
 
   afterEach(function (done) {
 
-    TldrModel.remove({}, function (err) {
+    Tldr.remove({}, function (err) {
       if (err) {return done(err);}
       done();
     });
@@ -71,7 +71,7 @@ describe('Database', function () {
   // Check that all 3 records are in the db
   it('should return full collection', function (done) {
 
-    TldrModel.find(null, function (err, docs) {
+    Tldr.find(null, function (err, docs) {
       if (err) { return done(err); }
       docs.should.have.length(3);
       done();
@@ -84,7 +84,7 @@ describe('Database', function () {
 
     var url = 'http://needforair.com/nutcrackers';
 
-    TldrModel.find( {url: url}, function (err, docs) {
+    Tldr.find( {url: url}, function (err, docs) {
       if (err) { return done(err); }
       var tldr = docs[0];
       tldr.title.should.equal('nutcrackers');
