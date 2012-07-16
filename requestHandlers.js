@@ -59,7 +59,7 @@ function searchTldrs (req, res, next) {
       }
       
       // Success
-      internalContentNegociationForTldr(req, res, docs[0]);
+      internalContentNegotiationForTldr(req, res, docs[0]);
 
     });
 
@@ -132,12 +132,12 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
     }
 
-    internalContentNegociationForTldr(req, res, tldr);
+    internalContentNegotiationForTldr(req, res, tldr);
 
   });
 }
 
-function internalContentNegociationForTldr (req, res, tldr) {
+function internalContentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
