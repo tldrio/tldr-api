@@ -7,8 +7,8 @@ var UserModel = require('./models').UserModel
  * See Passport doc to understand the signature
  * Note: this is NOT a Connect middleware, hence the different signature
  */
-function authenticateUser(req, login, password, done) {
-  UserModel.find({ login: login }, function(err, docs) {
+function authenticateUser(req, email, password, done) {
+  UserModel.find({ email: email }, function(err, docs) {
     if (err) { return done(err); }
 
     if (docs.length === 0) {

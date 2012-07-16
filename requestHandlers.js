@@ -252,12 +252,17 @@ function createNewUser(req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
+      } else if (err.code === 11000) {   // Can't create two users with the same email
+        return next({ statusCode: 409, body: { message: 'Login already exists' } } );
       } else {
-        return next({ statusCode: 500, body: { message: 'Internal Error while creatning new user account ' } } );
+        return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
     }
 
-    return res.json(201, { message: 'User created successfully' });
+    // this.emitted.complete[0] is the UserModel that was just saved
+    // I found this while debuggging this function. I think access to the instance
+    // that was just saved really is a missing feature in Mongoose
+    return res.json(201, this.emitted.complete[0].getAuthorizedFields());
   });
 }
 
@@ -267,7 +272,7 @@ function createNewUser(req, res, next) {
  */
 function getLoggedUser(req, res, nex) {
   if (req.user) {
-    res.json(200, req.user );
+    res.json(200, req.user.getAuthorizedFields());
   } else {
     return res.json(401, { message: 'You are not logged in' });
   }
@@ -278,28 +283,15 @@ function getLoggedUser(req, res, nex) {
  * As name implies, logs user out
  */
 function logUserOut(req, res, next) {
-  var name = req.user ? req.user.name : null;
+  var username = req.user ? req.user.username : null;
 
   req.logOut();
 
-  if (name) {
-    return res.json(200, { message: "User " + name + " logged out successfully" });
+  if (username) {
+    return res.json(200, { message: "User " + username + " logged out successfully" });
   } else {
     return res.json(400, { message: "No user was logged in!" });
   }
-}
-
-
-/*
- * Right after a successful login, postLogIn is called
- */
-function postLogIn(req, res, next) {
-  if (req.user) {
-    res.json(200, req.user);
-  } else {
-    res.json(500, { message: "Something went wrong in the authentication" });   // Should never be called as this request handler is called after a successful auth.
-  }
-
 }
 
 
@@ -360,4 +352,3 @@ module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.createNewUser = createNewUser;
-module.exports.postLogIn =postLogIn;
