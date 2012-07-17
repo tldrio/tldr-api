@@ -8,7 +8,6 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
-  , bunyan = require('../lib/logger').bunyan 
   , server = require('../server')
   , models = require('../models')
   , db = server.db
