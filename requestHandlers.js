@@ -59,11 +59,8 @@ function searchTldrs (req, res, next) {
       }
       
       // Success
-      if (req.accepts('text/html')) {
-        return res.render('page', docs[0]); // Send the html tldr page
-      } else { // We return json by default 
-        return res.json(200, docs[0]);    
-      }
+      internalContentNegotiationForTldr(req, res, docs[0]);
+
     });
 
     return;
@@ -135,13 +132,17 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
     }
 
+    internalContentNegotiationForTldr(req, res, tldr);
+
+  });
+}
+
+function internalContentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
-
-  });
 }
 
 

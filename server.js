@@ -49,13 +49,11 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
   server.set('serverDomain', 'http://localhost:8787');
-
-  // Cookie options
-  server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"'
+                  , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
   server.use(express.logger());
 });
@@ -66,12 +64,8 @@ server.configure('test', function () {
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
   server.set('serverDomain', 'http://localhost:8787');
-
-  // Cookie options
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 9);
+  server.set('redisDb', 9);// Redis DB #. Other redis default options are fine for now
 });
 
 server.configure('staging', function () {
@@ -80,13 +74,11 @@ server.configure('staging', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
   server.set('serverDomain', 'api.tldr.io/staging');
-
-  // Cookie options
-  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'http://tldr.io/staging/js/page-min.js'
+                  , cssPath: 'http://tldr.io/staging/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
   server.use(express.logger());
 });
@@ -97,13 +89,11 @@ server.configure('production', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
   server.set('serverDomain', 'api.tldr.io');
-
-  // Cookie options
-  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'http://tldr.io/js/page-min.js'
+                  , cssPath: 'http://tldr.io/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
   server.use(express.logger());
 });
