@@ -9,9 +9,9 @@
 , "description": "crowdsourced summaries"
 , "keywords": ["summary", "tldr"]
 , "homepage": "http://tldr.io"
-, "engines": { "node": "0.8.2", "npm": "1.1.41" }
+, "engines": { "node": "0.8.2", "npm": "1.1.42" }
 , "dependencies": { "bunyan": "0.7.x"
-                  , "mongoose": "3.0.x"
+                  , "mongoose": "2.7.x"
                   , "async": "0.1.x"
                   , "express": "3.0.x"
                   , "jade": ">= 0.0.1"
