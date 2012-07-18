@@ -57,7 +57,7 @@ function searchTldrs (req, res, next) {
       if (docs.length === 0) {
         return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
       }
-      
+
       // Success
       internalContentNegotiationForTldr(req, res, docs[0]);
 

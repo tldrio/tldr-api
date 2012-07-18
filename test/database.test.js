@@ -8,7 +8,6 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , sinon = require('sinon')
-  , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../models')
 	, Tldr = models.Tldr
