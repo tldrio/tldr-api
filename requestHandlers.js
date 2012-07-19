@@ -265,7 +265,12 @@ function createNewUser(req, res, next) {
       }
     }
 
-    return res.json(201, user.getAuthorizedFields());
+    // Log user in right away after his creation
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+
+      return res.json(201, user.getAuthorizedFields());
+      });
   });
 }
 

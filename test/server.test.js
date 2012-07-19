@@ -791,8 +791,8 @@ describe('Webserver', function () {
       });
     });
 
-    it('should be able to create a new user and send to the client the authorized fields', function (done) {
-      var userNumber;
+    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
+      var userNumber, obj;
 
       User.find({}, function(err, users) {
         userNumber = users.length;
@@ -808,7 +808,15 @@ describe('Webserver', function () {
 
           User.find({}, function (err, users) {
             users.length.should.equal(userNumber + 1);   // The user really is created
-            done();
+
+            request.get({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+              obj = JSON.parse(body);
+              obj.email.should.equal("valid@email.com");
+
+              done();
+            });
           });
         });
       });
