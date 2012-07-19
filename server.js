@@ -141,16 +141,6 @@ server.use(function(req, res, next) {
   }
 });
 
-// Assign a unique ID to the request for logging purposes
-server.use(function(req, res, next) {
-  req.requestId = customUtils.uid(8);
-  console.log(req.method);
-  console.log(req.url);
-  console.log(req.socket && (req.socket.remoteAddress || (req.socket.socket && req.socket.socket.remoteAddress)));
-  console.log(req.headers['user-agent']);
-  return next();
-});
-
 // Parse cookie data and use redis to store session data
 server.use(express.cookieParser());
 server.use(express.session({ secret: 'this is da secret, dawg'    // Used for cookie encryption
@@ -176,6 +166,26 @@ server.use(express.session({ secret: 'this is da secret, dawg'    // Used for co
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
 server.use(passport.session());
+
+// Assign a unique ID to the request for logging purposes
+// And logs the fact that the request was received
+server.use(function(req, res, next) {
+  var end;
+
+  // Create request id and logs beginning of request with it
+  req.requestId = customUtils.uid(8);
+  bunyan.customLog('info', req, "New request");
+
+  // Augment the response end function to log how the request was treated before ending it
+  // Technique taken from Connect logger middleware
+  end = res.end;
+  res.end = function(chunk, encoding) {
+    bunyan.customLog('info', req, {message: "Request end", responseStatus: res.statusCode});
+    end(chunk, encoding);
+  };
+
+  return next();
+});
 
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors
