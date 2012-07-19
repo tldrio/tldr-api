@@ -56,6 +56,7 @@ server.configure('development', function () {
                   , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
+  bunyan.setToLog = true;
 });
 
 server.configure('test', function () {
@@ -80,6 +81,7 @@ server.configure('staging', function () {
                   , cssPath: 'http://tldr.io/staging/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
+  bunyan.setToLog = true;
 });
 
 server.configure('production', function () {
@@ -94,6 +96,7 @@ server.configure('production', function () {
                   , cssPath: 'http://tldr.io/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
+  bunyan.setToLog = true;
 });
 
 
