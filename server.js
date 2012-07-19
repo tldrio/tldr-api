@@ -17,7 +17,8 @@ var express = require('express')
   , LocalStrategy = require('passport-local').Strategy
   , dgram = require('dgram')
   , udpSocket = dgram.createSocket('udp4')
-  , authorization = require('./authorization');
+  , authorization = require('./authorization')
+  , customUtils = require('./lib/customUtils');
 
 
 server = express(); // Instantiate server
@@ -57,7 +58,6 @@ server.configure('development', function () {
                   , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
-  server.use(express.logger());
 });
 
 server.configure('test', function () {
@@ -82,7 +82,6 @@ server.configure('staging', function () {
                   , cssPath: 'http://tldr.io/staging/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
 });
 
 server.configure('production', function () {
@@ -97,7 +96,6 @@ server.configure('production', function () {
                   , cssPath: 'http://tldr.io/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
 });
 
 
@@ -133,6 +131,12 @@ passport.deserializeUser(authorization.deserializeUser);
  */
 // Parse body
 server.use(express.bodyParser());
+
+// Assign a unique ID to the request for logging purposes
+server.use(function(req, res, next) {
+  req.requestId = customUtils.uid(8);
+  return next();
+});
 
 // Middleware to send a dummy empty favicon so as to be able to debug easily
 server.use(function(req, res, next) {
