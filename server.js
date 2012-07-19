@@ -132,12 +132,6 @@ passport.deserializeUser(authorization.deserializeUser);
 // Parse body
 server.use(express.bodyParser());
 
-// Assign a unique ID to the request for logging purposes
-server.use(function(req, res, next) {
-  req.requestId = customUtils.uid(8);
-  return next();
-});
-
 // Middleware to send a dummy empty favicon so as to be able to debug easily
 server.use(function(req, res, next) {
   if (req.url === '/favicon.ico') {
@@ -145,6 +139,16 @@ server.use(function(req, res, next) {
   } else {
     return next();
   }
+});
+
+// Assign a unique ID to the request for logging purposes
+server.use(function(req, res, next) {
+  req.requestId = customUtils.uid(8);
+  console.log(req.method);
+  console.log(req.url);
+  console.log(req.socket && (req.socket.remoteAddress || (req.socket.socket && req.socket.socket.remoteAddress)));
+  console.log(req.headers['user-agent']);
+  return next();
 });
 
 // Parse cookie data and use redis to store session data
