@@ -242,7 +242,7 @@ describe('User', function () {
 
           // Try to save a user with the same email
           userData.password = "bloupbloup";
-          userData.username = "a username";
+          //userData.username = "a username";
           User.createAndSaveInstance(userData, function(err) {
             err.code.should.equal(11000);   // Duplicate key
 
@@ -458,22 +458,60 @@ describe('User', function () {
                      , email: 'valid@email.com'
                      }
         , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
-                    , password: 'anothergood'
-                    , email: 'another@valid.com'};
+          , password: 'anothergood'
+          , email: 'another@valid.com'};
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
         user.username.should.equal("A name");
         user.email.should.equal("valid@email.com");
-        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
-        user.updateValidFields(newData, function(err, user2) {
-          assert.isNotNull(err);
+        assert.isNull(err);
+
+        user.updateValidFields(newData, function(err, user3) {
+          assert.isNotNull(err.username);
 
           done();
         });
       });
     });
+
+    it('should update the fields only if it the unique constraint is respected', function (done) {
+      var userData = { username: 'A name'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , anotherData = { username: 'ANOTHER'
+                        , password: 'nottooshort'
+                        , email: 'again@email.com'
+                        }
+        , newData = { username: 'A name'
+                    , password: 'anothergood'
+                    , email: 'valid@email.com'};
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        User.createAndSaveInstance(anotherData, function(err, user2) {
+          assert.isNull(err);
+
+          // If we update the unique fields to the same value they had, Mongoose understand it is the same
+          // document and raises no error
+          user.updateValidFields(newData, function(err, user4) {
+            assert.isNull(err);
+
+            // The 'unique' constraint prevents from updating if it creates a conflict
+            newData.username = "ANOTHER";
+            user.updateValidFields(newData, function(err, user5) {
+              err.code.should.equal(11001);   // Duplicate key while updating
+              done();
+            });
+          });
+        });
+      });
+    });
+
+
 
 
   });
