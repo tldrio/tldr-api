@@ -15,8 +15,6 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , dgram = require('dgram')
-  , udpSocket = dgram.createSocket('udp4')
   , authorization = require('./authorization')
   , customUtils = require('./lib/customUtils');
 
@@ -251,19 +249,6 @@ server.post('/tldrs', requestHandlers.postNewTldr);
 //PUT update tldr
 server.put('/tldrs/:id', requestHandlers.putUpdateTldrWithId);
 
-
-
-// ==== Tests with statsd
-server.get('/stat', function(req, res, next) {
-  var message = new Buffer("gorets:1|c");
-
-  udpSocket.send(message, 0, message.length, 8125, 'localhost', function (err, bytes) {
-    console.log("=== Stat called and UDP packet sent");
-    console.log("err: " + err);
-    console.log("bytes: " + bytes);
-    return res.json(200, {message: "OK"});
-  });
-});
 
 
 

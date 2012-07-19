@@ -101,6 +101,7 @@ function searchTldrs (req, res, next) {
        if (err) {
          return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
        }
+       bunyan.incrementMetric('latestCalled', req);
        res.json(200, docs);
      });
   }
