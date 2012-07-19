@@ -228,20 +228,35 @@ describe('User', function () {
       });
     });
 
-    it('should not save a user with the same email twice', function (done) {
+    it('should not save a user with the same email or the same username twice', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
-                     };
+                     }
+        , usersNumber;
 
       User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
-        userData.password = "bloupbloup";
-        userData.username = "a username";
+        User.find({}, function (err, docs) {
+          usersNumber = docs.length;
 
-        User.createAndSaveInstance(userData, function(err) {
-          err.code.should.equal(11000);   // Duplicate key
-          done();
+          // Try to save a user with the same email
+          userData.password = "bloupbloup";
+          userData.username = "a username";
+          User.createAndSaveInstance(userData, function(err) {
+            err.code.should.equal(11000);   // Duplicate key
+
+            // Try to save a user with the same username
+            userData.username = "A name";
+            User.createAndSaveInstance(userData, function(err) {
+              err.code.should.equal(11000);   // Duplicate key
+
+              User.find({}, function (err, docs) {
+                docs.length.should.equal(usersNumber);
+                done();
+              });
+            });
+          });
         });
       });
     });
