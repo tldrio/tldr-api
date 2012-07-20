@@ -171,6 +171,20 @@ describe('Models', function () {
       done();
     });
 
+    it('Should return "unknown" if the error is not formatted as expected', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key erro_r index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 11000
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 };
+
+      models.getDuplicateField(error1).should.equal("unknown");
+
+      done();
+    });
+
+
   });
 
 

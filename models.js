@@ -68,7 +68,7 @@ function getDuplicateField(error) {
   // If we can't find the field name. Note that since indexOf returns the first matching substring, end is the index of the first matching
   // "_". There shouldn't be any before the fieldname and there may be some after but the first one has to be the delimiter
   if (beg === -1 || end === -1 || end <= beg || beg + 2 >= error.err.length) {
-    return {unknownField: "Duplicate"};
+    return "unknown";
   }
 
   // Return the field name

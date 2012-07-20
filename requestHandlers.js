@@ -260,7 +260,7 @@ function createNewUser(req, res, next) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else if (err.code === 11000) {   // Can't create two users with the same email
-        return next({ statusCode: 409, body: { message: 'Login already exists' } } );
+        return next({ statusCode: 409, body: { duplicateField: models.getDuplicateField(err) } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
