@@ -822,6 +822,34 @@ describe('Webserver', function () {
       });
     });
 
+    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
+      var userNumber, obj;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          response.statusCode.should.equal(201);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users'
+                       , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+            response.statusCode.should.equal(409);
+            body.duplicateField.should.equal("email");
+
+            User.find({}, function (err, users) {
+              users.length.should.equal(userNumber + 1);   // Only one user is created
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
 
 
   });
