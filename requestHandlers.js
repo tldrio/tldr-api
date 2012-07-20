@@ -279,6 +279,8 @@ function createNewUser(req, res, next) {
 /*
  * Updates the logged user's info. First tries to update password if the request contains
  * password data, then updates the rest of the fields, and send back all errors or a success to the user
+ * If there is a pbolem in updateValidFields because of duplication, send back only this error.
+ * That's not the best behaviour, we should probably break this function down
  */
 function updateUserInfo(req, res, next) {
   // To be called after a password update, if any
@@ -290,6 +292,8 @@ function updateUserInfo(req, res, next) {
         if (err.errors) {
           // Send back a 403 with all validation errors
           return next({ statusCode: 403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+        } else if (err.code === 11001) {   // Duplicate key preventing update
+          return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
         } else {
           return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
         }

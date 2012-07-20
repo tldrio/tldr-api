@@ -608,7 +608,7 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to email as User One with a wrong password', function (done) {
+    it('Should not be able to login as User One with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
@@ -620,7 +620,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to email with a wrong username', function (done) {
+    it('Should not be able to login with a wrong username', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
