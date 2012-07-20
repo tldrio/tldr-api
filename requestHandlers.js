@@ -159,6 +159,8 @@ function internalUpdateCb (err, docs, req, res, next) {
   if (err) {
     if (err.message === "Invalid ObjectId") {
       return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+    } else if (err.code === 11001) {   // We were called by a PUT with a duplication problem
+      return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
     } else {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
     }
