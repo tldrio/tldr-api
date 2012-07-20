@@ -15,7 +15,8 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , authorization = require('./authorization');
+  , authorization = require('./authorization')
+  , customUtils = require('./lib/customUtils');
 
 
 server = express(); // Instantiate server
@@ -55,7 +56,7 @@ server.configure('development', function () {
                   , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 server.configure('test', function () {
@@ -80,7 +81,7 @@ server.configure('staging', function () {
                   , cssPath: 'http://tldr.io/staging/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 server.configure('production', function () {
@@ -95,7 +96,7 @@ server.configure('production', function () {
                   , cssPath: 'http://tldr.io/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 
@@ -166,6 +167,26 @@ server.use(express.session({ secret: 'this is da secret, dawg'    // Used for co
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
 server.use(passport.session());
+
+// Assign a unique ID to the request for logging purposes
+// And logs the fact that the request was received
+server.use(function(req, res, next) {
+  var end;
+
+  // Create request id and logs beginning of request with it
+  req.requestId = customUtils.uid(8);
+  bunyan.customLog('info', req, "New request");
+
+  // Augment the response end function to log how the request was treated before ending it
+  // Technique taken from Connect logger middleware
+  end = res.end;
+  res.end = function(chunk, encoding) {
+    bunyan.customLog('info', req, {message: "Request end", responseStatus: res.statusCode});
+    end(chunk, encoding);
+  };
+
+  return next();
+});
 
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors
