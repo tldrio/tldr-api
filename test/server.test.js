@@ -514,6 +514,7 @@ describe('Webserver', function () {
     it('should be able to update the logged user\'s info', function (done) {
       var obj;
 
+      
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -561,6 +562,11 @@ describe('Webserver', function () {
     it('should NOT be able to update the logged user\'s info if there are validation errors, and send back the errors', function (done) {
       var obj;
 
+      User.createAndSaveInstance({ username: "blip"
+                                 , email: "another@nfa.com"
+                                 , password: "supersecret" }, function(err) {
+      assert.isNull(err);
+
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -580,6 +586,13 @@ describe('Webserver', function () {
           assert.isDefined(body.currentPassword);
           assert.isDefined(body.newPassword);
 
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { username: "blip" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(409);
+            body.duplicateField.should.equal("username");
+
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
 
@@ -597,8 +610,10 @@ describe('Webserver', function () {
                   done();
                 });
               });
+              });
            });
          });
+      });
       });
     });
 
