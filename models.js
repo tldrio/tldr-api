@@ -49,17 +49,16 @@ function setTldrCreator(theTldr, creator, callback) {
 
 
 /**
- * Returns the given Mongo duplicate error in the same format as our validation errors, and finds the fields which caused the issue
- * Unfortunately, Mongo is such that if two fields are conflicting, we will only see the conflict for one of them
+ * Given a mongo 11000 or 11001 error, returns the duplicate field.
+ * Unfortunately, Mongo is such that if two fields are conflicting, we will only see the conflict for one of them (which we return)
  * This is fucking ugly but there doesn't seem to be another solution
  *
  * @param {Object} error the raw error returned by Mongo and passed by Mongoose
- * @return {Object} the nice validation error
+ * @return {Object} the duplicate field name
  */
-function getDuplicateErrorNiceFormat(error) {
+function getDuplicateField(error) {
   var beg = error.err.indexOf('.$')
-    , end = error.err.indexOf('_')
-    , result = {};
+    , end = error.err.indexOf('_');
 
   // Check that this is indeed a duplicate error
   if (error.code !== 11000 && error.code !== 11001 ) {
@@ -73,8 +72,7 @@ function getDuplicateErrorNiceFormat(error) {
   }
 
   // Return the field name
-  result[error.err.substring(beg + 2, end)] = "Duplicate";
-  return result;
+  return error.err.substring(beg + 2, end);
 }
 
 
@@ -85,5 +83,5 @@ module.exports.User = User;
 
 // Export general purpose functions for models
 module.exports.setTldrCreator = setTldrCreator;
-module.exports.getDuplicateErrorNiceFormat = getDuplicateErrorNiceFormat;
+module.exports.getDuplicateField = getDuplicateField;
 module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;

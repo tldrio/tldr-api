@@ -152,8 +152,8 @@ describe('Models', function () {
                    , connectionId: 66
                    , ok: 1 };
 
-      assert.isDefined(models.getDuplicateErrorNiceFormat(error1).username);
-      assert.isDefined(models.getDuplicateErrorNiceFormat(error2).email);
+      models.getDuplicateField(error1).should.equal("username");
+      models.getDuplicateField(error2).should.equal("email");
 
       done();
     });
@@ -166,7 +166,7 @@ describe('Models', function () {
                    , connectionId: 64
                    , ok: 1 };
 
-      (function() { models.getDuplicateErrorNiceFormat(error1); }).should.throw();
+      (function() { models.getDuplicateField(error1); }).should.throw();
 
       done();
     });

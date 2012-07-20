@@ -289,7 +289,7 @@ function updateUserInfo(req, res, next) {
       if (err) {
         if (err.errors) {
           // Send back a 403 with all validation errors
-          return next({ statusCode:403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+          return next({ statusCode: 403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
         } else {
           return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
         }
