@@ -476,7 +476,7 @@ describe('User', function () {
       });
     });
 
-    it('should update the fields only if it the unique constraint is respected', function (done) {
+    it('should update the fields only if the unique constraint is respected', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -485,9 +485,9 @@ describe('User', function () {
                         , password: 'nottooshort'
                         , email: 'again@email.com'
                         }
-        , newData = { username: 'A name'
+        , newData = { username: 'A name'   // Same as userData
                     , password: 'anothergood'
-                    , email: 'valid@email.com'};
+                    , email: 'valid@email.com'};   // Same as userData
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);

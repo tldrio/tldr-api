@@ -254,6 +254,7 @@ function putUpdateTldrWithId (req, res, next) {
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
+    debugger;
   User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
       if (err.errors) {

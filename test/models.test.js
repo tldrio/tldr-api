@@ -134,7 +134,42 @@ describe('Models', function () {
       })
     });
 
+  });
 
+
+  describe('getDuplicateErrorNiceFormat', function() {
+    it('should correctly extract the duplicated field if the error is formatted as expected', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key error index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 11001
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 }
+        , error2 = { name: 'MongoError'   // An actual duplicate error on create
+                   , err: 'E11000 duplicate key error index: dev-db.users.$email_1  dup key: { : "a@b.com" }'
+                   , code: 11000
+                   , n: 0
+                   , connectionId: 66
+                   , ok: 1 };
+
+      assert.isDefined(models.getDuplicateErrorNiceFormat(error1).username);
+      assert.isDefined(models.getDuplicateErrorNiceFormat(error2).email);
+
+      done();
+    });
+
+    it('should throw an error if the function is called on a non duplicate error', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key error index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 10999
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 };
+
+      (function() { models.getDuplicateErrorNiceFormat(error1); }).should.throw();
+
+      done();
+    });
 
   });
 

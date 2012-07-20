@@ -9,7 +9,7 @@ var Tldr = require('./models/tldrModel')
    _ = require('underscore');
 
 
-/*
+/**
  * Given the "errors" object of an exception thrown by Mongoose's validation system,
  * return an object with all non validated fields and an explanatory message for each
  *
@@ -27,7 +27,7 @@ function getAllValidationErrorsWithExplanations(errorsObject) {
 }
 
 
-/*
+/**
  * Given a tldr and a user, set the user as the tldr's creator and add the tldr to the list of the user's created tldrs
  *
  * @param {Object} theTldr tldr that will be assigned a creator
@@ -48,11 +48,42 @@ function setTldrCreator(theTldr, creator, callback) {
 }
 
 
+/**
+ * Returns the given Mongo duplicate error in the same format as our validation errors, and finds the fields which caused the issue
+ * Unfortunately, Mongo is such that if two fields are conflicting, we will only see the conflict for one of them
+ * This is fucking ugly but there doesn't seem to be another solution
+ *
+ * @param {Object} error the raw error returned by Mongo and passed by Mongoose
+ * @return {Object} the nice validation error
+ */
+function getDuplicateErrorNiceFormat(error) {
+  var beg = error.err.indexOf('.$')
+    , end = error.err.indexOf('_')
+    , result = {};
+
+  // Check that this is indeed a duplicate error
+  if (error.code !== 11000 && error.code !== 11001 ) {
+    throw {message: 'models.getDuplicateErrorNiceFormat was called on an error that\'s not a duplicate error'};
+  }
+
+  // If we can't find the field name. Note that since indexOf returns the first matching substring, end is the index of the first matching
+  // "_". There shouldn't be any before the fieldname and there may be some after but the first one has to be the delimiter
+  if (beg === -1 || end === -1 || end <= beg || beg + 2 >= error.err.length) {
+    return {unknownField: "Duplicate"};
+  }
+
+  // Return the field name
+  result[error.err.substring(beg + 2, end)] = "Duplicate";
+  return result;
+}
+
+
 
 // Export models
 module.exports.Tldr = Tldr;
 module.exports.User = User;
 
 // Export general purpose functions for models
-module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;
 module.exports.setTldrCreator = setTldrCreator;
+module.exports.getDuplicateErrorNiceFormat = getDuplicateErrorNiceFormat;
+module.exports.getAllValidationErrorsWithExplanations = getAllValidationErrorsWithExplanations;
