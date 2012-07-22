@@ -121,10 +121,10 @@ function getTldrById (req, res, next) {
 
   Tldr.findById( id, function (err, tldr) {
     if (err) {
-      // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
+      // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
       // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
-      if (err.message === "Invalid ObjectId") {
+      if (err.message === 'Invalid ObjectId') {
         return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
@@ -156,7 +156,7 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    if (err.message === "Invalid ObjectId") {
+    if (err.message === 'Invalid ObjectId') {
       return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
     } else {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
@@ -347,9 +347,9 @@ function logUserOut(req, res, next) {
   req.logOut();
 
   if (username) {
-    return res.json(200, { message: "User " + username + " logged out successfully" });
+    return res.json(200, { message: 'User ' + username + ' logged out successfully' });
   } else {
-    return res.json(400, { message: "No user was logged in!" });
+    return res.json(400, { message: 'No user was logged in!' });
   }
 }
 
@@ -377,10 +377,11 @@ function handleErrors (err, req, res, next) {
  */
 
 function handleCORSLocal (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8888");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8888');
+  res.header('Access-Control-Allow-Origin', 'http://localhost:8889');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
+  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
                                                             // Works with xhr's withCredentials option set to true
   next();
 }
@@ -391,10 +392,10 @@ function handleCORSLocal (req, res, next) {
  */
 
 function handleCORSProd (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://tldr.io");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
+  res.header('Access-Control-Allow-Origin', 'http://tldr.io');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
+  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
+  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
                                                             // Works with xhr's withCredentials option set to true
   next();
 }
