@@ -15,7 +15,8 @@ var express = require('express')
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , authorization = require('./authorization');
+  , authorization = require('./authorization')
+  , customUtils = require('./lib/customUtils');
 
 
 server = express(); // Instantiate server
@@ -49,15 +50,13 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
   server.set('serverDomain', 'http://localhost:8787');
-
-  // Cookie options
-  server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"'
+                  , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSLocal);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 server.configure('test', function () {
@@ -66,12 +65,8 @@ server.configure('test', function () {
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
   server.set('serverDomain', 'http://localhost:8787');
-
-  // Cookie options
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 9);
+  server.set('redisDb', 9);// Redis DB #. Other redis default options are fine for now
 });
 
 server.configure('staging', function () {
@@ -80,15 +75,13 @@ server.configure('staging', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
   server.set('serverDomain', 'api.tldr.io/staging');
-
-  // Cookie options
-  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'http://tldr.io/staging/js/page-min.js'
+                  , cssPath: 'http://tldr.io/staging/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 server.configure('production', function () {
@@ -97,15 +90,13 @@ server.configure('production', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
   server.set('serverDomain', 'api.tldr.io');
-
-  // Cookie options
-  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);
-
-  // Redis DB #. Other redis default options are fine for now
-  server.set('redisDb', 0);
-
+  server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
+  server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'http://tldr.io/js/page-min.js'
+                  , cssPath: 'http://tldr.io/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
   server.use(requestHandlers.handleCORSProd);
-  server.use(express.logger());
+  bunyan.setToLog = true;
 });
 
 
@@ -176,6 +167,26 @@ server.use(express.session({ secret: 'this is da secret, dawg'    // Used for co
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
 server.use(passport.session());
+
+// Assign a unique ID to the request for logging purposes
+// And logs the fact that the request was received
+server.use(function(req, res, next) {
+  var end;
+
+  // Create request id and logs beginning of request with it
+  req.requestId = customUtils.uid(8);
+  bunyan.customLog('info', req, "New request");
+
+  // Augment the response end function to log how the request was treated before ending it
+  // Technique taken from Connect logger middleware
+  end = res.end;
+  res.end = function(chunk, encoding) {
+    bunyan.customLog('info', req, {message: "Request end", responseStatus: res.statusCode});
+    end(chunk, encoding);
+  };
+
+  return next();
+});
 
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors

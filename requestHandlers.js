@@ -57,13 +57,10 @@ function searchTldrs (req, res, next) {
       if (docs.length === 0) {
         return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
       }
-      
+
       // Success
-      if (req.accepts('text/html')) {
-        return res.render('page', docs[0]); // Send the html tldr page
-      } else { // We return json by default 
-        return res.json(200, docs[0]);    
-      }
+      internalContentNegotiationForTldr(req, res, docs[0]);
+
     });
 
     return;
@@ -104,6 +101,8 @@ function searchTldrs (req, res, next) {
        if (err) {
          return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
        }
+       // Example of how the function is used
+       bunyan.incrementMetric('latestCalled', req);
        res.json(200, docs);
      });
   }
@@ -135,13 +134,17 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
     }
 
+    internalContentNegotiationForTldr(req, res, tldr);
+
+  });
+}
+
+function internalContentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
       return res.render('page', tldr); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
-
-  });
 }
 
 
@@ -264,7 +267,12 @@ function createNewUser(req, res, next) {
       }
     }
 
-    return res.json(201, user.getAuthorizedFields());
+    // Log user in right away after his creation
+    req.logIn(user, function(err) {
+      if (err) { return next(err); }
+
+      return res.json(201, user.getAuthorizedFields());
+      });
   });
 }
 

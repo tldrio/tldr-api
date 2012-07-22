@@ -9,7 +9,6 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
   , sinon = require('sinon')
-  , bunyan = require('../lib/logger').bunyan // Audit logger 
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
   , User = models.User
