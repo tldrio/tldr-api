@@ -18,6 +18,16 @@ test-jenkins:
 	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap
 	@echo "Tests finished, setting environment back to development"
 
+test-cov:
+	@echo "TLDR - Launching test coverage"
+	@rm -rf ../tldr-api-cov
+	@jscoverage . ../tldr-api-cov --exclude=test --exclude=node_modules --exclude=Makefile && \
+	cp -R node_modules test ../tldr-api-cov && \
+	cd ../tldr-api-cov && \
+		 NODE_ENV="test" ./node_modules/.bin/mocha --reporter html-cov > test-coverage.html &&\
+		open test-coverage.html &&\
+	cd ../tldr-api;
+	@echo "Tests finished, setting environment back to development"
 
 .PHONY: test
 
