@@ -210,8 +210,9 @@ describe('User', function () {
                      , email: 'valid@email.com'
                      };
 
-      User.createAndSaveInstance(userData, function(err) {
+      User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
+        user.emailStatus.should.equal('waitingForVerification');
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
