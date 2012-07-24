@@ -25,10 +25,6 @@ UserSchema = new Schema(
            , required: true
            , validate: [validateEmail, 'email must be a properly formatted email address']
            }
-  , username: { type: String
-          , required: true
-          , validate: [validateUsername, 'username must have between 1 and 30 characters']
-          }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
@@ -36,6 +32,10 @@ UserSchema = new Schema(
               , validate: [validatePassword, 'password must be at least 6 characters long']
               }
   , tldrsCreated: [{type: ObjectId, ref: 'tldr'}]   // See mongoose doc - populate
+  , username: { type: String
+          , required: true
+          , validate: [validateUsername, 'username must have between 1 and 30 characters']
+          }
   }
 , { strict: true });
 
