@@ -315,7 +315,8 @@ function updateUserInfo(req, res, next) {
       updateEverythingExceptPassword();   // No errors (yet)
     }
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -327,7 +328,8 @@ function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -341,7 +343,8 @@ function getLoggedUserCreatedTldrs(req, res, next) {
       return res.json(200, tldrs);
     });
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 

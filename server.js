@@ -210,8 +210,10 @@ server.set('views', __dirname + '/views');
 server.use(express.static(__dirname + '/css'));
 
 
+
 /**
- * Routes
+ * Routes /users/
+ *
  */
 
 // User creation
@@ -232,6 +234,11 @@ server.post('/users/login',
 
 server.get('/users/logout', requestHandlers.logUserOut);
 
+
+/**
+ * Routes /tldrs/
+ *
+ */
 
 // Search tldrs
 server.get('/tldrs/search', requestHandlers.searchTldrs);
