@@ -204,7 +204,7 @@ describe('User', function () {
       });
     });
 
-    it('should save a user whose password is valid', function (done) {
+    it('should save a user whose password is valid and set default validationStatus', function (done) {
       var userData = { username: 'A name'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -212,7 +212,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        user.emailStatus.should.equal('waitingForVerification');
+        user.validationStatus.should.equal('waitingForVerification');
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);

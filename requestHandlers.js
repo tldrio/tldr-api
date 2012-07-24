@@ -266,7 +266,6 @@ function createNewUser(req, res, next) {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
     }
-
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
@@ -365,6 +364,40 @@ function logUserOut(req, res, next) {
 }
 
 
+function validateUserEmail (req, res, next) {
+  
+  var validationCode = req.query.code;
+  if (!validationCode) {
+    return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
+  }
+
+  User.findOne({ validationCode: validationCode },  function (err, doc) {
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by validationCode' } } );
+    }
+
+    if (!doc) {
+      return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+    }
+
+    var previousStatus = doc.validationStatus;
+    if (previousStatus === 'waitingForVerification') {
+      doc.validationStatus = 'emailVerified';
+      doc.save(function (err) {
+        if (err) {
+          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new validationStatus' } } );
+        }
+        return res.json(200, { message: 'Email is now verified' });
+      });
+    } else if (previousStatus === 'emailVerified') {
+      return res.json(200, { message: 'Email was already verified' });
+    }
+
+  });
+
+}
+
+
 /**
  * Handle All errors coming from next(err) calls
  *
@@ -410,16 +443,17 @@ function handleCORSProd (req, res, next) {
 }
 
 // Module interface
+module.exports.createNewUser = createNewUser;
 module.exports.getLatestTldrs = getLatestTldrs;
+module.exports.getLoggedUser = getLoggedUser;
+module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.getTldrById = getTldrById;
-module.exports.searchTldrs = searchTldrs;
-module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
-module.exports.postNewTldr = postNewTldr;
 module.exports.handleErrors = handleErrors;
 module.exports.handleCORSLocal = handleCORSLocal;
 module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
-module.exports.getLoggedUser = getLoggedUser;
-module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
-module.exports.createNewUser = createNewUser;
+module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
+module.exports.postNewTldr = postNewTldr;
+module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
+module.exports.validateUserEmail = validateUserEmail;

@@ -13,7 +13,7 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username'];         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'validationStatus'];         // fields that can be sent to the user
 
 
 /**
@@ -26,9 +26,6 @@ UserSchema = new Schema(
            , required: true
            , validate: [validateEmail, 'email must be a properly formatted email address']
            }
-  , emailStatus: { type: String
-                 , default: 'waitingForVerification'
-                 }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
@@ -40,7 +37,11 @@ UserSchema = new Schema(
               , required: true
               , validate: [validateUsername, 'username must have between 1 and 30 characters']
               }
-  , validationCode: { type: String}
+  , validationStatus: { type: String
+                      , default: 'waitingForVerification'
+                      }
+  , validationCode: { type: String
+                    }
   }
 , { strict: true });
 
@@ -69,6 +70,8 @@ function createAndSaveInstance(userInput, callback) {
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
+        // Set validationCode - length 13 is very important
+        validFields.validationCode = customUtils.uid(13);
         instance = new User(validFields);
         instance.save(callback);
       });
@@ -198,7 +201,7 @@ function preSave (next) {
 }
 
 function preInit (next) {
-  this.validationCode = customUtils.uid(13);
+  //this.validationCode = customUtils.uid(13);
   next();
 }
 
@@ -219,7 +222,7 @@ UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
 //UserSchema.pre('save', preSave);
-UserSchema.pre('init', preInit);
+//UserSchema.pre('init', preInit);
 
 // Define user model
 User = mongoose.model('user', UserSchema);
