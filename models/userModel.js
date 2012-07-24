@@ -10,6 +10,7 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , UserSchema, User
   , bcrypt = require('bcrypt')
+  , customUtils = require('../lib/customUtils')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username'];         // fields that can be sent to the user
@@ -39,6 +40,7 @@ UserSchema = new Schema(
               , required: true
               , validate: [validateUsername, 'username must have between 1 and 30 characters']
               }
+  , validationCode: { type: String}
   }
 , { strict: true });
 
@@ -196,7 +198,7 @@ function preSave (next) {
 }
 
 function preInit (next) {
-  console.log('Pre init middleware');
+  this.validationCode = customUtils.uid(13);
   next();
 }
 
@@ -216,7 +218,7 @@ UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
-UserSchema.pre('save', preSave);
+//UserSchema.pre('save', preSave);
 UserSchema.pre('init', preInit);
 
 // Define user model
