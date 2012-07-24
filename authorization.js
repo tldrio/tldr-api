@@ -12,8 +12,8 @@ function authenticateUser(req, email, password, done) {
     if (err) { return done(err); }
 
     if (docs.length === 0) {
-      req.authFailedDueToUnknownUser = true;    // Enables us to tell the client what didn't work
-      return done(null, false);
+      // www-authenticate header will be set to UnknowUser on top of 401 response
+      return done(null, false, "UnknownUser");
     }
 
     // User was found in database, check if password is correct
@@ -23,8 +23,8 @@ function authenticateUser(req, email, password, done) {
       if (valid) {
         return done(null, docs[0]);
       } else {
-        req.authFailedDueToInvalidPassword = true;    // Enables us to tell the client what didn't work
-        return done(null, false);
+      // www-authenticate header will be set to InvalidPassword on top of 401 response
+        return done(null, false, "InvalidPassword");
       }
     });
   });

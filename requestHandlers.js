@@ -367,7 +367,6 @@ function logUserOut(req, res, next) {
  *
  */
 function handleErrors (err, req, res, next) {
-  debugger;
   if (err.statusCode && err.body) {
     return res.json(err.statusCode, err.body);
   } else if (err.message) {

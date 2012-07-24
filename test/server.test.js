@@ -613,9 +613,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(false);
-        body.InvalidPassword.should.equal(true);
-        body.UnknownUser.should.equal(false);
+        response.headers['www-authenticate'].should.equal('InvalidPassword');
         done();
       });
     });
@@ -625,9 +623,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(false);
-        body.InvalidPassword.should.equal(false);
-        body.UnknownUser.should.equal(true);
+        response.headers['www-authenticate'].should.equal('UnknownUser');
         done();
       });
     });
@@ -636,26 +632,19 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
+        //Passport doesnt set www-authenticate when missing credentials
+        // but just send error 401
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(true);
-        body.InvalidPassword.should.equal(false);
-        body.UnknownUser.should.equal(false);
 
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/login'
                      , json: { password: "anothe" } }, function (error, response, body) {
           response.statusCode.should.equal(401);
-          body.MissingCredentials.should.equal(true);
-          body.InvalidPassword.should.equal(false);
-          body.UnknownUser.should.equal(false);
 
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/users/login'
                        , json: {} }, function (error, response, body) {
             response.statusCode.should.equal(401);
-            body.MissingCredentials.should.equal(true);
-            body.InvalidPassword.should.equal(false);
-            body.UnknownUser.should.equal(false);
 
             done();
           });

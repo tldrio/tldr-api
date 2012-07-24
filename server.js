@@ -164,7 +164,6 @@ passport.use(new LocalStrategy({
 ));
 
 passport.serializeUser(authorization.serializeUser);
-
 passport.deserializeUser(authorization.deserializeUser);
 
 
@@ -185,7 +184,7 @@ server.use(function(req, res, next) {
 
   // Create request id and logs beginning of request with it
   req.requestId = customUtils.uid(8);
-  bunyan.customLog('info', req, "New request");
+  bunyan.customLog('info', req, req.body, "New request");
 
   // Augment the response end function to log how the request was treated before ending it
   // Technique taken from Connect logger middleware
@@ -223,28 +222,13 @@ server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
 server.put('/users/you', requestHandlers.updateUserInfo);
 
-// Handles a user connection and credentials check. Due to shortcomings in passport, not possible to completely put it in request handlers
-server.post('/users/login', function(req, res, next) {
-  passport.authenticate('local', function(err, user, info) {
-    var errorToSend;
-
-    if (err) { return next(err); }
-
-    if (!user) {
-      errorToSend = { UnknownUser: req.authFailedDueToUnknownUser ? true : false
-                    , InvalidPassword: req.authFailedDueToInvalidPassword ? true : false
-                    , MissingCredentials: (req.authFailedDueToInvalidPassword || req.authFailedDueToUnknownUser) ? false : true
-                    };
-      return res.json(401, errorToSend);
-    }
-
-    req.logIn(user, function(err) {
-      if (err) { return next(err); }
-
-      return res.json(200, user.getAuthorizedFields());
-    });
-  })(req, res, next);
-});
+// Handles a user connection and credentials check. 
+server.post('/users/login',
+  passport.authenticate('local'),
+  function (req, res, next) {
+    return res.json(200, req.user.getAuthorizedFields());
+  }
+);
 
 server.get('/users/logout', requestHandlers.logUserOut);
 
