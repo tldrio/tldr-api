@@ -185,6 +185,26 @@ function validatePassword (value) {
 }
 
 
+/**
+ * Middlewares
+ *
+ */
+
+function preSave (next) {
+  console.log('Pre save middleware');
+  next();
+}
+
+function preInit (next) {
+  console.log('Pre init middleware');
+  next();
+}
+
+
+/**
+ * Bind methods, statics, middleware
+ *
+ */
 
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
@@ -195,6 +215,9 @@ UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
+
+UserSchema.pre('save', preSave);
+UserSchema.pre('init', preInit);
 
 // Define user model
 User = mongoose.model('user', UserSchema);
