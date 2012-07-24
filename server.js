@@ -109,27 +109,10 @@ server.db = new dbObject( server.set('dbHost')
 
 
 /*
- * Authentication strategy
- * and declaration of serialization/deserialization methods
- */
-passport.use(new LocalStrategy({
-      usernameField: 'email'   // Passport way of naming can't be changed ...
-    , passwordField: 'password'
-    , passReqToCallback: true   // Why the fuck wasn't this life-saving option NOT documented ?
-    }
-  , authorization.authenticateUser
-));
-
-passport.serializeUser(authorization.serializeUser);
-
-passport.deserializeUser(authorization.deserializeUser);
-
-
-
-/*
  * Main server configuration
  * All handlers to be defined here
  */
+
 // Parse body
 server.use(express.bodyParser());
 
@@ -164,9 +147,36 @@ server.use(express.session({ secret: 'this is da secret, dawg'    // Used for co
                            }));
 
 
+
+/*
+ * Authentication strategy
+ * and declaration of serialization/deserialization methods
+ * PassPort Stuffs
+ */
+
+
+passport.use(new LocalStrategy({
+      usernameField: 'email'   // Passport way of naming can't be changed ...
+    , passwordField: 'password'
+    , passReqToCallback: true   // Why the fuck wasn't this life-saving option NOT documented ?
+    }
+  , authorization.authenticateUser
+));
+
+passport.serializeUser(authorization.serializeUser);
+
+passport.deserializeUser(authorization.deserializeUser);
+
+
 // Use Passport for authentication and sessions
 server.use(passport.initialize());
 server.use(passport.session());
+
+
+/**
+ * Middleware for assigning an id to each request and add logging
+ *
+ */
 
 // Assign a unique ID to the request for logging purposes
 // And logs the fact that the request was received
@@ -187,6 +197,9 @@ server.use(function(req, res, next) {
 
   return next();
 });
+
+
+// Some other configs needed for express server
 
 server.use(server.router); // Map routes see docs why we do it here
 server.use(requestHandlers.handleErrors); // Use middleware to handle errors
