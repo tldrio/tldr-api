@@ -51,7 +51,7 @@ UserSchema = new Schema(
  * Part of the password's validation has to occur here as Mongoose's setters are called before the
  * validator, so using the standard way any password would be considered valid
  */
-UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
+function createAndSaveInstance(userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance;
 
@@ -75,13 +75,13 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
     instance = new User(validFields);
     instance.save(callback);
   }
-};
+}
 
 
 /*
  * Return the part of a user's data that we may need to use in a client
  */
-UserSchema.methods.getAuthorizedFields = function () {
+function getAuthorizedFields() {
   // this is the selected User, so this._doc contains the actual data
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
@@ -91,7 +91,7 @@ UserSchema.methods.getAuthorizedFields = function () {
   });
 
   return res;
-};
+}
 
 
 /*
@@ -99,13 +99,13 @@ UserSchema.methods.getAuthorizedFields = function () {
  * @param {String} currentPassword supplied by user for checking purposes
  * @param {String} newPassword chosen by user
  */
-UserSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
+function updatePassword (currentPassword, newPassword, callback) {
   var self = this
     , errors = {};
 
-  if (! currentPassword || ! newPassword) {throw {message: "Missing argument currentPassword or newPassword"};}
+  if (! currentPassword || ! newPassword) { throw { message: "Missing argument currentPassword or newPassword" }; }
 
-  if (! validatePassword(newPassword)) { errors.newPassword = "New password must be at least 6 characters long" }
+  if (! validatePassword(newPassword)) { errors.newPassword = "New password must be at least 6 characters long"; }
 
   bcrypt.compare(currentPassword, self.password, function(err, valid) {
     if (err) {throw err;}
@@ -133,7 +133,7 @@ UserSchema.methods.updatePassword = function (currentPassword, newPassword, call
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
  */
-UserSchema.methods.updateValidFields = function (data, callback) {
+function updateValidFields (data, callback) {
   var self = this
     , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
 
@@ -150,7 +150,7 @@ UserSchema.methods.updateValidFields = function (data, callback) {
  *
  * @param {Function} callback function to be called with the results after having fetched the tldrs
  */
-UserSchema.methods.getCreatedTldrs = function(callback) {
+function getCreatedTldrs (callback) {
   User.findOne({"_id": this._id})
     .populate('tldrsCreated')
     .exec(function(err, user) {
@@ -184,6 +184,14 @@ function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
 
+
+
+UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
+UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
+UserSchema.methods.updateValidFields = updateValidFields;
+UserSchema.methods.updatePassword = updatePassword;
+
+UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
