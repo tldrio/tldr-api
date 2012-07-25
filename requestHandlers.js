@@ -159,7 +159,7 @@ function internalUpdateCb (err, docs, req, res, next) {
   if (err) {
     if (err.message === "Invalid ObjectId") {
       return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
-    } else if (err.code === 11001) {   // We were called by a PUT with a duplication problem
+    } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
       return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
     } else {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
@@ -205,7 +205,7 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
 
         var url = normalizeUrl(req.body.url);
 
@@ -261,7 +261,7 @@ function createNewUser(req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) {   // Can't create two users with the same email
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
         return next({ statusCode: 409, body: { duplicateField: models.getDuplicateField(err) } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
@@ -294,7 +294,7 @@ function updateUserInfo(req, res, next) {
         if (err.errors) {
           // Send back a 403 with all validation errors
           return next({ statusCode: 403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
-        } else if (err.code === 11001) {   // Duplicate key preventing update
+        } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
           return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
         } else {
           return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
