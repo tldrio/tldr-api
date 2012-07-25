@@ -861,10 +861,41 @@ describe('Webserver', function () {
     });
     
 
+    it('should send a new validation link if requested', function (done) {
+      var obj;
 
+      request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/users/you/newValidationCode' }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        response.headers['www-authenticate'].should.equal('UnknownUser');
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
+          response.statusCode.should.equal(200);
+          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+          body.validationStatus.should.equal('waitingForVerification');
 
-  });
+            User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+
+              // Retrieve validation Code by directly queryin the db
+              var previousValidationCode = doc.validationCode;
+
+              request.get({ headers: {"Accept": "application/json"}
+                          , uri: rootUrl + '/users/you/newValidationCode' }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+                  var newValidationCode = doc.validationCode;
+                  assert(newValidationCode !== previousValidationCode);
+                  done();
+                });
+              });
+            });
+          });
+        });
+      });
+    });
 
 });
 

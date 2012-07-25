@@ -363,10 +363,26 @@ function logUserOut(req, res, next) {
   }
 }
 
+function requestNewValidationCode (req, res, next) {
+  // User requested a new validation link
+  if (req.user) {
+    req.user.requestNewValidationCode( function (err) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
+      }
+      // TODO Send Mail Here
+      res.json(200, { message: 'new validation link sent to ' + req.user.email});
+    });
+  } else {
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
+  }
+}
 
 function validateUserEmail (req, res, next) {
   
   var validationCode = req.query.validationCode;
+
   if (!validationCode) {
     return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
   }
@@ -454,6 +470,7 @@ module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
+module.exports.requestNewValidationCode = requestNewValidationCode;
 module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
 module.exports.validateUserEmail = validateUserEmail;

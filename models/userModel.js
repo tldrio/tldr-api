@@ -83,6 +83,11 @@ function createAndSaveInstance(userInput, callback) {
 }
 
 
+function requestNewValidationCode (callback) {
+  var newValidationCode = customUtils.uid(13);
+  User.update({ email: this.email }, { $set: { validationCode: newValidationCode } }, callback);
+}
+
 /*
  * Return the part of a user's data that we may need to use in a client
  */
@@ -97,6 +102,22 @@ function getAuthorizedFields() {
 
   return res;
 }
+
+
+/*
+ * Get all tldrs created by the user
+ *
+ * @param {Function} callback function to be called with the results after having fetched the tldrs
+ */
+function getCreatedTldrs (callback) {
+  User.findOne({"_id": this._id})
+    .populate('tldrsCreated')
+    .exec(function(err, user) {
+      if (err) {throw err;}
+      callback(user.tldrsCreated);
+    });
+}
+
 
 
 /*
@@ -151,22 +172,6 @@ function updateValidFields (data, callback) {
 
 
 /*
- * Get all tldrs created by the user
- *
- * @param {Function} callback function to be called with the results after having fetched the tldrs
- */
-function getCreatedTldrs (callback) {
-  User.findOne({"_id": this._id})
-    .populate('tldrsCreated')
-    .exec(function(err, user) {
-      if (err) {throw err;}
-      callback(user.tldrsCreated);
-    });
-}
-
-
-
-/*
  * Validators
  */
 // Email regex comes from node-validator and can be used by clients
@@ -213,6 +218,7 @@ function preInit (next) {
 
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
+UserSchema.methods.requestNewValidationCode = requestNewValidationCode;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 

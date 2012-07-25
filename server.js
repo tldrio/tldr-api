@@ -221,6 +221,7 @@ server.post('/users', requestHandlers.createNewUser);
 
 // Get/set personal information
 server.get('/users/you', requestHandlers.getLoggedUser);
+server.get('/users/you/newValidationCode', requestHandlers.requestNewValidationCode);
 server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
 server.get('/users/validate', requestHandlers.validateUserEmail);
 
