@@ -195,21 +195,6 @@ function validatePassword (value) {
 }
 
 
-/**
- * Middlewares
- *
- */
-
-function preSave (next) {
-  console.log('Pre save middleware');
-  next();
-}
-
-function preInit (next) {
-  //this.validationCode = customUtils.uid(13);
-  next();
-}
-
 
 /**
  * Bind methods, statics, middleware
@@ -227,8 +212,6 @@ UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
-//UserSchema.pre('save', preSave);
-//UserSchema.pre('init', preInit);
 
 // Define user model
 User = mongoose.model('user', UserSchema);
