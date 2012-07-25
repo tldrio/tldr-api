@@ -831,7 +831,7 @@ describe('Webserver', function () {
            // Should return 400 if code is the provided as parameter
            response.statusCode.should.equal(400);
            request.get({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/validate?code=badvalidationcode' }, function (error, response, body) {
+                       , uri: rootUrl + '/users/validate?validationCode=badvalidationcode' }, function (error, response, body) {
 
              response.statusCode.should.equal(404);
              User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
@@ -841,7 +841,7 @@ describe('Webserver', function () {
                doc.validationStatus.should.equal('waitingForVerification');
 
                request.get({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/validate?code=' + encodeURIComponent(validationCode) }, function (error, response, body) {
+                           , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
 
                  response.statusCode.should.equal(200);
                  User.findOne({ email: "user1@nfa.com" }, function (err, doc) {

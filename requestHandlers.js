@@ -366,7 +366,7 @@ function logUserOut(req, res, next) {
 
 function validateUserEmail (req, res, next) {
   
-  var validationCode = req.query.code;
+  var validationCode = req.query.validationCode;
   if (!validationCode) {
     return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
   }
