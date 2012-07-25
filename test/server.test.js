@@ -816,6 +816,7 @@ describe('Webserver', function () {
     });
 
     it('should validate user email with the corresponding routes and valid validation code', function (done) {
+      var obj;
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -844,6 +845,8 @@ describe('Webserver', function () {
                            , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
 
                  response.statusCode.should.equal(200);
+                 obj = JSON.parse(body);
+                 obj.email.should.equal('user1@nfa.com');
                  User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
                    doc.validationStatus.should.equal('emailVerified');
                    done();

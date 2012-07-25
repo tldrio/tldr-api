@@ -387,10 +387,10 @@ function validateUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new validationStatus' } } );
         }
-        return res.json(200, { message: 'Email is now verified' });
+        return res.json(200, { message: 'Email is now verified', email: doc.email });
       });
     } else if (previousStatus === 'emailVerified') {
-      return res.json(200, { message: 'Email was already verified' });
+      return res.json(200, { message: 'Email was already verified', email: doc.email });
     }
 
   });
