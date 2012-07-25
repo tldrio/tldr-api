@@ -159,8 +159,6 @@ function internalUpdateCb (err, docs, req, res, next) {
   if (err) {
     if (err.message === "Invalid ObjectId") {
       return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
-    } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
-      return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
     } else {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
     }
@@ -207,8 +205,8 @@ function postNewTldr (req, res, next) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
 
+        // POST on existing resource so we act as if it's an update
         var url = normalizeUrl(req.body.url);
-
         Tldr.find({url: url}, function (err, docs) {
           internalUpdateCb(err, docs, req, res, next);
         });
