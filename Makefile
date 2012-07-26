@@ -18,6 +18,7 @@ test-jenkins:
 	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap
 	@echo "Tests finished, setting environment back to development"
 
+#Need to install jscoverage see details here https://github.com/visionmedia/node-jscoverage
 test-cov:
 	@echo "TLDR - Launching test coverage"
 	@rm -rf ../tldr-api-cov
