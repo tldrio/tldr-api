@@ -205,10 +205,10 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
 
+        // POST on existing resource so we act as if it's an update
         var url = normalizeUrl(req.body.url);
-
         Tldr.find({url: url}, function (err, docs) {
           internalUpdateCb(err, docs, req, res, next);
         });
@@ -256,12 +256,13 @@ function putUpdateTldrWithId (req, res, next) {
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
+    debugger;
   User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) {   // Can't create two users with the same email
-        return next({ statusCode: 409, body: { message: 'Login already exists' } } );
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+        return next({ statusCode: 409, body: { duplicateField: models.getDuplicateField(err) } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
@@ -280,6 +281,8 @@ function createNewUser(req, res, next) {
 /*
  * Updates the logged user's info. First tries to update password if the request contains
  * password data, then updates the rest of the fields, and send back all errors or a success to the user
+ * If there is a pbolem in updateValidFields because of duplication, send back only this error.
+ * That's not the best behaviour, we should probably break this function down
  */
 function updateUserInfo(req, res, next) {
   // To be called after a password update, if any
@@ -290,7 +293,9 @@ function updateUserInfo(req, res, next) {
       if (err) {
         if (err.errors) {
           // Send back a 403 with all validation errors
-          return next({ statusCode:403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+          return next({ statusCode: 403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+        } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+          return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
         } else {
           return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
         }

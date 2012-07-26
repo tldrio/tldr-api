@@ -514,6 +514,7 @@ describe('Webserver', function () {
     it('should be able to update the logged user\'s info', function (done) {
       var obj;
 
+      
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -561,6 +562,11 @@ describe('Webserver', function () {
     it('should NOT be able to update the logged user\'s info if there are validation errors, and send back the errors', function (done) {
       var obj;
 
+      User.createAndSaveInstance({ username: "blip"
+                                 , email: "another@nfa.com"
+                                 , password: "supersecret" }, function(err) {
+      assert.isNull(err);
+
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -580,6 +586,13 @@ describe('Webserver', function () {
           assert.isDefined(body.currentPassword);
           assert.isDefined(body.newPassword);
 
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { username: "blip" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(409);
+            body.duplicateField.should.equal("username");
+
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
 
@@ -597,8 +610,10 @@ describe('Webserver', function () {
                   done();
                 });
               });
+              });
            });
          });
+      });
       });
     });
 
@@ -608,7 +623,7 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to email as User One with a wrong password', function (done) {
+    it('Should not be able to login as User One with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
@@ -620,7 +635,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should not be able to email with a wrong username', function (done) {
+    it('Should not be able to login with a wrong username', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
@@ -814,6 +829,34 @@ describe('Webserver', function () {
 
               obj = JSON.parse(body);
               obj.email.should.equal("valid@email.com");
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
+      var userNumber, obj;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          response.statusCode.should.equal(201);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users'
+                       , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+            response.statusCode.should.equal(409);
+            body.duplicateField.should.equal("email");
+
+            User.find({}, function (err, users) {
+              users.length.should.equal(userNumber + 1);   // Only one user is created
 
               done();
             });
