@@ -831,35 +831,71 @@ describe('Webserver', function () {
 
            // Should return 400 if code is the provided as parameter
            response.statusCode.should.equal(400);
-           request.get({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/validate?validationCode=badvalidationcode' }, function (error, response, body) {
+           User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
 
-             response.statusCode.should.equal(404);
-             User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+             // Retrieve validation Code by directly queryin the db
+             var validationCode = doc.validationCode;
+             doc.validationStatus.should.equal('waitingForVerification');
 
-               // Retrieve validation Code by directly queryin the db
-               var validationCode = doc.validationCode;
-               doc.validationStatus.should.equal('waitingForVerification');
+             request.get({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
 
-               request.get({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
-
-                 response.statusCode.should.equal(200);
-                 obj = JSON.parse(body);
-                 obj.email.should.equal('user1@nfa.com');
-                 User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
-                   doc.validationStatus.should.equal('emailVerified');
-                   done();
-                 });
+               response.statusCode.should.equal(200);
+               obj = JSON.parse(body);
+               obj.email.should.equal('user1@nfa.com');
+               User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+                 doc.validationStatus.should.equal('emailVerified');
+                 done();
                });
              });
            });
          });
-
        });
-
     });
     
+
+    it('should not validate user email with bad validation Code or expired one', function (done) {
+      var obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+         response.statusCode.should.equal(200);
+         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+         body.validationStatus.should.equal('waitingForVerification');
+
+           request.get({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/validate?validationCode=badvalidationcode' }, function (error, response, body) {
+
+             response.statusCode.should.equal(404);
+             obj = JSON.parse(body);
+             obj.message.should.equal('A Bad Validation Code was provided.');
+             User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+
+               // retrieve validation code by directly queryin the db
+               var validationCode = doc.validationCode;
+               doc.validationStatus.should.equal('waitingForVerification');
+               // Back to the future
+               doc.validationCodeExpDate = new Date();
+               doc.validationCodeExpDate.setTime( doc.validationCodeExpDate.getTime() - 1000*60*60  );
+               doc.save(function (err) {
+
+                 request.get({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
+
+                   response.statusCode.should.equal(404);
+                   obj = JSON.parse(body);
+                   obj.message.should.equal('Your Validation Code has expired.');
+                   done();
+                 });
+
+               });
+
+             });
+           });
+         });
+    });
 
     it('should send a new validation link if requested', function (done) {
       var obj;

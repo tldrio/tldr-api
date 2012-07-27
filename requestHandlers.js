@@ -393,18 +393,23 @@ function validateUserEmail (req, res, next) {
     }
 
     if (!doc) {
-      return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+      return next({ statusCode: 404, body: { message: 'A Bad Validation Code was provided.' } } );
     }
 
-    var previousStatus = doc.validationStatus;
-    if (previousStatus === 'waitingForVerification') {
-      doc.validationStatus = 'emailVerified';
-      doc.save(function (err) {
-        if (err) {
-          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new validationStatus' } } );
-        }
-        return res.json(200, { message: 'Email is now verified', email: doc.email });
-      });
+    var previousStatus = doc.validationStatus
+      , now = new Date();
+    if (previousStatus === 'waitingForVerification' ) {
+      if ( (doc.validationCodeExpDate - now) >= 0 ) {
+        doc.validationStatus = 'emailVerified';
+        doc.save(function (err) {
+          if (err) {
+            return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new validationStatus' } } );
+          }
+          return res.json(200, { message: 'Email is now verified', email: doc.email });
+        });
+      } else {
+        return next({ statusCode: 404, body: { message: 'Your Validation Code has expired.' } } );
+      }
     } else if (previousStatus === 'emailVerified') {
       return res.json(200, { message: 'Email was already verified', email: doc.email });
     }
