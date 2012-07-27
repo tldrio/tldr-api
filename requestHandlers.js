@@ -7,6 +7,8 @@
 
 var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
+  , mailer = require('./lib/mailer')
+  , server = require('./serverConfig')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
   , Tldr = models.Tldr
@@ -366,12 +368,41 @@ function logUserOut(req, res, next) {
 function requestNewValidationCode (req, res, next) {
   // User requested a new validation link
   if (req.user) {
-    req.user.requestNewValidationCode( function (err) {
+    req.user.requestNewValidationCode( function (err, doc) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
       }
-      // TODO Send Mail Here
-      res.json(200, { message: 'new validation link sent to ' + req.user.email});
+
+      if (server.set('env') === 'test') {
+          return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
+        
+        var link = server.set('websiteUrl') + '/account?validationCode=' +encodeURIComponent(doc.validationCode)
+          , mailOptions = { from: "tl;dr <meta@tldr.io>" // sender address
+                          , to: req.user.email // list of receivers
+                          , subject: "Confirm your email address" // Subject line
+                          , html: "Hi " + doc.username + ", <br/>" // plaintext body
+                                + "You were so dumb that you lost our previous email so we generously generated a new validation link for you. <br/>"
+                                + "Click on this <a href='"+ link +"' > " + link+ "></a> to validate your email address. <br/>"
+                                + "See you on <a href='tldr.io'> tldr.io</a>"
+                          , text: "Hi " + doc.username + "," // plaintext body
+                                + "You were so dumb that you lost our previous email so we generously generated a new validation link for you. "
+                                + "Copy this link: "+ link+" to in your browser's address bar to validate your email address. "
+                                + "See you on tldr.io"
+                          }
+
+         //send mail with defined transport object
+        mailer.sendMail(mailOptions, function(error, response){
+          if(error){
+            console.log(error);
+            return next({ statusCode: 500, body: { message: 'Internal error while sending new validation code' } });
+          }else{
+            console.log("Message sent: " + response.message);
+            return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+          }
+        });
+      }
+
     });
   } else {
     res.setHeader('WWW-Authenticate', 'UnknownUser');
@@ -419,61 +450,15 @@ function validateUserEmail (req, res, next) {
 }
 
 
-/**
- * Handle All errors coming from next(err) calls
- *
- */
-function handleErrors (err, req, res, next) {
-  if (err.statusCode && err.body) {
-    return res.json(err.statusCode, err.body);
-  } else if (err.message) {
-    bunyan.error(err);
-    return res.send(500, err.message);
-  } else {
-    bunyan.error(err);
-    return res.send(500, 'Unknown error');
-  }
-}
-
-/**
- * Add specific headers for CORS for dev env
- *
- */
-
-function handleCORSLocal (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:8888');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
-  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
-}
-
-/**
- * Add specific headers for CORS for prod env
- *
- */
-
-function handleCORSProd (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'http://tldr.io');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
-  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
-}
-
 // Module interface
 module.exports.createNewUser = createNewUser;
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.getTldrById = getTldrById;
-module.exports.handleErrors = handleErrors;
-module.exports.handleCORSLocal = handleCORSLocal;
-module.exports.handleCORSProd = handleCORSProd;
+//module.exports.handleErrors = handleErrors;
+//module.exports.handleCORSLocal = handleCORSLocal;
+//module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
