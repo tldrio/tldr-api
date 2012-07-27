@@ -21,7 +21,10 @@ var mongoose = require('mongoose')
  *
  */
 UserSchema = new Schema(
-  { email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+  { createdAt: { type: Date
+               , default: Date.now
+               }
+  , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
            , validate: [validateEmail, 'email must be a properly formatted email address']
@@ -42,6 +45,9 @@ UserSchema = new Schema(
                       }
   , validationCode: { type: String
                     }
+  , validationCodeExpDate: { type: Date
+                           , default: Date.now
+                           }
   }
 , { strict: true });
 
@@ -72,6 +78,9 @@ function createAndSaveInstance(userInput, callback) {
         }
         // Set validationCode - length 13 is very important
         validFields.validationCode = customUtils.uid(13);
+        validFields.validationCodeExpDate = new Date();
+        // Validation Code is valid for 7 days
+        validFields.validationCodeExpDate.setTime( validationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
         instance = new User(validFields);
         instance.save(callback);
       });
