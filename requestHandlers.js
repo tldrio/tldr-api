@@ -386,7 +386,6 @@ function handleErrors (err, req, res, next) {
 
 function handleCORSLocal (req, res, next) {
   res.header('Access-Control-Allow-Origin', 'http://localhost:8888');
-  res.header('Access-Control-Allow-Origin', 'http://localhost:8889');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
   res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
