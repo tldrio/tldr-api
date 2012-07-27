@@ -80,7 +80,7 @@ function createAndSaveInstance(userInput, callback) {
         validFields.validationCode = customUtils.uid(13);
         validFields.validationCodeExpDate = new Date();
         // Validation Code is valid for 7 days
-        validFields.validationCodeExpDate.setTime( validationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
+        validFields.validationCodeExpDate.setTime( validFields.validationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
         instance = new User(validFields);
         instance.save(callback);
       });
@@ -93,8 +93,12 @@ function createAndSaveInstance(userInput, callback) {
 
 
 function requestNewValidationCode (callback) {
-  var newValidationCode = customUtils.uid(13);
-  User.update({ email: this.email }, { $set: { validationCode: newValidationCode } }, callback);
+  var newValidationCode = customUtils.uid(13)
+    , newValidationCodeExpDate = new Date();
+  // Validation Code is valid for 7 days
+  newValidationCodeExpDate.setTime( newValidationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
+
+  User.update({ email: this.email }, { $set: { validationCode: newValidationCode, validationCodeExpDate: newValidationCodeExpDate } }, callback);
 }
 
 /*
