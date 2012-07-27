@@ -98,7 +98,12 @@ function requestNewValidationCode (callback) {
   // Validation Code is valid for 7 days
   newValidationCodeExpDate.setTime( newValidationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
 
-  User.update({ email: this.email }, { $set: { validationCode: newValidationCode, validationCodeExpDate: newValidationCodeExpDate } }, callback);
+  User.findOne({ email: this.email }, function (err, doc) {
+
+    doc.validationCode = newValidationCode;
+    doc.validationCodeExpDate = newValidationCodeExpDate;
+    doc.save(callback);
+  });
 }
 
 /*
