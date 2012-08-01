@@ -8,13 +8,13 @@ var server = require('./serverConfig.js')
  */
 
 server.get('/confirm', requestHandlers.confirmUserEmail);
+server.get('/resendConfirmToken', requestHandlers.resendConfirmToken);
 
 // User creation
 server.post('/users', requestHandlers.createNewUser);
 
 // Get/set personal information
 server.get('/users/you', requestHandlers.getLoggedUser);
-server.get('/users/you/newValidationCode', requestHandlers.requestNewValidationCode);
 server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
 
 server.put('/users/you', requestHandlers.updateUserInfo);

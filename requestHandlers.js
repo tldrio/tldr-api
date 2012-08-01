@@ -275,7 +275,7 @@ function createNewUser(req, res, next) {
         return res.json(201, user.getAuthorizedFields());
       } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
 
-        mailer.sendConfirmationEmail(user, server.set('apiUrl'), function(error, response){
+        mailer.sendConfirmationToken(user, server.set('apiUrl'), function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email');
           }
@@ -374,10 +374,10 @@ function logUserOut(req, res, next) {
   }
 }
 
-function createConfirmToken (req, res, next) {
+function resendConfirmToken (req, res, next) {
   // User requested a new validation link
   if (req.user) {
-    req.user.createConfirmToken( function (err, doc) {
+    req.user.createConfirmToken( function (err, user) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
       }
@@ -386,32 +386,14 @@ function createConfirmToken (req, res, next) {
           return res.json(200, { message: 'new validation link sent to ' + req.user.email});
       } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
         
-        var link = server.set('websiteUrl') + '/account?confirmationToken=' +encodeURIComponent(doc.confirmationToken)
-          , mailOptions = { from: "tl;dr <meta@tldr.io>" // sender address
-                          , to: req.user.email // list of receivers
-                          , subject: "Confirm your email address" // Subject line
-                          , html: "Hi " + doc.username + ", <br/>" // plaintext body
-                                + "You were so dumb that you lost our previous email so we generously generated a new validation link for you. <br/>"
-                                + "Click on this <a href='"+ link +"' > " + link+ "></a> to validate your email address. <br/>"
-                                + "See you on <a href='tldr.io'> tldr.io</a>"
-                          , text: "Hi " + doc.username + "," // plaintext body
-                                + "You were so dumb that you lost our previous email so we generously generated a new validation link for you. "
-                                + "Copy this link: "+ link+" to in your browser's address bar to validate your email address. "
-                                + "See you on tldr.io"
-                          }
-
-         //send mail with defined transport object
-        mailer.sendMail(mailOptions, function(error, response){
+        mailer.sendConfirmationToken(user, server.set('apiUrl'), function(error, response){
           if(error){
-            console.log(error);
-            return next({ statusCode: 500, body: { message: 'Internal error while sending new validation code' } });
-          }else{
-            console.log("Message sent: " + response.message);
-            return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+            bunyan.warn('Error sending confirmation email');
           }
         });
-      }
 
+        return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      }
     });
   } else {
     res.setHeader('WWW-Authenticate', 'UnknownUser');
@@ -468,7 +450,7 @@ module.exports.getTldrById = getTldrById;
 module.exports.logUserOut = logUserOut;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
-module.exports.createConfirmToken = createConfirmToken;
+module.exports.resendConfirmToken = resendConfirmToken;
 module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
 module.exports.confirmUserEmail = confirmUserEmail;
