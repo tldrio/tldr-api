@@ -435,7 +435,7 @@ function confirmUserEmail (req, res, next) {
 
     // Check if user exists and confirmationToken matches
     if (!user || (user.confirmationToken !== confirmationToken)) {
-      return next({ statusCode: 404, body: { message: 'We couldn\'t confirm your address. Link is invalid' } } );
+      return res.render('confirmEmailError', { status: 404 });
     }
 
     var now = new Date();
