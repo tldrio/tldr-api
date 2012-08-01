@@ -7,6 +7,8 @@
 
 var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
+  , mailer = require('./lib/mailer')
+  , server = require('./serverConfig')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
   , Tldr = models.Tldr
@@ -267,13 +269,21 @@ function createNewUser(req, res, next) {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
     }
-
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
+      if (server.set('env') === 'test') {
+        return res.json(201, user.getAuthorizedFields());
+      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
 
-      return res.json(201, user.getAuthorizedFields());
-      });
+        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
+          if(error){
+            bunyan.warn('Error sending confirmation email');
+          }
+        });
+        return res.json(201, user.getAuthorizedFields());
+      }
+    });
   });
 }
 
@@ -320,7 +330,8 @@ function updateUserInfo(req, res, next) {
       updateEverythingExceptPassword();   // No errors (yet)
     }
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -332,7 +343,8 @@ function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -346,7 +358,8 @@ function getLoggedUserCreatedTldrs(req, res, next) {
       return res.json(200, tldrs);
     });
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -366,63 +379,87 @@ function logUserOut(req, res, next) {
   }
 }
 
+function resendConfirmToken (req, res, next) {
+  // User requested a new validation link
+  if (req.user) {
+    req.user.createConfirmToken( function (err, user) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
+      }
 
-/**
- * Handle All errors coming from next(err) calls
- *
- */
-function handleErrors (err, req, res, next) {
-  debugger;
-  if (err.statusCode && err.body) {
-    return res.json(err.statusCode, err.body);
-  } else if (err.message) {
-    bunyan.error(err);
-    return res.send(500, err.message);
+      if (server.set('env') === 'test') {
+          return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
+        
+        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
+          if(error){
+            bunyan.warn('Error sending confirmation email');
+          }
+        });
+
+        return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      }
+    });
   } else {
-    bunyan.error(err);
-    return res.send(500, 'Unknown error');
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
-/**
- * Add specific headers for CORS for dev env
- *
- */
+function confirmUserEmail (req, res, next) {
+  
+  var confirmToken = req.query.confirmToken
+    , email = req.query.email;
 
-function handleCORSLocal (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:8888');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
+  if (!confirmToken || !email) {
+    return res.render('confirmEmailError', function (err, html) {
+        res.send(400, html);
+    });
+  }
+
+  User.findOne({ email: email },  function (err, user) {
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting User by email' } } );
+    }
+
+    // Check if user exists and confirmToken matches
+    if (!user || (user.confirmToken !== confirmToken)) {
+      return res.render('confirmEmailError', function (err, html) {
+        res.send(400, html);
+      });
+    }
+
+    var now = new Date();
+    if (!user.confirmedEmail) {
+      user.confirmedEmail = true;
+      user.save(function (err) {
+        if (err) {
+          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
+        }
+        return res.redirect(server.set('websiteUrl'));
+      });
+    } else {
+      return res.redirect(server.set('websiteUrl'));
+    }
+
+  });
+
 }
 
-/**
- * Add specific headers for CORS for prod env
- *
- */
-
-function handleCORSProd (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'http://tldr.io');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
-  res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
-  res.header('Access-Control-Allow-Credentials', 'true');   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
-}
 
 // Module interface
+module.exports.createNewUser = createNewUser;
 module.exports.getLatestTldrs = getLatestTldrs;
-module.exports.getTldrById = getTldrById;
-module.exports.searchTldrs = searchTldrs;
-module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
-module.exports.postNewTldr = postNewTldr;
-module.exports.handleErrors = handleErrors;
-module.exports.handleCORSLocal = handleCORSLocal;
-module.exports.handleCORSProd = handleCORSProd;
-module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
-module.exports.createNewUser = createNewUser;
+module.exports.getTldrById = getTldrById;
+//module.exports.handleErrors = handleErrors;
+//module.exports.handleCORSLocal = handleCORSLocal;
+//module.exports.handleCORSProd = handleCORSProd;
+module.exports.logUserOut = logUserOut;
+module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
+module.exports.postNewTldr = postNewTldr;
+module.exports.resendConfirmToken = resendConfirmToken;
+module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
+module.exports.confirmUserEmail = confirmUserEmail;

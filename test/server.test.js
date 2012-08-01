@@ -623,26 +623,22 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to login as User One with a wrong password', function (done) {
+    it('Should not be able to log in as User One with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(false);
-        body.InvalidPassword.should.equal(true);
-        body.UnknownUser.should.equal(false);
+        response.headers['www-authenticate'].should.equal('InvalidPassword');
         done();
       });
     });
 
-    it('Should not be able to login with a wrong username', function (done) {
+    it('Should not be able to log in with a wrong username', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(false);
-        body.InvalidPassword.should.equal(false);
-        body.UnknownUser.should.equal(true);
+        response.headers['www-authenticate'].should.equal('UnknownUser');
         done();
       });
     });
@@ -651,26 +647,19 @@ describe('Webserver', function () {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
+        //Passport doesnt set www-authenticate when missing credentials
+        // but just send error 401
         response.statusCode.should.equal(401);
-        body.MissingCredentials.should.equal(true);
-        body.InvalidPassword.should.equal(false);
-        body.UnknownUser.should.equal(false);
 
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/login'
                      , json: { password: "anothe" } }, function (error, response, body) {
           response.statusCode.should.equal(401);
-          body.MissingCredentials.should.equal(true);
-          body.InvalidPassword.should.equal(false);
-          body.UnknownUser.should.equal(false);
 
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/users/login'
                        , json: {} }, function (error, response, body) {
             response.statusCode.should.equal(401);
-            body.MissingCredentials.should.equal(true);
-            body.InvalidPassword.should.equal(false);
-            body.UnknownUser.should.equal(false);
 
             done();
           });
@@ -686,6 +675,8 @@ describe('Webserver', function () {
       request.get({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
+        response.statusCode.should.equal(401);
+        response.headers['www-authenticate'].should.equal('UnknownUser');
         obj = JSON.parse(body);
         assert.isDefined(obj.message);
         assert.isUndefined(obj.email);
@@ -716,6 +707,8 @@ describe('Webserver', function () {
               request.get({ headers: {"Accept": "application/json"}
                            , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
+                response.statusCode.should.equal(401);
+                response.headers['www-authenticate'].should.equal('UnknownUser');
                 obj = JSON.parse(body);
                 assert.isDefined(obj.message);
                 assert.isUndefined(obj.email);
@@ -837,7 +830,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
+    it('should not be able to create two accounts with same email', function (done) {
       var userNumber, obj;
 
       User.find({}, function(err, users) {
@@ -865,9 +858,95 @@ describe('Webserver', function () {
       });
     });
 
+    it('should confirm user email with the corresponding routes and valid confirmation token', function (done) {
+      var obj;
 
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
-  });
+         response.statusCode.should.equal(200);
+         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+         request.get({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/confirm?' }, function (error, response, body) {
+
+           // Should return 400 if code is the provided as parameter
+           response.statusCode.should.equal(400);
+           User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+
+             // Retrieve validation Code by directly queryin the db
+             var confirmToken = user.confirmToken;
+             user.confirmedEmail.should.be.false;
+
+             request.get({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
+
+               User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+                 user.confirmedEmail.should.be.true;
+                 done();
+               });
+             });
+           });
+         });
+       });
+    });
+    
+
+    it('should not confirm user email with bad confirm token ', function (done) {
+      var obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+         response.statusCode.should.equal(200);
+         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+         body.confirmedEmail.should.be.false;
+
+           request.get({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/confirm?confirmToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
+
+             response.statusCode.should.equal(400);
+             done();
+           });
+         });
+    });
+
+    it('should send a new validation link if requested', function (done) {
+      var obj;
+
+      request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
+        response.statusCode.should.equal(401);
+        response.headers['www-authenticate'].should.equal('UnknownUser');
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/login'
+                     , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+          response.statusCode.should.equal(200);
+          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+
+              // Retrieve validation Code by directly queryin the db
+              var previousToken = user.confirmToken;
+
+              request.get({ headers: {"Accept": "application/json"}
+                          , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+                  var newToken = user.confirmToken;
+                  assert(newToken !== previousToken);
+                  done();
+                });
+              });
+            });
+          });
+        });
+      });
+    });
 
 });
 
