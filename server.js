@@ -7,6 +7,8 @@ var server = require('./serverConfig.js')
  *
  */
 
+server.get('/confirm', requestHandlers.confirmUserEmail);
+
 // User creation
 server.post('/users', requestHandlers.createNewUser);
 
@@ -14,7 +16,6 @@ server.post('/users', requestHandlers.createNewUser);
 server.get('/users/you', requestHandlers.getLoggedUser);
 server.get('/users/you/newValidationCode', requestHandlers.requestNewValidationCode);
 server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs);
-server.get('/users/validate', requestHandlers.validateUserEmail);
 
 server.put('/users/you', requestHandlers.updateUserInfo);
 

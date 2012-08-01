@@ -13,7 +13,7 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'validationStatus'];         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail'];         // fields that can be sent to the user
 
 
 /**
@@ -40,14 +40,14 @@ UserSchema = new Schema(
               , required: true
               , validate: [validateUsername, 'username must have between 1 and 30 characters']
               }
-  , validationStatus: { type: String
-                      , default: 'waitingForVerification'
-                      }
-  , validationCode: { type: String
+  , confirmedEmail: { type: Boolean
+                    , default: false
                     }
-  , validationCodeExpDate: { type: Date
-                           , default: Date.now
-                           }
+  , confirmationToken: { type: String
+                       }
+  , tokenCreationDate: { type: Date
+                       , default: Date.now
+                       }
   }
 , { strict: true });
 
@@ -76,11 +76,10 @@ function createAndSaveInstance(userInput, callback) {
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
-        // Set validationCode - length 13 is very important
-        validFields.validationCode = customUtils.uid(13);
-        validFields.validationCodeExpDate = new Date();
-        // Validation Code is valid for 7 days
-        validFields.validationCodeExpDate.setTime( validFields.validationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
+        // Set confirmationToken - length 13 is very important
+        validFields.confirmedEmail = false;
+        validFields.confirmationToken = customUtils.uid(13);
+        validFields.tokenCreationDate = new Date();
         instance = new User(validFields);
         instance.save(callback);
       });
@@ -92,16 +91,14 @@ function createAndSaveInstance(userInput, callback) {
 }
 
 
-function requestNewValidationCode (callback) {
-  var newValidationCode = customUtils.uid(13)
-    , newValidationCodeExpDate = new Date();
-  // Validation Code is valid for 7 days
-  newValidationCodeExpDate.setTime( newValidationCodeExpDate.getTime() + 1000 * 60 * 60 * 24 * 7 );
+function createConfirmToken (callback) {
+  var newToken = customUtils.uid(13)
+    , newTokenCreationDate = new Date();
 
   User.findOne({ email: this.email }, function (err, doc) {
 
-    doc.validationCode = newValidationCode;
-    doc.validationCodeExpDate = newValidationCodeExpDate;
+    doc.confirmationToken = newToken;
+    doc.tokenCreationDate = newTokenCreationDate;
     doc.save(callback);
   });
 }
@@ -221,7 +218,7 @@ function validatePassword (value) {
 
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.requestNewValidationCode = requestNewValidationCode;
+UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 

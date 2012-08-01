@@ -365,10 +365,10 @@ function logUserOut(req, res, next) {
   }
 }
 
-function requestNewValidationCode (req, res, next) {
+function createConfirmToken (req, res, next) {
   // User requested a new validation link
   if (req.user) {
-    req.user.requestNewValidationCode( function (err, doc) {
+    req.user.createConfirmToken( function (err, doc) {
       if (err) {
         return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
       }
@@ -377,7 +377,7 @@ function requestNewValidationCode (req, res, next) {
           return res.json(200, { message: 'new validation link sent to ' + req.user.email});
       } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
         
-        var link = server.set('websiteUrl') + '/account?validationCode=' +encodeURIComponent(doc.validationCode)
+        var link = server.set('websiteUrl') + '/account?confirmationToken=' +encodeURIComponent(doc.confirmationToken)
           , mailOptions = { from: "tl;dr <meta@tldr.io>" // sender address
                           , to: req.user.email // list of receivers
                           , subject: "Confirm your email address" // Subject line
@@ -410,17 +410,17 @@ function requestNewValidationCode (req, res, next) {
   }
 }
 
-function validateUserEmail (req, res, next) {
+function confirmUserEmail (req, res, next) {
   
-  var validationCode = req.query.validationCode;
+  var confirmationToken = req.query.confirmationToken;
 
-  if (!validationCode) {
+  if (!confirmationToken) {
     return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
   }
 
-  User.findOne({ validationCode: validationCode },  function (err, doc) {
+  User.findOne({ confirmationToken: confirmationToken },  function (err, doc) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by validationCode' } } );
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmationToken' } } );
     }
 
     if (!doc) {
@@ -430,7 +430,7 @@ function validateUserEmail (req, res, next) {
     var previousStatus = doc.validationStatus
       , now = new Date();
     if (previousStatus === 'waitingForVerification' ) {
-      if ( (doc.validationCodeExpDate - now) >= 0 ) {
+      if ( (doc.tokenCreationDate - now) >= 0 ) {
         doc.validationStatus = 'emailVerified';
         doc.save(function (err) {
           if (err) {
@@ -462,7 +462,7 @@ module.exports.getTldrById = getTldrById;
 module.exports.logUserOut = logUserOut;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
-module.exports.requestNewValidationCode = requestNewValidationCode;
+module.exports.createConfirmToken = createConfirmToken;
 module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
-module.exports.validateUserEmail = validateUserEmail;
+module.exports.confirmUserEmail = confirmUserEmail;
