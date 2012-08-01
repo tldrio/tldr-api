@@ -212,7 +212,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        user.validationStatus.should.equal('waitingForVerification');
+        user.confirmedEmail.should.be.false;
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);

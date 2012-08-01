@@ -815,7 +815,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('should validate user email with the corresponding routes and valid validation code', function (done) {
+    it('should confirm user email with the corresponding routes and valid confirmation token', function (done) {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
@@ -824,27 +824,23 @@ describe('Webserver', function () {
 
          response.statusCode.should.equal(200);
          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-         body.validationStatus.should.equal('waitingForVerification');
 
          request.get({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/validate?' }, function (error, response, body) {
+                     , uri: rootUrl + '/confirm?' }, function (error, response, body) {
 
            // Should return 400 if code is the provided as parameter
            response.statusCode.should.equal(400);
-           User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+           User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
              // Retrieve validation Code by directly queryin the db
-             var validationCode = doc.validationCode;
-             doc.validationStatus.should.equal('waitingForVerification');
+             var confirmToken = user.confirmToken;
+             user.confirmedEmail.should.be.false;
 
              request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
 
-               response.statusCode.should.equal(200);
-               obj = JSON.parse(body);
-               obj.email.should.equal('user1@nfa.com');
-               User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
-                 doc.validationStatus.should.equal('emailVerified');
+               User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+                 user.confirmedEmail.should.be.true;
                  done();
                });
              });
@@ -854,7 +850,7 @@ describe('Webserver', function () {
     });
     
 
-    it('should not validate user email with bad validation Code or expired one', function (done) {
+    it('should not confirm user email with bad confirm token ', function (done) {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
@@ -863,36 +859,13 @@ describe('Webserver', function () {
 
          response.statusCode.should.equal(200);
          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-         body.validationStatus.should.equal('waitingForVerification');
+         body.confirmedEmail.should.be.false;
 
            request.get({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/validate?validationCode=badvalidationcode' }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
 
-             response.statusCode.should.equal(404);
-             obj = JSON.parse(body);
-             obj.message.should.equal('A Bad Validation Code was provided.');
-             User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
-
-               // retrieve validation code by directly queryin the db
-               var validationCode = doc.validationCode;
-               doc.validationStatus.should.equal('waitingForVerification');
-               // Back to the future
-               doc.validationCodeExpDate = new Date();
-               doc.validationCodeExpDate.setTime( doc.validationCodeExpDate.getTime() - 1000*60*60  );
-               doc.save(function (err) {
-
-                 request.get({ headers: {"Accept": "application/json"}
-                             , uri: rootUrl + '/users/validate?validationCode=' + encodeURIComponent(validationCode) }, function (error, response, body) {
-
-                   response.statusCode.should.equal(404);
-                   obj = JSON.parse(body);
-                   obj.message.should.equal('Your Validation Code has expired.');
-                   done();
-                 });
-
-               });
-
-             });
+             response.statusCode.should.equal(400);
+             done();
            });
          });
     });
@@ -901,7 +874,7 @@ describe('Webserver', function () {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
-                  , uri: rootUrl + '/users/you/newValidationCode' }, function (error, response, body) {
+                  , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
         response.statusCode.should.equal(401);
         response.headers['www-authenticate'].should.equal('UnknownUser');
         request.post({ headers: {"Accept": "application/json"}
@@ -910,20 +883,19 @@ describe('Webserver', function () {
 
           response.statusCode.should.equal(200);
           body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-          body.validationStatus.should.equal('waitingForVerification');
 
-            User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
+            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
               // Retrieve validation Code by directly queryin the db
-              var previousValidationCode = doc.validationCode;
+              var previousToken = user.confirmToken;
 
               request.get({ headers: {"Accept": "application/json"}
-                          , uri: rootUrl + '/users/you/newValidationCode' }, function (error, response, body) {
+                          , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
-                User.findOne({ email: "user1@nfa.com" }, function (err, doc) {
-                  var newValidationCode = doc.validationCode;
-                  assert(newValidationCode !== previousValidationCode);
+                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
+                  var newToken = user.confirmToken;
+                  assert(newToken !== previousToken);
                   done();
                 });
               });

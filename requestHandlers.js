@@ -275,7 +275,7 @@ function createNewUser(req, res, next) {
         return res.json(201, user.getAuthorizedFields());
       } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
 
-        mailer.sendConfirmationToken(user, server.set('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email');
           }
@@ -386,7 +386,7 @@ function resendConfirmToken (req, res, next) {
           return res.json(200, { message: 'new validation link sent to ' + req.user.email});
       } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
         
-        mailer.sendConfirmationToken(user, server.set('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email');
           }
@@ -403,21 +403,25 @@ function resendConfirmToken (req, res, next) {
 
 function confirmUserEmail (req, res, next) {
   
-  var confirmationToken = req.query.confirmationToken
+  var confirmToken = req.query.confirmToken
     , email = req.query.email;
 
-  if (!confirmationToken || !email) {
-    return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
+  if (!confirmToken || !email) {
+    return res.render('confirmEmailError', function (err, html) {
+        res.send(400, html);
+    });
   }
 
   User.findOne({ email: email },  function (err, user) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmationToken' } } );
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmToken' } } );
     }
 
-    // Check if user exists and confirmationToken matches
-    if (!user || (user.confirmationToken !== confirmationToken)) {
-      return res.render('confirmEmailError', { status: 404 });
+    // Check if user exists and confirmToken matches
+    if (!user || (user.confirmToken !== confirmToken)) {
+      return res.render('confirmEmailError', function (err, html) {
+        res.send(400, html);
+      });
     }
 
     var now = new Date();
@@ -425,7 +429,7 @@ function confirmUserEmail (req, res, next) {
       user.confirmedEmail = true;
       user.save(function (err) {
         if (err) {
-          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmEmail value' } } );
+          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
         }
         return res.redirect(server.set('websiteUrl') + '/account');
       });

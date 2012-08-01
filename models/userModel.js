@@ -43,8 +43,8 @@ UserSchema = new Schema(
   , confirmedEmail: { type: Boolean
                     , default: false
                     }
-  , confirmationToken: { type: String
-                       }
+  , confirmToken: { type: String
+                  }
   }
 , { strict: true });
 
@@ -73,9 +73,9 @@ function createAndSaveInstance(userInput, callback) {
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
-        // Set confirmationToken - length 13 is very important
+        // Set confirmToken - length 13 is very important
         validFields.confirmedEmail = false;
-        validFields.confirmationToken = customUtils.uid(13);
+        validFields.confirmToken = customUtils.uid(13);
         instance = new User(validFields);
         instance.save(callback);
       });
@@ -92,7 +92,7 @@ function createConfirmToken (callback) {
 
   User.findOne({ email: this.email }, function (err, doc) {
 
-    doc.confirmationToken = newToken;
+    doc.confirmToken = newToken;
     doc.save(callback);
   });
 }
