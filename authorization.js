@@ -45,7 +45,6 @@ function serializeUser(user, done) {
  */
 function deserializeUser(_id, done) {
   User.findOne({_id: _id}, function (err, user) {
-    debugger;
     done(err, user);
   });
 };

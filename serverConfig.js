@@ -58,7 +58,7 @@ server.configure('development', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
-  server.set('serverDomain', 'http://localhost:8787');
+  server.set('apiUrl', 'http://localhost:8787');
   server.set('websiteUrl', 'http://localhost:8888');
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
@@ -74,7 +74,7 @@ server.configure('test', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
-  server.set('serverDomain', 'http://localhost:8787');
+  server.set('apiUrl', 'http://localhost:8787');
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
   server.set('redisDb', 9);// Redis DB #. Other redis default options are fine for now
 });
@@ -84,7 +84,7 @@ server.configure('staging', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
-  server.set('serverDomain', 'api.tldr.io/staging');
+  server.set('apiUrl', 'api.tldr.io/staging');
   server.set('websiteUrl', 'http://tldr.io/staging');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
@@ -100,7 +100,7 @@ server.configure('production', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
-  server.set('serverDomain', 'api.tldr.io');
+  server.set('apiUrl', 'api.tldr.io');
   server.set('websiteUrl', 'http://tldr.io');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now

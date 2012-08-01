@@ -271,9 +271,18 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
+      if (server.set('env') === 'test') {
+        return res.json(201, user.getAuthorizedFields());
+      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
 
-      return res.json(201, user.getAuthorizedFields());
-      });
+        mailer.sendConfirmationEmail(user, server.set('apiUrl'), function(error, response){
+          if(error){
+            bunyan.warn('Error sending confirmation email');
+          }
+        });
+        return res.json(201, user.getAuthorizedFields());
+      }
+    });
   });
 }
 
