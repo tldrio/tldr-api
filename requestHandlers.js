@@ -421,37 +421,38 @@ function createConfirmToken (req, res, next) {
 
 function confirmUserEmail (req, res, next) {
   
-  var confirmationToken = req.query.confirmationToken;
+  var confirmationToken = req.query.confirmationToken
+    , email = req.query.email;
 
-  if (!confirmationToken) {
+  if (!confirmationToken || !email) {
     return next({ statusCode: 400, body: { message: 'code parameter not provided' } } );
   }
 
-  User.findOne({ confirmationToken: confirmationToken },  function (err, doc) {
+  User.findOne({ email: email },  function (err, user) {
     if (err) {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmationToken' } } );
     }
 
-    if (!doc) {
-      return next({ statusCode: 404, body: { message: 'A Bad Validation Code was provided.' } } );
+    if (!user) {
+      return next({ statusCode: 404, body: { message: 'We couldn\'t confirm your address. Link is invalid' } } );
     }
 
-    var previousStatus = doc.validationStatus
-      , now = new Date();
-    if (previousStatus === 'waitingForVerification' ) {
-      if ( (doc.tokenCreationDate - now) >= 0 ) {
-        doc.validationStatus = 'emailVerified';
-        doc.save(function (err) {
+    var now = new Date();
+    if (!user.confirmedEmail) {
+      // Token is valid 7 days
+      if ( (now - user.tokenCreationDate) <= 1000 * 60 * 60 * 24 * 7) {
+        user.confirmedEmail = true;
+        user.save(function (err) {
           if (err) {
-            return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new validationStatus' } } );
+            return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmEmail value' } } );
           }
-          return res.json(200, { message: 'Email is now verified', email: doc.email });
+          return res.redirect(server.set('websiteUrl') + '/account');
         });
       } else {
         return next({ statusCode: 404, body: { message: 'Your Validation Code has expired.' } } );
       }
-    } else if (previousStatus === 'emailVerified') {
-      return res.json(200, { message: 'Email was already verified', email: doc.email });
+    } else {
+      return res.redirect(server.set('websiteUrl') + '/account');
     }
 
   });

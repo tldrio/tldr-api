@@ -59,7 +59,7 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
   server.set('apiUrl', 'http://localhost:8787');
-  server.set('websiteUrl', 'http://localhost:8888');
+  server.set('websiteUrl', 'http://localhost:8888/tldr-clients/source');
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
   server.locals = { scriptPath: 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"'
