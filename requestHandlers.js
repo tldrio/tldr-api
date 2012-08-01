@@ -431,10 +431,10 @@ function confirmUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
         }
-        return res.redirect(server.set('websiteUrl') + '/account');
+        return res.redirect(server.set('websiteUrl'));
       });
     } else {
-      return res.redirect(server.set('websiteUrl') + '/account');
+      return res.redirect(server.set('websiteUrl'));
     }
 
   });
