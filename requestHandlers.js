@@ -433,24 +433,20 @@ function confirmUserEmail (req, res, next) {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmationToken' } } );
     }
 
-    if (!user) {
+    // Check if user exists and confirmationToken matches
+    if (!user || (user.confirmationToken !== confirmationToken)) {
       return next({ statusCode: 404, body: { message: 'We couldn\'t confirm your address. Link is invalid' } } );
     }
 
     var now = new Date();
     if (!user.confirmedEmail) {
-      // Token is valid 7 days
-      if ( (now - user.tokenCreationDate) <= 1000 * 60 * 60 * 24 * 7) {
-        user.confirmedEmail = true;
-        user.save(function (err) {
-          if (err) {
-            return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmEmail value' } } );
-          }
-          return res.redirect(server.set('websiteUrl') + '/account');
-        });
-      } else {
-        return next({ statusCode: 404, body: { message: 'Your Validation Code has expired.' } } );
-      }
+      user.confirmedEmail = true;
+      user.save(function (err) {
+        if (err) {
+          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmEmail value' } } );
+        }
+        return res.redirect(server.set('websiteUrl') + '/account');
+      });
     } else {
       return res.redirect(server.set('websiteUrl') + '/account');
     }

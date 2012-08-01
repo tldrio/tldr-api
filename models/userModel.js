@@ -45,9 +45,6 @@ UserSchema = new Schema(
                     }
   , confirmationToken: { type: String
                        }
-  , tokenCreationDate: { type: Date
-                       , default: Date.now
-                       }
   }
 , { strict: true });
 
@@ -79,7 +76,6 @@ function createAndSaveInstance(userInput, callback) {
         // Set confirmationToken - length 13 is very important
         validFields.confirmedEmail = false;
         validFields.confirmationToken = customUtils.uid(13);
-        validFields.tokenCreationDate = new Date();
         instance = new User(validFields);
         instance.save(callback);
       });
@@ -92,13 +88,11 @@ function createAndSaveInstance(userInput, callback) {
 
 
 function createConfirmToken (callback) {
-  var newToken = customUtils.uid(13)
-    , newTokenCreationDate = new Date();
+  var newToken = customUtils.uid(13);
 
   User.findOne({ email: this.email }, function (err, doc) {
 
     doc.confirmationToken = newToken;
-    doc.tokenCreationDate = newTokenCreationDate;
     doc.save(callback);
   });
 }
