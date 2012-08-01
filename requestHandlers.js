@@ -414,7 +414,7 @@ function confirmUserEmail (req, res, next) {
 
   User.findOne({ email: email },  function (err, user) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by confirmToken' } } );
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting User by email' } } );
     }
 
     // Check if user exists and confirmToken matches
