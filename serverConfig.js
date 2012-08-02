@@ -59,11 +59,11 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
   server.set('apiUrl', 'http://localhost:8787');
-  server.set('websiteUrl', 'http://localhost:8888/tldr-clients/source');
+  server.set('websiteUrl', 'http://localhost:8888/dist/website/local/public/');
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
-  server.locals = { scriptPath: 'data-main="http://localhost:8888/tldr-clients/source/js/main/page" src="http://localhost:8888/tldr-clients/source/js/vendor/require/require.js"'
-                  , cssPath: 'http://localhost:8888/tldr-clients/source/css/page.css'
+  server.locals = { scriptPath: 'data-main="http://localhost:8888/dist/page/local/src/page.js" src="http://localhost:8888/src/vendor/require/require.js"'
+                  , cssPath: 'http://localhost:8888/dist/page/local/assets/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(handleCORS);
   bunyan.setToLog = true;

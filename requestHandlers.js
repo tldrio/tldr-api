@@ -412,7 +412,7 @@ function confirmUserEmail (req, res, next) {
     , email = req.query.email;
 
   if (!confirmToken || !email) {
-    return res.render('confirmEmailError', function (err, html) {
+    return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
         res.send(400, html);
     });
   }
@@ -424,7 +424,7 @@ function confirmUserEmail (req, res, next) {
 
     // Check if user exists and confirmToken matches
     if (!user || (user.confirmToken !== confirmToken)) {
-      return res.render('confirmEmailError', function (err, html) {
+      return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
         res.send(400, html);
       });
     }
