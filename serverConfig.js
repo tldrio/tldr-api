@@ -27,7 +27,7 @@ server = express(); // Instantiate server
 
 // Add specific headers for CORS 
 function handleCORS (req, res, next) {
-  res.header('Access-Control-Allow-Origin', server.set('websiteUrl') );
+  res.header('Access-Control-Allow-Origin', server.get('websiteUrl') );
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
@@ -134,9 +134,9 @@ server.configure('staging', 'production', function () {
 
 // Store db Instance in server. Avoid multiple instantiation
 // in test files
-server.db = new dbObject( server.set('dbHost')
-                        , server.set('dbName')
-                        , server.set('dbPort')
+server.db = new dbObject( server.get('dbHost')
+                        , server.get('dbName')
+                        , server.get('dbPort')
                         );
 
 
@@ -171,11 +171,11 @@ server.use(express.session({ secret: 'this is da secret, dawg'    // Used for co
 
                                      , httpOnly: false            // false so that it can be accessed by javascript, not only HTTP/HTTPS
 
-                                     , maxAge: server.set('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
+                                     , maxAge: server.get('cookieMaxAge')     // Sets a persistent cookie (duration in ms)
                                                                   // The TTL of the Redis Session is set to the same period, and reinitialized at every 'touch',
                                                                   // i.e. every request made that resends the cookie
                                      }
-                           , store: new RedisStore({ db: server.set('redisDb') }) // 'db' option is the Redis store to use
+                           , store: new RedisStore({ db: server.get('redisDb') }) // 'db' option is the Redis store to use
                            }));
 
 

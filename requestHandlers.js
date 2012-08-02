@@ -272,11 +272,11 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      if (server.set('env') === 'test') {
+      if (server.get('env') === 'test') {
         return res.json(201, user.getAuthorizedFields());
-      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
+      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
 
-        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email');
           }
@@ -387,11 +387,11 @@ function resendConfirmToken (req, res, next) {
         return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
       }
 
-      if (server.set('env') === 'test') {
+      if (server.get('env') === 'test') {
           return res.json(200, { message: 'new validation link sent to ' + req.user.email});
-      } else if (server.set('env') === 'production' || server.set('env') === 'development' ) {
+      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
         
-        mailer.sendConfirmToken(user, server.set('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email');
           }
@@ -436,10 +436,10 @@ function confirmUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
         }
-        return res.redirect(server.set('websiteUrl'));
+        return res.redirect(server.get('websiteUrl'));
       });
     } else {
-      return res.redirect(server.set('websiteUrl'));
+      return res.redirect(server.get('websiteUrl'));
     }
 
   });
