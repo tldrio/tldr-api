@@ -8,6 +8,7 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
+  , i18n = require('../lib/i18n')
   , server = require('../server')
   , models = require('../models')
   , db = server.db
@@ -132,7 +133,7 @@ describe('Webserver', function () {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         obj.should.have.ownProperty('message');
-        obj.message.should.equal('ResourceNotFound');
+        obj.message.should.equal(i18n.resourceNotFound);
         done();
       });
 
@@ -628,7 +629,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('InvalidPassword');
+        response.headers['www-authenticate'].should.equal(i18n.invalidPwd);
         done();
       });
     });
@@ -638,7 +639,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('UnknownUser');
+        response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         done();
       });
     });
@@ -676,7 +677,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('UnknownUser');
+        response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         obj = JSON.parse(body);
         assert.isDefined(obj.message);
         assert.isUndefined(obj.email);
@@ -708,7 +709,7 @@ describe('Webserver', function () {
                            , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
                 response.statusCode.should.equal(401);
-                response.headers['www-authenticate'].should.equal('UnknownUser');
+                response.headers['www-authenticate'].should.equal(i18n.unknownUser);
                 obj = JSON.parse(body);
                 assert.isDefined(obj.message);
                 assert.isUndefined(obj.email);

@@ -8,6 +8,7 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , url = require('url')
+  , i18n = require('../lib/i18n')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
@@ -27,18 +28,18 @@ TldrSchema = new Schema(
   { url: { type: String
          , unique: true
          , required: true
-         , validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname']
+         , validate: [validateUrl, i18n.validateTldrUrl]
          , set: normalizeUrl
          }
   , title: { type: String
-           , validate: [validateTitle, 'Title has to be non empty and less than 150 characters']
+           , validate: [validateTitle, i18n.validateTldrTitle]
            }
   , summaryBullets: { type: Array
                     , required: true
-                    , validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long']
+                    , validate: [validateBullets, i18n.validateTldrBullet]
                     }
   , resourceAuthor: { type: String
-                    , validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long']
+                    , validate: [validateAuthor, i18n.validateTldrAuthor]
                     }
   , resourceDate: { type: Date }
   , createdAt: { type: Date
