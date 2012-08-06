@@ -117,7 +117,7 @@ server.configure('production', function () {
   server.locals = { scriptPath: 'http://tldr.io/page/src/page.js'
                   , cssPath: 'http://tldr.io/page/assets/css/page.css'
                   };
-  server.use(handleCORSProd);
+  server.use(handleCORS);
   bunyan.setToLog = true;
 });
 
