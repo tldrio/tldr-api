@@ -7,6 +7,8 @@
 
 var bunyan = require('./lib/logger').bunyan
   , _ = require('underscore')
+  , mailer = require('./lib/mailer')
+  , server = require('./serverConfig')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
   , Tldr = models.Tldr
@@ -101,6 +103,8 @@ function searchTldrs (req, res, next) {
        if (err) {
          return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
        }
+       // Example of how the function is used
+       bunyan.incrementMetric('latestCalled', req);
        res.json(200, docs);
      });
   }
@@ -118,10 +122,10 @@ function getTldrById (req, res, next) {
 
   Tldr.findById( id, function (err, tldr) {
     if (err) {
-      // If err.message is "Invalid ObjectId", its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
+      // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
       // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
-      if (err.message === "Invalid ObjectId") {
+      if (err.message === 'Invalid ObjectId') {
         return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
@@ -157,7 +161,7 @@ function internalUpdateCb (err, docs, req, res, next) {
   var oldTldr;
 
   if (err) {
-    if (err.message === "Invalid ObjectId") {
+    if (err.message === 'Invalid ObjectId') {
       return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
     } else {
       return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
@@ -203,10 +207,10 @@ function postNewTldr (req, res, next) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) { // code 11000 is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
 
+        // POST on existing resource so we act as if it's an update
         var url = normalizeUrl(req.body.url);
-
         Tldr.find({url: url}, function (err, docs) {
           internalUpdateCb(err, docs, req, res, next);
         });
@@ -254,23 +258,32 @@ function putUpdateTldrWithId (req, res, next) {
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
+    debugger;
   User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000) {   // Can't create two users with the same email
-        return next({ statusCode: 409, body: { message: 'Login already exists' } } );
+      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+        return next({ statusCode: 409, body: { duplicateField: models.getDuplicateField(err) } } );
       } else {
         return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
       }
     }
-
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
+      if (server.get('env') === 'test') {
+        return res.json(201, user.getAuthorizedFields());
+      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
 
-      return res.json(201, user.getAuthorizedFields());
-      });
+        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
+          if(error){
+            bunyan.warn('Error sending confirmation email');
+          }
+        });
+        return res.json(201, user.getAuthorizedFields());
+      }
+    });
   });
 }
 
@@ -278,6 +291,8 @@ function createNewUser(req, res, next) {
 /*
  * Updates the logged user's info. First tries to update password if the request contains
  * password data, then updates the rest of the fields, and send back all errors or a success to the user
+ * If there is a pbolem in updateValidFields because of duplication, send back only this error.
+ * That's not the best behaviour, we should probably break this function down
  */
 function updateUserInfo(req, res, next) {
   // To be called after a password update, if any
@@ -288,7 +303,9 @@ function updateUserInfo(req, res, next) {
       if (err) {
         if (err.errors) {
           // Send back a 403 with all validation errors
-          return next({ statusCode:403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+          return next({ statusCode: 403, body: _.extend(models.getAllValidationErrorsWithExplanations(err.errors), errorsFromPasswordUpdate) });
+        } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+          return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
         } else {
           return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
         }
@@ -313,7 +330,8 @@ function updateUserInfo(req, res, next) {
       updateEverythingExceptPassword();   // No errors (yet)
     }
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -325,7 +343,8 @@ function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -339,7 +358,8 @@ function getLoggedUserCreatedTldrs(req, res, next) {
       return res.json(200, tldrs);
     });
   } else {
-    return res.json(401, { message: 'You are not logged in' });
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
@@ -353,69 +373,93 @@ function logUserOut(req, res, next) {
   req.logOut();
 
   if (username) {
-    return res.json(200, { message: "User " + username + " logged out successfully" });
+    return res.json(200, { message: 'User ' + username + ' logged out successfully' });
   } else {
-    return res.json(400, { message: "No user was logged in!" });
+    return res.json(400, { message: 'No user was logged in!' });
   }
 }
 
+function resendConfirmToken (req, res, next) {
+  // User requested a new validation link
+  if (req.user) {
+    req.user.createConfirmToken( function (err, user) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
+      }
 
-/**
- * Handle All errors coming from next(err) calls
- *
- */
-function handleErrors (err, req, res, next) {
-  debugger;
-  if (err.statusCode && err.body) {
-    return res.json(err.statusCode, err.body);
-  } else if (err.message) {
-    bunyan.error(err);
-    return res.send(500, err.message);
+      if (server.get('env') === 'test') {
+          return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
+        
+        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
+          if(error){
+            bunyan.warn('Error sending confirmation email');
+          }
+        });
+
+        return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+      }
+    });
   } else {
-    bunyan.error(err);
-    return res.send(500, 'Unknown error');
+    res.setHeader('WWW-Authenticate', 'UnknownUser');
+    return res.json(401, { message: 'Unauthorized' } );
   }
 }
 
-/**
- * Add specific headers for CORS for dev env
- *
- */
+function confirmUserEmail (req, res, next) {
+  
+  var confirmToken = req.query.confirmToken
+    , email = req.query.email;
 
-function handleCORSLocal (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8888");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
+  if (!confirmToken || !email) {
+    return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
+        res.send(400, html);
+    });
+  }
+
+  User.findOne({ email: email },  function (err, user) {
+    if (err) {
+      return next({ statusCode: 500, body: { message: 'Internal Error while getting User by email' } } );
+    }
+
+    // Check if user exists and confirmToken matches
+    if (!user || (user.confirmToken !== confirmToken)) {
+      return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
+        res.send(400, html);
+      });
+    }
+
+    var now = new Date();
+    if (!user.confirmedEmail) {
+      user.confirmedEmail = true;
+      user.save(function (err) {
+        if (err) {
+          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
+        }
+        return res.redirect(server.get('websiteUrl'));
+      });
+    } else {
+      return res.redirect(server.get('websiteUrl'));
+    }
+
+  });
+
 }
 
-/**
- * Add specific headers for CORS for prod env
- *
- */
-
-function handleCORSProd (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://tldr.io");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-  res.header("Access-Control-Allow-Credentials", "true");   // Necessary header to be able to send the cookie back and forth with the client
-                                                            // Works with xhr's withCredentials option set to true
-  next();
-}
 
 // Module interface
+module.exports.createNewUser = createNewUser;
 module.exports.getLatestTldrs = getLatestTldrs;
-module.exports.getTldrById = getTldrById;
-module.exports.searchTldrs = searchTldrs;
-module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
-module.exports.postNewTldr = postNewTldr;
-module.exports.handleErrors = handleErrors;
-module.exports.handleCORSLocal = handleCORSLocal;
-module.exports.handleCORSProd = handleCORSProd;
-module.exports.logUserOut = logUserOut;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
-module.exports.createNewUser = createNewUser;
+module.exports.getTldrById = getTldrById;
+//module.exports.handleErrors = handleErrors;
+//module.exports.handleCORSLocal = handleCORSLocal;
+//module.exports.handleCORSProd = handleCORSProd;
+module.exports.logUserOut = logUserOut;
+module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
+module.exports.postNewTldr = postNewTldr;
+module.exports.resendConfirmToken = resendConfirmToken;
+module.exports.searchTldrs = searchTldrs;
 module.exports.updateUserInfo = updateUserInfo;
+module.exports.confirmUserEmail = confirmUserEmail;
