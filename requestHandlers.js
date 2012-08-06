@@ -278,7 +278,7 @@ function createNewUser(req, res, next) {
 
         mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
           if(error){
-            bunyan.warn('Error sending confirmation email');
+            bunyan.warn('Error sending confirmation email', error);
           }
         });
         return res.json(201, user.getAuthorizedFields());
@@ -393,7 +393,7 @@ function resendConfirmToken (req, res, next) {
         
         mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
           if(error){
-            bunyan.warn('Error sending confirmation email');
+            bunyan.warn('Error sending confirmation email', error);
           }
         });
 
