@@ -84,7 +84,6 @@ server.configure('test', function () {
                   , cssPath: 'http://localhost:8888/dist/page/local/assets/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(handleCORS);
-  bunyan.setToLog = true;
 });
 
 server.configure('staging', function () {
