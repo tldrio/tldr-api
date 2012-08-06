@@ -27,7 +27,7 @@ server = express(); // Instantiate server
 
 // Add specific headers for CORS 
 function handleCORS (req, res, next) {
-  res.header('Access-Control-Allow-Origin', server.get('websiteUrl') );
+  res.header('Access-Control-Allow-Origin', server.get('origin') );
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
   res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
   res.header('Access-Control-Expose-Headers', 'WWW-Authenticate');
@@ -59,6 +59,7 @@ server.configure('development', function () {
   server.set('dbName', 'dev-db');
   server.set('svPort', 8787);
   server.set('apiUrl', 'http://localhost:8787');
+  server.set('origin', 'http://localhost:8888');
   server.set('websiteUrl', 'http://localhost:8888/dist/website/local/public/');
   server.set('cookieMaxAge', 2 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
@@ -75,9 +76,15 @@ server.configure('test', function () {
   server.set('dbName', 'test-db');
   server.set('svPort', 8787);
   server.set('apiUrl', 'http://localhost:8787');
-  server.set('websiteUrl', ' ');
+  server.set('origin', 'http://localhost:8888');
+  server.set('websiteUrl', 'http://localhost:8888/dist/website/local/public/');
   server.set('cookieMaxAge', 120 * 1000);   // Tests shouldnt take more than 2 minutes to complete
   server.set('redisDb', 9);// Redis DB #. Other redis default options are fine for now
+  server.locals = { scriptPath: 'data-main="http://localhost:8888/dist/page/local/src/page.js" src="http://localhost:8888/src/vendor/require/require.js"'
+                  , cssPath: 'http://localhost:8888/dist/page/local/assets/css/page.css'
+                  }; // This replaces the `view options` in express 3.x
+  server.use(handleCORS);
+  bunyan.setToLog = true;
 });
 
 server.configure('staging', function () {
@@ -86,6 +93,7 @@ server.configure('staging', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
   server.set('apiUrl', 'api.tldr.io/staging');
+  server.set('origin', 'http://tldr.io');
   server.set('websiteUrl', 'http://tldr.io/staging');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
@@ -102,6 +110,7 @@ server.configure('production', function () {
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
   server.set('apiUrl', 'api.tldr.io');
+  server.set('origin', 'http://tldr.io');
   server.set('websiteUrl', 'http://tldr.io');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
