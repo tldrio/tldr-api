@@ -96,7 +96,7 @@ server.configure('staging', function () {
   server.set('websiteUrl', 'http://tldr.io/staging');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
-  server.locals = { scriptPath: 'http://tldr.io/page/page/src/page.js'
+  server.locals = { scriptPath: 'src="http://tldr.io/page/staging/src/page.js"'
                   , cssPath: 'http://tldr.io/page/staging/assets/css/page.css'
                   }; // This replaces the `view options` in express 3.x
   server.use(handleCORS);
@@ -113,7 +113,7 @@ server.configure('production', function () {
   server.set('websiteUrl', 'http://tldr.io');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
   server.set('redisDb', 0);// Redis DB #. Other redis default options are fine for now
-  server.locals = { scriptPath: 'http://tldr.io/page/src/page.js'
+  server.locals = { scriptPath: 'src="http://tldr.io/page/src/page.js"'
                   , cssPath: 'http://tldr.io/page/assets/css/page.css'
                   };
   server.use(handleCORS);
