@@ -33,6 +33,7 @@ UserSchema = new Schema(
            , unique: true
            , required: true
            , validate: [validateEmail, 'email must be a properly formatted email address']
+           , set: customUtils.normalizeEmail
            }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
@@ -44,6 +45,7 @@ UserSchema = new Schema(
   , username: { type: String
               , required: true
               , validate: [validateUsername, 'username must have between 1 and 30 characters']
+              , set: customUtils.trimLeadingTrailingWhitespace
               }
   }
 , { strict: true });
@@ -69,7 +71,6 @@ function createAndSaveInstance(userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
-        validFields.email = validFields.email.toLowerCase();   // Redundant with the setter, but the setter also works with direct saves so we keep both
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }

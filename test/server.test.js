@@ -799,6 +799,29 @@ describe('Webserver', function () {
       });
     });
 
+    it('user email should be normalized (trimmed and lowercase), username should be just trimmed', function (done) {
+      var userNumber, obj;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "  Louiiis  ", email: "  vALid@eMAil.com", password: "supersecret"} }, function (error, response, body) {
+
+          // Only the data we want to send is sent
+          body.email.should.equal("valid@email.com");
+          body.username.should.equal("Louiiis");
+          assert.isUndefined(body._id);
+          assert.isUndefined(body.password);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(userNumber + 1);   // The user really is created
+            done();
+          });
+        });
+      });
+    });
+
     it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
       var userNumber, obj;
 

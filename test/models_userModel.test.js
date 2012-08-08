@@ -187,9 +187,9 @@ describe('User', function () {
       });
     });
 
-    it('lowercase the email and use it as the default value for the username', function (done) {
+    it('use the email as the default value for the username', function (done) {
       var userData = { password: 'notTOOshort'
-                     , email: 'vaLId@email.com'
+                     , email: 'valid@email.com'
                      };
 
       User.createAndSaveInstance(userData, function(err) {
@@ -200,6 +200,27 @@ describe('User', function () {
           docs[0].username.should.equal("valid@email.com");
 
           done();
+        });
+      });
+    });
+
+
+    it('normalize email and username inputs', function (done) {
+      var userData = { password: 'notTOOshort'
+                     , email: '  vaLId@email.com'
+                     , username: ' NFa '
+                     };
+
+      User.createAndSaveInstance(userData, function(err) {
+        assert.isNull(err);
+
+        User.find({email: 'valid@email.com'}, function(err, docs) {
+          docs.should.have.length(1);
+          User.find({username: 'NFa'}, function(err, docs) {
+            docs.should.have.length(1);
+
+            done();
+          });
         });
       });
     });
