@@ -8,6 +8,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
   , _ = require('underscore')
+  , i18n = require('../lib/i18n')
   , UserSchema, User
   , bcrypt = require('bcrypt')
   , customUtils = require('../lib/customUtils')
@@ -32,19 +33,19 @@ UserSchema = new Schema(
   , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
            , unique: true
            , required: true
-           , validate: [validateEmail, 'email must be a properly formatted email address']
+           , validate: [validateEmail, i18n.validateUserEmail]
            , set: customUtils.normalizeEmail
            }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
               , required: true
-              , validate: [validatePassword, 'password must be at least 6 characters long']
+              , validate: [validatePassword, i18n.validateUserPwd]
               }
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
   , username: { type: String
               , required: true
-              , validate: [validateUsername, 'username must have between 1 and 30 characters']
+              , validate: [validateUsername, i18n.validateUserName]
               , set: customUtils.trimLeadingTrailingWhitespace
               }
   , usernameLowerCased: { type: String
@@ -147,9 +148,9 @@ function updatePassword (currentPassword, newPassword, callback) {
   var self = this
     , errors = {};
 
-  if (! currentPassword || ! newPassword) { throw { message: "Missing argument currentPassword or newPassword" }; }
+  if (! currentPassword || ! newPassword) { throw { message: i18n.missingArgUpdatePwd}; }
 
-  if (! validatePassword(newPassword)) { errors.newPassword = "New password must be at least 6 characters long"; }
+  if (! validatePassword(newPassword)) { errors.newPassword = i18n.validateUserPwd; }
 
   bcrypt.compare(currentPassword, self.password, function(err, valid) {
     if (err) {throw err;}
@@ -166,7 +167,7 @@ function updatePassword (currentPassword, newPassword, callback) {
         return;  // Stop executing here to avoid calling the callback twice
       }
     } else {
-      errors.currentPassword = "You didn't supply the correct current password";
+      errors.currentPassword = i18n.currentPwdMissing;
     }
 
     callback(errors);

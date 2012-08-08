@@ -8,6 +8,7 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
+  , i18n = require('../lib/i18n')
   , sinon = require('sinon')
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../models')
@@ -121,7 +122,7 @@ describe('User', function () {
         err.name.should.equal('ValidationError');
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.email.should.equal('email must be a properly formatted email address');
+        valErr.email.should.equal(i18n.validateUserEmail);
         done();
       });
     });
@@ -152,7 +153,7 @@ describe('User', function () {
 
             _.keys(err.errors).length.should.equal(1);
             valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-            valErr.username.should.equal('username must have between 1 and 30 characters');
+            valErr.username.should.equal(i18n.validateUserName);
             done();
           });
         });
@@ -176,7 +177,7 @@ describe('User', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal('password must be at least 6 characters long');
+        valErr.password.should.equal(i18n.validateUserPwd);
         done();
       });
     });
@@ -198,7 +199,7 @@ describe('User', function () {
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal('password must be at least 6 characters long');
+        valErr.password.should.equal(i18n.validateUserPwd);
         done();
       });
     });
