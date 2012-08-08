@@ -126,25 +126,36 @@ describe('User', function () {
       });
     });
 
-    it('should not validate a username that\'s too long', function (done) {
+    it('should accepts usernames containing from 3 to 16 alphanumerical characters', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
-                               , username: '0123456789012345678901234567890'
-                               , usernameLowerCased: '0123456789012345678901234567890'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
                                })
         , valErr;
 
       //Unit test the rule (there is 31 characters in there)
-      assert.isFalse(User.validateUsername('0123456789012345678901234567890'));
+      assert.isTrue(User.validateUsername('Stevie_sTarAc1'));
 
       // Check integration into Mongoose
       user.save(function(err) {
-        err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.username.should.equal('username must have between 1 and 30 characters');
-        done();
+        assert.isNull(err);
+        user.username = 'to';
+
+        user.save(function(err) {
+          err.name.should.equal('ValidationError');
+
+          user.username = 'Cecin#estpas&un username valide!';
+          user.save(function(err) {
+            err.name.should.equal('ValidationError');
+
+            _.keys(err.errors).length.should.equal(1);
+            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+            valErr.username.should.equal('username must have between 1 and 30 characters');
+            done();
+          });
+        });
       });
     });
 
@@ -184,29 +195,11 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
-        console.log(err);
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal('password must be at least 6 characters long');
         done();
-      });
-    });
-
-    it('use the email as the default value for the username', function (done) {
-      var userData = { password: 'notTOOshort'
-                     , email: 'valid@email.com'
-                     };
-
-      User.createAndSaveInstance(userData, function(err) {
-        assert.isNull(err);
-
-        User.find({email: 'valid@email.com'}, function(err, docs) {
-          docs.should.have.length(1);
-          docs[0].username.should.equal("valid@email.com");
-
-          done();
-        });
       });
     });
 
@@ -232,7 +225,7 @@ describe('User', function () {
     });
 
     it('should save a user whose password is valid and set default validationStatus', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      };
@@ -249,7 +242,7 @@ describe('User', function () {
           bcrypt.compareSync('notTOOshort', docs[0].password).should.equal(true);
           bcrypt.compareSync('notTOOOshort', docs[0].password).should.equal(false);
 
-          docs[0].username.should.equal("A name");
+          docs[0].username.should.equal("NFADeploy");
 
           done();
         });
@@ -296,7 +289,7 @@ describe('User', function () {
     });
 
     it('should only save the authorized user fields', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'another@email.com'
                      , nonValidField: 'some value'
@@ -314,7 +307,7 @@ describe('User', function () {
     });
 
     it('should save a user whose password is valid', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
@@ -343,7 +336,7 @@ describe('User', function () {
   describe('#getCreatedTldrs', function() {
 
     it('Should return the array of saved tldrs if there are some', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -395,7 +388,7 @@ describe('User', function () {
 
   describe('#updatePassword', function() {
     it('should call callback with correct error messages if password can\'t be updated', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      };
@@ -423,7 +416,7 @@ describe('User', function () {
     });
 
     it('should throw if one or both parameters are missing', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      };
@@ -439,7 +432,7 @@ describe('User', function () {
     });
 
     it('should call callback with correct error messages if password can\'t be updated', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      };
@@ -462,22 +455,22 @@ describe('User', function () {
 
   describe('should update the user updatable fields', function() {
     it('should update the fields if they pass validation', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
-        , newData = { username: 'Yep another name'
+        , newData = { username: 'NFAMasterDeploy'
                     , password: 'anothergood'
                     , email: 'another@valid.com'};
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        user.username.should.equal("A name");
+        user.username.should.equal("NFADeploy");
         user.email.should.equal("valid@email.com");
         bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
         user.updateValidFields(newData, function(err, user2) {
-          user2.username.should.equal("Yep another name");
+          user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("valid@email.com");
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
@@ -487,7 +480,7 @@ describe('User', function () {
     });
 
     it('should NOT update the fields if they DON\'T pass validation', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
@@ -497,7 +490,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        user.username.should.equal("A name");
+        user.username.should.equal("NFADeploy");
         user.email.should.equal("valid@email.com");
 
         assert.isNull(err);
@@ -511,7 +504,7 @@ describe('User', function () {
     });
 
     it('should update the fields only if the unique constraint is respected', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
                      }
@@ -519,7 +512,7 @@ describe('User', function () {
                         , password: 'nottooshort'
                         , email: 'again@email.com'
                         }
-        , newData = { username: 'A name'   // Same as userData
+        , newData = { username: 'NFADeploy'   // Same as userData
                     , password: 'anothergood'
                     , email: 'valid@email.com'};   // Same as userData
 

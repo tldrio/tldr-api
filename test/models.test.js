@@ -47,7 +47,7 @@ describe('Models', function () {
   describe('setTldrCreator', function () {
 
     it('Should link multiple tldrs with their creator', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -110,7 +110,7 @@ describe('Models', function () {
     });
 
     it('should not link anything and throw an error if the tldr or the creator is not supplied', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }

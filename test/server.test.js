@@ -89,7 +89,7 @@ describe('Webserver', function () {
                 numberOfTldrs = docs.length;
                 User.remove({}, function(err) {
                   if (err) { return done(err); }
-                  User.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
+                  User.createAndSaveInstance({email: "user1@nfa.com", username: "UserOne", password: "supersecret"}, function(err) {
                     if (err) { return done(err); }
                     done();
                   });
@@ -603,7 +603,7 @@ describe('Webserver', function () {
 
                 response.statusCode.should.equal(200);
                 body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-                body.username.should.equal("User One");
+                body.username.should.equal("UserOne");
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
@@ -623,7 +623,7 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to log in as User One with a wrong password', function (done) {
+    it('Should not be able to log in as UserOne with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {

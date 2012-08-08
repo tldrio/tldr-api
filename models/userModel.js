@@ -75,10 +75,6 @@ function createAndSaveInstance(userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
-        // Set username default as email
-        if (!validFields.username || (validFields.username.length === 0) ) {
-          validFields.username = validFields.email;
-        }
         // Set confirmToken - length 13 is very important
         validFields.confirmedEmail = false;
         validFields.confirmToken = customUtils.uid(13);
@@ -206,9 +202,13 @@ function validateEmail (value) {
   }
 }
 
-// Username should be non empty and less than 30 characters long
+// Username should contain from 3 to 16 alphanumerical characters
 function validateUsername (value) {
-  return (value && value.length <= 30 && value.length >= 1);
+  if (value && value.match(/^[A-Za-z0-9_]{3,16}$/)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 // password should be non empty and longer than 6 characters
