@@ -47,6 +47,10 @@ UserSchema = new Schema(
               , validate: [validateUsername, 'username must have between 1 and 30 characters']
               , set: customUtils.trimLeadingTrailingWhitespace
               }
+  , usernameLowerCased: { type: String
+                        , required: true
+                        , unique: true
+                        }
   }
 , { strict: true });
 
@@ -71,17 +75,25 @@ function createAndSaveInstance(userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
+        // Set username default as email
         if (!validFields.username || (validFields.username.length === 0) ) {
           validFields.username = validFields.email;
         }
         // Set confirmToken - length 13 is very important
         validFields.confirmedEmail = false;
         validFields.confirmToken = customUtils.uid(13);
+        // Set usernameLowerCased
+        validFields.usernameLowerCased = validFields.username.toLowerCase();
         instance = new User(validFields);
         instance.save(callback);
       });
     });
   } else {
+    // Set required path with valid data
+    // So the only validation error that will be
+    // triggered is the one for the password
+    validFields.username = 'nfadeploy';
+    validFields.usernameLowerCased = 'nfadeploy';
     instance = new User(validFields);
     instance.save(callback);
   }

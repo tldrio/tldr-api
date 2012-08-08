@@ -49,16 +49,17 @@ describe('User', function () {
   describe('#validators', function () {
 
     it('should not save a user that has no email', function (done) {
-      var user = new User({ username: 'A name'
-                               , password: 'supersecret!'
-                               })
+      var user = new User({ username: 'NFADeploy'
+                           , usernameLowerCased: 'nfadeploy'
+                           , password: 'supersecret!'
+                           })
         , valErr;
 
       user.save(function(err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        _.keys(err.errors).length.should.equal(1);
         valErr.email.should.equal('required');
         done();
       });
@@ -66,7 +67,8 @@ describe('User', function () {
 
     it('should not save a user that has no password', function (done) {
       var user = new User({ email: 'email@email.com'
-                               , username: 'A name'
+                           , username: 'NFADeploy'
+                           , usernameLowerCased: 'nfadeploy'
                                })
         , valErr;
 
@@ -89,7 +91,7 @@ describe('User', function () {
       user.save(function(err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.username.should.equal('required');
         done();
@@ -108,7 +110,8 @@ describe('User', function () {
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
-                     , username: 'A name'
+                     , username: 'NFADeploy'
+                     , usernameLowerCased: 'nfadeploy'
                      , email: 'bademail'
                      }
         , valErr, user;
@@ -127,6 +130,7 @@ describe('User', function () {
       var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: '0123456789012345678901234567890'
+                               , usernameLowerCased: '0123456789012345678901234567890'
                                })
         , valErr;
 
@@ -147,7 +151,8 @@ describe('User', function () {
     it('should not validate a user whose password is too short', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'secre'
-                               , username: 'wqr ew'
+                               , username: 'NFADeploy'
+                               , usernameLowerCased: 'nfadeploy'
                                })
         , valErr;
 
@@ -171,7 +176,7 @@ describe('User', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'short'
                      , email: 'valid@email.com'
                      }
@@ -179,6 +184,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
+        console.log(err);
 
         _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
@@ -251,8 +257,16 @@ describe('User', function () {
     });
 
     it('should not save a user with the same email or the same username twice', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , userData2 = { username: 'nfadEPLOY'
+                     , password: 'NOTtooshort'
+                     , email: 'anothervalid@email.com'
+                     }
+        , userData3 = { username: 'lameredetoto'
+                     , password: 'notTooSHORt'
                      , email: 'valid@email.com'
                      }
         , usersNumber;
@@ -263,14 +277,12 @@ describe('User', function () {
           usersNumber = docs.length;
 
           // Try to save a user with the same email
-          userData.password = "bloupbloup";
-          //userData.username = "a username";
-          User.createAndSaveInstance(userData, function(err) {
+
+          User.createAndSaveInstance(userData3, function(err) {
             err.code.should.equal(11000);   // Duplicate key
 
-            // Try to save a user with the same username
-            userData.username = "A name";
-            User.createAndSaveInstance(userData, function(err) {
+            // Try to save a user with the same username (except case sentivity)
+            User.createAndSaveInstance(userData2, function(err) {
               err.code.should.equal(11000);   // Duplicate key
 
               User.find({}, function (err, docs) {
