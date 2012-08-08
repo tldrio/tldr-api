@@ -185,6 +185,10 @@ function updateValidFields (data, callback) {
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
   });
+  // Manually set usernameLowerCased in case of updates
+  if (_.has(data, 'username')) {
+    self.usernameLowerCased = data.username.toLowerCase();
+  }
 
   self.save(callback);
 }

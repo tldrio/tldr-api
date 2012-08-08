@@ -592,7 +592,7 @@ describe('Webserver', function () {
                      , json: { username: "blip" } }, function (error, response, body) {
 
             response.statusCode.should.equal(409);
-            body.duplicateField.should.equal("username");
+            body.duplicateField.should.equal("usernameLowerCased");
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
