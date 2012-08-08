@@ -1,5 +1,6 @@
 var User = require('./models').User
-  , bcrypt = require('bcrypt');
+  , bcrypt = require('bcrypt')
+  , customUtils = require('./lib/customUtils');
 
 
 /*
@@ -8,7 +9,7 @@ var User = require('./models').User
  * Note: this is NOT a Connect middleware, hence the different signature
  */
 function authenticateUser(req, email, password, done) {
-  User.find({ email: email }, function(err, docs) {
+  User.find({ email: customUtils.normalizeEmail(email) }, function(err, docs) {
     if (err) { return done(err); }
 
     if (docs.length === 0) {
@@ -37,7 +38,7 @@ function authenticateUser(req, email, password, done) {
  */
 function serializeUser(user, done) {
   done(null, user._id);
-};
+}
 
 
 /*
@@ -47,7 +48,7 @@ function deserializeUser(_id, done) {
   User.findOne({_id: _id}, function (err, user) {
     done(err, user);
   });
-};
+}
 
 
 module.exports.authenticateUser = authenticateUser;
