@@ -61,9 +61,9 @@ function validateTitle (value) {
   return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 150));
 }
 
-// Resource Author should be defined, not empty and not be too long
+// Resource Author should be defined and not be too long
 function validateAuthor (value) {
-  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 50));
+  return (!_.isUndefined(value) && (value.length <= 50));
 }
 
 
