@@ -425,9 +425,12 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
 
-        (function() {user.updatePassword(null, 'aaaaaa');}).should.throw();
-        (function() {user.updatePassword('aaaaaa');}).should.throw();
-        (function() {user.updatePassword();}).should.throw();
+        function testFunc1 () {user.updatePassword(null, 'aaaaaa');}
+        function testFunc2 () {user.updatePassword('aaaaaa');}
+        function testFunc3 () {user.updatePassword();}
+        testFunc1.should.throw();
+        testFunc2.should.throw();
+        testFunc3.should.throw();
         done();
       });
     });

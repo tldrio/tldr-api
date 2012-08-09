@@ -16,18 +16,15 @@ var bunyan = require('./lib/logger').bunyan
   , User = models.User;
 
 
-console.log(i18n.toto);
-/**
- * Convenience route for latest tldrs
- *
- */
-function getLatestTldrs (req, res, next) {
-  var quantity = req.params.quantity
-    , newReq = req;
-  newReq.query.quantity = quantity;
-  searchTldrs(newReq, res, next);
-}
 
+
+function internalContentNegotiationForTldr (req, res, tldr) {
+    if (req.accepts('text/html')) {
+      return res.render('page', tldr); // We serve the tldr Page
+    } else {  // Send json by default
+      return res.json(200, tldr); // We serve the raw tldr data
+    }
+}
 
 /**
  * Returns a search of tldrs (through route /tldrs/search)
@@ -114,6 +111,19 @@ function searchTldrs (req, res, next) {
 
 
 /**
+ * Convenience route for latest tldrs
+ *
+ */
+function getLatestTldrs (req, res, next) {
+  var quantity = req.params.quantity
+    , newReq = req;
+  newReq.query.quantity = quantity;
+  searchTldrs(newReq, res, next);
+}
+
+
+
+/**
  * GET /tldrs/:id
  * We query tldr by id here
  */
@@ -142,15 +152,6 @@ function getTldrById (req, res, next) {
 
   });
 }
-
-function internalContentNegotiationForTldr (req, res, tldr) {
-    if (req.accepts('text/html')) {
-      return res.render('page', tldr); // We serve the tldr Page
-    } else {  // Send json by default
-      return res.json(200, tldr); // We serve the raw tldr data
-    }
-}
-
 
 /**
  * Convenience function to factor code betweet PUT and POST on
@@ -224,7 +225,7 @@ function postNewTldr (req, res, next) {
     } else {
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr) } );
+        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr);} );
       } else {
         return res.json(201, tldr);
       }

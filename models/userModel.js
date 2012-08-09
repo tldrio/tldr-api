@@ -17,86 +17,6 @@ var mongoose = require('mongoose')
   , authorizedFields = ['email', 'username', 'confirmedEmail'];         // fields that can be sent to the user
 
 
-/**
- * Schema
- *
- */
-UserSchema = new Schema(
-  { confirmedEmail: { type: Boolean
-                    , default: false
-                    }
-  , confirmToken: { type: String
-                  }
-  , createdAt: { type: Date
-               , default: Date.now
-               }
-  , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
-           , unique: true
-           , required: true
-           , validate: [validateEmail, i18n.validateUserEmail]
-           , set: customUtils.normalizeEmail
-           }
-  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
-  // No need to store the salt, bcrypt already stores it in the hash
-  , password: { type: String
-              , required: true
-              , validate: [validatePassword, i18n.validateUserPwd]
-              }
-  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
-  , username: { type: String
-              , required: true
-              , validate: [validateUsername, i18n.validateUserName]
-              , set: customUtils.trimLeadingTrailingWhitespace
-              }
-  , usernameLowerCased: { type: String
-                        , required: true
-                        , unique: true
-                        }
-  }
-, { strict: true });
-
-
-
-
-/*
- * Create a User instance and save it to the database
- * All defaults are located here instead of in the schema or in setters
- * Part of the password's validation has to occur here as Mongoose's setters are called before the
- * validator, so using the standard way any password would be considered valid
- */
-function createAndSaveInstance(userInput, callback) {
-  var validFields = _.pick(userInput, userSetableFields)
-    , instance;
-
-  // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
-  // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
-  // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
-  // The '6' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
-  if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(6, function(err, salt) {
-      bcrypt.hash(validFields.password, salt, function (err, hash) {
-        validFields.password = hash;
-        // Set confirmToken - length 13 is very important
-        validFields.confirmedEmail = false;
-        validFields.confirmToken = customUtils.uid(13);
-        // Set usernameLowerCased
-        validFields.usernameLowerCased = validFields.username.toLowerCase();
-        instance = new User(validFields);
-        instance.save(callback);
-      });
-    });
-  } else {
-    // Set required path with valid data
-    // So the only validation error that will be
-    // triggered is the one for the password
-    validFields.username = 'nfadeploy';
-    validFields.usernameLowerCased = 'nfadeploy';
-    instance = new User(validFields);
-    instance.save(callback);
-  }
-}
-
-
 function createConfirmToken (callback) {
   var newToken = customUtils.uid(13);
 
@@ -137,42 +57,6 @@ function getCreatedTldrs (callback) {
     });
 }
 
-
-
-/*
- * Update a user password
- * @param {String} currentPassword supplied by user for checking purposes
- * @param {String} newPassword chosen by user
- */
-function updatePassword (currentPassword, newPassword, callback) {
-  var self = this
-    , errors = {};
-
-  if (! currentPassword || ! newPassword) { throw { message: i18n.missingArgUpdatePwd}; }
-
-  if (! validatePassword(newPassword)) { errors.newPassword = i18n.validateUserPwd; }
-
-  bcrypt.compare(currentPassword, self.password, function(err, valid) {
-    if (err) {throw err;}
-
-    if (valid) {
-      if ( ! errors.newPassword) {
-        // currentPassword is correct and newPassword is valid: we can change
-        bcrypt.genSalt(6, function(err, salt) {
-          bcrypt.hash(newPassword, salt, function (err, hash) {
-            self.password = hash;
-            self.save(callback);
-          });
-        });
-        return;  // Stop executing here to avoid calling the callback twice
-      }
-    } else {
-      errors.currentPassword = i18n.currentPwdMissing;
-    }
-
-    callback(errors);
-  });
-}
 
 
 /*
@@ -220,6 +104,122 @@ function validateUsername (value) {
 function validatePassword (value) {
   return (value ? value.length >= 6 : false);
 }
+
+
+/*
+ * Create a User instance and save it to the database
+ * All defaults are located here instead of in the schema or in setters
+ * Part of the password's validation has to occur here as Mongoose's setters are called before the
+ * validator, so using the standard way any password would be considered valid
+ */
+function createAndSaveInstance(userInput, callback) {
+  var validFields = _.pick(userInput, userSetableFields)
+    , instance;
+
+  // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
+  // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
+  // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
+  // The '6' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
+  if (validatePassword(validFields.password)) {
+    bcrypt.genSalt(6, function(err, salt) {
+      bcrypt.hash(validFields.password, salt, function (err, hash) {
+        validFields.password = hash;
+        // Set confirmToken - length 13 is very important
+        validFields.confirmedEmail = false;
+        validFields.confirmToken = customUtils.uid(13);
+        // Set usernameLowerCased
+        validFields.usernameLowerCased = validFields.username.toLowerCase();
+        instance = new User(validFields);
+        instance.save(callback);
+      });
+    });
+  } else {
+    // Set required path with valid data
+    // So the only validation error that will be
+    // triggered is the one for the password
+    validFields.username = 'nfadeploy';
+    validFields.usernameLowerCased = 'nfadeploy';
+    instance = new User(validFields);
+    instance.save(callback);
+  }
+}
+
+
+/*
+ * Update a user password
+ * @param {String} currentPassword supplied by user for checking purposes
+ * @param {String} newPassword chosen by user
+ */
+function updatePassword (currentPassword, newPassword, callback) {
+  var self = this
+    , errors = {};
+
+  if (! currentPassword || ! newPassword) { throw { message: i18n.missingArgUpdatePwd}; }
+
+  if (! validatePassword(newPassword)) { errors.newPassword = i18n.validateUserPwd; }
+
+  bcrypt.compare(currentPassword, self.password, function(err, valid) {
+    if (err) {throw err;}
+
+    if (valid) {
+      if ( ! errors.newPassword) {
+        // currentPassword is correct and newPassword is valid: we can change
+        bcrypt.genSalt(6, function(err, salt) {
+          bcrypt.hash(newPassword, salt, function (err, hash) {
+            self.password = hash;
+            self.save(callback);
+          });
+        });
+        return;  // Stop executing here to avoid calling the callback twice
+      }
+    } else {
+      errors.currentPassword = i18n.currentPwdMissing;
+    }
+
+    callback(errors);
+  });
+}
+
+
+
+
+/**
+ * Schema
+ *
+ */
+UserSchema = new Schema(
+  { confirmedEmail: { type: Boolean
+                    , default: false
+                    }
+  , confirmToken: { type: String
+                  }
+  , createdAt: { type: Date
+               , default: Date.now
+               }
+  , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+           , unique: true
+           , required: true
+           , validate: [validateEmail, i18n.validateUserEmail]
+           , set: customUtils.normalizeEmail
+           }
+  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
+  // No need to store the salt, bcrypt already stores it in the hash
+  , password: { type: String
+              , required: true
+              , validate: [validatePassword, i18n.validateUserPwd]
+              }
+  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
+  , username: { type: String
+              , required: true
+              , validate: [validateUsername, i18n.validateUserName]
+              , set: customUtils.trimLeadingTrailingWhitespace
+              }
+  , usernameLowerCased: { type: String
+                        , required: true
+                        , unique: true
+                        }
+  }
+, { strict: true });
 
 
 

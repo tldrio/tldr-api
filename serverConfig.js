@@ -5,7 +5,7 @@
 var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
-  , dbObject = require('./lib/db')
+  , DbObject = require('./lib/db')
   , mongoose = require('mongoose')
   , models = require('./models')
   , consolidate = require('consolidate')
@@ -25,7 +25,7 @@ server = express(); // Instantiate server
  *
  */
 
-// Add specific headers for CORS 
+// Add specific headers for CORS
 function handleCORS (req, res, next) {
   res.header('Access-Control-Allow-Origin', server.get('origin') );
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT');
@@ -142,7 +142,7 @@ server.configure('staging', 'production', function () {
 
 // Store db Instance in server. Avoid multiple instantiation
 // in test files
-server.db = new dbObject( server.get('dbHost')
+server.db = new DbObject( server.get('dbHost')
                         , server.get('dbName')
                         , server.get('dbPort')
                         );
