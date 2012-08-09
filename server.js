@@ -19,7 +19,7 @@ server.get('/users/you/createdtldrs', requestHandlers.getLoggedUserCreatedTldrs)
 
 server.put('/users/you', requestHandlers.updateUserInfo);
 
-// Handles a user connection and credentials check. 
+// Handles a user connection and credentials check.
 server.post('/users/login',
   server.passport.authenticate('local'),
   function (req, res, next) {

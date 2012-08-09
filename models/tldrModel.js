@@ -19,41 +19,6 @@ var mongoose = require('mongoose')
 
 
 
-/**
- * Schema
- *
- */
-
-TldrSchema = new Schema(
-  { url: { type: String
-         , unique: true
-         , required: true
-         , validate: [validateUrl, i18n.validateTldrUrl]
-         , set: normalizeUrl
-         }
-  , title: { type: String
-           , validate: [validateTitle, i18n.validateTldrTitle]
-           }
-  , summaryBullets: { type: Array
-                    , required: true
-                    , validate: [validateBullets, i18n.validateTldrBullet]
-                    }
-  , resourceAuthor: { type: String
-                    , validate: [validateAuthor, i18n.validateTldrAuthor]
-                    }
-  , resourceDate: { type: Date }
-  , createdAt: { type: Date
-               , default: Date.now
-               }
-  , updatedAt: { type: Date
-               , default: Date.now
-               }
-               , required: false
-  , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
-  }
-, { strict: true });
-
-
 
 /**
  * Create a new instance of Tldr and populate it
@@ -125,10 +90,10 @@ function validateBullets (value) {
     return (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
   }
 
-  return (_.isArray(value) // first check if it's an array
-          && (!_.isEmpty(value) && value.length <= 5) // check size of array
-          && _.any(value) // checks that at least one bullet point is non-empty
-          && _.reduce(_.map(value, validateBulletLength), function (memo, s) { return (s && memo); }, true)); // use mapreduce to check if bullets are non-empty and not too long
+  return (_.isArray(value) && // first check if it's an array
+          (!_.isEmpty(value) && value.length <= 5) &&// check size of array
+          _.any(value) && // checks that at least one bullet point is non-empty
+          _.reduce(_.map(value, validateBulletLength), function (memo, s) { return (s && memo); }, true)); // use mapreduce to check if bullets are non-empty and not too long
 }
 
 //Titles should be defined, non empty and not be too long
@@ -140,6 +105,41 @@ function validateTitle (value) {
 function validateAuthor (value) {
   return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 50));
 }
+
+
+/**
+ * Schema
+ *
+ */
+
+TldrSchema = new Schema(
+  { url: { type: String
+         , unique: true
+         , required: true
+         , validate: [validateUrl, i18n.validateTldrUrl]
+         , set: normalizeUrl
+         }
+  , title: { type: String
+           , validate: [validateTitle, i18n.validateTldrTitle]
+           }
+  , summaryBullets: { type: Array
+                    , required: true
+                    , validate: [validateBullets, i18n.validateTldrBullet]
+                    }
+  , resourceAuthor: { type: String
+                    , validate: [validateAuthor, i18n.validateTldrAuthor]
+                    }
+  , resourceDate: { type: Date }
+  , createdAt: { type: Date
+               , default: Date.now
+               }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
+               , required: false
+  , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
+  }
+, { strict: true });
 
 
 

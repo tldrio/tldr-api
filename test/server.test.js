@@ -41,7 +41,7 @@ describe('Webserver', function () {
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
-  // before mocha quits 
+  // before mocha quits
 
   before(function (done) {
     db.connectToDatabase(function() {
@@ -54,7 +54,7 @@ describe('Webserver', function () {
   });
 
   // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)
-  function saveSync(arr, idx, callback) {
+  function saveSync(arr, idx, done, callback) {
     if (idx === arr.length) {
       return callback();
     }
@@ -70,7 +70,7 @@ describe('Webserver', function () {
     // dummy models
     tldr1 = new Tldr({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     //We need an object ID for this one for PUT test
-    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
+    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     tldr3 = new Tldr({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     tldr4 = new Tldr({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
@@ -186,7 +186,7 @@ describe('Webserver', function () {
 
       older = new Date(now - 10000 * (12));
 
-      saveSync(someTldrs, 0, function() {
+      saveSync(someTldrs, 0, done, function() {
         Tldr.find({}, function(err,docs) {
           docs.length.should.equal(30);
 
@@ -408,7 +408,7 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
-      var tldrData = { url: 'http://nfa.com' 
+      var tldrData = { url: 'http://nfa.com'
         , summaryBullets: [''] };   // Summary can't be empty
 
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
@@ -466,7 +466,7 @@ describe('Webserver', function () {
       });
     });
 
- 
+
 
 
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
@@ -515,7 +515,7 @@ describe('Webserver', function () {
     it('should be able to update the logged user\'s info', function (done) {
       var obj;
 
-      
+
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -907,7 +907,7 @@ describe('Webserver', function () {
          });
        });
     });
-    
+
 
     it('should not confirm user email with bad confirm token ', function (done) {
       var obj;
