@@ -21,46 +21,6 @@ var mongoose = require('mongoose')
 
 
 /**
- * Create a new instance of Tldr and populate it
- * Only fields in userSetableFields are handled
- * @param {Object} userInput Object containing the fields to set for the tldr instance
- * @param {Function} callback Function to call after the creation of the tldr
- */
-
-TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
-  var validFields = _.pick(userInput, userSetableFields)
-    , instance;
-
-  instance = new Tldr(validFields);
-  instance.save(callback);
-};
-
-
-
-
-/**
- * Update tldr object.
- * Only fields in userUpdatableFields are handled
- * @param {Object} updates Object containing fields to update with corresponding value
- * @param {Function} callback callback to be passed to save method
- *
- */
-
-TldrSchema.methods.updateValidFields = function (updates, callback) {
-  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
-    , self = this;
-
-  _.each( validUpdateFields, function (validField) {
-    self[validField] = updates[validField];
-  });
-
-  self.updatedAt = new Date();
-
-  self.save(callback);
-};
-
-
-/**
  * Validators
  *
  */
@@ -142,6 +102,46 @@ TldrSchema = new Schema(
 , { strict: true });
 
 
+
+
+/**
+ * Create a new instance of Tldr and populate it
+ * Only fields in userSetableFields are handled
+ * @param {Object} userInput Object containing the fields to set for the tldr instance
+ * @param {Function} callback Function to call after the creation of the tldr
+ */
+
+TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
+  var validFields = _.pick(userInput, userSetableFields)
+    , instance;
+
+  instance = new Tldr(validFields);
+  instance.save(callback);
+};
+
+
+
+
+/**
+ * Update tldr object.
+ * Only fields in userUpdatableFields are handled
+ * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Function} callback callback to be passed to save method
+ *
+ */
+
+TldrSchema.methods.updateValidFields = function (updates, callback) {
+  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
+    , self = this;
+
+  _.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
+
+  self.updatedAt = new Date();
+
+  self.save(callback);
+};
 
 
 

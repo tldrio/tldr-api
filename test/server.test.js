@@ -61,7 +61,7 @@ describe('Webserver', function () {
 
     arr[idx].save(function(err) {
       if (err) {return done(err);}
-      saveSync(arr, idx + 1, callback);
+      saveSync(arr, idx + 1, done, callback);
     });
   }
 
