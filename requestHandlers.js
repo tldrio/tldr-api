@@ -11,21 +11,20 @@ var bunyan = require('./lib/logger').bunyan
   , server = require('./serverConfig')
   , normalizeUrl = require('./lib/customUtils').normalizeUrl
   , models = require('./models')
+  , i18n = require('./lib/i18n')
   , Tldr = models.Tldr
   , User = models.User;
 
 
-/**
- * Convenience route for latest tldrs
- *
- */
-function getLatestTldrs (req, res, next) {
-  var quantity = req.params.quantity
-    , newReq = req;
-  newReq.query.quantity = quantity;
-  searchTldrs(newReq, res, next);
-}
 
+
+function internalContentNegotiationForTldr (req, res, tldr) {
+    if (req.accepts('text/html')) {
+      return res.render('page', tldr); // We serve the tldr Page
+    } else {  // Send json by default
+      return res.json(200, tldr); // We serve the raw tldr data
+    }
+}
 
 /**
  * Returns a search of tldrs (through route /tldrs/search)
@@ -53,11 +52,11 @@ function searchTldrs (req, res, next) {
     url = normalizeUrl(url);
     Tldr.find({url: url}, function (err, docs) {
       if (err) {
-        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }
 
       if (docs.length === 0) {
-        return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+        return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
       }
 
       // Success
@@ -83,7 +82,7 @@ function searchTldrs (req, res, next) {
      .lt('updatedAt', olderthan)
      .exec(function(err, docs) {
        if (err) {
-         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
+         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
        }
 
        res.json(200, docs);
@@ -101,7 +100,7 @@ function searchTldrs (req, res, next) {
      .skip(startat)
      .exec(function(err, docs) {
        if (err) {
-         return next({ statusCode: 500, body: {message: 'Internal Error executing query' } });
+         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
        }
        // Example of how the function is used
        bunyan.incrementMetric('latestCalled', req);
@@ -109,6 +108,19 @@ function searchTldrs (req, res, next) {
      });
   }
 }
+
+
+/**
+ * Convenience route for latest tldrs
+ *
+ */
+function getLatestTldrs (req, res, next) {
+  var quantity = req.params.quantity
+    , newReq = req;
+  newReq.query.quantity = quantity;
+  searchTldrs(newReq, res, next);
+}
+
 
 
 /**
@@ -126,29 +138,20 @@ function getTldrById (req, res, next) {
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
       // node_modules/mongoose/lib/drivers/node-mongodb-native/objectid.js
       if (err.message === 'Invalid ObjectId') {
-        return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+        return next({ statusCode: 403, body: { _id: i18n.invalidTldrId } } );
       } else {
-        return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by Id' } } );
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrId} } );
       }
     }
     if(!tldr){
       // There is no record for this id
-      return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+      return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
     internalContentNegotiationForTldr(req, res, tldr);
 
   });
 }
-
-function internalContentNegotiationForTldr (req, res, tldr) {
-    if (req.accepts('text/html')) {
-      return res.render('page', tldr); // We serve the tldr Page
-    } else {  // Send json by default
-      return res.json(200, tldr); // We serve the raw tldr data
-    }
-}
-
 
 /**
  * Convenience function to factor code betweet PUT and POST on
@@ -162,9 +165,9 @@ function internalUpdateCb (err, docs, req, res, next) {
 
   if (err) {
     if (err.message === 'Invalid ObjectId') {
-      return next({ statusCode: 403, body: { _id: 'Invalid tldr id supplied' } } );
+      return next({ statusCode: 403, body: { _id: i18n.invalidTldrId} } );
     } else {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting Tldr by url' } } );
+      return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
     }
   }
 
@@ -176,14 +179,14 @@ function internalUpdateCb (err, docs, req, res, next) {
         if (err.errors) {
           return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
         }
-        return next({ statusCode: 500, body: { message: 'Internal Error while updating Tldr' } } );
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
       // With 204 even if a object is provided it's not sent by express
       return res.send(204);
     });
   } else {
-    return next({ statusCode: 404, body: { message: 'ResourceNotFound' } } );
+    return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
   }
 }
 
@@ -200,7 +203,7 @@ function internalUpdateCb (err, docs, req, res, next) {
 function postNewTldr (req, res, next) {
 
   if (!req.body) {
-    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
+    return next({ statusCode: 400, body: { message: i18n.bodyRequired } } );
   }
 
   Tldr.createAndSaveInstance(req.body, function (err, tldr) {
@@ -216,13 +219,13 @@ function postNewTldr (req, res, next) {
         });
 
       } else {
-        return next({ statusCode: 500, body: { message: 'Internal Error while creatning Tldr ' } } );
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrCreateTldr} } );
       }
 
     } else {
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr) } );
+        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr);} );
       } else {
         return res.json(201, tldr);
       }
@@ -243,7 +246,7 @@ function putUpdateTldrWithId (req, res, next) {
   var id = req.params.id;
 
   if (!req.body) {
-    return next({ statusCode: 400, body: { message: 'Body required in request' } } );
+    return next({ statusCode: 400, body: { message: i18n.bodyRequired} } );
   }
 
   // We find by id here
@@ -266,7 +269,7 @@ function createNewUser(req, res, next) {
       } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
         return next({ statusCode: 409, body: { duplicateField: models.getDuplicateField(err) } } );
       } else {
-        return next({ statusCode: 500, body: { message: 'Internal Error while creating new user account' } } );
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrCreateUser} } );
       }
     }
     // Log user in right away after his creation
@@ -307,7 +310,7 @@ function updateUserInfo(req, res, next) {
         } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
           return next({ statusCode: 409, body: {duplicateField: models.getDuplicateField(err)} });
         } else {
-          return next({ statusCode: 500, body: { message: 'Internal Error while updating user info' } } );
+          return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateUser} } );
         }
       }
 
@@ -330,8 +333,8 @@ function updateUserInfo(req, res, next) {
       updateEverythingExceptPassword();   // No errors (yet)
     }
   } else {
-    res.setHeader('WWW-Authenticate', 'UnknownUser');
-    return res.json(401, { message: 'Unauthorized' } );
+    res.setHeader('WWW-Authenticate', i18n.unknownUser);
+    return res.json(401, { message: i18n.unauthorized} );
   }
 }
 
@@ -343,8 +346,8 @@ function getLoggedUser(req, res, next) {
   if (req.user) {
     res.json(200, req.user.getAuthorizedFields());
   } else {
-    res.setHeader('WWW-Authenticate', 'UnknownUser');
-    return res.json(401, { message: 'Unauthorized' } );
+    res.setHeader('WWW-Authenticate', i18n.unknownUser);
+    return res.json(401, { message: i18n.unauthorized} );
   }
 }
 
@@ -358,8 +361,8 @@ function getLoggedUserCreatedTldrs(req, res, next) {
       return res.json(200, tldrs);
     });
   } else {
-    res.setHeader('WWW-Authenticate', 'UnknownUser');
-    return res.json(401, { message: 'Unauthorized' } );
+    res.setHeader('WWW-Authenticate', i18n.unknownUser);
+    return res.json(401, { message: i18n.unauthorized} );
   }
 }
 
@@ -373,9 +376,9 @@ function logUserOut(req, res, next) {
   req.logOut();
 
   if (username) {
-    return res.json(200, { message: 'User ' + username + ' logged out successfully' });
+    return res.json(200, { message: i18n.successLogOut});
   } else {
-    return res.json(400, { message: 'No user was logged in!' });
+    return res.json(400, { message: i18n.failureLogOut});
   }
 }
 
@@ -384,11 +387,11 @@ function resendConfirmToken (req, res, next) {
   if (req.user) {
     req.user.createConfirmToken( function (err, user) {
       if (err) {
-        return next({ statusCode: 500, body: { message: 'Internal error while updating new validation Code' } });
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateToken } });
       }
 
       if (server.get('env') === 'test') {
-          return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+          return res.json(200, { message: i18n.confirmTokenSent});
       } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
         
         mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
@@ -397,12 +400,12 @@ function resendConfirmToken (req, res, next) {
           }
         });
 
-        return res.json(200, { message: 'new validation link sent to ' + req.user.email});
+        return res.json(200, { message: i18n.confirmTokenSent});
       }
     });
   } else {
-    res.setHeader('WWW-Authenticate', 'UnknownUser');
-    return res.json(401, { message: 'Unauthorized' } );
+    res.setHeader('WWW-Authenticate', i18n.unknownUser);
+    return res.json(401, { message: i18n.unauthorized} );
   }
 }
 
@@ -419,7 +422,7 @@ function confirmUserEmail (req, res, next) {
 
   User.findOne({ email: email },  function (err, user) {
     if (err) {
-      return next({ statusCode: 500, body: { message: 'Internal Error while getting User by email' } } );
+      return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } );
     }
 
     // Check if user exists and confirmToken matches
@@ -434,7 +437,7 @@ function confirmUserEmail (req, res, next) {
       user.confirmedEmail = true;
       user.save(function (err) {
         if (err) {
-          return next({ statusCode: 500, body: { message: 'Internal Error while saving user with new confirmedEmail value' } } );
+          return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );
         }
         return res.redirect(server.get('websiteUrl'));
       });
@@ -453,9 +456,6 @@ module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getLoggedUser = getLoggedUser;
 module.exports.getLoggedUserCreatedTldrs = getLoggedUserCreatedTldrs;
 module.exports.getTldrById = getTldrById;
-//module.exports.handleErrors = handleErrors;
-//module.exports.handleCORSLocal = handleCORSLocal;
-//module.exports.handleCORSProd = handleCORSProd;
 module.exports.logUserOut = logUserOut;
 module.exports.putUpdateTldrWithId = putUpdateTldrWithId;
 module.exports.postNewTldr = postNewTldr;
