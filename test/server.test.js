@@ -800,6 +800,43 @@ describe('Webserver', function () {
       });
     });
 
+    it('Geting a tldr should populate creator if exists', function (done) {
+      var tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , obj;
+
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/tldrs'
+                     , json: tldrData1 }, function (error, response, body) {
+
+        request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://myfile.com/movie') }, function (error, response, body) {
+              response.statusCode.should.equal(200);
+              obj = JSON.parse(body);
+              obj.creator.username.should.equal('UserOne');
+              request.get({ headers: {"Accept": "application/json"}
+                          , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                // Logout in case we have other tests after this one
+                done();
+              });
+            });
+        });
+      });
+    });
+
     it('should be able to login whatever the case of the email is', function (done) {
       var obj;
 

@@ -50,17 +50,19 @@ function searchTldrs (req, res, next) {
   // corresponding tldr
   if (url) {
     url = normalizeUrl(url);
-    Tldr.find({url: url}, function (err, docs) {
+    Tldr.findOne({url: url})
+        .populate('creator')
+        .exec( function (err, doc) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }
 
-      if (docs.length === 0) {
+      if (!doc) {
         return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
       }
 
       // Success
-      internalContentNegotiationForTldr(req, res, docs[0]);
+      internalContentNegotiationForTldr(req, res, doc);
 
     });
 
@@ -79,6 +81,7 @@ function searchTldrs (req, res, next) {
     Tldr.find({})
      .sort('updatedAt', -1)
      .limit(limit)
+     .populate('creator')
      .lt('updatedAt', olderthan)
      .exec(function(err, docs) {
        if (err) {
@@ -98,6 +101,7 @@ function searchTldrs (req, res, next) {
      .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
+     .populate('creator')
      .exec(function(err, docs) {
        if (err) {
          return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
@@ -132,7 +136,9 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  Tldr.findById( id, function (err, tldr) {
+  Tldr.findOne({_id: id})
+      .populate('creator')
+      .exec( function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
