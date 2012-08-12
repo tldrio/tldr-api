@@ -7,13 +7,13 @@ var express = require('express')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , DbObject = require('./lib/db')
   , mongoose = require('mongoose')
-  , models = require('./models')
+  , models = require('./lib/models')
   , consolidate = require('consolidate')
   , server                               // Will store our express serverr
   , RedisStore = require('connect-redis')(express)   // Will manage the connection to our Redis store
   , passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy
-  , authorization = require('./authorization')
+  , authorization = require('./lib/authorization')
   , customUtils = require('./lib/customUtils');
 
 
