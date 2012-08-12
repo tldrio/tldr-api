@@ -248,7 +248,7 @@ server.use(handleErrors); // Use middleware to handle errors
 // Used for HTML templating
 server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', __dirname + '/views');
+server.set('views', __dirname + '/templates');
 server.use(express.static(__dirname + '/css'));
 
 // exports
