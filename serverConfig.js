@@ -91,7 +91,7 @@ server.configure('staging', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9002);
-  server.set('apiUrl', 'api.tldr.io/staging');
+  server.set('apiUrl', 'http://api.tldr.io/staging');
   server.set('origin', 'http://tldr.io');
   server.set('websiteUrl', 'http://tldr.io/staging');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
@@ -108,7 +108,7 @@ server.configure('production', function () {
   server.set('dbPort', '27017');
   server.set('dbName', 'prod-db');
   server.set('svPort', 9001);
-  server.set('apiUrl', 'api.tldr.io');
+  server.set('apiUrl', 'http://api.tldr.io');
   server.set('origin', 'http://tldr.io');
   server.set('websiteUrl', 'http://tldr.io');
   server.set('cookieMaxAge', 7 * 24 * 3600 * 1000);// Cookie options
