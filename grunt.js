@@ -42,7 +42,7 @@ module.exports = function(grunt) {
     // You can change the options for this task, by reading this:
     // https://github.com/cowboy/grunt/blob/master/docs/task_lint.md
   , lint: {
-      files: [ '*.js', 'test/*.js', 'lib/*.js', 'models/*.js']
+      files: [ '*.js', 'test/*.js', 'lib/*.js', 'models/*.js', 'routes/*.js']
     }
 
     // watch task to help during development
