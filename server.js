@@ -13,7 +13,7 @@ var express = require('express')
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
-  , routes = require('./routes/routes')
+  , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils');
 
 
