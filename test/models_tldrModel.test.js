@@ -74,7 +74,7 @@ describe('Tldr', function () {
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
-        url: 'javascript://myfile/movie',
+        url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',

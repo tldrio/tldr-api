@@ -48,7 +48,7 @@ function validateBullets (value) {
     // Value is an array containing at least on element and maximum 5
     check(value).isArray().len(0,5);
     _.map(value, function (bullet) {
-      check(bullet).len(0, 500).notEmpty();
+      check(bullet).len(1, 500).notEmpty();
     });
     return true;
   } catch(e) {
@@ -59,7 +59,7 @@ function validateBullets (value) {
 //Titles should be defined, non empty and not be too long
 function validateTitle (value) {
   try {
-    check(value).len(0, 50);
+    check(value).len(1, 50);
     return true;
   } catch(e) {
     return false;

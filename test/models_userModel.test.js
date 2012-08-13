@@ -102,12 +102,12 @@ describe('User', function () {
     it('validate email address - email', function (done) {
 
       // Unit test the rule
-      assert.isNull(User.validateEmail('noarobase'));
-      assert.isNull(User.validateEmail('user@'));
-      assert.isNull(User.validateEmail('user@domain'));
-      assert.isNull(User.validateEmail('@domain.tld'));
-      assert.isNotNull(User.validateEmail('user@domain.tld'));
-      assert.isNotNull(User.validateEmail('firstname.name@subdomain.domain.tld'));
+      assert.isFalse(User.validateEmail('noarobase'));
+      assert.isFalse(User.validateEmail('user@'));
+      assert.isFalse(User.validateEmail('user@domain'));
+      assert.isFalse(User.validateEmail('@domain.tld'));
+      assert.isTrue(User.validateEmail('user@domain.tld'));
+      assert.isTrue(User.validateEmail('firstname.name@subdomain.domain.tld'));
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
