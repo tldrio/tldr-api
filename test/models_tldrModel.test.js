@@ -280,6 +280,31 @@ describe('Tldr', function () {
 
   });
 
+  describe('#normalize', function () {
+    it('should remove common Xss vectors from user input', function (done) {
+
+      var tldr = new Tldr({
+        url: 'http://needforair.com/nutcrackers',
+        title: 'document.write Blog NFA',
+        summaryBullets: ['view.innerHTML', 'alert("THIS IS AN XSS ATTACK")'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err, doc) {
+        doc.summaryBullets[0].should.equal('view');
+        doc.summaryBullets[1].should.equal( 'alert&#40;"THIS IS AN XSS ATTACK"&#41;');
+        done();
+      });
+
+
+    });
+    
+  });
+  
 
 
   describe('#createAndSaveInstance', function () {

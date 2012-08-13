@@ -8,7 +8,7 @@ var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose')
-  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
   , TldrSchema
@@ -87,17 +87,20 @@ TldrSchema = new Schema(
          , unique: true
          , required: true
          , validate: [validateUrl, i18n.validateTldrUrl]
-         , set: normalizeUrl
+         , set: customUtils.normalizeUrl
          }
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
+           , set: customUtils.sanitizeInput
            }
   , summaryBullets: { type: Array
                     , required: true
                     , validate: [validateBullets, i18n.validateTldrBullet]
+                    , set: customUtils.sanitizeArray
                     }
   , resourceAuthor: { type: String
                     , validate: [validateAuthor, i18n.validateTldrAuthor]
+                    , set: customUtils.sanitizeInput
                     }
   , resourceDate: { type: Date }
   , createdAt: { type: Date
