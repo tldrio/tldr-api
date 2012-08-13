@@ -6,7 +6,8 @@
 
 
 var i18n = require('../lib/i18n')
-  , models = require('../lib/models');
+  , models = require('../lib/models')
+  , mailer = require('../lib/mailer');
 
 
 function contentNegotiationForTldr (req, res, tldr) {
@@ -47,6 +48,12 @@ function updateCallback (err, docs, req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
+      mailer.advertiseAdmin(updatedTldr, function(error, response){
+        if(error){
+          bunyan.warn('Error sending update tldr by email to admins', error);
+        }
+      });
+      
       // With 204 even if a object is provided it's not sent by express
       return res.send(204);
     });
