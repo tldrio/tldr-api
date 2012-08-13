@@ -10,7 +10,7 @@ var should = require('chai').should()
   , _ = require('underscore')
   , sinon = require('sinon')
   , mongoose = require('mongoose') // ODM for Mongo
-  , models = require('../models')
+  , models = require('../lib/models')
   , User = models.User
   , Tldr = models.Tldr
   , server = require('../server')
@@ -39,7 +39,7 @@ describe('Models', function () {
       Tldr.remove(function (err) {
         if (err) {throw done(err);}
         done();
-      })
+      });
     });
   });
 
@@ -47,7 +47,7 @@ describe('Models', function () {
   describe('setTldrCreator', function () {
 
     it('Should link multiple tldrs with their creator', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -110,7 +110,7 @@ describe('Models', function () {
     });
 
     it('should not link anything and throw an error if the tldr or the creator is not supplied', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -121,17 +121,20 @@ describe('Models', function () {
                        resourceDate: '2012',
                        createdAt: new Date(),
                        updatedAt: new Date()
-                     }
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-          (function() { models.setTldrCreator(tldr1); }).should.throw();
-          (function() { models.setTldrCreator(null, user); }).should.throw();
-          (function() { models.setTldrCreator(undefined, user); }).should.throw();
+          function test1 () { models.setTldrCreator(tldr1); }
+          function test2 () { models.setTldrCreator(null, user); }
+          function test3 () { models.setTldrCreator(undefined, user); }
+          test1.should.throw();
+          test2.should.throw();
+          test3.should.throw();
 
           done();
         });
-      })
+      });
     });
 
   });
@@ -166,7 +169,8 @@ describe('Models', function () {
                    , connectionId: 64
                    , ok: 1 };
 
-      (function() { models.getDuplicateField(error1); }).should.throw();
+      function testFunc () { models.getDuplicateField(error1); }
+      testFunc.should.throw();
 
       done();
     });

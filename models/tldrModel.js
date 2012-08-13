@@ -8,6 +8,7 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , url = require('url')
+  , i18n = require('../lib/i18n')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
@@ -16,6 +17,54 @@ var mongoose = require('mongoose')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate'];     // updatabe fields by user
 
+
+
+
+/**
+ * Validators
+ *
+ */
+
+//url should be a url, containing hostname and protocol info
+// This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
+// The real validation will take place with the resolve mechanism
+function  validateUrl (value) {
+  var isDefined = (!_.isUndefined(value))
+    , parsedUrl;
+
+  if (isDefined) {
+    parsedUrl = url.parse(value);
+
+    return (parsedUrl.protocol !== "") && ((parsedUrl.protocol === "http") || (parsedUrl.protocol === "https") || (parsedUrl.protocol === "http:") || (parsedUrl.protocol === "https:")) &&
+           (parsedUrl.hostname !== "") && (parsedUrl.hostname.indexOf(".") !== -1) &&
+           (parsedUrl.pathname !== "");
+  }
+
+  return false;
+}
+
+//Summary should be an Array, non empty and not be too long
+function validateBullets (value) {
+
+  function validateBulletLength (bullet) {
+    return (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
+  }
+
+  return (_.isArray(value) && // first check if it's an array
+          (!_.isEmpty(value) && value.length <= 5) &&// check size of array
+          _.any(value) && // checks that at least one bullet point is non-empty
+          _.reduce(_.map(value, validateBulletLength), function (memo, s) { return (s && memo); }, true)); // use mapreduce to check if bullets are non-empty and not too long
+}
+
+//Titles should be defined, non empty and not be too long
+function validateTitle (value) {
+  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 150));
+}
+
+// Resource Author should be defined and not be too long
+function validateAuthor (value) {
+  return (!_.isUndefined(value) && (value.length <= 50));
+}
 
 
 /**
@@ -27,18 +76,18 @@ TldrSchema = new Schema(
   { url: { type: String
          , unique: true
          , required: true
-         , validate: [validateUrl, 'url must be a correctly formatted url, with protocol and hostname']
+         , validate: [validateUrl, i18n.validateTldrUrl]
          , set: normalizeUrl
          }
   , title: { type: String
-           , validate: [validateTitle, 'Title has to be non empty and less than 150 characters']
+           , validate: [validateTitle, i18n.validateTldrTitle]
            }
   , summaryBullets: { type: Array
                     , required: true
-                    , validate: [validateBullets, 'bullets has to contain at least 1 bullet and each bullet must be less than 500 characters long']
+                    , validate: [validateBullets, i18n.validateTldrBullet]
                     }
   , resourceAuthor: { type: String
-                    , validate: [validateAuthor, 'resourceAuthor has to be non empty and less than 50 characters long']
+                    , validate: [validateAuthor, i18n.validateTldrAuthor]
                     }
   , resourceDate: { type: Date }
   , createdAt: { type: Date
@@ -51,6 +100,7 @@ TldrSchema = new Schema(
   , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
   }
 , { strict: true });
+
 
 
 
@@ -92,55 +142,6 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
 
   self.save(callback);
 };
-
-
-/**
- * Validators
- *
- */
-
-//url should be a url, containing hostname and protocol info
-// This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
-// The real validation will take place with the resolve mechanism
-function  validateUrl (value) {
-  var isDefined = (!_.isUndefined(value))
-    , parsedUrl;
-
-  if (isDefined) {
-    parsedUrl = url.parse(value);
-
-    return (parsedUrl.protocol !== "") && ((parsedUrl.protocol === "http") || (parsedUrl.protocol === "https") || (parsedUrl.protocol === "http:") || (parsedUrl.protocol === "https:")) &&
-           (parsedUrl.hostname !== "") && (parsedUrl.hostname.indexOf(".") !== -1) &&
-           (parsedUrl.pathname !== "");
-  }
-
-  return false;
-}
-
-//Summary should be an Array, non empty and not be too long
-function validateBullets (value) {
-
-  function validateBulletLength (bullet) {
-    return (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
-  }
-
-  return (_.isArray(value) // first check if it's an array
-          && (!_.isEmpty(value) && value.length <= 5) // check size of array
-          && _.any(value) // checks that at least one bullet point is non-empty
-          && _.reduce(_.map(value, validateBulletLength), function (memo, s) { return (s && memo); }, true)); // use mapreduce to check if bullets are non-empty and not too long
-}
-
-//Titles should be defined, non empty and not be too long
-function validateTitle (value) {
-  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 150));
-}
-
-// Resource Author should be defined, not empty and not be too long
-function validateAuthor (value) {
-  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 50));
-}
-
-
 
 
 

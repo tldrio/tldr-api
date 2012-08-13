@@ -8,8 +8,9 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
+  , i18n = require('../lib/i18n')
   , server = require('../server')
-  , models = require('../models')
+  , models = require('../lib/models')
   , db = server.db
   , mongoose = require('mongoose')
   , async = require('async')
@@ -40,7 +41,7 @@ describe('Webserver', function () {
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
-  // before mocha quits 
+  // before mocha quits
 
   before(function (done) {
     db.connectToDatabase(function() {
@@ -53,14 +54,14 @@ describe('Webserver', function () {
   });
 
   // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)
-  function saveSync(arr, idx, callback) {
+  function saveSync(arr, idx, done, callback) {
     if (idx === arr.length) {
       return callback();
     }
 
     arr[idx].save(function(err) {
       if (err) {return done(err);}
-      saveSync(arr, idx + 1, callback);
+      saveSync(arr, idx + 1, done, callback);
     });
   }
 
@@ -69,7 +70,7 @@ describe('Webserver', function () {
     // dummy models
     tldr1 = new Tldr({url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     //We need an object ID for this one for PUT test
-    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}); 
+    tldr2 = new Tldr({_id: mongoose.Types.ObjectId('111111111111111111111111'), url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     tldr3 = new Tldr({url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
     tldr4 = new Tldr({url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()});
 
@@ -89,7 +90,7 @@ describe('Webserver', function () {
                 numberOfTldrs = docs.length;
                 User.remove({}, function(err) {
                   if (err) { return done(err); }
-                  User.createAndSaveInstance({email: "user1@nfa.com", username: "User One", password: "supersecret"}, function(err) {
+                  User.createAndSaveInstance({email: "user1@nfa.com", username: "UserOne", password: "supersecret"}, function(err) {
                     if (err) { return done(err); }
                     done();
                   });
@@ -132,7 +133,7 @@ describe('Webserver', function () {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         obj.should.have.ownProperty('message');
-        obj.message.should.equal('ResourceNotFound');
+        obj.message.should.equal(i18n.resourceNotFound);
         done();
       });
 
@@ -185,7 +186,7 @@ describe('Webserver', function () {
 
       older = new Date(now - 10000 * (12));
 
-      saveSync(someTldrs, 0, function() {
+      saveSync(someTldrs, 0, done, function() {
         Tldr.find({}, function(err,docs) {
           docs.length.should.equal(30);
 
@@ -407,7 +408,7 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
-      var tldrData = { url: 'http://nfa.com' 
+      var tldrData = { url: 'http://nfa.com'
         , summaryBullets: [''] };   // Summary can't be empty
 
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
@@ -465,7 +466,7 @@ describe('Webserver', function () {
       });
     });
 
- 
+
 
 
     it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
@@ -514,7 +515,7 @@ describe('Webserver', function () {
     it('should be able to update the logged user\'s info', function (done) {
       var obj;
 
-      
+
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
@@ -591,7 +592,7 @@ describe('Webserver', function () {
                      , json: { username: "blip" } }, function (error, response, body) {
 
             response.statusCode.should.equal(409);
-            body.duplicateField.should.equal("username");
+            body.duplicateField.should.equal("usernameLowerCased");
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
@@ -603,7 +604,7 @@ describe('Webserver', function () {
 
                 response.statusCode.should.equal(200);
                 body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-                body.username.should.equal("User One");
+                body.username.should.equal("UserOne");
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
@@ -623,12 +624,12 @@ describe('Webserver', function () {
 
   describe('Test authentication and session', function() {
 
-    it('Should not be able to log in as User One with a wrong password', function (done) {
+    it('Should not be able to log in as UserOne with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('InvalidPassword');
+        response.headers['www-authenticate'].should.equal(i18n.invalidPwd);
         done();
       });
     });
@@ -638,7 +639,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('UnknownUser');
+        response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         done();
       });
     });
@@ -676,7 +677,7 @@ describe('Webserver', function () {
                    , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('UnknownUser');
+        response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         obj = JSON.parse(body);
         assert.isDefined(obj.message);
         assert.isUndefined(obj.email);
@@ -708,7 +709,7 @@ describe('Webserver', function () {
                            , uri: rootUrl + '/users/you' }, function (error, response, body) {
 
                 response.statusCode.should.equal(401);
-                response.headers['www-authenticate'].should.equal('UnknownUser');
+                response.headers['www-authenticate'].should.equal(i18n.unknownUser);
                 obj = JSON.parse(body);
                 assert.isDefined(obj.message);
                 assert.isUndefined(obj.email);
@@ -798,6 +799,58 @@ describe('Webserver', function () {
         });
       });
     });
+
+    it('Geting a tldr should populate creator if exists', function (done) {
+      var tldrData1 = { url: 'http://myfile.com/movie',
+                       title: 'Blog NFA',
+                       summaryBullets: ['Awesome Blog'],
+                       resourceAuthor: 'NFA Crew',
+                       resourceDate: '2012',
+                       createdAt: new Date(),
+                       updatedAt: new Date()
+                     }
+        , obj;
+
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/tldrs'
+                     , json: tldrData1 }, function (error, response, body) {
+
+        request.get({ headers: {"Accept": "application/json"}
+                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://myfile.com/movie') }, function (error, response, body) {
+              response.statusCode.should.equal(200);
+              obj = JSON.parse(body);
+              obj.creator.username.should.equal('UserOne');
+              request.get({ headers: {"Accept": "application/json"}
+                          , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                // Logout in case we have other tests after this one
+                done();
+              });
+            });
+        });
+      });
+    });
+
+    it('should be able to login whatever the case of the email is', function (done) {
+      var obj;
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "UsEr1@nFA.Com", password: "supersecret" } }, function (error, response, body) {
+
+         response.statusCode.should.equal(200);
+         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+         done();
+
+       });
+    });
+
 
     it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
       var userNumber, obj;
@@ -891,7 +944,7 @@ describe('Webserver', function () {
          });
        });
     });
-    
+
 
     it('should not confirm user email with bad confirm token ', function (done) {
       var obj;
