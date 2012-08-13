@@ -74,7 +74,7 @@ describe('Tldr', function () {
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
-        url: 'http://myfile/movie',
+        url: 'javascript://myfile/movie',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
@@ -91,13 +91,14 @@ describe('Tldr', function () {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "ftp://myfile.tld/movie";
+          //domain extension is not valid
+          tldrData.url = "http://myfile.tld/movie";
           tldr = new Tldr(tldrData);
         tldr.save( function (err) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "http://myfile.tld/movie";
+          tldrData.url = "http://blog.nfa.com/movie?url=avengers";
           tldr = new Tldr(tldrData);
           tldr.save( function (err) {
             assert.isNull(err);
