@@ -5,8 +5,8 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , i18n = require('../lib/i18n');
 
 
 /*
@@ -25,5 +25,5 @@ function getCreatedTldrs(req, res, next) {
 
 
 
-// Module interface
-exports = getCreatedTldrs;
+// Modumodelsle interface
+module.exports = getCreatedTldrs;

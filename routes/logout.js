@@ -5,8 +5,8 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , i18n = require('../lib/i18n');
 
 /*
  * As name implies, logs user out
@@ -26,4 +26,4 @@ function logout(req, res, next) {
 
 
 // Module interface
-exports = logout;
+module.exports = logout;

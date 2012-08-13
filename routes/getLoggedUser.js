@@ -5,8 +5,8 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , i18n = require('../lib/i18n');
 
 
 /*
@@ -23,4 +23,4 @@ function getLoggedUser(req, res, next) {
 
 
 // Module interface
-exports = getLoggedUser;
+module.exports = getLoggedUser;

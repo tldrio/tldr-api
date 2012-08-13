@@ -5,10 +5,10 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , mailer = require('./lib/mailer')
-  , server = require('./serverConfig')
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , mailer = require('../lib/mailer')
+  , config = require('../lib/config')
+  , i18n = require('../lib/i18n');
 
 
 function resendConfirmToken (req, res, next) {
@@ -19,11 +19,11 @@ function resendConfirmToken (req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateToken } });
       }
 
-      if (server.get('env') === 'test') {
+      if (config.env === 'test') {
           return res.json(200, { message: i18n.confirmTokenSent});
-      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
+      } else if (config.env === 'production' || config.env === 'development' ) {
         
-        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email', error);
           }
@@ -40,4 +40,4 @@ function resendConfirmToken (req, res, next) {
 
 
 // Module interface
-exports = resendConfirmToken;
+module.exports = resendConfirmToken;

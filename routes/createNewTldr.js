@@ -5,10 +5,10 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , normalizeUrl = require('./lib/customUtils').normalizeUrl
-  , models = require('./lib/models')
-  , i18n = require('./lib/i18n')
+var bunyan = require('../lib/logger').bunyan
+  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  , models = require('../lib/models')
+  , i18n = require('../lib/i18n')
   , helpers = require('./helpers')
   , Tldr = models.Tldr;
 
@@ -51,7 +51,8 @@ function createNewTldr (req, res, next) {
       }
     }
   });
+}
 
 
 // Module interface
-exports = createNewTldr;
+module.exports = createNewTldr;

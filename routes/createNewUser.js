@@ -5,11 +5,11 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , mailer = require('./lib/mailer')
-  , server = require('./serverConfig')
-  , models = require('./lib/models')
-  , i18n = require('./lib/i18n')
+var bunyan = require('../lib/logger').bunyan
+  , mailer = require('../lib/mailer')
+  , config = require('../lib/config')
+  , models = require('../lib/models')
+  , i18n = require('../lib/i18n')
   , User = models.User;
 
 
@@ -30,11 +30,11 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      if (server.get('env') === 'test') {
+      if (config.env === 'test') {
         return res.json(201, user.getAuthorizedFields());
-      } else if (server.get('env') === 'production' || server.get('env') === 'development' ) {
+      } else if (config.env === 'production' || config.env === 'development' ) {
 
-        mailer.sendConfirmToken(user, server.get('apiUrl'), function(error, response){
+        mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
           if(error){
             bunyan.warn('Error sending confirmation email', error);
           }
@@ -47,4 +47,4 @@ function createNewUser(req, res, next) {
 
 
 // Module interface
-exports = createNewUser;
+module.exports = createNewUser;

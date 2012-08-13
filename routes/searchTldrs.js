@@ -5,12 +5,11 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , server = require('./serverConfig')
-  , Tldr = require('./lib/models').Tldr
-  , helpers = require('helpers')
-  , normalizeUrl = require('./lib/customUtils').normalizeUrl
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , Tldr = require('../lib/models').Tldr
+  , helpers = require('./helpers')
+  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  , i18n = require('../lib/i18n');
 
 /**
  * Returns a search of tldrs (through route /tldrs/search)
@@ -99,4 +98,4 @@ function searchTldrs (req, res, next) {
   }
 }
 
-exports = searchTldrs;
+module.exports = searchTldrs;

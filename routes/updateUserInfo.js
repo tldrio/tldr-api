@@ -5,10 +5,10 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
+var bunyan = require('../lib/logger').bunyan
   , _ = require('underscore')
-  , models = require('./lib/models')
-  , i18n = require('./lib/i18n');
+  , models = require('../lib/models')
+  , i18n = require('../lib/i18n');
 
 
 
@@ -61,4 +61,4 @@ function updateUserInfo(req, res, next) {
 
 
 // Module interface
-exports = updateUserInfo;
+module.exports = updateUserInfo;

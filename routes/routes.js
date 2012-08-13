@@ -1,15 +1,15 @@
-var confirmUserEmail = require('confirmUserEmail')
-  , createNewTldr = require('createNewTldr')
-  , createNewUser = require('createNewUser')
-  , getCreatedTldrs = require('getCreatedTldrs')
-  , getLatestTldrs = require('getLatestTldrs')
-  , getLoggedUser = require('getLoggedUser')
-  , getTldrById = require('getTldrById')
-  , logout = require('logout')
-  , resendConfirmToken = require('resendConfirmToken')
-  , searchTldrs = require('searchTldrs')
-  , updateTldrWithId = require('updateTldrWithId')
-  , updateUserInfo = require('updateUserInfo');
+var confirmUserEmail = require('./confirmUserEmail')
+  , createNewTldr = require('./createNewTldr')
+  , createNewUser = require('./createNewUser')
+  , getCreatedTldrs = require('./getCreatedTldrs')
+  , getLatestTldrs = require('./getLatestTldrs')
+  , getLoggedUser = require('./getLoggedUser')
+  , getTldrById = require('./getTldrById')
+  , logout = require('./logout')
+  , resendConfirmToken = require('./resendConfirmToken')
+  , searchTldrs = require('./searchTldrs')
+  , updateTldrWithId = require('./updateTldrWithId')
+  , updateUserInfo = require('./updateUserInfo');
   
 
 

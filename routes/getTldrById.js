@@ -5,8 +5,8 @@
 */
 
 
-var Tldr = require('./lib/models').Tldr
-  , i18n = require('./lib/i18n')
+var Tldr = require('../lib/models').Tldr
+  , i18n = require('../lib/i18n')
   , helpers = require('./helpers');
 
 
@@ -53,4 +53,4 @@ function getTldrById (req, res, next) {
 
 
 // Module interface
-exports = getTldrById;
+module.exports = getTldrById;

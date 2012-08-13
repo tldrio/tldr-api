@@ -4,10 +4,10 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , server = require('./serverConfig')
-  , User = require('./lib/models').User
-  , i18n = require('./lib/i18n');
+var bunyan = require('../lib/logger').bunyan
+  , config = require('../lib/config')
+  , User = require('../lib/models').User
+  , i18n = require('../lib/i18n');
 
 
 
@@ -17,7 +17,7 @@ function confirmUserEmail (req, res, next) {
     , email = req.query.email;
 
   if (!confirmToken || !email) {
-    return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
+    return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
         res.send(400, html);
     });
   }
@@ -29,7 +29,7 @@ function confirmUserEmail (req, res, next) {
 
     // Check if user exists and confirmToken matches
     if (!user || (user.confirmToken !== confirmToken)) {
-      return res.render('confirmEmailError', { websiteUrl: server.get('websiteUrl') }, function (err, html) {
+      return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
         res.send(400, html);
       });
     }
@@ -41,10 +41,10 @@ function confirmUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );
         }
-        return res.redirect(server.get('websiteUrl'));
+        return res.redirect(config.websiteUrl);
       });
     } else {
-      return res.redirect(server.get('websiteUrl'));
+      return res.redirect(config.websiteUrl);
     }
 
   });
@@ -53,4 +53,4 @@ function confirmUserEmail (req, res, next) {
 
 
 // Module interface
-exports = confirmUserEmail;
+module.exports = confirmUserEmail;

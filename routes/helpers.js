@@ -5,8 +5,8 @@
 */
 
 
-var i18n = require('./lib/i18n')
-  , models = require('./lib/models')
+var i18n = require('../lib/i18n')
+  , models = require('../lib/models');
 
 
 function contentNegotiationForTldr (req, res, tldr) {

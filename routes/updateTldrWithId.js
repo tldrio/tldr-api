@@ -5,9 +5,9 @@
 */
 
 
-var bunyan = require('./lib/logger').bunyan
-  , Tldr = require('./lib/models').Tldr
-  , i18n = require('./lib/i18n')
+var bunyan = require('../lib/logger').bunyan
+  , Tldr = require('../lib/models').Tldr
+  , i18n = require('../lib/i18n')
   , helpers = require('./helpers');
 
 
@@ -34,4 +34,4 @@ function updateTldrWithId (req, res, next) {
 }
 
 // Module interface
-exports = updateTldrWithId;
+module.exports = updateTldrWithId;
