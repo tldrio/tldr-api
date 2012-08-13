@@ -10,15 +10,6 @@ var Tldr = require('../lib/models').Tldr
   , helpers = require('./helpers');
 
 
-function internalContentNegotiationForTldr (req, res, tldr) {
-    if (req.accepts('text/html')) {
-      return res.render('page', tldr); // We serve the tldr Page
-    } else {  // Send json by default
-      return res.json(200, tldr); // We serve the raw tldr data
-    }
-}
-
-
 /**
  * GET /tldrs/:id
  * We query tldr by id here

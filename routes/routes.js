@@ -20,6 +20,7 @@ module.exports.createNewUser = createNewUser;
 module.exports.getCreatedTldrs = getCreatedTldrs;
 module.exports.getLatestTldrs = getLatestTldrs;
 module.exports.getLoggedUser = getLoggedUser;
+module.exports.getTldrById = getTldrById;
 module.exports.logout = logout;
 module.exports.resendConfirmToken = resendConfirmToken;
 module.exports.searchTldrs = searchTldrs;

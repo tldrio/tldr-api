@@ -12,4 +12,4 @@ function getLatestTldrs (req, res, next) {
 }
 
 // Module interface
-exports = getLatestTldrs;
+module.exports = getLatestTldrs;

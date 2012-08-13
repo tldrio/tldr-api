@@ -99,7 +99,7 @@ server.get('/resendConfirmToken', routes.resendConfirmToken);
 //Users
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
-server.get('/users/you/createdtldrs', routes.getLoggedUserCreatedTldrs);
+server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 server.put('/users/you', routes.updateUserInfo);
 server.post('/users/login', // Handles a user connection and credentials check.
   passport.authenticate('local'),
@@ -107,15 +107,15 @@ server.post('/users/login', // Handles a user connection and credentials check.
     return res.json(200, req.user.getAuthorizedFields());
   }
 );
-server.get('/users/logout', routes.logUserOut);
+server.get('/users/logout', routes.logout);
 
 //tldrs
 server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
 server.get('/tldrs', routes.searchTldrs); // Convenience route
 server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs (convenience route)
 server.get('/tldrs/:id', routes.getTldrById);// GET a tldr by id
-server.post('/tldrs', routes.postNewTldr);//POST create tldr
-server.put('/tldrs/:id', routes.putUpdateTldrWithId);//PUT update tldr
+server.post('/tldrs', routes.createNewTldr);//POST create tldr
+server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
 
 
 
