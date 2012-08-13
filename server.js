@@ -40,13 +40,6 @@ server.locals = config.locals;
 
 server.use(middleware.CORS);
 server.use(express.bodyParser());
-server.use(function(req, res, next) {// Middleware to send a dummy empty favicon so as to be able to debug easily
-  if (req.url === '/favicon.ico') {
-    return res.send(200, '');
-  } else {
-    return next();
-  }
-});
 server.use(express.cookieParser());// Parse cookie data and use redis to store session data
 server.use(express.session(config.session));
 server.use(passport.initialize());// Use Passport for authentication and sessions
@@ -55,6 +48,13 @@ server.use(middleware.decorateRequest); //Middleware for assigning an id to each
 server.use(server.router); // Map routes
 server.use(middleware.handleErrors); // Use middleware to handle errors
 server.use(express.static(__dirname + '/css'));
+server.use(function(req, res, next) {// Middleware to send a dummy empty favicon so as to be able to debug easily
+  if (req.url === '/favicon.ico') {
+    return res.send(200, '');
+  } else {
+    return next();
+  }
+});
 
 
 
@@ -101,12 +101,7 @@ server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 server.put('/users/you', routes.updateUserInfo);
-server.post('/users/login', // Handles a user connection and credentials check.
-  passport.authenticate('local'),
-  function (req, res, next) {
-    return res.json(200, req.user.getAuthorizedFields());
-  }
-);
+server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
 
 //tldrs
@@ -126,7 +121,7 @@ if (module.parent === null) { // Code to execute only when running as main
   server.db.connectToDatabase(function() {
     bunyan.info('Connection to database successful');
     server.listen(config.svPort, function (){
-      bunyan.info('Server %s launched in %s environment, on port %s', server.name, server.get('env'), config.svPort);
+      bunyan.info('Server %s launched in %s environment, on port %s', server.name, config.env, config.svPort);
     });
   });
 }
