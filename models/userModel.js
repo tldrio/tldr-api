@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
   , UserSchema, User
   , bcrypt = require('bcrypt')
   , customUtils = require('../lib/customUtils')
+  , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail'];         // fields that can be sent to the user
@@ -49,11 +50,11 @@ function getAuthorizedFields() {
  * @param {Function} callback function to be called with the results after having fetched the tldrs
  */
 function getCreatedTldrs (callback) {
-  User.findOne({"_id": this._id})
-    .populate('tldrsCreated')
-    .exec(function(err, user) {
+  Tldr.find({'creator': this._id})
+    .populate('creator', 'username')
+    .exec(function(err, docs) {
       if (err) {throw err;}
-      callback(user.tldrsCreated);
+      callback(docs);
     });
 }
 
