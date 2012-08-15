@@ -336,7 +336,7 @@ describe('User', function () {
 
   describe('#getCreatedTldrs', function() {
 
-    it('Should return the array of saved tldrs if there are some', function (done) {
+    it('Should return the array of saved tldrs if there are some and populate only the username of the creator', function (done) {
       var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
