@@ -736,7 +736,6 @@ describe('Webserver', function () {
           response.statusCode.should.equal(200);
           body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
           assert.isUndefined(body.password);
-          assert.isUndefined(body._id);
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -745,7 +744,6 @@ describe('Webserver', function () {
             obj = JSON.parse(body);
             obj.email.should.equal("user1@nfa.com");
             assert.isUndefined(obj.password);
-            assert.isUndefined(obj._id);
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
@@ -911,7 +909,6 @@ describe('Webserver', function () {
           // Only the data we want to send is sent
           body.email.should.equal("valid@email.com");
           body.username.should.equal("Louiiis");
-          assert.isUndefined(body._id);
           assert.isUndefined(body.password);
 
           User.find({}, function (err, users) {

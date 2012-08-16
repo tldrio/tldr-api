@@ -324,7 +324,6 @@ describe('User', function () {
           assert.isDefined(sessionUsableFields.username);
           assert.isDefined(sessionUsableFields.email);
           assert.isUndefined(sessionUsableFields.password);
-          assert.isUndefined(sessionUsableFields._id);
 
           done();
         });
