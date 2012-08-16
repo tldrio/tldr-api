@@ -19,18 +19,13 @@ function resendConfirmToken (req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateToken } });
       }
 
-      if (config.env === 'test') {
-          return res.json(200, { message: i18n.confirmTokenSent});
-      } else if (config.env === 'production' || config.env === 'development' ) {
-        
-        mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
-          if(error){
-            bunyan.warn('Error sending confirmation email', error);
-          }
-        });
+      mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+        if(error){
+          bunyan.warn('Error sending confirmation email', error);
+        }
+      });
 
-        return res.json(200, { message: i18n.confirmTokenSent});
-      }
+      return res.json(200, { message: i18n.confirmTokenSent});
     });
   } else {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);

@@ -336,7 +336,7 @@ describe('User', function () {
 
   describe('#getCreatedTldrs', function() {
 
-    it('Should return the array of saved tldrs if there are some', function (done) {
+    it('Should return the array of saved tldrs if there are some and populate only the username of the creator', function (done) {
       var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
@@ -371,8 +371,10 @@ describe('User', function () {
                   assert.isUndefined(user.tldrsCreated[0].url);
 
                   user.getCreatedTldrs(function(tldrs) {
-                    tldrs[0].url.should.equal('http://myfile.com/movie');
-                    tldrs[1].url.should.equal('http://another.com/movie');
+                    tldrs[1].url.should.equal('http://myfile.com/movie');
+                    tldrs[0].url.should.equal('http://another.com/movie');
+                    tldrs[0].creator.username.should.equal('NFADeploy');
+                    assert.isUndefined(tldrs[0].creator.password);
 
                     done();
                   });

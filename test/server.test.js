@@ -782,8 +782,8 @@ describe('Webserver', function () {
                                , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
 
                     obj = JSON.parse(body);
-                    obj[0].url.should.equal("http://another.com/movie");
-                    obj[1].url.should.equal("http://another.com/again");
+                    obj[1].url.should.equal("http://another.com/movie");
+                    obj[0].url.should.equal("http://another.com/again");
 
                     request.get({ headers: {"Accept": "application/json"}
                                 , uri: rootUrl + '/users/logout' }, function (error, response, body) {

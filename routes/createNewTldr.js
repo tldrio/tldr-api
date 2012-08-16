@@ -10,6 +10,7 @@ var bunyan = require('../lib/logger').bunyan
   , models = require('../lib/models')
   , i18n = require('../lib/i18n')
   , helpers = require('./helpers')
+  , mailer = require('../lib/mailer')
   , Tldr = models.Tldr;
 
 /**
@@ -43,6 +44,12 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
+
+      mailer.advertiseAdmin(tldr, function(error, response){
+        if(error){
+          bunyan.warn('Error sending new tldr by email to admins', error);
+        }
+      });
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
         models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr);} );
