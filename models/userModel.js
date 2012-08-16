@@ -15,7 +15,7 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail'];         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
 
 
 function createConfirmToken (callback) {
