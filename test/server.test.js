@@ -560,7 +560,7 @@ describe('Webserver', function () {
                              , confirmPassword: "fantomasBAD" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
-            body.message.should.equal(i18n.passwordNoMatch);
+            body.newPassword.should.equal(i18n.passwordNoMatch);
 
             request.put({ headers: {"Accept": "application/json"}
                          , uri: rootUrl + '/users/you'
@@ -637,7 +637,7 @@ describe('Webserver', function () {
                                  , confirmPassword: "fanToMas" }}, function (error, response, body) {
 
                 response.statusCode.should.equal(403);
-                body.message.should.equal(i18n.passwordNoMatch);
+                body.newPassword.should.equal(i18n.passwordNoMatch);
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
