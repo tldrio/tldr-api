@@ -21,11 +21,15 @@ function updateUserInfo(req, res, next) {
 
   if (req.user) {
     // First, check if user wants to modify his password
-    if (req.body.oldPassword && req.body.newPassword && req.body.confirmPassword) {
+    if (req.body.oldPassword || req.body.newPassword || req.body.confirmPassword) {
+
+      if (!req.body.oldPassword) {
+        return next({ statusCode: 403,  body: { oldPassword: i18n.oldPwdMismatch } } );
+      }
 
       // New password and its confirmation should match
-      if (req.body.newPassword !== req.body.confirmPassword) {
-        return next({ statusCode: 403,  body: { message: i18n.passwordNoMatch } } );
+      if (!req.body.confirmPassword || !req.body.newPassword || req.body.newPassword !== req.body.confirmPassword) {
+        return next({ statusCode: 403,  body: { newPassword: i18n.passwordNoMatch, confirmPassword: i18n.passwordNoMatch } } );
       }
 
       req.user.updatePassword(req.body.oldPassword, req.body.newPassword, function(err) {

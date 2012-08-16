@@ -175,7 +175,7 @@ function updatePassword (currentPassword, newPassword, callback) {
         return;  // Stop executing here to avoid calling the callback twice
       }
     } else {
-      errors.oldPassword = i18n.currentPwdMissing;
+      errors.oldPassword = i18n.oldPwdMismatch;
     }
 
     callback(errors);
