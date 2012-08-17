@@ -18,16 +18,17 @@ test-jenkins:
 	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap
 	@echo "Tests finished, setting environment back to development"
 
+COVDIR=$(TLDR_API_DIR)/../api-cov
 #Need to install jscoverage see details here https://github.com/visionmedia/node-jscoverage
 test-cov:
 	@echo "TLDR - Launching test coverage"
-	@rm -rf ../tldr-api-cov
-	@jscoverage . ../tldr-api-cov --exclude=test --exclude=node_modules --exclude=Makefile && \
-	cp -R node_modules test ../tldr-api-cov && \
-	cd ../tldr-api-cov && \
+	@rm -rf $(COVDIR)
+	@jscoverage . $(COVDIR) --exclude=test --exclude=node_modules --exclude=Makefile && \
+	cp -R node_modules test $(COVDIR) && \
+	cd $(COVDIR) && \
 		 NODE_ENV="test" ./node_modules/.bin/mocha --reporter html-cov > test-coverage.html &&\
 		open test-coverage.html &&\
-	cd ../tldr-api;
+	cd $(TLDR_API_DIR);
 	@echo "Tests finished, setting environment back to development"
 
 .PHONY: test

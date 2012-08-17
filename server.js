@@ -119,9 +119,9 @@ server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
  */
 if (module.parent === null) { // Code to execute only when running as main
   server.db.connectToDatabase(function() {
-    bunyan.info('Connection to database successful');
+    //bunyan.info('Connection to database successful');
     server.listen(config.svPort, function (){
-      bunyan.info('Server %s launched in %s environment, on port %s', server.name, config.env, config.svPort);
+      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
     });
   });
 }

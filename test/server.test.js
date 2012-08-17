@@ -329,7 +329,7 @@ describe('Webserver', function () {
       request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
-        res.body.should.contain('<div id="tldr-container">');
+        res.body.should.contain('<div class="tldr-read-container">');
         done();
       });
 
