@@ -56,7 +56,8 @@ function updateUserInfo(req, res, next) {
         }
         return res.send(200, user.getAuthorizedFields());
       });
-
+    } else {
+      return res.send(200, req.user.getAuthorizedFields());
     }
   } else {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);

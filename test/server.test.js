@@ -542,6 +542,33 @@ describe('Webserver', function () {
       });
     });
 
+    it('should dont do anything if update userr info is done with no input', function (done) {
+      var obj;
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { } }, function (error, response, body) {
+
+          response.statusCode.should.equal(200);
+          request.get({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.email.should.equal("user1@nfa.com");
+
+            done();
+           });
+         });
+      });
+    });
+
     it('should be able to update the logged user\'s password only if new password and confirmation match', function (done) {
       var obj;
 
