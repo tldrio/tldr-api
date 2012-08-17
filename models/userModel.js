@@ -68,13 +68,21 @@ function updateValidFields (data, callback) {
   var self = this
     , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
 
+  // user wants to change it's email so we update the confirm status
+  // and generate new validation code
+  if (self.email !== data.email) {
+    self.confirmToken = customUtils.uid(13);
+    self.confirmedEmail = false;
+  }
+
+  // Manually set usernameLowerCased in case of updates
+  if (self.username !== data.username) {
+    self.usernameLowerCased = data.username.toLowerCase();
+  }
+
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
   });
-  // Manually set usernameLowerCased in case of updates
-  if (_.has(data, 'username')) {
-    self.usernameLowerCased = data.username.toLowerCase();
-  }
 
   self.save(callback);
 }

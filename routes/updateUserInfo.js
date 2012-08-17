@@ -7,7 +7,9 @@
 
 var bunyan = require('../lib/logger').bunyan
   , _ = require('underscore')
+  , config = require('../lib/config')
   , models = require('../lib/models')
+  , mailer = require('../lib/mailer')
   , i18n = require('../lib/i18n');
 
 
@@ -43,6 +45,11 @@ function updateUserInfo(req, res, next) {
       // Profile update
     } else if (req.body.username || req.body.email) {
 
+      var emailUpdate = false;
+      if (req.body.email !== req.user.email) {
+        emailUpdate = true;
+      }
+
       req.user.updateValidFields(req.body, function(err, user) {
         if (err) {
           if (err.errors) {
@@ -54,6 +61,16 @@ function updateUserInfo(req, res, next) {
             return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateUser} } );
           }
         }
+
+        // We send the confirmation link email in case of email change
+        if (emailUpdate) {
+          mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+            if(error){
+              bunyan.warn('Error sending confirmation email', error);
+            }
+          });
+        }
+
         return res.send(200, user.getAuthorizedFields());
       });
     } else {
