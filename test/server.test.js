@@ -542,7 +542,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('should dont do anything if update userr info is done with no input', function (done) {
+    it('should dont do anything on update user info if input fields are empty', function (done) {
       var obj;
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
