@@ -581,16 +581,16 @@ describe('Webserver', function () {
         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: rootUrl + '/users/you/updatePassword'
                      , json: { oldPassword: "supersecret"
                              , newPassword: "fantomas"
                              , confirmPassword: "fantomasBAD" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
-            body.newPassword.should.equal(i18n.passwordNoMatch);
+            body.confirmPassword.should.equal(i18n.passwordNoMatch);
 
             request.put({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you'
+                         , uri: rootUrl + '/users/you/updatePassword'
                          , json: { oldPassword: "supersecret"
                                  , newPassword: "fantomas"
                                  , confirmPassword: "fantomas" } }, function (error, response, body) {
@@ -649,7 +649,7 @@ describe('Webserver', function () {
             body.duplicateField.should.equal("usernameLowerCased");
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: rootUrl + '/users/you/updatePassword'
                      , json: { oldPassword: "sUPERseCRet"
                              , newPassword: "fantomas"
                              , confirmPassword: "fantomas" }}, function (error, response, body) {
@@ -658,13 +658,13 @@ describe('Webserver', function () {
             assert.isDefined(body.oldPassword);
 
             request.put({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you'
+                         , uri: rootUrl + '/users/you/updatePassword'
                          , json: { oldPassword: "supersecret"
                                  , newPassword: "fantomas"
                                  , confirmPassword: "fanToMas" }}, function (error, response, body) {
 
                 response.statusCode.should.equal(403);
-                body.newPassword.should.equal(i18n.passwordNoMatch);
+                body.confirmPassword.should.equal(i18n.passwordNoMatch);
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {

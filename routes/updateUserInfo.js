@@ -14,36 +14,12 @@ var bunyan = require('../lib/logger').bunyan
 
 
 /*
- * Updates the logged user's info. First tries to update password if the request contains
- * password data, then updates the rest of the fields, and send back all errors or a success to the user
- * If there is a pbolem in updateValidFields because of duplication, send back only this error.
- * That's not the best behaviour, we should probably break this function down
+ * Updates the logged user's info except password.
  */
 function updateUserInfo(req, res, next) {
 
   if (req.user) {
-    // First, check if user wants to modify his password
-    if (req.body.oldPassword || req.body.newPassword || req.body.confirmPassword) {
-
-      if (!req.body.oldPassword) {
-        return next({ statusCode: 403,  body: { oldPassword: i18n.oldPwdMismatch } } );
-      }
-
-      // New password and its confirmation should match
-      if (!req.body.confirmPassword || !req.body.newPassword || req.body.newPassword !== req.body.confirmPassword) {
-        return next({ statusCode: 403,  body: { newPassword: i18n.passwordNoMatch, confirmPassword: i18n.passwordNoMatch } } );
-      }
-
-      req.user.updatePassword(req.body.oldPassword, req.body.newPassword, function(err) {
-        if (err) {
-          return next({ statusCode:403, body: err });
-        } else {
-          return res.send(200, req.user.getAuthorizedFields());
-        }
-      });
-
-      // Profile update
-    } else if (req.body.username || req.body.email) {
+    if (req.body.username || req.body.email) {
 
       var emailUpdate = false;
       if (req.body.email !== req.user.email) {
