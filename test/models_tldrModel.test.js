@@ -483,7 +483,7 @@ describe('Tldr', function () {
       done();
     });
 
-    it('Sort the arguments of a querystring', function (done) {
+    it('Sort the arguments of a querystring and remove the useless ones', function (done) {
       var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto");
 
@@ -495,6 +495,9 @@ describe('Tldr', function () {
 
       theUrl = "http://subdomain.domain.tld/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?yyyyy=yto&zzzzz=value");
+
+      theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
 
       done();
     });

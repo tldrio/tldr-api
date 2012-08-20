@@ -47,7 +47,7 @@ function  validateUrl (value) {
 function validateBullets (value) {
 
   function validateBulletLength (bullet) {
-    return (bullet.length >=1 && bullet.length <=500); // if bullet is non-empty, it shouldn't be too long
+    return (bullet.length >=1 && bullet.length <=150); // if bullet is non-empty, it shouldn't be too long
   }
 
   return (_.isArray(value) && // first check if it's an array
@@ -58,12 +58,12 @@ function validateBullets (value) {
 
 //Titles should be defined, non empty and not be too long
 function validateTitle (value) {
-  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 150));
+  return (!_.isUndefined(value) && (value.length >= 1) && (value.length <= 50));
 }
 
 // Resource Author should be defined and not be too long
 function validateAuthor (value) {
-  return (!_.isUndefined(value) && (value.length <= 50));
+  return (!_.isUndefined(value) && (value.length <= 20));
 }
 
 

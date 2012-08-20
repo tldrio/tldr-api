@@ -20,7 +20,7 @@ function getTldrById (req, res, next) {
   var id = req.params.id;
 
   Tldr.findOne({_id: id})
-      .populate('creator')
+      .populate('creator', 'username')
       .exec( function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)

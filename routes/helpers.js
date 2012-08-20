@@ -6,17 +6,19 @@
 
 
 var i18n = require('../lib/i18n')
-  , models = require('../lib/models');
+  , models = require('../lib/models')
+  , _ = require('underscore')
+  , cssNames = require('../lib/css-names')
+  , mailer = require('../lib/mailer');
 
 
 function contentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
-      return res.render('page', tldr); // We serve the tldr Page
+      return res.render('page', _.extend({}, tldr, { css: cssNames } )); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
 }
-
 
 /**
  * Convenience function to factor code betweet PUT and POST on
@@ -47,6 +49,12 @@ function updateCallback (err, docs, req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
+      mailer.advertiseAdmin(updatedTldr, function(error, response){
+        if(error){
+          bunyan.warn('Error sending update tldr by email to admins', error);
+        }
+      });
+      
       // With 204 even if a object is provided it's not sent by express
       return res.send(204);
     });
@@ -54,7 +62,6 @@ function updateCallback (err, docs, req, res, next) {
     return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
   }
 }
-
 
 // Module interface
 module.exports.contentNegotiationForTldr = contentNegotiationForTldr;

@@ -30,17 +30,12 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      if (config.env === 'test') {
-        return res.json(201, user.getAuthorizedFields());
-      } else if (config.env === 'production' || config.env === 'development' ) {
-
-        mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
-          if(error){
-            bunyan.warn('Error sending confirmation email', error);
-          }
-        });
-        return res.json(201, user.getAuthorizedFields());
-      }
+      mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+        if(error){
+          bunyan.warn('Error sending confirmation email', error);
+        }
+      });
+      return res.json(201, user.getAuthorizedFields());
     });
   });
 }
