@@ -16,7 +16,7 @@ var bunyan = require('../lib/logger').bunyan
 /*
  * Updates the logged user's info except password.
  */
-function updateUserInfo(req, res, next) {
+function updateProfile(req, res, next) {
 
   if (req.user) {
     if (req.body.username || req.body.email) {
@@ -60,4 +60,4 @@ function updateUserInfo(req, res, next) {
 
 
 // Module interface
-module.exports = updateUserInfo;
+module.exports = updateProfile;

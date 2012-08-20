@@ -100,7 +100,7 @@ server.get('/resendConfirmToken', routes.resendConfirmToken);
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
-server.put('/users/you', routes.updateUserInfo);
+server.put('/users/you', routes.updateProfile);
 server.put('/users/you/updatePassword', routes.updatePassword);
 server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
