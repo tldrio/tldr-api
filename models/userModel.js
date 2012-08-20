@@ -14,8 +14,8 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
-  , userUpdatableFields = ['username']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail'];         // fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
 
 
 function createConfirmToken (callback) {
@@ -68,13 +68,21 @@ function updateValidFields (data, callback) {
   var self = this
     , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
 
+  // user wants to change it's email so we update the confirm status
+  // and generate new validation code
+  if (self.email !== data.email) {
+    self.confirmToken = customUtils.uid(13);
+    self.confirmedEmail = false;
+  }
+
+  // Manually set usernameLowerCased in case of updates
+  if (self.username !== data.username) {
+    self.usernameLowerCased = data.username.toLowerCase();
+  }
+
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
   });
-  // Manually set usernameLowerCased in case of updates
-  if (_.has(data, 'username')) {
-    self.usernameLowerCased = data.username.toLowerCase();
-  }
 
   self.save(callback);
 }
@@ -175,7 +183,7 @@ function updatePassword (currentPassword, newPassword, callback) {
         return;  // Stop executing here to avoid calling the callback twice
       }
     } else {
-      errors.currentPassword = i18n.currentPwdMissing;
+      errors.oldPassword = i18n.oldPwdMismatch;
     }
 
     callback(errors);
