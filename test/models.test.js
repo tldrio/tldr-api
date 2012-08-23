@@ -10,7 +10,7 @@ var should = require('chai').should()
   , _ = require('underscore')
   , sinon = require('sinon')
   , mongoose = require('mongoose') // ODM for Mongo
-  , models = require('../models')
+  , models = require('../lib/models')
   , User = models.User
   , Tldr = models.Tldr
   , server = require('../server')
@@ -39,7 +39,7 @@ describe('Models', function () {
       Tldr.remove(function (err) {
         if (err) {throw done(err);}
         done();
-      })
+      });
     });
   });
 
@@ -47,7 +47,7 @@ describe('Models', function () {
   describe('setTldrCreator', function () {
 
     it('Should link multiple tldrs with their creator', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -110,7 +110,7 @@ describe('Models', function () {
     });
 
     it('should not link anything and throw an error if the tldr or the creator is not supplied', function (done) {
-      var userData = { username: 'A name'
+      var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret!'
                      }
@@ -121,19 +121,72 @@ describe('Models', function () {
                        resourceDate: '2012',
                        createdAt: new Date(),
                        updatedAt: new Date()
-                     }
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-          (function() { models.setTldrCreator(tldr1); }).should.throw();
-          (function() { models.setTldrCreator(null, user); }).should.throw();
-          (function() { models.setTldrCreator(undefined, user); }).should.throw();
+          function test1 () { models.setTldrCreator(tldr1); }
+          function test2 () { models.setTldrCreator(null, user); }
+          function test3 () { models.setTldrCreator(undefined, user); }
+          test1.should.throw();
+          test2.should.throw();
+          test3.should.throw();
 
           done();
         });
-      })
+      });
     });
 
+  });
+
+
+  describe('getDuplicateErrorNiceFormat', function() {
+    it('should correctly extract the duplicated field if the error is formatted as expected', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key error index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 11001
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 }
+        , error2 = { name: 'MongoError'   // An actual duplicate error on create
+                   , err: 'E11000 duplicate key error index: dev-db.users.$email_1  dup key: { : "a@b.com" }'
+                   , code: 11000
+                   , n: 0
+                   , connectionId: 66
+                   , ok: 1 };
+
+      models.getDuplicateField(error1).should.equal("username");
+      models.getDuplicateField(error2).should.equal("email");
+
+      done();
+    });
+
+    it('should throw an error if the function is called on a non duplicate error', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key error index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 10999
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 };
+
+      function testFunc () { models.getDuplicateField(error1); }
+      testFunc.should.throw();
+
+      done();
+    });
+
+    it('Should return "unknown" if the error is not formatted as expected', function (done) {
+      var error1 = { name: 'MongoError'   // An actual duplicate error on update
+                   , err: 'E11000 duplicate key erro_r index: test-db.users.$username_1  dup key: { : "ANOTHER" }'
+                   , code: 11000
+                   , n: 0
+                   , connectionId: 64
+                   , ok: 1 };
+
+      models.getDuplicateField(error1).should.equal("unknown");
+
+      done();
+    });
 
 
   });

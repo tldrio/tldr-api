@@ -8,9 +8,10 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
+  , i18n = require('../lib/i18n')
   , sinon = require('sinon')
   , mongoose = require('mongoose') // ODM for Mongo
-  , models = require('../models')
+  , models = require('../lib/models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Tldr = models.Tldr
   , server = require('../server')
@@ -126,7 +127,7 @@ describe('Tldr', function () {
       });
 
     });
-    
+
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new Tldr({
@@ -288,9 +289,9 @@ describe('Tldr', function () {
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , createdAt: '2012'}, 
-        function (err) { 
-          if (err) { return done(err); } 
+        , createdAt: '2012'},
+        function (err) {
+          if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
 
@@ -314,14 +315,14 @@ describe('Tldr', function () {
 
         Tldr.createAndSaveInstance(
           tldr,
-          function (err) { 
-            if (err) { return done(err); } 
+          function (err) {
+            if (err) { return done(err); }
             Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
               Tldr.createAndSaveInstance(
-                tldr, 
-                function (err) { 
+                tldr,
+                function (err) {
                   err.should.not.be.null;
                   err.code.should.equal(11000);// 11000 is the code for duplicate key
                   done();
@@ -356,7 +357,7 @@ describe('Tldr', function () {
             tldr.summaryBullets.should.include('coin');
             tldr.title.should.equal('Blog NFA');
             tldr.resourceAuthor.should.equal('bloup');
-            
+
             // Perform update
             tldr.updateValidFields(updated, function(err) {
               if (err) { return done(err); }
@@ -482,7 +483,7 @@ describe('Tldr', function () {
       done();
     });
 
-    it('Sort the arguments of a querystring', function (done) {
+    it('Sort the arguments of a querystring and remove the useless ones', function (done) {
       var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto");
 
@@ -494,6 +495,9 @@ describe('Tldr', function () {
 
       theUrl = "http://subdomain.domain.tld/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?yyyyy=yto&zzzzz=value");
+
+      theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
 
       done();
     });
