@@ -25,7 +25,7 @@ function resendConfirmToken (req, res, next) {
         }
       });
 
-      return res.json(200, { message: i18n.confirmTokenSent});
+      return res.json(200, { message: i18n.confirmEmailTokenSent});
     });
   } else {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);

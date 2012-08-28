@@ -23,7 +23,7 @@ function createConfirmToken (callback) {
 
   User.findOne({ email: this.email }, function (err, doc) {
 
-    doc.confirmToken = newToken;
+    doc.confirmEmailToken = newToken;
     doc.save(callback);
   });
 }
@@ -71,7 +71,7 @@ function updateValidFields (data, callback) {
   // user wants to change it's email so we update the confirm status
   // and generate new validation code
   if (self.email !== data.email) {
-    self.confirmToken = customUtils.uid(13);
+    self.confirmEmailToken = customUtils.uid(13);
     self.confirmedEmail = false;
   }
 
@@ -134,9 +134,9 @@ function createAndSaveInstance(userInput, callback) {
     bcrypt.genSalt(6, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
-        // Set confirmToken - length 13 is very important
+        // Set confirmEmailToken - length 13 is very important
         validFields.confirmedEmail = false;
-        validFields.confirmToken = customUtils.uid(13);
+        validFields.confirmEmailToken = customUtils.uid(13);
         // Set usernameLowerCased
         validFields.usernameLowerCased = validFields.username.toLowerCase();
         instance = new User(validFields);
@@ -201,7 +201,7 @@ UserSchema = new Schema(
   { confirmedEmail: { type: Boolean
                     , default: false
                     }
-  , confirmToken: { type: String
+  , confirmEmailToken: { type: String
                   }
   , createdAt: { type: Date
                , default: Date.now

@@ -1000,11 +1000,11 @@ describe('Webserver', function () {
            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
              // Retrieve validation Code by directly queryin the db
-             var confirmToken = user.confirmToken;
+             var confirmEmailToken = user.confirmEmailToken;
              user.confirmedEmail.should.be.false;
 
              request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmEmailToken=' + encodeURIComponent(confirmEmailToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
 
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
                  user.confirmedEmail.should.be.true;
@@ -1029,7 +1029,7 @@ describe('Webserver', function () {
          body.confirmedEmail.should.be.false;
 
            request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmEmailToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
 
              response.statusCode.should.equal(400);
              done();
@@ -1054,14 +1054,14 @@ describe('Webserver', function () {
             User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
               // Retrieve validation Code by directly queryin the db
-              var previousToken = user.confirmToken;
+              var previousToken = user.confirmEmailToken;
 
               request.get({ headers: {"Accept": "application/json"}
                           , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
                 User.findOne({ email: "user1@nfa.com" }, function (err, user) {
-                  var newToken = user.confirmToken;
+                  var newToken = user.confirmEmailToken;
                   assert(newToken !== previousToken);
                   done();
                 });
