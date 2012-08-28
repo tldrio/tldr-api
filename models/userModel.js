@@ -228,6 +228,8 @@ UserSchema = new Schema(
                         , required: true
                         , unique: true
                         }
+  , resetPasswordToken: { type: String }
+  , resetPasswordTokenExpiration: { type: Date }
   }
 , { strict: true });
 
