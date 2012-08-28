@@ -28,6 +28,22 @@ function createConfirmToken (callback) {
   });
 }
 
+
+/*
+ * Prepare to reset password by creating a reset password token and sending it to the user
+ */
+function createResetPasswordToken (callback) {
+  var expiration = new Date();
+
+  expiration.setTime(expiration.getTime() + 3600000);   // Token will expire in an hour
+
+  this.resetPasswordToken = customUtils.uid(13);
+  this.resetPasswordTokenExpiration = expiration;
+  this.save(callback);
+}
+
+
+
 /*
  * Return the part of a user's data that we may need to use in a client
  */
@@ -245,6 +261,7 @@ UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;

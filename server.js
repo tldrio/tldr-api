@@ -96,6 +96,9 @@ server.configure('staging', 'production', function () {
 server.get('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
+// This should be /users/:email/resetPassword but email encoding is a pain across browsers
+server.post('/user/resetPassword',routes.sendResetPasswordEmail);
+
 //Users
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
