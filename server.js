@@ -29,7 +29,7 @@ server.db = new DbObject( config.dbHost
 // Used for HTML templating
 server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', __dirname + '/templates');
+server.set('views', config.pageTemplates);
 server.locals = config.locals;
 
 
