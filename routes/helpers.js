@@ -8,7 +8,7 @@
 var i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , _ = require('underscore')
-  , cssNames = require('../lib/css-names')
+  , cssNames = require(process.env.TLDR_CLIENTS_DIR + '/dist/page/local/lib/css-names')
   , mailer = require('../lib/mailer');
 
 
