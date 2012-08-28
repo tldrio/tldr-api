@@ -548,10 +548,72 @@ describe('User', function () {
       });
     });
 
+  });
+
+
+  describe('createResetPasswordToken', function() {
+    it('Should create a reset password token that expires within one hour', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+        assert.isUndefined(user.resetPasswordToken);
+        assert.isUndefined(user.resetPasswordTokenExpiration);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          assert.isDefined(user.resetPasswordToken);
+          assert.isDefined(user.resetPasswordTokenExpiration);
+
+          // The token should expire within an hour, we test that with a tolerance of 5 seconds
+          assert.isTrue(user.resetPasswordTokenExpiration - new Date() >= 3595000);
+          assert.isTrue(user.resetPasswordTokenExpiration - new Date() <= 3600000);
+
+          done();
+        });
+      });
+    });
+
+    it('Should never create a different token every time', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               })
+               , token;
+
+      user.save(function(err) {
+        assert.isNull(err);
+        assert.isUndefined(user.resetPasswordToken);
+        assert.isUndefined(user.resetPasswordTokenExpiration);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          assert.isDefined(user.resetPasswordToken);
+          token = user.resetPasswordToken
+
+          user.createResetPasswordToken(function(err) {
+            assert.isNull(err);
+
+            assert.isDefined(user.resetPasswordToken);
+            user.resetPasswordToken.should.not.equal(token);
+
+            done();
+          });
+        });
+      });
+    });
 
 
 
   });
+
 
 
 });
