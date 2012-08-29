@@ -48,13 +48,17 @@ function createResetPasswordToken (callback) {
  * Reset password if token is corrected and not expired
  */
 function resetPassword (token, newPassword, callback) {
-  if ( token === this.resetPasswordToken || this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
+  var self = this;
+
+  if ( token === this.resetPasswordToken && this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
     if (validatePassword(newPassword)) {
       // Token and password are valid
       bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
         bcrypt.hash(newPassword, salt, function (err, hash) {
-          this.password = hash;
-          this.save(callback);
+          self.password = hash;
+          self.resetPasswordToken = null;   // Token cannot be used twice
+          self.resetPasswordTokenExpiration = null;
+          self.save(callback);
         });
       });
     } else {
@@ -62,7 +66,7 @@ function resetPassword (token, newPassword, callback) {
       this.save(callback);
     }
   } else {
-    callback( {tokenInvalidOrExpired: true} );
+    callback( {tokenInvalidOrExpired: true} );   // No need to give too much information to a potential attacker
   }
 }
 

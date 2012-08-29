@@ -551,7 +551,7 @@ describe('User', function () {
   });
 
 
-  describe('createResetPasswordToken', function() {
+  describe('Reset password functions', function() {
     it('Should create a reset password token that expires within one hour', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
@@ -609,6 +609,99 @@ describe('User', function () {
         });
       });
     });
+
+    it('Should not reset password if token is invalid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          user.resetPassword('notatoken', 'perfectlygoodpassword', function(err) {
+            err.tokenInvalidOrExpired.should.equal(true);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if token is expired', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          // Fast-forward time a bit ...
+          user.resetPasswordTokenExpiration.setTime(user.resetPasswordTokenExpiration.getTime() - 3605000);
+          user.save(function(err) {
+            assert.isNull(err);
+
+            user.resetPassword(user.resetPasswordToken, 'perfectlygoodpassword', function(err) {
+              err.tokenInvalidOrExpired.should.equal(true);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if new password is invalid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          user.resetPassword(user.resetPasswordToken, 'bad', function(err) {
+            assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).password);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should reset password if token and new password are valid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          user.resetPassword(user.resetPasswordToken, 'goodpassword', function(err) {
+            assert.isNull(err);
+
+            // Token is reinitialized
+            assert.isNull(user.resetPasswordToken);
+            assert.isNull(user.resetPasswordTokenExpiration);
+            bcrypt.compareSync('supersecret!', user.password).should.equal(false);
+            bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+            done();
+          });
+        });
+      });
+    });
+
 
 
 
