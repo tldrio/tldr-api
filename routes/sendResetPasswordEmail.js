@@ -19,6 +19,8 @@ function sendResetPasswordEmail (req, res, next) {
     return next({ statusCode: 403, body: { message: i18n.noEmailProvidedForReset } });
   } else {
     User.findOne({ email: req.body.email }, function (err, user) {
+      if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } ); }
+
       if (user === null) {
         mailer.sendWrongEmailToResetPasswordEmail(req.body.email, config.apiUrl, function (error, response) {
           if (error) {
