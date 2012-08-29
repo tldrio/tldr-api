@@ -22,7 +22,7 @@ function sendResetPasswordEmail (req, res, next) {
       if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } ); }
 
       if (user === null) {
-        mailer.sendWrongEmailToResetPasswordEmail(req.body.email, config.apiUrl, function (error, response) {
+        mailer.sendWrongEmailToResetPasswordEmail(req.body.email, function (error, response) {
           if (error) {
             bunyan.warn('Error sending password reset for wrong email email');
           }
@@ -41,6 +41,7 @@ function sendResetPasswordEmail (req, res, next) {
     });
 
     // Send the same message, whether a user was found or not
+    // Don't wait for email to be sent successfully to send the response to the client
     res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
   }
 

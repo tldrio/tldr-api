@@ -5,7 +5,6 @@
 
 
 var bunyan = require('../lib/logger').bunyan
-  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , models = require('../lib/models')
   , User = models.User
@@ -42,6 +41,12 @@ function resetPassword (req, res, next) {
           }
         }
       } else {
+        mailer.sendPasswordWasResetEmail(user, function (error, response) {
+          if (error) {
+            bunyan.warn('Error sending password was successfully reset email');
+          }
+        });
+
         res.json(200, { message: "Password changed successfully" });
       }
     });
