@@ -14,11 +14,11 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function resetPassword (req, res, next) {
-  if ( ! req.body || ! req.body.email || req.body.email.length === 0 || ! req.resetPasswordToken ) {
+  if ( ! req.body || ! req.body.email || req.body.email.length === 0 || ! req.body.resetPasswordToken ) {
     return next({ statusCode: 403, body: { message: i18n.wrongTokenOrEmail } });
   }
 
-  if ( ! req.newPassword ) {
+  if ( ! req.body.newPassword ) {
     // If no password was given, send the 'password didn't pass validation' message
     return next({ statusCode: 403, body: { password: i18n.validateUserPwd } });
   }
@@ -28,7 +28,7 @@ function resetPassword (req, res, next) {
     if (user === null) { return next( { statusCode: 403, body: {message: i18n.wrongTokenOrEmail } } ); }
 
     // All parameters were sent to us and the email corresponds to an entry in the users database
-    user.resetPassword(req.resetPasswordToken, req.newPassword, function(err) {
+    user.resetPassword(req.body.resetPasswordToken, req.body.newPassword, function(err) {
       if (err) {
         if (err.tokenInvalidOrExpired) {
           // No need to give too much information to a potential attacker
@@ -47,7 +47,7 @@ function resetPassword (req, res, next) {
           }
         });
 
-        res.json(200, { message: "Password changed successfully" });
+        res.json(200, { message: i18n.passwordResetSuccessfully });
       }
     });
   });
