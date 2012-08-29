@@ -44,6 +44,28 @@ function createResetPasswordToken (callback) {
 }
 
 
+/*
+ * Reset password if token is corrected and not expired
+ */
+function resetPassword (token, newPassword, callback) {
+  if ( token === this.resetPasswordToken || this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
+    if (validatePassword(newPassword)) {
+      // Token and password are valid
+      bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
+        bcrypt.hash(newPassword, salt, function (err, hash) {
+          this.password = hash;
+          this.save(callback);
+        });
+      });
+    } else {
+      this.password = newPassword;   // Will fail validation
+      this.save(callback);
+    }
+  } else {
+    callback( {tokenInvalidOrExpired: true} );
+  }
+}
+
 
 /*
  * Return the part of a user's data that we may need to use in a client
@@ -263,6 +285,7 @@ UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
+UserSchema.methods.resetPassword = resetPassword;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
