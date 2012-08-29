@@ -5,7 +5,6 @@
 
 
 var bunyan = require('../lib/logger').bunyan
-  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , User = require('../lib/models').User
   , i18n = require('../lib/i18n')
@@ -38,7 +37,7 @@ function sendResetPasswordEmail (req, res, next) {
             // Don't wait for email to be sent successfully to send the response to the client
             res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
 
-            mailer.sendResetPasswordEmail(user, config.apiUrl, function(error, response) {
+            mailer.sendResetPasswordEmail(user, function(error, response) {
               if (error) {
                 bunyan.warn('Error sending password reset email');
               }
