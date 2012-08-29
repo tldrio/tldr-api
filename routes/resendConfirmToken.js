@@ -19,7 +19,7 @@ function resendConfirmToken (req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateToken } });
       }
 
-      mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+      mailer.sendConfirmToken(user, function(error, response){
         if(error){
           bunyan.warn('Error sending confirmation email', error);
         }

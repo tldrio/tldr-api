@@ -40,7 +40,7 @@ function updateProfile(req, res, next) {
 
         // We send the confirmation link email in case of email change
         if (emailUpdate) {
-          mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+          mailer.sendConfirmToken(user, function(error, response){
             if(error){
               bunyan.warn('Error sending confirmation email', error);
             }

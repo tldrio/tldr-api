@@ -30,7 +30,7 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      mailer.sendConfirmToken(user, config.apiUrl, function(error, response){
+      mailer.sendConfirmToken(user, function(error, response){
         if(error){
           bunyan.warn('Error sending confirmation email', error);
         }
