@@ -11,6 +11,7 @@ var mongoose = require('mongoose')
   , i18n = require('../lib/i18n')
   , UserSchema, User
   , bcrypt = require('bcrypt')
+  , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
@@ -145,9 +146,9 @@ function createAndSaveInstance(userInput, callback) {
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
   // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
-  // The '6' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
+  // The bcryptRounds parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
   if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(6, function(err, salt) {
+    bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
         // Set confirmEmailToken - length 13 is very important
@@ -190,7 +191,7 @@ function updatePassword (currentPassword, newPassword, callback) {
     if (valid) {
       if ( ! errors.newPassword) {
         // currentPassword is correct and newPassword is valid: we can change
-        bcrypt.genSalt(6, function(err, salt) {
+        bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
           bcrypt.hash(newPassword, salt, function (err, hash) {
             self.password = hash;
             self.save(callback);
