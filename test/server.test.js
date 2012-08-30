@@ -996,7 +996,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/confirm?' }, function (error, response, body) {
 
            // Should return 400 if code is the provided as parameter
-           response.statusCode.should.equal(400);
+           response.statusCode.should.equal(403);
            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
              // Retrieve validation Code by directly queryin the db
@@ -1031,7 +1031,7 @@ describe('Webserver', function () {
            request.get({ headers: {"Accept": "application/json"}
                          , uri: rootUrl + '/confirm?confirmToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
 
-             response.statusCode.should.equal(400);
+             response.statusCode.should.equal(403);
              done();
            });
          });

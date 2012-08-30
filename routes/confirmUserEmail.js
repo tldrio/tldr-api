@@ -12,26 +12,20 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function confirmUserEmail (req, res, next) {
-  
+
   var confirmToken = req.query.confirmToken
     , email = req.query.email;
 
   if (!confirmToken || !email) {
-    return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
-        res.send(400, html);
-    });
+    return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
   }
 
   User.findOne({ email: email },  function (err, user) {
-    if (err) {
-      return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } );
-    }
+    if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } ); }
 
     // Check if user exists and confirmToken matches
     if (!user || (user.confirmToken !== confirmToken)) {
-      return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
-        res.send(400, html);
-      });
+      return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
     }
 
     var now = new Date();
