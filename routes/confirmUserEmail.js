@@ -31,6 +31,7 @@ function confirmUserEmail (req, res, next) {
     var now = new Date();
     if (!user.confirmedEmail) {
       user.confirmedEmail = true;
+      user.confirmToken = null;
       user.save(function (err) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );

@@ -1006,9 +1006,18 @@ describe('Webserver', function () {
              request.get({ headers: {"Accept": "application/json"}
                          , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
 
+               response.statusCode.should.equal(200);
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
                  user.confirmedEmail.should.be.true;
-                 done();
+
+                 // Confirm token should be invalidated after being used once
+                 request.get({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
+
+                   response.statusCode.should.equal(403);
+
+                   done();
+                 });
                });
              });
            });
