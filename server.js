@@ -97,8 +97,8 @@ server.get('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
 // This should be /users/:email/resetPassword but email encoding is a pain across browsers
-server.post('/user/sendResetPasswordEmail',routes.sendResetPasswordEmail);
-server.post('/user/resetPassword',routes.resetPassword);
+server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
+server.post('/user/resetPassword', routes.resetPassword);
 
 //Users
 server.post('/users', routes.createNewUser); // User creation
