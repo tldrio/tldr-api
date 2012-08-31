@@ -13,8 +13,8 @@ var bunyan = require('../lib/logger').bunyan
 
 function confirmUserEmail (req, res, next) {
 
-  var confirmToken = req.query.confirmToken
-    , email = req.query.email;
+  var confirmToken = req.body.confirmToken
+    , email = req.body.email;
 
   if (!confirmToken || !email) {
     return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );

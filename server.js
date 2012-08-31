@@ -93,7 +93,7 @@ server.configure('staging', 'production', function () {
  */
 
 //Misc
-server.get('/confirm', routes.confirmUserEmail);
+server.post('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
 //Users
