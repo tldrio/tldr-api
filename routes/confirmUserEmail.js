@@ -36,10 +36,10 @@ function confirmUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );
         }
-        return res.redirect(config.websiteUrl);
+        return res.json(200, {message: i18n.emailIsConfirmed});
       });
     } else {
-      return res.redirect(config.websiteUrl);
+      return res.json(200, {message: i18n.emailIsConfirmed});
     }
 
   });
