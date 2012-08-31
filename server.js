@@ -92,11 +92,11 @@ server.configure('staging', 'production', function () {
  *
  */
 
-//Misc
+// Email confirmation
 server.post('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
-//Users
+// Users
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
@@ -105,7 +105,7 @@ server.put('/users/you/updatePassword', routes.updatePassword);
 server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
 
-//tldrs
+// tldrs
 server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
 server.get('/tldrs', routes.searchTldrs); // Convenience route
 server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs (convenience route)
