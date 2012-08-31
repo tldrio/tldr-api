@@ -25,7 +25,7 @@ function sendResetPasswordEmail (req, res, next) {
         // Don't wait for email to be sent successfully to send the response to the client
         res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
 
-        mailer.sendWrongEmailToResetPasswordEmail(req.body.email, function (error, response) {
+        mailer.sendUserDoesntExistButYouTriedToResetHisPasswordEmail(req.body.email, function (error, response) {
           if (error) {
             bunyan.warn('Error sending password reset for wrong email email');
           }
