@@ -579,7 +579,7 @@ describe('User', function () {
       });
     });
 
-    it('Should never create a different token every time', function (done) {
+    it('Should create a different token every time', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
