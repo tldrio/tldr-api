@@ -9,13 +9,12 @@ var i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , _ = require('underscore')
   , config = require('../lib/config')
-  , cssNames = require(config.cssNamesLocation)
   , mailer = require('../lib/mailer');
 
 
 function contentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
-      return res.render('page', _.extend({}, tldr, { css: cssNames } )); // We serve the tldr Page
+      return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
