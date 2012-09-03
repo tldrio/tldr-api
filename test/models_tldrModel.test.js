@@ -534,14 +534,14 @@ describe('Tldr', function () {
 
   describe('XSS prevention', function () {
 
-    it('Should sanitize user generated fields', function (done) {
+    it('Should sanitize user generated fields when creating a tldr with createAndSaveInstance', function (done) {
       var userInput = {
-					url: 'http://needfdocument.cookieorair.com/nutcrackers',
-					title: 'Blog NFdocument.writeA',
-					summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          url: 'http://needfdocument.cookieorair.com/nutcrackers',
+          title: 'Blog NFdocument.writeA',
+          summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
           resourceAuthor: 'NFA Crewwindow.location',
           resourceDate: '2012'
-				  };
+          };
 
       Tldr.createAndSaveInstance(userInput, function (err, theTldr) {
         assert.isNull(err, 'no errors');
@@ -554,7 +554,37 @@ describe('Tldr', function () {
         done();
       });
     });
-  
+
+    it('Should sanitize user generated fields when updating a tldr', function (done) {
+      var goodUserInput = {
+          url: 'http://url.com/nutcrackers',
+          title: 'Yipiie',
+          summaryBullets: ['AwBlog', 'Bzzzup'],
+          resourceAuthor: 'Someone',
+          resourceDate: '2010'   //  Not the year 2010 of course ...
+          }
+        , userInput = {
+          url: 'http://needfdocument.cookieorair.com/nutcrackers',
+          title: 'Blog NFdocument.writeA',
+          summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          resourceAuthor: 'NFA Crewwindow.location',
+          resourceDate: '2012'
+          };
+
+      Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
+        assert.isNull(err, 'no errors');
+        tldr.updateValidFields(userInput, function(err, theTldr) {
+          assert.isNull(err, 'no errors');
+          theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
+          theTldr.title.should.equal('Blog NFA');
+          theTldr.summaryBullets[0].should.equal('Awesome Blog');
+          theTldr.summaryBullets[1].should.equal('Bloup');
+          theTldr.resourceAuthor.should.equal('NFA Crew');
+
+          done();
+        });
+      });
+    });
   
   });
 
