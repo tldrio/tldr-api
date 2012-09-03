@@ -160,15 +160,19 @@ describe('User', function () {
       });
     });
 
-    it('Should sanitize all user-inputed fields', function (done) {
-      var user = new User({ email: 'email@em<!--ail.c-->om'
+    it('Should sanitize all user-inputed fields and the fields derived from user input', function (done) {
+      var userInput = { email: 'ema-moz-bindingil@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTar-moz-bindingAc1'
-                               });
+                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
+                                                                                // it is derived from username
+                               };
 
-      user.save(function(err, theUser) {
-        user.email.should.equal('email@em&lt;!--ail.c--&gt;om');
-        user.username.should.equal('Stevie_sTarAc1');
+      User.createAndSaveInstance(userInput, function(err, theUser) {
+        console.log(err);
+        theUser.email.should.equal('email@email.com');
+        theUser.username.should.equal('Stevie_sTarAc1');
+        theUser.usernameLowerCased.should.equal('stevie_starac1');
 
         done();
       });

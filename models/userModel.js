@@ -57,6 +57,7 @@ function validatePassword (value) {
 }
 
 
+
 /**
  * Statics and Methods
  *
@@ -285,6 +286,7 @@ UserSchema = new Schema(
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
+                        , set: customUtils.sanitizeInput
                         }
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
