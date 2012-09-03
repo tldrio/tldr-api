@@ -8,6 +8,7 @@
 live reload the server at each change (`supervisor server`); 
 * Run `grunt lint` to lint the code and `grunt watch` to live execute
   lint task
+* Set your `TLDR_PAGE_TEMPLATES` environment variable to your `[TLDR_CLIENTS]/dist/page/local/templates`
 
 # Test Coverage
 

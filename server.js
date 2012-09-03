@@ -29,7 +29,7 @@ server.db = new DbObject( config.dbHost
 // Used for HTML templating
 server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', __dirname + '/templates');
+server.set('views', config.pageTemplates);
 server.locals = config.locals;
 
 
@@ -47,7 +47,6 @@ server.use(passport.session());
 server.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
 server.use(server.router); // Map routes
 server.use(middleware.handleErrors); // Use middleware to handle errors
-server.use(express.static(__dirname + '/css'));
 server.use(function(req, res, next) {// Middleware to send a dummy empty favicon so as to be able to debug easily
   if (req.url === '/favicon.ico') {
     return res.send(200, '');
@@ -95,6 +94,10 @@ server.configure('staging', 'production', function () {
 //Misc
 server.get('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
+
+// This should be /users/:email/resetPassword but email encoding is a pain across browsers
+server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
+server.post('/user/resetPassword', routes.resetPassword);
 
 //Users
 server.post('/users', routes.createNewUser); // User creation
