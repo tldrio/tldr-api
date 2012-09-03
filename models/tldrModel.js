@@ -101,7 +101,7 @@ TldrSchema = new Schema(
                     , validate: [validateAuthor, i18n.validateTldrAuthor]
                     , set: customUtils.sanitizeInput
                     }
-  , resourceDate: { type: Date }
+  , resourceDate: { type: Date }   // No need to sanitize, automatically casted to date which is a number
   , createdAt: { type: Date
                , default: Date.now
                }

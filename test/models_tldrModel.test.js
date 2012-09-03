@@ -129,27 +129,6 @@ describe('Tldr', function () {
 
     });
 
-    it('Should sanitize user generated fields', function (done) {
-      var tldr = new Tldr({
-					url: 'http://needfdocument.cookieorair.com/nutcrackers',
-					title: 'Blog NFdocument.writeA',
-					summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
-          resourceAuthor: 'NFA Crewwindow.location',
-          resourceDate: '2012'
-				})
-				, valErr;
-
-      tldr.save( function (err, theTldr) {
-        assert.isNull(err, 'no errors');
-        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
-        theTldr.title.should.equal('Blog NFA');
-        theTldr.summaryBullets[0].should.equal('Awesome Blog');
-        theTldr.summaryBullets[1].should.equal('Bloup');
-        theTldr.resourceAuthor.should.equal('NFA Crew');
-
-        done();
-      });
-    });
 
     it('should detect missing required summary arg', function (done) {
 
@@ -550,11 +529,33 @@ describe('Tldr', function () {
       done();
     });
 
+  });
 
 
+  describe('XSS prevention', function () {
 
+    it('Should sanitize user generated fields', function (done) {
+      var userInput = {
+					url: 'http://needfdocument.cookieorair.com/nutcrackers',
+					title: 'Blog NFdocument.writeA',
+					summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          resourceAuthor: 'NFA Crewwindow.location',
+          resourceDate: '2012'
+				  };
 
+      Tldr.createAndSaveInstance(userInput, function (err, theTldr) {
+        assert.isNull(err, 'no errors');
+        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+        theTldr.title.should.equal('Blog NFA');
+        theTldr.summaryBullets[0].should.equal('Awesome Blog');
+        theTldr.summaryBullets[1].should.equal('Bloup');
+        theTldr.resourceAuthor.should.equal('NFA Crew');
 
+        done();
+      });
+    });
+  
+  
   });
 
 
