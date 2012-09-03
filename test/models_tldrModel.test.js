@@ -561,14 +561,12 @@ describe('Tldr', function () {
           title: 'Yipiie',
           summaryBullets: ['AwBlog', 'Bzzzup'],
           resourceAuthor: 'Someone',
-          resourceDate: '2010'   //  Not the year 2010 of course ...
           }
         , userInput = {
           url: 'http://needfdocument.cookieorair.com/nutcrackers',
           title: 'Blog NFdocument.writeA',
           summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
           resourceAuthor: 'NFA Crewwindow.location',
-          resourceDate: '2012'
           };
 
       Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
@@ -585,7 +583,23 @@ describe('Tldr', function () {
         });
       });
     });
-  
+
+    it('The field resourceDate doesnt need to be sanitized as only numbers or date strings are tolerated', function (done) {
+      var userInput = {
+          url: 'http://url.com/nutcrackers',
+          title: 'Yipiie',
+          summaryBullets: ['AwBlog', 'Bzzzup'],
+          resourceAuthor: 'Someone',
+          resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
+          }
+
+       Tldr.createAndSaveInstance(userInput, function(err) {
+         err.name.should.equal('CastError');   // Cant cast normal strings to date
+
+         done();
+       });
+    });
+
   });
 
 
