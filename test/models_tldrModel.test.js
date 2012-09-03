@@ -129,12 +129,12 @@ describe('Tldr', function () {
 
     });
 
-    it('Should sanitize url field', function (done) {
+    it('Should sanitize user generated fields', function (done) {
       var tldr = new Tldr({
 					url: 'http://needfdocument.cookieorair.com/nutcrackers',
-					title: 'Blog NFA',
-					summaryBullets: ['Awesome Blog'],
-          resourceAuthor: 'NFA Crew',
+					title: 'Blog NFdocument.writeA',
+					summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          resourceAuthor: 'NFA Crewwindow.location',
           resourceDate: '2012'
 				})
 				, valErr;
@@ -142,6 +142,10 @@ describe('Tldr', function () {
       tldr.save( function (err, theTldr) {
         assert.isNull(err, 'no errors');
         theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+        theTldr.title.should.equal('Blog NFA');
+        theTldr.summaryBullets[0].should.equal('Awesome Blog');
+        theTldr.summaryBullets[1].should.equal('Bloup');
+        theTldr.resourceAuthor.should.equal('NFA Crew');
 
         done();
       });
