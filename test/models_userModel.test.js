@@ -160,6 +160,20 @@ describe('User', function () {
       });
     });
 
+    it('Should sanitize all user-inputed fields', function (done) {
+      var user = new User({ email: 'email@em<!--ail.c-->om'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTar-moz-bindingAc1'
+                               });
+
+      user.save(function(err, theUser) {
+        user.email.should.equal('email@em&lt;!--ail.c--&gt;om');
+        user.username.should.equal('Stevie_sTarAc1');
+
+        done();
+      });
+    });
+
     it('should not validate a user whose password is too short', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'secre'
