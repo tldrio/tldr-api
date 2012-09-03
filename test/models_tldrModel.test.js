@@ -129,6 +129,24 @@ describe('Tldr', function () {
 
     });
 
+    it('Should sanitize url field', function (done) {
+      var tldr = new Tldr({
+					url: 'http://needfdocument.cookieorair.com/nutcrackers',
+					title: 'Blog NFA',
+					summaryBullets: ['Awesome Blog'],
+          resourceAuthor: 'NFA Crew',
+          resourceDate: '2012'
+				})
+				, valErr;
+
+      tldr.save( function (err, theTldr) {
+        assert.isNull(err, 'no errors');
+        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+
+        done();
+      });
+    });
+
     it('should detect missing required summary arg', function (done) {
 
       var tldr = new Tldr({
