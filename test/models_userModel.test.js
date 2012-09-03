@@ -160,24 +160,6 @@ describe('User', function () {
       });
     });
 
-    it('Should sanitize all user-inputed fields and the fields derived from user input', function (done) {
-      var userInput = { email: 'ema-moz-bindingil@email.com'
-                               , password: 'supersecret!'
-                               , username: 'Stevie_sTar-moz-bindingAc1'
-                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
-                                                                                // it is derived from username
-                               };
-
-      User.createAndSaveInstance(userInput, function(err, theUser) {
-        console.log(err);
-        theUser.email.should.equal('email@email.com');
-        theUser.username.should.equal('Stevie_sTarAc1');
-        theUser.usernameLowerCased.should.equal('stevie_starac1');
-
-        done();
-      });
-    });
-
     it('should not validate a user whose password is too short', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'secre'
@@ -720,9 +702,51 @@ describe('User', function () {
       });
     });
 
+  });
 
 
+  describe('XSS prevention', function() {
 
+    it('Should sanitize all user-inputed fields and the fields derived from user input when saving with createAndSaveInstance', function (done) {
+      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTar-moz-bindingAc1'
+                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
+                                                                                // it is derived from username
+                               };
+
+      User.createAndSaveInstance(userInput, function(err, theUser) {
+        console.log(err);
+        theUser.email.should.equal('email@email.com');
+        theUser.username.should.equal('Stevie_sTarAc1');
+        theUser.usernameLowerCased.should.equal('stevie_starac1');
+
+        done();
+      });
+    });
+  
+    it('Should sanitize all user-inputed fields and the fields derived from user input when updating', function (done) {
+      var goodUserInput = { email: 'blip@email.com'
+                               , password: 'supersecret!'
+                               , username: 'quelquun'
+                               };
+      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               , username: 'Stevie_sTar-moz-bindingAc1'
+                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
+                                                                                // it is derived from username
+                               };
+
+      User.createAndSaveInstance(goodUserInput, function(err, user) {
+        user.updateValidFields(userInput, function (err, theUser) {
+          theUser.email.should.equal('email@email.com');
+          theUser.username.should.equal('Stevie_sTarAc1');
+          theUser.usernameLowerCased.should.equal('stevie_starac1');
+
+          done();
+        });
+      });
+    });
+  
   });
 
 
