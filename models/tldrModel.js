@@ -32,7 +32,7 @@ var _ = require('underscore')
 //url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
 // The real validation will take place with the resolve mechanism
-function  validateUrl (value) {
+function validateUrl (value) {
   try {
     check(value).isUrl();
     return true;
@@ -43,7 +43,6 @@ function  validateUrl (value) {
 
 //Summary should be an Array, non empty and not be too long
 function validateBullets (value) {
-
   try {
     // Value is an array containing at least on element and maximum 5
     check(value).isArray().len(0,5);

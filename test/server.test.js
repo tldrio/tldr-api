@@ -17,6 +17,7 @@ var should = require('chai').should()
   , Tldr = models.Tldr
   , User = models.User
   , rootUrl = 'http://localhost:8686'
+  , bcrypt = require('bcrypt')
   , request = require('request');
 
 
@@ -329,7 +330,7 @@ describe('Webserver', function () {
       request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, body) {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
-        res.body.should.contain('<div id="tldr-container">');
+        res.body.should.contain('<div class="tldr-read-container">');
         done();
       });
 
@@ -512,7 +513,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('should be able to update the logged user\'s info', function (done) {
+    it('should be able to update the logged user\'s profile', function (done) {
       var obj;
 
 
@@ -526,8 +527,6 @@ describe('Webserver', function () {
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfa.com"
-                             , currentPassword: "supersecret"
-                             , newPassword: "agoodone"
                              , username: "yepyep" } }, function (error, response, body) {
 
           request.get({ headers: {"Accept": "application/json"}
@@ -535,27 +534,85 @@ describe('Webserver', function () {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
-            obj.email.should.equal("user1@nfa.com");   // Email is not modifiable
+            obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
 
-            request.get({ headers: {"Accept": "application/json"}
-                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+            done();
+           });
+         });
+      });
+    });
 
-              response.statusCode.should.equal(200);
-              request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/login'
-                           , json: { email: "user1@nfa.com", password: "agoodone" } }, function (error, response, body) {
+    it('should dont do anything on update user info if input fields are empty', function (done) {
+      var obj;
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
-                response.statusCode.should.equal(200);
-                body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+        response.statusCode.should.equal(200);
+        body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you'
+                     , json: { } }, function (error, response, body) {
+
+          response.statusCode.should.equal(200);
+          request.get({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.email.should.equal("user1@nfa.com");
+
+            done();
+           });
+         });
+      });
+    });
+
+    it('should be able to update the logged user\'s password only if new password and confirmation match', function (done) {
+      var obj;
+
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        response.statusCode.should.equal(200);
+        body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you/updatePassword'
+                     , json: { oldPassword: "supersecret"
+                             , newPassword: "fantomas"
+                             , confirmPassword: "fantomasBAD" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+            body.confirmPassword.should.equal(i18n.passwordNoMatch);
+
+            request.put({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/users/you/updatePassword'
+                         , json: { oldPassword: "supersecret"
+                                 , newPassword: "fantomas"
+                                 , confirmPassword: "fantomas" } }, function (error, response, body) {
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
-                  done();
+
+                  response.statusCode.should.equal(200);
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/users/login'
+                               , json: { email: "user1@nfa.com", password: "fantomas" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(200);
+                    body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+
+                    request.get({ headers: {"Accept": "application/json"}
+                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                      done();
+                    });
+                  });
                 });
               });
-            });
-           });
          });
       });
     });
@@ -577,15 +634,13 @@ describe('Webserver', function () {
 
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
-                     , json: { email: "bloup@nfa.com"
-                             , currentPassword: "supersecretNOPE"
-                             , newPassword: "abad"
-                             , username: "" } }, function (error, response, body) {
+                     , json: { email: "bloup@nfacom"
+                             , password: "abad"
+                             , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);
           assert.isDefined(body.username);
-          assert.isDefined(body.currentPassword);
-          assert.isDefined(body.newPassword);
+          assert.isDefined(body.email);
 
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
@@ -594,23 +649,43 @@ describe('Webserver', function () {
             response.statusCode.should.equal(409);
             body.duplicateField.should.equal("usernameLowerCased");
 
-            request.get({ headers: {"Accept": "application/json"}
-                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+        request.put({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users/you/updatePassword'
+                     , json: { oldPassword: "sUPERseCRet"
+                             , newPassword: "fantomas"
+                             , confirmPassword: "fantomas" }}, function (error, response, body) {
 
-              response.statusCode.should.equal(200);
-              request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/login'
-                           , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+            response.statusCode.should.equal(403);
+            assert.isDefined(body.oldPassword);
 
-                response.statusCode.should.equal(200);
-                body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
-                body.username.should.equal("UserOne");
+            request.put({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/users/you/updatePassword'
+                         , json: { oldPassword: "supersecret"
+                                 , newPassword: "fantomas"
+                                 , confirmPassword: "fanToMas" }}, function (error, response, body) {
+
+                response.statusCode.should.equal(403);
+                body.confirmPassword.should.equal(i18n.passwordNoMatch);
 
                 request.get({ headers: {"Accept": "application/json"}
                             , uri: rootUrl + '/users/logout' }, function (error, response, body) {
-                  done();
+
+                  response.statusCode.should.equal(200);
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/users/login'
+                               , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(200);
+                    body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
+                    body.username.should.equal("UserOne");
+
+                    request.get({ headers: {"Accept": "application/json"}
+                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                      done();
+                    });
+                  });
                 });
-              });
+                });
               });
            });
          });
@@ -689,7 +764,6 @@ describe('Webserver', function () {
           response.statusCode.should.equal(200);
           body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
           assert.isUndefined(body.password);
-          assert.isUndefined(body._id);
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -698,7 +772,6 @@ describe('Webserver', function () {
             obj = JSON.parse(body);
             obj.email.should.equal("user1@nfa.com");
             assert.isUndefined(obj.password);
-            assert.isUndefined(obj._id);
 
             request.get({ headers: {"Accept": "application/json"}
                         , uri: rootUrl + '/users/logout' }, function (error, response, body) {
@@ -864,7 +937,6 @@ describe('Webserver', function () {
           // Only the data we want to send is sent
           body.email.should.equal("valid@email.com");
           body.username.should.equal("Louiiis");
-          assert.isUndefined(body._id);
           assert.isUndefined(body.password);
 
           User.find({}, function (err, users) {
@@ -929,11 +1001,11 @@ describe('Webserver', function () {
            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
              // Retrieve validation Code by directly queryin the db
-             var confirmToken = user.confirmToken;
+             var confirmEmailToken = user.confirmEmailToken;
              user.confirmedEmail.should.be.false;
 
              request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmToken=' + encodeURIComponent(confirmToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmEmailToken=' + encodeURIComponent(confirmEmailToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
 
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
                  user.confirmedEmail.should.be.true;
@@ -958,7 +1030,7 @@ describe('Webserver', function () {
          body.confirmedEmail.should.be.false;
 
            request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
+                         , uri: rootUrl + '/confirm?confirmEmailToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
 
              response.statusCode.should.equal(400);
              done();
@@ -983,14 +1055,14 @@ describe('Webserver', function () {
             User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
               // Retrieve validation Code by directly queryin the db
-              var previousToken = user.confirmToken;
+              var previousToken = user.confirmEmailToken;
 
               request.get({ headers: {"Accept": "application/json"}
                           , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
                 User.findOne({ email: "user1@nfa.com" }, function (err, user) {
-                  var newToken = user.confirmToken;
+                  var newToken = user.confirmEmailToken;
                   assert(newToken !== previousToken);
                   done();
                 });
@@ -999,7 +1071,147 @@ describe('Webserver', function () {
           });
         });
       });
+
     });
+
+
+  describe('Password reset', function() {
+    it('Should send a reset password email if a token and an email are supplied', function (done) {
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { } }, function (error, response, body) {
+        response.statusCode.should.equal(403);
+
+        User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+          assert.isUndefined(user.resetPasswordToken);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/sendResetPasswordEmail'
+                       , json: { email: "" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+
+            User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+              assert.isUndefined(user.resetPasswordToken);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/sendResetPasswordEmail'
+                           , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                  User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+                    assert.isDefined(user.resetPasswordToken);
+                    done();
+                  });
+               });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not be able to reset password if some parameters are not supplied', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+            response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/resetPassword'
+                           , json: { token: "atoken" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(403);
+                response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/user/resetPassword'
+                               , json: { email: 'rweee', resetPasswordToken: "atoken" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(403);
+                    response.body.password.should.equal(i18n.validateUserPwd);
+
+                    done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not be able to reset password if some parameters are not valid', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          //console.log(user);
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "BAD@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+            response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/resetPassword'
+                           , json: { email: user.email, resetPasswordToken: user.resetPasswordToken, newPassword: "BAD" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(403);
+                response.body.password.should.equal(i18n.validateUserPwd);
+
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/user/resetPassword'
+                               , json: { email: 'user1@nfa.com', resetPasswordToken: "badtoken", newPassword: "goodpassword" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(403);
+                    response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+                    done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to reset password if all parameters are valid', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "user1@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            response.body.message.should.equal(i18n.passwordResetSuccessfully);
+            User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+              bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+              bcrypt.compareSync('supersecret', user.password).should.equal(false);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+
+
+
+  });
 
 });
 

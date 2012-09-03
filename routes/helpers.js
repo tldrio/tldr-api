@@ -7,17 +7,18 @@
 
 var i18n = require('../lib/i18n')
   , models = require('../lib/models')
+  , _ = require('underscore')
+  , config = require('../lib/config')
   , mailer = require('../lib/mailer');
 
 
 function contentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
-      return res.render('page', tldr); // We serve the tldr Page
+      return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }
 }
-
 
 /**
  * Convenience function to factor code betweet PUT and POST on
@@ -61,7 +62,6 @@ function updateCallback (err, docs, req, res, next) {
     return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
   }
 }
-
 
 // Module interface
 module.exports.contentNegotiationForTldr = contentNegotiationForTldr;
