@@ -15,9 +15,53 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , check = require('validator').check
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
 
+
+
+
+/*
+ * Validators
+ */
+
+// Email regex comes from node-validator and can be used by clients
+function validateEmail (value) {
+  try {
+    check(value).isEmail();
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// Username should contain from 3 to 16 alphanumerical characters
+function validateUsername (value) {
+  try {
+    check(value).is(/^[A-Za-z0-9_]{3,16}$/);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// password should be non empty and longer than 6 characters
+function validatePassword (value) {
+  try {
+    check(value).len(6);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+
+
+/**
+ * Statics and Methods
+ *
+ */
 
 function createConfirmToken (callback) {
   var newToken = customUtils.uid(13);
@@ -132,34 +176,6 @@ function updateValidFields (data, callback) {
 
 
 /*
- * Validators
- */
-// Email regex comes from node-validator and can be used by clients
-function validateEmail (value) {
-  if (value) {
-    // returns null in case of no match, hence the if/else
-    return value.match(/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/);
-  } else {
-    return false;
-  }
-}
-
-// Username should contain from 3 to 16 alphanumerical characters
-function validateUsername (value) {
-  if (value && value.match(/^[A-Za-z0-9_]{3,16}$/)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// password should be non empty and longer than 6 characters
-function validatePassword (value) {
-  return (value ? value.length >= 6 : false);
-}
-
-
-/*
  * Create a User instance and save it to the database
  * All defaults are located here instead of in the schema or in setters
  * Part of the password's validation has to occur here as Mongoose's setters are called before the
@@ -253,7 +269,7 @@ UserSchema = new Schema(
            , unique: true
            , required: true
            , validate: [validateEmail, i18n.validateUserEmail]
-           , set: customUtils.normalizeEmail
+           , set: customUtils.sanitizeEmail
            }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
@@ -265,11 +281,12 @@ UserSchema = new Schema(
   , username: { type: String
               , required: true
               , validate: [validateUsername, i18n.validateUserName]
-              , set: customUtils.trimLeadingTrailingWhitespace
+              , set: customUtils.sanitizeInput
               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
+                        , set: customUtils.sanitizeInput
                         }
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
