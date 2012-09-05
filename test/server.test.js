@@ -1007,7 +1007,7 @@ describe('Webserver', function () {
 
              request.post({ headers: {"Accept": "application/json"}
                           , uri: rootUrl + '/confirm'
-                          , json: { confirmToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
+                          , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
                response.statusCode.should.equal(200);
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
@@ -1016,7 +1016,7 @@ describe('Webserver', function () {
                  // Confirm token should be invalidated after being used once
                  request.post({ headers: {"Accept": "application/json"}
                               , uri: rootUrl + '/confirm'
-                              , json: { confirmToken: confirmToken, email: user.email } }, function (error, response, body) {
+                              , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
                    response.statusCode.should.equal(403);
 
@@ -1043,7 +1043,7 @@ describe('Webserver', function () {
 
            request.post({ headers: {"Accept": "application/json"}
                          , uri: rootUrl + '/confirm'
-                         , json: { confirmToken: "badToken", email: 'user1@nfa.com' } }, function (error, response, body) {
+                         , json: { confirmEmailToken: "badToken", email: 'user1@nfa.com' } }, function (error, response, body) {
 
              response.statusCode.should.equal(403);
              done();

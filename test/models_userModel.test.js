@@ -716,7 +716,6 @@ describe('User', function () {
                                };
 
       User.createAndSaveInstance(userInput, function(err, theUser) {
-        console.log(err);
         theUser.email.should.equal('email@email.com');
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
