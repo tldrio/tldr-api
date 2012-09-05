@@ -12,39 +12,32 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function confirmUserEmail (req, res, next) {
-  
-  var confirmEmailToken = req.query.confirmEmailToken
-    , email = req.query.email;
+  var confirmEmailToken = req.body.confirmEmailToken
+    , email = req.body.email;
 
   if (!confirmEmailToken || !email) {
-    return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
-        res.send(400, html);
-    });
+    return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
   }
 
   User.findOne({ email: email },  function (err, user) {
-    if (err) {
-      return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } );
-    }
+    if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } ); }
 
-    // Check if user exists and confirmEmailToken matches
     if (!user || (user.confirmEmailToken !== confirmEmailToken)) {
-      return res.render('confirmEmailError', { websiteUrl: config.websiteUrl }, function (err, html) {
-        res.send(400, html);
-      });
+      return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
     }
 
     var now = new Date();
     if (!user.confirmedEmail) {
       user.confirmedEmail = true;
+      user.confirmEmailToken = null;
       user.save(function (err) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );
         }
-        return res.redirect(config.websiteUrl);
+        return res.json(200, {message: i18n.emailIsConfirmed});
       });
     } else {
-      return res.redirect(config.websiteUrl);
+      return res.json(200, {message: i18n.emailIsConfirmed});
     }
 
   });

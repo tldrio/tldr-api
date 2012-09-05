@@ -1,6 +1,18 @@
-* `$ npm install` to install dependencies
 * `$ node server.js` to run the server
 * `$ make test` to run tests
+
+# Dependencies
+We now use `npm shrinkwrap`. So no dependency is checked in to the repository (all of `node_modules` is in the 
+`.gitignore`), and the package dependencies are locked in the file `npm-shrinkwrap.json`. When adding a dependency, follow
+these steps:  
+
+* Add the dependency to your `package.json`
+* Run `npm install` to install this new dependency
+* Delete the file `npm-shrinkwrap.json`
+* Run the `npm shrinkwrap` command to recreate `npm-shrinkwrap.json`
+
+If you are upgrading a dependency, follow the same steps but first delete the directory it is in.
+
 
 # Dev Mode
 

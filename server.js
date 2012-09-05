@@ -91,15 +91,14 @@ server.configure('staging', 'production', function () {
  *
  */
 
-//Misc
-server.get('/confirm', routes.confirmUserEmail);
+// Email confirmation
+server.post('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
 // This should be /users/:email/resetPassword but email encoding is a pain across browsers
 server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
 server.post('/user/resetPassword', routes.resetPassword);
 
-//Users
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
@@ -108,7 +107,7 @@ server.put('/users/you/updatePassword', routes.updatePassword);
 server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
 
-//tldrs
+// tldrs
 server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
 server.get('/tldrs', routes.searchTldrs); // Convenience route
 server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs (convenience route)

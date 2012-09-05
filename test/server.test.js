@@ -984,7 +984,7 @@ describe('Webserver', function () {
     });
 
     it('should confirm user email with the corresponding routes and valid confirmation token', function (done) {
-      var obj;
+      var obj, confirmEmailToken;
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -993,23 +993,35 @@ describe('Webserver', function () {
          response.statusCode.should.equal(200);
          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
-         request.get({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/confirm?' }, function (error, response, body) {
+         request.post({ headers: {"Accept": "application/json"}
+                      , uri: rootUrl + '/confirm'
+                      , json: {} }, function (error, response, body) {
 
            // Should return 400 if code is the provided as parameter
-           response.statusCode.should.equal(400);
+           response.statusCode.should.equal(403);
            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
              // Retrieve validation Code by directly queryin the db
-             var confirmEmailToken = user.confirmEmailToken;
+             confirmEmailToken = user.confirmEmailToken;
              user.confirmedEmail.should.be.false;
 
-             request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmEmailToken=' + encodeURIComponent(confirmEmailToken) +'&email=' + encodeURIComponent(user.email) }, function (error, response, body) {
+             request.post({ headers: {"Accept": "application/json"}
+                          , uri: rootUrl + '/confirm'
+                          , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
+               response.statusCode.should.equal(200);
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
                  user.confirmedEmail.should.be.true;
-                 done();
+
+                 // Confirm token should be invalidated after being used once
+                 request.post({ headers: {"Accept": "application/json"}
+                              , uri: rootUrl + '/confirm'
+                              , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
+
+                   response.statusCode.should.equal(403);
+
+                   done();
+                 });
                });
              });
            });
@@ -1029,10 +1041,11 @@ describe('Webserver', function () {
          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
          body.confirmedEmail.should.be.false;
 
-           request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm?confirmEmailToken=badTOken&email=' + encodeURIComponent('user1@nfa.com') }, function (error, response, body) {
+           request.post({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/confirm'
+                         , json: { confirmEmailToken: "badToken", email: 'user1@nfa.com' } }, function (error, response, body) {
 
-             response.statusCode.should.equal(400);
+             response.statusCode.should.equal(403);
              done();
            });
          });
