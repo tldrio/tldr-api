@@ -20,6 +20,7 @@ module.exports = function(grunt) {
                , newcap: true
                , noarg: true
                , onevar: true
+               , scripturl: true
                , trailing: true
                , undef: true
                }

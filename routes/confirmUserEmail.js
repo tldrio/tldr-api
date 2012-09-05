@@ -12,19 +12,17 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function confirmUserEmail (req, res, next) {
+  var confirmEmailToken = req.query.confirmEmailToken
+    , email = req.query.email;
 
-  var confirmToken = req.body.confirmToken
-    , email = req.body.email;
-
-  if (!confirmToken || !email) {
+  if (!confirmEmailToken || !email) {
     return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
   }
 
   User.findOne({ email: email },  function (err, user) {
     if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } ); }
 
-    // Check if user exists and confirmToken matches
-    if (!user || (user.confirmToken !== confirmToken)) {
+    if (!user || (user.confirmEmailToken !== confirmToken)) {
       return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
     }
 

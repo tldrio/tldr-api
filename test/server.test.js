@@ -17,6 +17,7 @@ var should = require('chai').should()
   , Tldr = models.Tldr
   , User = models.User
   , rootUrl = 'http://localhost:8686'
+  , bcrypt = require('bcrypt')
   , request = require('request');
 
 
@@ -983,7 +984,7 @@ describe('Webserver', function () {
     });
 
     it('should confirm user email with the corresponding routes and valid confirmation token', function (done) {
-      var obj, confirmToken;
+      var obj, confirmEmailToken;
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -1000,12 +1001,13 @@ describe('Webserver', function () {
            response.statusCode.should.equal(403);
            User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
+             // Retrieve validation Code by directly queryin the db
+             confirmEmailToken = user.confirmEmailToken;
              user.confirmedEmail.should.be.false;
-             confirmToken = user.confirmToken
 
              request.post({ headers: {"Accept": "application/json"}
                           , uri: rootUrl + '/confirm'
-                          , json: { confirmToken: confirmToken, email: user.email } }, function (error, response, body) {
+                          , json: { confirmToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
                response.statusCode.should.equal(200);
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
@@ -1066,14 +1068,14 @@ describe('Webserver', function () {
             User.findOne({ email: "user1@nfa.com" }, function (err, user) {
 
               // Retrieve validation Code by directly queryin the db
-              var previousToken = user.confirmToken;
+              var previousToken = user.confirmEmailToken;
 
               request.get({ headers: {"Accept": "application/json"}
                           , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
                 User.findOne({ email: "user1@nfa.com" }, function (err, user) {
-                  var newToken = user.confirmToken;
+                  var newToken = user.confirmEmailToken;
                   assert(newToken !== previousToken);
                   done();
                 });
@@ -1082,7 +1084,147 @@ describe('Webserver', function () {
           });
         });
       });
+
     });
+
+
+  describe('Password reset', function() {
+    it('Should send a reset password email if a token and an email are supplied', function (done) {
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { } }, function (error, response, body) {
+        response.statusCode.should.equal(403);
+
+        User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+          assert.isUndefined(user.resetPasswordToken);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/sendResetPasswordEmail'
+                       , json: { email: "" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+
+            User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+              assert.isUndefined(user.resetPasswordToken);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/sendResetPasswordEmail'
+                           , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(200);
+                  User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+                    assert.isDefined(user.resetPasswordToken);
+                    done();
+                  });
+               });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not be able to reset password if some parameters are not supplied', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+            response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/resetPassword'
+                           , json: { token: "atoken" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(403);
+                response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/user/resetPassword'
+                               , json: { email: 'rweee', resetPasswordToken: "atoken" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(403);
+                    response.body.password.should.equal(i18n.validateUserPwd);
+
+                    done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not be able to reset password if some parameters are not valid', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          //console.log(user);
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "BAD@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(403);
+            response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/user/resetPassword'
+                           , json: { email: user.email, resetPasswordToken: user.resetPasswordToken, newPassword: "BAD" } }, function (error, response, body) {
+
+                response.statusCode.should.equal(403);
+                response.body.password.should.equal(i18n.validateUserPwd);
+
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/user/resetPassword'
+                               , json: { email: 'user1@nfa.com', resetPasswordToken: "badtoken", newPassword: "goodpassword" } }, function (error, response, body) {
+
+                    response.statusCode.should.equal(403);
+                    response.body.message.should.equal(i18n.wrongTokenOrEmail);
+
+                    done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to reset password if all parameters are valid', function (done) {
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , json: { email: "user1@nfa.com" } }, function (error, response, body) {
+        response.statusCode.should.equal(200);
+
+        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/user/resetPassword'
+                       , json: { email: "user1@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+
+            response.statusCode.should.equal(200);
+            response.body.message.should.equal(i18n.passwordResetSuccessfully);
+            User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+              bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+              bcrypt.compareSync('supersecret', user.password).should.equal(false);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+
+
+
+  });
 
 });
 

@@ -102,12 +102,12 @@ describe('User', function () {
     it('validate email address - email', function (done) {
 
       // Unit test the rule
-      assert.isNull(User.validateEmail('noarobase'));
-      assert.isNull(User.validateEmail('user@'));
-      assert.isNull(User.validateEmail('user@domain'));
-      assert.isNull(User.validateEmail('@domain.tld'));
-      assert.isNotNull(User.validateEmail('user@domain.tld'));
-      assert.isNotNull(User.validateEmail('firstname.name@subdomain.domain.tld'));
+      assert.isFalse(User.validateEmail('noarobase'));
+      assert.isFalse(User.validateEmail('user@'));
+      assert.isFalse(User.validateEmail('user@domain'));
+      assert.isFalse(User.validateEmail('@domain.tld'));
+      assert.isTrue(User.validateEmail('user@domain.tld'));
+      assert.isTrue(User.validateEmail('firstname.name@subdomain.domain.tld'));
 
       // Test that it's well handled by Mongoose
       var userData = { password: 'supersecret!'
@@ -548,10 +548,207 @@ describe('User', function () {
       });
     });
 
+  });
 
 
+  describe('Reset password functions', function() {
+    it('Should create a reset password token that expires within one hour', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+        assert.isUndefined(user.resetPasswordToken);
+        assert.isUndefined(user.resetPasswordTokenExpiration);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          assert.isDefined(user.resetPasswordToken);
+          assert.isDefined(user.resetPasswordTokenExpiration);
+
+          // The token should expire within an hour, we test that with a tolerance of 5 seconds
+          assert.isTrue(user.resetPasswordTokenExpiration - new Date() >= 3595000);
+          assert.isTrue(user.resetPasswordTokenExpiration - new Date() <= 3600000);
+
+          done();
+        });
+      });
+    });
+
+    it('Should create a different token every time', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               })
+               , token;
+
+      user.save(function(err) {
+        assert.isNull(err);
+        assert.isUndefined(user.resetPasswordToken);
+        assert.isUndefined(user.resetPasswordTokenExpiration);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          assert.isDefined(user.resetPasswordToken);
+          token = user.resetPasswordToken
+
+          user.createResetPasswordToken(function(err) {
+            assert.isNull(err);
+
+            assert.isDefined(user.resetPasswordToken);
+            user.resetPasswordToken.should.not.equal(token);
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if token is invalid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          user.resetPassword('notatoken', 'perfectlygoodpassword', function(err) {
+            err.tokenInvalidOrExpired.should.equal(true);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if token is expired', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          // Fast-forward time a bit ...
+          user.resetPasswordTokenExpiration.setTime(user.resetPasswordTokenExpiration.getTime() - 3605000);
+          user.save(function(err) {
+            assert.isNull(err);
+
+            user.resetPassword(user.resetPasswordToken, 'perfectlygoodpassword', function(err) {
+              err.tokenInvalidOrExpired.should.equal(true);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if new password is invalid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          user.resetPassword(user.resetPasswordToken, 'bad', function(err) {
+            assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).password);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should reset password if token and new password are valid', function (done) {
+      var user = new User({ email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               });
+
+      user.save(function(err) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          user.resetPassword(user.resetPasswordToken, 'goodpassword', function(err) {
+            assert.isNull(err);
+
+            // Token is reinitialized
+            assert.isNull(user.resetPasswordToken);
+            assert.isNull(user.resetPasswordTokenExpiration);
+            bcrypt.compareSync('supersecret!', user.password).should.equal(false);
+            bcrypt.compareSync('goodpassword', user.password).should.equal(true);
+            done();
+          });
+        });
+      });
+    });
 
   });
+
+
+  describe('XSS prevention', function() {
+
+    it('Should sanitize all user-inputed fields and the fields derived from user input when saving with createAndSaveInstance', function (done) {
+      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTar-moz-bindingAc1'
+                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
+                                                                                // it is derived from username
+                               };
+
+      User.createAndSaveInstance(userInput, function(err, theUser) {
+        console.log(err);
+        theUser.email.should.equal('email@email.com');
+        theUser.username.should.equal('Stevie_sTarAc1');
+        theUser.usernameLowerCased.should.equal('stevie_starac1');
+
+        done();
+      });
+    });
+  
+    it('Should sanitize all user-inputed fields and the fields derived from user input when updating', function (done) {
+      var goodUserInput = { email: 'blip@email.com'
+                               , password: 'supersecret!'
+                               , username: 'quelquun'
+                               };
+      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               , username: 'Stevie_sTar-moz-bindingAc1'
+                               , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
+                                                                                // it is derived from username
+                               };
+
+      User.createAndSaveInstance(goodUserInput, function(err, user) {
+        user.updateValidFields(userInput, function (err, theUser) {
+          theUser.email.should.equal('email@email.com');
+          theUser.username.should.equal('Stevie_sTarAc1');
+          theUser.usernameLowerCased.should.equal('stevie_starac1');
+
+          done();
+        });
+      });
+    });
+  
+  });
+
 
 
 });

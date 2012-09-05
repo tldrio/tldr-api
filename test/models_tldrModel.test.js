@@ -74,7 +74,7 @@ describe('Tldr', function () {
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
-        url: 'http://myfile/movie',
+        url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
@@ -91,13 +91,14 @@ describe('Tldr', function () {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "ftp://myfile.tld/movie";
+          //domain extension is not valid
+          tldrData.url = "http://myfile.tld/movie";
           tldr = new Tldr(tldrData);
         tldr.save( function (err) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          tldrData.url = "http://myfile.tld/movie";
+          tldrData.url = "http://blog.nfa.com/movie?url=avengers";
           tldr = new Tldr(tldrData);
           tldr.save( function (err) {
             assert.isNull(err);
@@ -127,6 +128,7 @@ describe('Tldr', function () {
       });
 
     });
+
 
     it('should detect missing required summary arg', function (done) {
 
@@ -279,6 +281,31 @@ describe('Tldr', function () {
 
   });
 
+  describe('#normalize', function () {
+    it('should remove common Xss vectors from user input', function (done) {
+
+      var tldr = new Tldr({
+        url: 'http://needforair.com/nutcrackers',
+        title: 'document.write Blog NFA',
+        summaryBullets: ['view.innerHTML', 'alert("THIS IS AN XSS ATTACK")'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err, doc) {
+        doc.summaryBullets[0].should.equal('view');
+        doc.summaryBullets[1].should.equal( 'alert&#40;"THIS IS AN XSS ATTACK"&#41;');
+        done();
+      });
+
+
+    });
+    
+  });
+  
 
 
   describe('#createAndSaveInstance', function () {
@@ -502,10 +529,76 @@ describe('Tldr', function () {
       done();
     });
 
+  });
 
 
+  describe('XSS prevention', function () {
 
+    it('Should sanitize user generated fields when creating a tldr with createAndSaveInstance', function (done) {
+      var userInput = {
+          url: 'http://needfdocument.cookieorair.com/nutcrackers',
+          title: 'Blog NFdocument.writeA',
+          summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          resourceAuthor: 'NFA Crewwindow.location',
+          resourceDate: '2012'
+          };
 
+      Tldr.createAndSaveInstance(userInput, function (err, theTldr) {
+        assert.isNull(err, 'no errors');
+        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+        theTldr.title.should.equal('Blog NFA');
+        theTldr.summaryBullets[0].should.equal('Awesome Blog');
+        theTldr.summaryBullets[1].should.equal('Bloup');
+        theTldr.resourceAuthor.should.equal('NFA Crew');
+
+        done();
+      });
+    });
+
+    it('Should sanitize user generated fields when updating a tldr', function (done) {
+      var goodUserInput = {
+          url: 'http://url.com/nutcrackers',
+          title: 'Yipiie',
+          summaryBullets: ['AwBlog', 'Bzzzup'],
+          resourceAuthor: 'Someone',
+          }
+        , userInput = {
+          url: 'http://needfdocument.cookieorair.com/nutcrackers',
+          title: 'Blog NFdocument.writeA',
+          summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
+          resourceAuthor: 'NFA Crewwindow.location',
+          };
+
+      Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
+        assert.isNull(err, 'no errors');
+        tldr.updateValidFields(userInput, function(err, theTldr) {
+          assert.isNull(err, 'no errors');
+          theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
+          theTldr.title.should.equal('Blog NFA');
+          theTldr.summaryBullets[0].should.equal('Awesome Blog');
+          theTldr.summaryBullets[1].should.equal('Bloup');
+          theTldr.resourceAuthor.should.equal('NFA Crew');
+
+          done();
+        });
+      });
+    });
+
+    it('The field resourceDate doesnt need to be sanitized as only numbers or date strings are tolerated', function (done) {
+      var userInput = {
+          url: 'http://url.com/nutcrackers',
+          title: 'Yipiie',
+          summaryBullets: ['AwBlog', 'Bzzzup'],
+          resourceAuthor: 'Someone',
+          resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
+          }
+
+       Tldr.createAndSaveInstance(userInput, function(err) {
+         err.name.should.equal('CastError');   // Cant cast normal strings to date
+
+         done();
+       });
+    });
 
   });
 

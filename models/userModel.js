@@ -11,22 +11,109 @@ var mongoose = require('mongoose')
   , i18n = require('../lib/i18n')
   , UserSchema, User
   , bcrypt = require('bcrypt')
+  , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , check = require('validator').check
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
 
+
+
+
+/*
+ * Validators
+ */
+
+// Email regex comes from node-validator and can be used by clients
+function validateEmail (value) {
+  try {
+    check(value).isEmail();
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// Username should contain from 3 to 16 alphanumerical characters
+function validateUsername (value) {
+  try {
+    check(value).is(/^[A-Za-z0-9_]{3,16}$/);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+// password should be non empty and longer than 6 characters
+function validatePassword (value) {
+  try {
+    check(value).len(6);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+
+
+/**
+ * Statics and Methods
+ *
+ */
 
 function createConfirmToken (callback) {
   var newToken = customUtils.uid(13);
 
   User.findOne({ email: this.email }, function (err, doc) {
 
-    doc.confirmToken = newToken;
+    doc.confirmEmailToken = newToken;
     doc.save(callback);
   });
 }
+
+
+/*
+ * Prepare to reset password by creating a reset password token and sending it to the user
+ */
+function createResetPasswordToken (callback) {
+  var expiration = new Date();
+
+  expiration.setTime(expiration.getTime() + 3600000);   // Token will expire in an hour
+
+  this.resetPasswordToken = customUtils.uid(13);
+  this.resetPasswordTokenExpiration = expiration;
+  this.save(callback);
+}
+
+
+/*
+ * Reset password if token is corrected and not expired
+ */
+function resetPassword (token, newPassword, callback) {
+  var self = this;
+
+  if ( token === this.resetPasswordToken && this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
+    if (validatePassword(newPassword)) {
+      // Token and password are valid
+      bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
+        bcrypt.hash(newPassword, salt, function (err, hash) {
+          self.password = hash;
+          self.resetPasswordToken = null;   // Token cannot be used twice
+          self.resetPasswordTokenExpiration = null;
+          self.save(callback);
+        });
+      });
+    } else {
+      this.password = newPassword;   // Will fail validation
+      this.save(callback);
+    }
+  } else {
+    callback( {tokenInvalidOrExpired: true} );   // No need to give too much information to a potential attacker
+  }
+}
+
 
 /*
  * Return the part of a user's data that we may need to use in a client
@@ -71,7 +158,7 @@ function updateValidFields (data, callback) {
   // user wants to change it's email so we update the confirm status
   // and generate new validation code
   if (self.email !== data.email) {
-    self.confirmToken = customUtils.uid(13);
+    self.confirmEmailToken = customUtils.uid(13);
     self.confirmedEmail = false;
   }
 
@@ -89,34 +176,6 @@ function updateValidFields (data, callback) {
 
 
 /*
- * Validators
- */
-// Email regex comes from node-validator and can be used by clients
-function validateEmail (value) {
-  if (value) {
-    // returns null in case of no match, hence the if/else
-    return value.match(/^(?:[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+\.)*[\w\!\#\$\%\&\'\*\+\-\/\=\?\^\`\{\|\}\~]+@(?:(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!\.)){0,61}[a-zA-Z0-9]?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-](?!$)){0,61}[a-zA-Z0-9]?)|(?:\[(?:(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\.){3}(?:[01]?\d{1,2}|2[0-4]\d|25[0-5])\]))$/);
-  } else {
-    return false;
-  }
-}
-
-// Username should contain from 3 to 16 alphanumerical characters
-function validateUsername (value) {
-  if (value && value.match(/^[A-Za-z0-9_]{3,16}$/)) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-// password should be non empty and longer than 6 characters
-function validatePassword (value) {
-  return (value ? value.length >= 6 : false);
-}
-
-
-/*
  * Create a User instance and save it to the database
  * All defaults are located here instead of in the schema or in setters
  * Part of the password's validation has to occur here as Mongoose's setters are called before the
@@ -129,14 +188,14 @@ function createAndSaveInstance(userInput, callback) {
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
   // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
-  // The '6' parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
+  // The bcryptRounds parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
   if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(6, function(err, salt) {
+    bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         validFields.password = hash;
-        // Set confirmToken - length 13 is very important
+        // Set confirmEmailToken - length 13 is very important
         validFields.confirmedEmail = false;
-        validFields.confirmToken = customUtils.uid(13);
+        validFields.confirmEmailToken = customUtils.uid(13);
         // Set usernameLowerCased
         validFields.usernameLowerCased = validFields.username.toLowerCase();
         instance = new User(validFields);
@@ -174,7 +233,7 @@ function updatePassword (currentPassword, newPassword, callback) {
     if (valid) {
       if ( ! errors.newPassword) {
         // currentPassword is correct and newPassword is valid: we can change
-        bcrypt.genSalt(6, function(err, salt) {
+        bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
           bcrypt.hash(newPassword, salt, function (err, hash) {
             self.password = hash;
             self.save(callback);
@@ -201,7 +260,7 @@ UserSchema = new Schema(
   { confirmedEmail: { type: Boolean
                     , default: false
                     }
-  , confirmToken: { type: String
+  , confirmEmailToken: { type: String
                   }
   , createdAt: { type: Date
                , default: Date.now
@@ -210,7 +269,7 @@ UserSchema = new Schema(
            , unique: true
            , required: true
            , validate: [validateEmail, i18n.validateUserEmail]
-           , set: customUtils.normalizeEmail
+           , set: customUtils.sanitizeEmail
            }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
@@ -222,12 +281,15 @@ UserSchema = new Schema(
   , username: { type: String
               , required: true
               , validate: [validateUsername, i18n.validateUserName]
-              , set: customUtils.trimLeadingTrailingWhitespace
+              , set: customUtils.sanitizeInput
               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
+                        , set: customUtils.sanitizeInput
                         }
+  , resetPasswordToken: { type: String }
+  , resetPasswordTokenExpiration: { type: Date }
   }
 , { strict: true });
 
@@ -243,6 +305,8 @@ UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
+UserSchema.methods.resetPassword = resetPassword;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
