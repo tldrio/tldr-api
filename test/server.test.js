@@ -1013,12 +1013,12 @@ describe('Webserver', function () {
                User.findOne({ email: "user1@nfa.com" }, function (err, user) {
                  user.confirmedEmail.should.be.true;
 
-                 // Confirm token should be invalidated after being used once
+                 // Second call to confirm just returns validation ok
                  request.post({ headers: {"Accept": "application/json"}
                               , uri: rootUrl + '/confirm'
                               , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
-                   response.statusCode.should.equal(403);
+                   response.statusCode.should.equal(200);
 
                    done();
                  });
