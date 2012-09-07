@@ -1057,7 +1057,7 @@ describe('Webserver', function () {
       request.get({ headers: {"Accept": "application/json"}
                   , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
         response.statusCode.should.equal(401);
-        response.headers['www-authenticate'].should.equal('UnknownUser');
+        response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/login'
                      , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
