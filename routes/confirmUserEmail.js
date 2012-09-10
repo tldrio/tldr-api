@@ -22,10 +22,21 @@ function confirmUserEmail (req, res, next) {
   User.findOne({ email: email },  function (err, user) {
     if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetUserEmail} } ); }
 
-    if (!user || (user.confirmEmailToken !== confirmEmailToken)) {
+    // User email is not recognised
+    if (!user) {
+      return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
+    }
+    // If email is already confirmed send positive response
+    if (user.confirmedEmail) {
+      return res.json(200, {message: i18n.emailIsConfirmed});
+    }
+
+    // User email is not confirmed - token is incorrect
+    if (user.confirmEmailToken !== confirmEmailToken) {
       return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
     }
 
+    // User email is not confirmed - token is correct -> Confirm
     var now = new Date();
     if (!user.confirmedEmail) {
       user.confirmedEmail = true;
