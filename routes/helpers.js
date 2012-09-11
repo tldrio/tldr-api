@@ -49,7 +49,7 @@ function updateCallback (err, docs, req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
-      mailer.advertiseAdmin(updatedTldr, req.user, function(error, response){
+      mailer.advertiseAdminTldr(updatedTldr, req.user, function(error, response){
         if(error){
           bunyan.warn('Error sending update tldr by email to admins', error);
         }
