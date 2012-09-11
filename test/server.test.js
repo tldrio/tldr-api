@@ -697,7 +697,7 @@ describe('Webserver', function () {
   });
 
 
-  describe('Test authentication and session', function() {
+  describe('Authentication and session', function() {
 
     it('Should not be able to log in as UserOne with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
@@ -1084,7 +1084,6 @@ describe('Webserver', function () {
           });
         });
       });
-
     });
 
 
