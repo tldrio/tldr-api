@@ -271,6 +271,9 @@ UserSchema = new Schema(
            , validate: [validateEmail, i18n.validateUserEmail]
            , set: customUtils.sanitizeEmail
            }
+  , lastActive: { type: Date
+                , default: Date.now
+                }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
@@ -283,6 +286,9 @@ UserSchema = new Schema(
               , validate: [validateUsername, i18n.validateUserName]
               , set: customUtils.sanitizeInput
               }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
