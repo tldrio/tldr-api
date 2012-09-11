@@ -41,7 +41,7 @@ function updateCallback (err, docs, req, res, next) {
   if (docs.length === 1) {
     oldTldr = docs[0];
 
-    oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
+    oldTldr.updateValidFields(req.body, req.user, function (err, updatedTldr) {
       if (err) {
         if (err.errors) {
           return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );

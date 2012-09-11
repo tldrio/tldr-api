@@ -147,6 +147,15 @@ function getCreatedTldrs (callback) {
 }
 
 
+/*
+ * Update lastActive field
+ */
+function updateLastActive (callback) {
+  this.lastActive = new Date ();
+  this.save(function () {
+    callback();
+  });
+}
 
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
@@ -170,6 +179,7 @@ function updateValidFields (data, callback) {
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
   });
+  self.updatedAt = new Date();
 
   self.save(callback);
 }
@@ -236,6 +246,7 @@ function updatePassword (currentPassword, newPassword, callback) {
         bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
           bcrypt.hash(newPassword, salt, function (err, hash) {
             self.password = hash;
+            self.updatedAt = new Date();
             self.save(callback);
           });
         });
@@ -271,6 +282,9 @@ UserSchema = new Schema(
            , validate: [validateEmail, i18n.validateUserEmail]
            , set: customUtils.sanitizeEmail
            }
+  , lastActive: { type: Date
+                , default: Date.now
+                }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
@@ -283,6 +297,9 @@ UserSchema = new Schema(
               , validate: [validateUsername, i18n.validateUserName]
               , set: customUtils.sanitizeInput
               }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
@@ -305,6 +322,7 @@ UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.updateLastActive = updateLastActive;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.resetPassword = resetPassword;
 
