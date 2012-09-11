@@ -115,6 +115,10 @@ server.get('/tldrs/:id', routes.getTldrById);// GET a tldr by id
 server.post('/tldrs', routes.createNewTldr);//POST create tldr
 server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
 
+// Respond to OPTIONS request - CORS middleware sets all the necessary headers
+server.options('*', function (req, res, next) {
+  res.send(200);
+});
 
 
 /*
