@@ -697,7 +697,7 @@ describe('Webserver', function () {
   });
 
 
-  describe('Test authentication and session', function() {
+  describe('Authentication and session', function() {
 
     it('Should not be able to log in as UserOne with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
@@ -827,7 +827,8 @@ describe('Webserver', function () {
                        createdAt: new Date(),
                        updatedAt: new Date()
                      }
-        , obj;
+        , obj
+        , user;
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/tldrs'
@@ -835,18 +836,21 @@ describe('Webserver', function () {
 
         Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
           assert.isUndefined(tldr.creator);   // No user was logged in, so this tldr has no creator
+          tldr.contributors.should.be.empty;
 
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/users/login'
                        , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
-            body.email.should.equal("user1@nfa.com");   // Login successful as User 1
+            user = body;
+            user.email.should.equal("user1@nfa.com");   // Login successful as User 1
             request.post({ headers: {"Accept": "application/json"}
                          , uri: rootUrl + '/tldrs'
                          , json: tldrData2 }, function (error, response, body) {
 
               Tldr.findOne({url: 'http://another.com/movie'}, function(err, tldr) {
-                tldr.creator.toString().length.should.equal(24);   // Should be an ObjectId, hence length of 24
+                tldr.creator.toString().should.equal(user._id);   // Should be an ObjectId, hence length of 24
+                tldr.contributors[0].toString().should.equal(user._id);
                 request.post({ headers: {"Accept": "application/json"}
                              , uri: rootUrl + '/tldrs'
                              , json: tldrData3 }, function (error, response, body) {
@@ -868,6 +872,29 @@ describe('Webserver', function () {
                 });
               });
             });
+          });
+        });
+      });
+    });
+
+    it('should add a tldr contributor at update time', function (done) {
+      var tldrData = { summaryBullets: ['A new summary'] }
+        , obj
+        , user;
+
+
+      request.post({ headers: {"Accept": "application/json"}
+                   , uri: rootUrl + '/users/login'
+                   , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+
+        user = body;
+        user.email.should.equal("user1@nfa.com");   // Login successful as User 1
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/111111111111111111111111'}, function (err, res, obj) {
+          res.statusCode.should.equal(204);
+          Tldr.findOne({ url: 'http://avc.com/mba-monday' }, function(err, tldr) {
+            tldr.contributors.should.include(user._id);
+            done();
+
           });
         });
       });
@@ -1084,7 +1111,6 @@ describe('Webserver', function () {
           });
         });
       });
-
     });
 
 

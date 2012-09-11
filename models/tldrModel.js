@@ -110,6 +110,7 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
+  , contributors: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
   }
 , { strict: true });
 
@@ -142,7 +143,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
  *
  */
 
-TldrSchema.methods.updateValidFields = function (updates, callback) {
+TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
@@ -151,6 +152,9 @@ TldrSchema.methods.updateValidFields = function (updates, callback) {
   });
 
   self.updatedAt = new Date();
+  if (typeof user !== 'undefined') {
+    self.contributors.push(user);
+  }
 
   self.save(callback);
 };
