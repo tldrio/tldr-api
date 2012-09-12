@@ -19,9 +19,9 @@ function deleteTldr (req, res, next) {
 
   Tldr.remove({ _id: id }, function (err) {
     if (err) {
-      res.send('error when deleting tldr');
+      res.send(i18n.deletionFailure);
     } else {
-      res.send('tldr deleted');
+      res.send(i18n.deletionOk);
     }
   });
 }
