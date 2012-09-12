@@ -848,26 +848,25 @@ describe('Webserver', function () {
                          , uri: rootUrl + '/tldrs'
                          , json: tldrData2 }, function (error, response, body) {
 
-              Tldr.findOne({url: 'http://another.com/movie'}, function(err, tldr) {
-                tldr.creator.toString().should.equal(user._id);   // Should be an ObjectId, hence length of 24
-                tldr.contributors[0].toString().should.equal(user._id);
-                request.post({ headers: {"Accept": "application/json"}
-                             , uri: rootUrl + '/tldrs'
-                             , json: tldrData3 }, function (error, response, body) {
+              tldr = body;
+              tldr.creator.username.should.equal('UserOne');   // Should be an ObjectId, hence length of 24
+              tldr.contributors[0].toString().should.equal(user._id);
+              request.post({ headers: {"Accept": "application/json"}
+                           , uri: rootUrl + '/tldrs'
+                           , json: tldrData3 }, function (error, response, body) {
+
+                request.get({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+
+                  obj = JSON.parse(body);
+                  obj[1].url.should.equal("http://another.com/movie");
+                  obj[0].url.should.equal("http://another.com/again");
 
                   request.get({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+                              , uri: rootUrl + '/users/logout' }, function (error, response, body) {
 
-                    obj = JSON.parse(body);
-                    obj[1].url.should.equal("http://another.com/movie");
-                    obj[0].url.should.equal("http://another.com/again");
-
-                    request.get({ headers: {"Accept": "application/json"}
-                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
-
-                      // Logout in case we have other tests after this one
-                      done();
-                    });
+                    // Logout in case we have other tests after this one
+                    done();
                   });
                 });
               });
