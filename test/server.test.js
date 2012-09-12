@@ -343,7 +343,11 @@ describe('Webserver', function () {
           res.body.should.contain('tldr deleted');
           Tldr.find({_id: '111111111111111111111111'}, function (err, docs) {
             docs.length.should.equal(0);
-            done();
+
+            Tldr.find({}, function(err, docs) {
+              docs.length.should.equal(numberOfTldrs - 1);
+              done();
+            });
           });
         });
       });
