@@ -16,7 +16,8 @@ var _ = require('underscore')
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
-  , check = require('validator').check;
+  , check = require('validator').check
+  ;
 
 
 
@@ -90,16 +91,16 @@ TldrSchema = new Schema(
          }
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
-           , set: customUtils.sanitizeInput
+           , set: customUtils.sanitizeAndEncodeInput
            }
   , summaryBullets: { type: Array
                     , required: true
                     , validate: [validateBullets, i18n.validateTldrBullet]
-                    , set: customUtils.sanitizeArray
+                    , set: customUtils.sanitizeAndEncodeArray
                     }
   , resourceAuthor: { type: String
                     , validate: [validateAuthor, i18n.validateTldrAuthor]
-                    , set: customUtils.sanitizeInput
+                    , set: customUtils.sanitizeAndEncodeInput
                     }
   , resourceDate: { type: Date }   // No need to sanitize, automatically casted to date which is a number
   , createdAt: { type: Date
