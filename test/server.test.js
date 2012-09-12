@@ -333,7 +333,20 @@ describe('Webserver', function () {
         res.body.should.contain('<div class="tldr-read-container">');
         done();
       });
+    });
 
+    it('Should delete a tldr', function (done) {
+      Tldr.find({_id: '111111111111111111111111'}, function (err, docs) {
+        docs.length.should.equal(1);
+        request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/111111111111111111111111'}, function (err, res, body) {
+          res.statusCode.should.equal(200);
+          res.body.should.contain('tldr deleted');
+          Tldr.find({_id: '111111111111111111111111'}, function (err, docs) {
+            docs.length.should.equal(0);
+            done();
+          });
+        });
+      });
     });
 
   });
