@@ -11,6 +11,7 @@ var bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
   , helpers = require('./helpers')
   , mailer = require('../lib/mailer')
+  , _ = require('underscore')
   , Tldr = models.Tldr;
 
 /**
@@ -52,7 +53,14 @@ function createNewTldr (req, res, next) {
       });
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        models.setTldrCreator(tldr, req.user , function() { return res.json(201, tldr);} );
+        models.setTldrCreator(tldr, req.user , function() {
+          // Populate creator username
+          Tldr.findOne({_id: tldr.id})
+            .populate('creator', 'username')
+            .exec( function (err, tldr) {
+              return res.json(201, tldr);
+          });
+        });
       } else {
         return res.json(201, tldr);
       }
