@@ -17,6 +17,7 @@ var bunyan = require('../lib/logger').bunyan
  * Updates the logged user's password
  */
 function updatePassword(req, res, next) {
+  bunyan.incrementMetric('users.updatePassword.routeCalled');
 
   if (req.user) {
     if (!req.body.oldPassword) {
@@ -32,6 +33,7 @@ function updatePassword(req, res, next) {
       if (err) {
         return next({ statusCode:403, body: err });
       } else {
+        bunyan.incrementMetric('users.updatePassword.success');
         return res.send(200, req.user.getAuthorizedFields());
       }
     });

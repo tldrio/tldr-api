@@ -17,8 +17,12 @@ var bunyan = require('../lib/logger').bunyan
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
+  bunyan.incrementMetric('users.creation.routeCalled');
+
   User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
+      bunyan.incrementMetric('users.creation.error');
+
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
@@ -27,6 +31,9 @@ function createNewUser(req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrCreateUser} } );
       }
     }
+
+    bunyan.incrementMetric('users.creation.success');
+ 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }

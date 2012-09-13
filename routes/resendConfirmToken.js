@@ -12,6 +12,8 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function resendConfirmToken (req, res, next) {
+  bunyan.incrementMetric('users.confirmEmail.resendToken.routeCalled');
+
   // User requested a new validation link
   if (req.user) {
     req.user.createConfirmToken( function (err, user) {
