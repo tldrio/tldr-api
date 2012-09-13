@@ -163,23 +163,33 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
 
 
 /**
- * Update tldr object.
- * Only fields in userUpdatableFields are handled
- * @param {Object} updates Object containing fields to update with corresponding value
- * @param {Function} callback callback to be passed to save method
+ * HTML encode a tldr object
  *
  */
-
 TldrSchema.methods.htmlEncode = function () {
-  var htldr = this
-    , bite = sanitize(this.title).entityDecode();
+  var etldr = _.clone(this);
 
-  console.log(bite);
-  console.log(htldr.title);
-  htldr.title = bite;
-  console.log(htldr.title);
-  console.log(sanitize(this.title).entityDecode());
-  return htldr;
+  etldr.title = sanitize(etldr.title).entityEncode();
+  etldr.resourceAuthor = sanitize(etldr.resourceAuthor).entityEncode();
+  _.map(etldr.summaryBullets, function (value) {
+    return sanitize(value).entityEncode();
+  });
+  return etldr;
+};
+
+/**
+ * HTML decode a tldr object
+ *
+ */
+TldrSchema.methods.htmlDecode = function () {
+  var dtldr = _.clone(this);
+
+  dtldr.title = sanitize(dtldr.title).entityDecode();
+  dtldr.resourceAuthor = sanitize(dtldr.resourceAuthor).entityDecode();
+  _.map(dtldr.summaryBullets, function (value) {
+    return sanitize(value).entityDecode();
+  });
+  return dtldr;
 };
 
 // Define tldr model
