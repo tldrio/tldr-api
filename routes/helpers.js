@@ -14,8 +14,10 @@ var i18n = require('../lib/i18n')
 
 function contentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
+      bunyan.incrementMetric('tldrs.get.html');
       return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
     } else {  // Send json by default
+      bunyan.incrementMetric('tldrs.get.json');
       return res.json(200, tldr); // We serve the raw tldr data
     }
 }
