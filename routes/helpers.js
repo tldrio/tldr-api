@@ -14,7 +14,7 @@ var i18n = require('../lib/i18n')
 
 function contentNegotiationForTldr (req, res, tldr) {
     if (req.accepts('text/html')) {
-      return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
+      return res.render('page', _.extend({}, tldr.htmlEncode() )); // We serve the tldr Page
     } else {  // Send json by default
       return res.json(200, tldr); // We serve the raw tldr data
     }

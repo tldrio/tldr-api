@@ -17,6 +17,7 @@ var _ = require('underscore')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , check = require('validator').check
+  , sanitize = require('validator').sanitize
   ;
 
 
@@ -161,6 +162,22 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
 };
 
 
+/**
+ * Update tldr object.
+ * Only fields in userUpdatableFields are handled
+ * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Function} callback callback to be passed to save method
+ *
+ */
+
+TldrSchema.methods.htmlEncode = function () {
+  var htldr = this;
+  console.log(htldr.title);
+  htldr.title = sanitize(this.title).entityDecode();
+  console.log(htldr.title);
+  console.log(sanitize(this.title).entityDecode());
+  return htldr;
+};
 
 // Define tldr model
 Tldr = mongoose.model('tldr', TldrSchema);
