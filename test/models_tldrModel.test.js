@@ -282,7 +282,7 @@ describe('Tldr', function () {
   });
 
   describe('#normalize', function () {
-    it('should remove common Xss vectors from user input and html encode it', function (done) {
+    it('should remove common Xss vectors from user input', function (done) {
 
       var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
