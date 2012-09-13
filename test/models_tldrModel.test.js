@@ -297,7 +297,7 @@ describe('Tldr', function () {
 
       tldr.save( function (err, doc) {
         doc.summaryBullets[0].should.equal('view');
-        doc.summaryBullets[1].should.equal( 'alert&amp;#40;&quot;THIS IS AN XSS ATTACK&quot;&amp;#41;');
+        doc.summaryBullets[1].should.equal( 'alert&#40;"THIS IS AN XSS ATTACK"&#41;');
         done();
       });
 

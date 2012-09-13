@@ -91,16 +91,16 @@ TldrSchema = new Schema(
          }
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
-           , set: customUtils.sanitizeAndEncodeInput
+           , set: customUtils.sanitizeInput
            }
   , summaryBullets: { type: Array
                     , required: true
                     , validate: [validateBullets, i18n.validateTldrBullet]
-                    , set: customUtils.sanitizeAndEncodeArray
+                    , set: customUtils.sanitizeArray
                     }
   , resourceAuthor: { type: String
                     , validate: [validateAuthor, i18n.validateTldrAuthor]
-                    , set: customUtils.sanitizeAndEncodeInput
+                    , set: customUtils.sanitizeInput
                     }
   , resourceDate: { type: Date }   // No need to sanitize, automatically casted to date which is a number
   , createdAt: { type: Date
