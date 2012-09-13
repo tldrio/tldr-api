@@ -9,7 +9,9 @@ var i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , _ = require('underscore')
   , config = require('../lib/config')
-  , mailer = require('../lib/mailer');
+  , mailer = require('../lib/mailer')
+  , bunyan = require('../lib/logger').bunyan
+  ;
 
 
 function contentNegotiationForTldr (req, res, tldr) {
