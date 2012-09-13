@@ -173,7 +173,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
 TldrSchema.methods.htmlEncode = function () {
   var htldr = this;
   console.log(htldr.title);
-  htldr.title = sanitize(this.title).entityDecode();
+  htldr.title = "bite";
   console.log(htldr.title);
   console.log(sanitize(this.title).entityDecode());
   return htldr;
