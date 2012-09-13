@@ -171,9 +171,12 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
  */
 
 TldrSchema.methods.htmlEncode = function () {
-  var htldr = this;
+  var htldr = this
+    , bite = sanitize(this.title).entityDecode();
+
+  console.log(bite);
   console.log(htldr.title);
-  htldr.title = "bite";
+  htldr.title = bite;
   console.log(htldr.title);
   console.log(sanitize(this.title).entityDecode());
   return htldr;
