@@ -386,7 +386,7 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
 
             // Perform update
-            tldr.updateValidFields(updated, function(err) {
+            tldr.updateValidFields(updated, undefined, function(err) {
               if (err) { return done(err); }
 
               tldr.url.should.equal('http://mydomain.com/');
@@ -571,7 +571,7 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
         assert.isNull(err, 'no errors');
-        tldr.updateValidFields(userInput, function(err, theTldr) {
+        tldr.updateValidFields(userInput, undefined, function(err, theTldr) {
           assert.isNull(err, 'no errors');
           theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
           theTldr.title.should.equal('Blog NFA');

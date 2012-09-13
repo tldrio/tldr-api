@@ -41,7 +41,7 @@ function updateCallback (err, docs, req, res, next) {
   if (docs.length === 1) {
     oldTldr = docs[0];
 
-    oldTldr.updateValidFields(req.body, function (err, updatedTldr) {
+    oldTldr.updateValidFields(req.body, req.user, function (err, updatedTldr) {
       if (err) {
         if (err.errors) {
           return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
@@ -49,7 +49,7 @@ function updateCallback (err, docs, req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
-      mailer.advertiseAdmin(updatedTldr, req.user, function(error, response){
+      mailer.advertiseAdminTldr(updatedTldr, req.user, function(error, response){
         if(error){
           bunyan.warn('Error sending update tldr by email to admins', error);
         }

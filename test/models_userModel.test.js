@@ -330,6 +330,22 @@ describe('User', function () {
       });
     });
 
+    it('should set default createdAt, updatedAt and lastActive', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        assert.isDefined(user.createdAt);
+        assert.isDefined(user.lastActive);
+        assert.isDefined(user.updatedAt);
+        done();
+      });
+    });
+
   });
 
 

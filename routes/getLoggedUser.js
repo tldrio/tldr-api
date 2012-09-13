@@ -14,7 +14,9 @@ var bunyan = require('../lib/logger').bunyan
  */
 function getLoggedUser(req, res, next) {
   if (req.user) {
-    res.json(200, req.user.getAuthorizedFields());
+    req.user.updateLastActive( function () {
+      res.json(200, req.user.getAuthorizedFields());
+    });
   } else {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);
     return res.json(401, { message: i18n.unauthorized} );

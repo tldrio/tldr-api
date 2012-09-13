@@ -35,6 +35,11 @@ function createNewUser(req, res, next) {
           bunyan.warn('Error sending confirmation email', error);
         }
       });
+      mailer.advertiseAdminNewUser(user, function(error, response){
+        if(error){
+          bunyan.warn('Error sending confirmation email', error);
+        }
+      });
       return res.json(201, user.getAuthorizedFields());
     });
   });
