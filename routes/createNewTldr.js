@@ -51,7 +51,7 @@ function createNewTldr (req, res, next) {
     } else {
       bunyan.incrementMetric('tldrs.creation.creationSuccess');
 
-      mailer.advertiseAdminTldr(tldr, req.user, function(error, response){
+      mailer.advertiseAdminTldr(tldr, req.user, 'create', function(error, response){
         if(error){
           bunyan.warn('Error sending new tldr by email to admins', error);
         }

@@ -55,7 +55,7 @@ function updateCallback (err, docs, req, res, next) {
       }
       bunyan.incrementMetric('tldrs.update.success');
 
-      mailer.advertiseAdminTldr(updatedTldr, req.user, function(error, response){
+      mailer.advertiseAdminTldr(updatedTldr, req.user, 'update' ,function(error, response){
         if(error){
           bunyan.warn('Error sending update tldr by email to admins', error);
         }
