@@ -295,8 +295,8 @@ describe('Tldr', function () {
         , valErr;
 
       tldr.save( function (err, doc) {
-        doc.title.should.equal('toto titi');
-        doc.summaryBullets[1].should.equal( 'tit i');
+        doc.title.should.equal('toto\u00a0titi');
+        doc.summaryBullets[1].should.equal( 'tit\u00a0i');
         done();
       });
     });
