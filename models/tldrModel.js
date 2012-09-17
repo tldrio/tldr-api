@@ -177,20 +177,6 @@ TldrSchema.methods.htmlEncode = function () {
   return etldr;
 };
 
-/**
- * HTML decode a tldr object
- *
- */
-TldrSchema.methods.htmlDecode = function () {
-  var dtldr = _.clone(this);
-
-  dtldr.title = sanitize(dtldr.title).entityDecode();
-  dtldr.resourceAuthor = sanitize(dtldr.resourceAuthor).entityDecode();
-  _.map(dtldr.summaryBullets, function (value) {
-    return sanitize(value).entityDecode();
-  });
-  return dtldr;
-};
 
 // Define tldr model
 Tldr = mongoose.model('tldr', TldrSchema);
