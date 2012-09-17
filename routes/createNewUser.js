@@ -17,6 +17,8 @@ var bunyan = require('../lib/logger').bunyan
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
+  var link;
+
   User.createAndSaveInstance(req.body, function(err, user) {
     if (err) {
       if (err.errors) {
@@ -30,11 +32,19 @@ function createNewUser(req, res, next) {
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-      mailer.sendConfirmToken('emailConfirmationToken', user.email, { user: user }, function(error, response){
-        if(error){
-          bunyan.warn('Error sending confirmation email', error);
-        }
-      });
+      link = config.websiteUrl +
+             '/confirm?confirmEmailToken=' +
+             encodeURIComponent(user.confirmEmailToken) +
+             '&email=' +
+             encodeURIComponent(user.email);
+      mailer.sendEmail({ type: 'emailConfirmationToken'
+                       , to: user.email
+                       , values: { user: user, link: link } }
+        , function(error, response){
+            if(error){
+              bunyan.warn('Error sending confirmation email', error);
+            }
+          });
       mailer.advertiseAdminNewUser(user, function(error, response){
         if(error){
           bunyan.warn('Error sending confirmation email', error);
