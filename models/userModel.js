@@ -280,7 +280,7 @@ UserSchema = new Schema(
            , unique: true
            , required: true
            , validate: [validateEmail, i18n.validateUserEmail]
-           , set: customUtils.sanitizeEmail
+           , set: customUtils.sanitizeAndNormalizeEmail
            }
   , lastActive: { type: Date
                 , default: Date.now
