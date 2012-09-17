@@ -169,8 +169,8 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
 TldrSchema.methods.htmlEncode = function () {
   var etldr = _.clone(this);
 
-  etldr.title = sanitize(etldr.title).entityEncode();
-  etldr.resourceAuthor = sanitize(etldr.resourceAuthor).entityEncode();
+  //etldr.title = sanitize(etldr.title).entityEncode();
+  //etldr.resourceAuthor = sanitize(etldr.resourceAuthor).entityEncode();
   _.map(etldr.summaryBullets, function (value) {
     return sanitize(value).entityEncode();
   });
