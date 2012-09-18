@@ -56,7 +56,7 @@ function updateCallback (err, docs, req, res, next) {
       bunyan.incrementMetric('tldrs.update.success');
 
       mailer.sendEmail({ type: 'adminTldrWasEdited'
-                       , development: true
+                       , development: false
                        , values: { user: req.user, tldr: updatedTldr, apiUrl: config.apiUrl }
                        });
 

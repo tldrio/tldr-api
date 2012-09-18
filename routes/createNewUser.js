@@ -53,11 +53,12 @@ function createNewUser(req, res, next) {
                        , values: { user: user, link: link }
                        });
 
-      mailer.advertiseAdminNewUser(user, function(error, response){
-        if(error){
-          bunyan.warn('Error sending confirmation email', error);
-        }
-      });
+      // Advertise user creation to admins
+      mailer.sendEmail({ type: 'adminUserCreated'
+                       , development: false
+                       , values: { user: user }
+                       });
+
       return res.json(201, user.getAuthorizedFields());
     });
   });
