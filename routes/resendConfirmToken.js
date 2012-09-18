@@ -31,8 +31,8 @@ function resendConfirmToken (req, res, next) {
       // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
                        , to: user.email
-                       , values: { user: user, link: link } }
-        , function(error, response) { if(error){ bunyan.warn('Error sending confirmation email', error); } });
+                       , values: { user: user, link: link }
+                       });
 
       return res.json(200, { message: i18n.confirmEmailTokenSent});
     });

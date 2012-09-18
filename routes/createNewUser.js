@@ -43,8 +43,8 @@ function createNewUser(req, res, next) {
       // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
                        , to: user.email
-                       , values: { user: user, link: link } }
-        , function(error, response) { if(error){ bunyan.warn('Error sending confirmation email', error); } });
+                       , values: { user: user, link: link }
+                       });
 
       mailer.advertiseAdminNewUser(user, function(error, response){
         if(error){
