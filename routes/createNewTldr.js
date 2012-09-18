@@ -45,6 +45,11 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
+      //mailer.sendEmail({ type: 'passwordWasReset'
+                       //, to: user.email
+                       //, development: true
+                       //, values: { user: req.user, tldr: tldr }
+                       //});
 
       mailer.advertiseAdminTldr(tldr, req.user, function(error, response){
         if(error){
