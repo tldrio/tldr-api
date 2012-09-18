@@ -17,8 +17,6 @@ var bunyan = require('../lib/logger').bunyan
  * Creates a user if valid information is entered
  */
 function createNewUser(req, res, next) {
-  var link;
-
   bunyan.incrementMetric('users.creation.routeCalled');
 
   User.createAndSaveInstance(req.body, function(err, user) {
@@ -35,22 +33,15 @@ function createNewUser(req, res, next) {
     }
 
     bunyan.incrementMetric('users.creation.success');
- 
+
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
 
-      // Craft the email confirmation link
-      link = config.websiteUrl +
-             '/confirm?confirmEmailToken=' +
-             encodeURIComponent(user.confirmEmailToken) +
-             '&email=' +
-             encodeURIComponent(user.email);
-
       // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
                        , to: user.email
-                       , values: { user: user, link: link }
+                       , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), websiteUrl: config.websiteUrl, user: user }
                        });
 
       // Advertise user creation to admins

@@ -14,8 +14,6 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function sendResetPasswordEmail (req, res, next) {
-  var link;
-
   bunyan.incrementMetric('users.resetPassword.sendEmail.routeCalled');
 
   if (! req.body || ! req.body.email || req.body.email.length === 0) {
@@ -42,17 +40,10 @@ function sendResetPasswordEmail (req, res, next) {
             // Don't wait for email to be sent successfully to send the response to the client
             res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
 
-            // Craft reset password link
-            var link = config.websiteUrl +
-                      '/resetPassword?resetPasswordToken=' +
-                      encodeURIComponent(user.resetPasswordToken) +
-                      '&email=' +
-                      encodeURIComponent(user.email);
-
             // Send reset password email
             mailer.sendEmail({ type: 'resetPassword'
                              , to: user.email
-                             , values: { link: link, user: user }
+                             , values: { user: user, websiteUrl: config.websiteUrl, email: encodeURIComponent(user.email), token: encodeURIComponent(user.resetPasswordToken) }
                              });
           }
         });
