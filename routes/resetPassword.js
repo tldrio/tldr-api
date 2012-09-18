@@ -41,11 +41,10 @@ function resetPassword (req, res, next) {
           }
         }
       } else {
-        mailer.sendPasswordWasResetEmail(user, function (error, response) {
-          if (error) {
-            bunyan.warn('Error sending password was successfully reset email');
-          }
-        });
+        mailer.sendEmail({ type: 'passwordWasReset'
+                         , to: user.email
+                         , values: { user: user }
+                         });
 
         res.json(200, { message: i18n.passwordResetSuccessfully });
       }

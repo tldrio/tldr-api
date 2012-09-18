@@ -7,12 +7,14 @@
 var bunyan = require('../lib/logger').bunyan
   , mailer = require('../lib/mailer')
   , User = require('../lib/models').User
+  , config = require('../lib/config')
   , i18n = require('../lib/i18n')
   , util = require('util');
 
 
 
 function sendResetPasswordEmail (req, res, next) {
+  var link;
 
   if (! req.body || ! req.body.email || req.body.email.length === 0) {
     return next({ statusCode: 403, body: { message: i18n.noEmailProvidedForReset } });
@@ -25,11 +27,10 @@ function sendResetPasswordEmail (req, res, next) {
         // Don't wait for email to be sent successfully to send the response to the client
         res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
 
-        mailer.sendUserDoesntExistButYouTriedToResetHisPasswordEmail(req.body.email, function (error, response) {
-          if (error) {
-            bunyan.warn('Error sending password reset for wrong email email');
-          }
-        });
+        mailer.sendEmail({ type: 'userDoesntExistButTriedToResetPassword'
+                         , to: req.body.email
+                         , values: {}
+                         });
       } else {
         user.createResetPasswordToken(function(err) {
           if (! err) {
@@ -37,11 +38,18 @@ function sendResetPasswordEmail (req, res, next) {
             // Don't wait for email to be sent successfully to send the response to the client
             res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
 
-            mailer.sendResetPasswordEmail(user, function(error, response) {
-              if (error) {
-                bunyan.warn('Error sending password reset email');
-              }
-            });
+            // Craft reset password link
+            var link = config.websiteUrl +
+                      '/resetPassword?resetPasswordToken=' +
+                      encodeURIComponent(user.resetPasswordToken) +
+                      '&email=' +
+                      encodeURIComponent(user.email);
+
+            // Send reset password email
+            mailer.sendEmail({ type: 'resetPassword'
+                             , to: user.email
+                             , values: { link: link, user: user }
+                             });
           }
         });
       }
