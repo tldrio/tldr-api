@@ -19,6 +19,8 @@ var bunyan = require('../lib/logger').bunyan
 function updateProfile(req, res, next) {
   var link;
 
+  bunyan.incrementMetric('users.updateProfile.routeCalled');
+
   if (req.user) {
     if (req.body.username || req.body.email) {
 
@@ -55,9 +57,11 @@ function updateProfile(req, res, next) {
                            });
         }
 
+        bunyan.incrementMetric('users.updateProfile.success');
         return res.send(200, user.getAuthorizedFields());
       });
     } else {
+      bunyan.incrementMetric('users.updateProfile.success');
       return res.send(200, req.user.getAuthorizedFields());
     }
   } else {

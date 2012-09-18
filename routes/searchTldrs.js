@@ -30,10 +30,13 @@ function searchTldrs (req, res, next) {
     , startat = query.startat || 0
     , olderthan = query.olderthan;
 
+  bunyan.incrementMetric('tldrs.search.routeCalled');
 
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
   if (url) {
+    bunyan.incrementMetric('tldrs.search.byUrl');
+
     url = normalizeUrl(url);
     Tldr.findOne({url: url})
         .populate('creator', 'username')
@@ -53,6 +56,8 @@ function searchTldrs (req, res, next) {
 
     return;
   }
+
+  bunyan.incrementMetric('tldrs.search.latest');
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
   if (isNaN(limit)) { limit = defaultLimit; }

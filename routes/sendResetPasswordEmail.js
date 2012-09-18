@@ -16,6 +16,8 @@ var bunyan = require('../lib/logger').bunyan
 function sendResetPasswordEmail (req, res, next) {
   var link;
 
+  bunyan.incrementMetric('users.resetPassword.sendEmail.routeCalled');
+
   if (! req.body || ! req.body.email || req.body.email.length === 0) {
     return next({ statusCode: 403, body: { message: i18n.noEmailProvidedForReset } });
   } else {
@@ -34,6 +36,8 @@ function sendResetPasswordEmail (req, res, next) {
       } else {
         user.createResetPasswordToken(function(err) {
           if (! err) {
+            bunyan.incrementMetric('users.resetPassword.sendEmail.tokenCreationSuccess');
+
             // Send the same message, whether a user was found or not
             // Don't wait for email to be sent successfully to send the response to the client
             res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
