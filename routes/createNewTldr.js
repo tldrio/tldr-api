@@ -10,6 +10,7 @@ var bunyan = require('../lib/logger').bunyan
   , models = require('../lib/models')
   , i18n = require('../lib/i18n')
   , helpers = require('./helpers')
+  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , _ = require('underscore')
   , Tldr = models.Tldr;
@@ -49,18 +50,13 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
-      //mailer.sendEmail({ type: 'passwordWasReset'
-                       //, to: user.email
-                       //, development: true
-                       //, values: { user: req.user, tldr: tldr }
-                       //});
       bunyan.incrementMetric('tldrs.creation.creationSuccess');
 
-      mailer.advertiseAdminTldr(tldr, req.user, 'create', function(error, response){
-        if(error){
-          bunyan.warn('Error sending new tldr by email to admins', error);
-        }
-      });
+      mailer.sendEmail({ type: 'adminTldrWasCreated'
+                       , development: false
+                       , values: { user: req.user, tldr: tldr, apiUrl: config.apiUrl }
+                       });
+
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
         models.setTldrCreator(tldr, req.user , function() {
