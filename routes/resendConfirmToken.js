@@ -12,6 +12,8 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function resendConfirmToken (req, res, next) {
+  var link;
+
   // User requested a new validation link
   if (req.user) {
     req.user.createConfirmToken( function (err, user) {
@@ -19,11 +21,18 @@ function resendConfirmToken (req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateToken } });
       }
 
-      mailer.sendConfirmToken(user, function(error, response) {
-        if(error){
-          bunyan.warn('Error sending confirmation email', error);
-        }
-      });
+      // Craft the email confirmation link
+      link = config.websiteUrl +
+             '/confirm?confirmEmailToken=' +
+             encodeURIComponent(user.confirmEmailToken) +
+             '&email=' +
+             encodeURIComponent(user.email);
+
+      // Send the link by email
+      mailer.sendEmail({ type: 'emailConfirmationToken'
+                       , to: user.email
+                       , values: { user: user, link: link } }
+        , function(error, response) { if(error){ bunyan.warn('Error sending confirmation email', error); } });
 
       return res.json(200, { message: i18n.confirmEmailTokenSent});
     });
