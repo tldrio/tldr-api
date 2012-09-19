@@ -187,34 +187,35 @@ TldrSchema.statics.deserialize = function (serializedVersion) {
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Object} user Optional - the contributor who updated this tldr
  * @param {Function} callback callback to be passed to save method
  *
  */
 
 TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
-    , self = this
-    , creatorId = user ? user._id : null;
+    , self = this;
 
-  // The actual update takes place after we saved the previous version
-  function actuallyUpdateFields() {
-    _.each( validUpdateFields, function (validField) {
-      self[validField] = updates[validField];
+  // First, update the tldr
+  _.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
+
+  self.updatedAt = new Date();
+
+  // Try to save it
+  self.save(function(err, tldr) {
+    if (err) { return callback(err); }   // Return immediately if there is an error
+
+    // If there is a history, save this new version in it then run the callback with
+    // the expected signature for a save success: callback(null, tldr)
+    TldrHistory.findOne({ _id: self.history }, function(err, history) {
+      if (history) {
+        history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
+      } else {
+        callback(null, tldr);
+      }
     });
-
-    self.updatedAt = new Date();
-
-    self.save(callback);
-  }
-
-  // Try to save previous version then actually update the tldr
-  // The history is only an objectId so we need to find it first
-  TldrHistory.findOne({ _id: self.history }, function(err, history) {
-    if (history) {
-      history.saveVersion( self.serialize(), creatorId, actuallyUpdateFields );
-    } else {
-      actuallyUpdateFields();
-    }
   });
 };
 
