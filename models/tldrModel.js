@@ -112,8 +112,7 @@ TldrSchema = new Schema(
                , default: Date.now
                }
                , required: false
-  , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
-  , contributors: [{ type: ObjectId, ref: 'user' }]   // See mongoose doc - populate
+  , creator: { type: ObjectId, ref: 'user' }
   }
 , { strict: true });
 
@@ -155,9 +154,6 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   });
 
   self.updatedAt = new Date();
-  if (user) {
-    self.contributors.push(user._id);
-  }
 
   self.save(callback);
 };
