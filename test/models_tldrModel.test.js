@@ -14,6 +14,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Tldr = models.Tldr
+  , TldrHistory = models.TldrHistory
   , server = require('../server')
   , db = server.db
   , url = require('url');
@@ -285,13 +286,13 @@ describe('Tldr', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      Tldr.createAndSaveInstance(
-        { title: 'Blog NFA'
+      var tldrData = { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , createdAt: '2012'},
-        function (err) {
+        , createdAt: '2012'};
+
+      Tldr.createAndSaveInstance(tldrData, null, function (err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -313,7 +314,7 @@ describe('Tldr', function () {
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , createdAt: '2012'},
+        , createdAt: '2012'}, null,
         function (err) {
           Tldr.find({resourceAuthor: 'bloup'})
               .populate('history')
@@ -333,14 +334,14 @@ describe('Tldr', function () {
         , createdAt: '2012'};
 
         Tldr.createAndSaveInstance(
-          tldr,
+          tldr, null,
           function (err) {
             if (err) { return done(err); }
             Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
               Tldr.createAndSaveInstance(
-                tldr,
+                tldr, null,
                 function (err) {
                   err.should.not.be.null;
                   err.code.should.equal(11000);// 11000 is the code for duplicate key
@@ -365,7 +366,7 @@ describe('Tldr', function () {
         { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
-        , resourceAuthor: 'bloup'},
+        , resourceAuthor: 'bloup'}, null,
         function(err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
@@ -535,7 +536,7 @@ describe('Tldr', function () {
           resourceDate: '2012'
           };
 
-      Tldr.createAndSaveInstance(userInput, function (err, theTldr) {
+      Tldr.createAndSaveInstance(userInput, null, function (err, theTldr) {
         assert.isNull(err, 'no errors');
         theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
         theTldr.title.should.equal('Blog NFA');
@@ -561,7 +562,7 @@ describe('Tldr', function () {
           resourceAuthor: 'NFA Crewwindow.location',
           };
 
-      Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
+      Tldr.createAndSaveInstance(goodUserInput, null, function (err, tldr) {
         assert.isNull(err, 'no errors');
         tldr.updateValidFields(userInput, undefined, function(err, theTldr) {
           assert.isNull(err, 'no errors');
@@ -585,7 +586,7 @@ describe('Tldr', function () {
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
           }
 
-       Tldr.createAndSaveInstance(userInput, function(err) {
+       Tldr.createAndSaveInstance(userInput, null, function(err) {
          err.name.should.equal('CastError');   // Cant cast normal strings to date
 
          done();
@@ -618,9 +619,9 @@ describe('Tldr', function () {
   });
 
 
-  describe('#serialization and deserialization', function(done) {
+  describe('tldr history management', function(done) {
 
-    it('should serialize only the fields we want to remember', function (done) {
+    it('should serialize only the fields we want to remember and be able to deserialize the string', function (done) {
       var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
                             title: 'tototiti',
                             summaryBullets: ['toto', 'titi'],
@@ -652,10 +653,58 @@ describe('Tldr', function () {
       });
     });
 
+    it('should behave as usual when there is no history (if the tldr was not created through createAndSaveInstance)', function (done) {
+      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+                            title: 'tototiti',
+                            summaryBullets: ['toto', 'titi'],
+                            resourceAuthor: 'NFA Crew',
+                            resourceDate: '2012',
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                          });
+
+      tldr.save(function(err, _tldr) {
+        assert.isUndefined(_tldr.history);
+        _tldr.title.should.equal('tototiti');
+
+        _tldr.updateValidFields({ title: 'BLOUP' }, null, function (err, _tldr) {
+          assert.isUndefined(_tldr.history);
+          _tldr.title.should.equal('BLOUP');
+
+          _tldr.updateValidFields({ title: 'blip' }, undefined, function (err, _tldr) {
+            assert.isUndefined(_tldr.history);
+            _tldr.title.should.equal('blip');
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('should save previous version even without the creator', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin', 'hihan']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'};
+
+      Tldr.createAndSaveInstance(tldrData, null, function(err, tldr) {
+        assert.isDefined(tldr.history);
+
+        tldr.updateValidFields({ title: 'Hellooo' }, null, function () {
+          tldr.updateValidFields({ summaryBullets: ['only one'] }, undefined, function () {
+            TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
+              history.versions.length.should.equal(2);
+              console.log(history);
+
+              done();
+            });
+          })
+        });
+      });
+    });
 
 
   });
-
-
 
 });

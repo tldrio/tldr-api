@@ -378,8 +378,8 @@ describe('User', function () {
           _.isArray(tldrs).should.equal(true);
           tldrs.length.should.equal(0);
 
-          Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-            Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
+          Tldr.createAndSaveInstance(tldrData1, null, function(err, tldr1) {
+            Tldr.createAndSaveInstance(tldrData2, null,  function(err, tldr2) {
               models.setTldrCreator(tldr1, user, function(err) {
                 models.setTldrCreator(tldr2, user, function(err) {
                   // user doesn't contain the data in his created tldrs

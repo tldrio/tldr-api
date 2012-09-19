@@ -69,8 +69,8 @@ describe('Models', function () {
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
-        Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-          Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
+        Tldr.createAndSaveInstance(tldrData1, null, function(err, tldr1) {
+          Tldr.createAndSaveInstance(tldrData2, null, function(err, tldr2) {
             models.setTldrCreator(tldr1, user, function(err) {
               models.setTldrCreator(tldr2, user, function(err) {
                 // Linking should have put the correct ObjectIds in the objects, not the referenced objects themselves
@@ -124,7 +124,7 @@ describe('Models', function () {
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
-        Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
+        Tldr.createAndSaveInstance(tldrData1, null, function(err, tldr1) {
           function test1 () { models.setTldrCreator(tldr1); }
           function test2 () { models.setTldrCreator(null, user); }
           function test3 () { models.setTldrCreator(undefined, user); }

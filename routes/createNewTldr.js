@@ -31,7 +31,7 @@ function createNewTldr (req, res, next) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired } } );
   }
 
-  Tldr.createAndSaveInstance(req.body, function (err, tldr) {
+  Tldr.createAndSaveInstance(req.body, req.user, function (err, tldr) {
     if (err) {
       bunyan.incrementMetric('tldrs.creation.creationError');
 
@@ -59,13 +59,16 @@ function createNewTldr (req, res, next) {
 
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        models.setTldrCreator(tldr, req.user , function() {
+        console.log("================================");
+        console.log(tldr);
+        console.log(req.user);
+        //models.setTldrCreator(tldr, req.user , function() {
           // Populate creator username
           Tldr.findOne({_id: tldr.id})
             .populate('creator', 'username')
             .exec( function (err, tldr) {
               return res.json(201, tldr);
-          });
+          //});
         });
       } else {
         return res.json(201, tldr);

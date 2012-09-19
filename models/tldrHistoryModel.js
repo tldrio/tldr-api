@@ -45,8 +45,9 @@ TldrHistorySchema = new Schema(
  * @param{String} creatorId Id of the creator of this entry
  * @param{Function} callback Optional callback function
  */
-TldrHistorySchema.methods.saveVersion = function (data, creatorId, callback) {
-  var tldrVersion = new TldrVersion({ data: data, creator: creatorId })
+TldrHistorySchema.methods.saveVersion = function (data, creator, callback) {
+  var creatorId = creator ? creator._id : null
+    , tldrVersion = new TldrVersion({ data: data, creator: creatorId })
     , cb = callback ? callback : function() {};
 
   this.versions.unshift(tldrVersion);   // Versions need to be ordered from the latest onwards

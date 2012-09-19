@@ -7,6 +7,7 @@
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , mailer = require('../lib/mailer')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -124,19 +125,29 @@ TldrSchema = new Schema(
 /**
  * Create a new instance of Tldr and populate it
  * Only fields in userSetableFields are handled
+ * Also sets the creator if we have one
  * @param {Object} userInput Object containing the fields to set for the tldr instance
+ * @param {Object} creator Optional - creator of this tldr
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
+TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance
+    , instance = new Tldr(validFields)
     , history = new TldrHistory();
 
-  history.save(function(err, _history) {
-    instance = new Tldr(validFields);
+  history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
-    instance.save(callback);
+
+    if (creator) {
+      instance.creator = creator._id;
+      instance.save(function(err, tldr) {
+        creator.tldrsCreated.push(tldr._id);
+        creator.save(callback);
+      });
+    } else {
+      instance.save(callback);
+    }
   });
 };
 
@@ -177,15 +188,29 @@ TldrSchema.statics.deserialize = function (serializedVersion) {
 
 TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
-    , self = this;
+    , self = this
+    , creatorId = user ? user._id : null;
 
-  _.each( validUpdateFields, function (validField) {
-    self[validField] = updates[validField];
+  // The actual update takes place after we saved the previous version
+  function actuallyUpdateFields() {
+    _.each( validUpdateFields, function (validField) {
+      self[validField] = updates[validField];
+    });
+
+    self.updatedAt = new Date();
+
+    self.save(callback);
+  }
+
+  // Try to save previous version then actually update the tldr
+  // The history is only an objectId so we need to find it first
+  TldrHistory.findOne({ _id: self.history }, function(err, history) {
+    if (history) {
+      history.saveVersion( self.serialize(), creatorId, actuallyUpdateFields );
+    } else {
+      actuallyUpdateFields();
+    }
   });
-
-  self.updatedAt = new Date();
-
-  self.save(callback);
 };
 
 
