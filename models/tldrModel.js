@@ -123,9 +123,8 @@ TldrSchema = new Schema(
 
 
 /**
- * Create a new instance of Tldr and populate it
- * Only fields in userSetableFields are handled
- * Also sets the creator if we have one
+ * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
+ * Also sets the creator if we have one and initializes the tldr history
  * @param {Object} userInput Object containing the fields to set for the tldr instance
  * @param {Object} creator Optional - creator of this tldr
  * @param {Function} callback Function to call after the creation of the tldr

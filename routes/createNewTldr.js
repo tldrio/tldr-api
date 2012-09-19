@@ -59,13 +59,21 @@ function createNewTldr (req, res, next) {
 
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        //models.setTldrCreator(tldr, req.user , function() {
-          // Populate creator username
-          Tldr.findOne({_id: tldr.id})
-            .populate('creator', 'username')
-            .exec( function (err, tldr) {
-              return res.json(201, tldr);
-          //});
+        // If this is the creator's first tldr, send him a congratulory email
+        if (creator.tldrsCreated.length === 1) {
+          // Send congratulory email
+          mailer.sendEmail({ type: 'congratulationsFirstTldr'
+                           , to: creator.email
+                           , development: false
+                           , values: { apiUrl: config.apiUrl, url: encodeURIComponent(tldr.url) }
+                           });
+        }
+
+        // Populate creator username
+        Tldr.findOne({_id: tldr.id})
+          .populate('creator', 'username')
+          .exec( function (err, tldr) {
+            return res.json(201, tldr);
         });
       } else {
         return res.json(201, tldr);
