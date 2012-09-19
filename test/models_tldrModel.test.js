@@ -14,6 +14,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Tldr = models.Tldr
+  , User = models.User
   , TldrHistory = models.TldrHistory
   , server = require('../server')
   , db = server.db
@@ -332,6 +333,42 @@ describe('Tldr', function () {
             done();
           });
         });
+    });
+
+    it('should set a new tldr\'s creator and reflect it in the history', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , userData = { username: 'blip'
+                     , password: 'supersecret'
+                     , email: 'valid@email.com' }
+        , deserialized;
+
+        User.createAndSaveInstance(userData, function(err, user) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+          Tldr.find({resourceAuthor: 'bloup'})
+              .populate('history')
+              .exec(function (err, docs) {
+
+
+            // The history is initialized with the tldr's creator
+            docs[0].history.versions.length.should.equal(1);
+            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
+            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+            deserialized.title.should.equal(tldrData.title);
+
+            // The right creator is set and he the tldr is part of his tldrsCreated
+            docs[0].creator.toString().should.equal(user._id.toString());
+            User.findOne({ _id: docs[0].creator }, function (err, reUser) {
+              reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
+
+              done();
+            });
+          });
+        });
+      });
     });
 
     it('should not save two tldrs with same url', function (done) {
