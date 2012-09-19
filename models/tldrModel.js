@@ -1,7 +1,7 @@
 /**
  * Model Definition of Database using Mongoose
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Fucking Proprietary License
+ * Proprietary License
  */
 
 var _ = require('underscore')
@@ -18,6 +18,7 @@ var _ = require('underscore')
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , check = require('validator').check
   , sanitize = require('validator').sanitize
+  , TldrHistory = require('./tldrHistoryModel')
   ;
 
 
