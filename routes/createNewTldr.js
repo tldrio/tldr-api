@@ -59,9 +59,6 @@ function createNewTldr (req, res, next) {
 
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
-        console.log("================================");
-        console.log(tldr);
-        console.log(req.user);
         //models.setTldrCreator(tldr, req.user , function() {
           // Populate creator username
           Tldr.findOne({_id: tldr.id})

@@ -142,8 +142,14 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     if (creator) {
       instance.creator = creator._id;
       instance.save(function(err, tldr) {
+        if (err) { return callback(err); }
+
         creator.tldrsCreated.push(tldr._id);
-        creator.save(callback);
+        creator.save(function(err, _user) {
+          if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+
+          callback(null, tldr);
+        });
       });
     } else {
       instance.save(callback);

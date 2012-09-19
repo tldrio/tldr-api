@@ -308,18 +308,26 @@ describe('Tldr', function () {
         });
     });
 
-    it('should create a new empty history when creating a new tldr', function (done) {
-      Tldr.createAndSaveInstance(
-        { title: 'Blog NFA'
-        , url: 'http://mydomain.com'
-        , summaryBullets: ['coin']
-        , resourceAuthor: 'bloup'
-        , createdAt: '2012'}, null,
-        function (err) {
+    it('should initialize a new tldr\'s history with the first version of the data', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , deserialized;
+
+      Tldr.createAndSaveInstance(tldrData, null, function (err) {
           Tldr.find({resourceAuthor: 'bloup'})
               .populate('history')
               .exec(function (err,docs) {
-            docs[0].history.versions.length.should.equal(0);
+            docs[0].history.versions.length.should.equal(1);
+            assert.isUndefined(docs[0].history.versions[0].creator);
+
+            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+            deserialized.title.should.equal(tldrData.title);
+            deserialized.resourceAuthor.should.equal(tldrData.resourceAuthor);
+            deserialized.summaryBullets.length.should.equal(tldrData.summaryBullets.length);
+            deserialized.summaryBullets[0].should.equal(tldrData.summaryBullets[0]);
 
             done();
           });
@@ -333,16 +341,12 @@ describe('Tldr', function () {
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
-        Tldr.createAndSaveInstance(
-          tldr, null,
-          function (err) {
+        Tldr.createAndSaveInstance(tldr, null, function (err) {
             if (err) { return done(err); }
             Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
-              Tldr.createAndSaveInstance(
-                tldr, null,
-                function (err) {
+              Tldr.createAndSaveInstance(tldr, null, function (err) {
                   err.should.not.be.null;
                   err.code.should.equal(11000);// 11000 is the code for duplicate key
                   done();
@@ -360,14 +364,13 @@ describe('Tldr', function () {
                       , summaryBullets: ['new2']
                       , title: 'Blog NeedForAir'
                       , resourceAuthor: 'new3'
-                      , createdAt: '2012'};
+                      , createdAt: '2012'}
+          , tldrData = { title: 'Blog NFA'
+                       , url: 'http://mydomain.com'
+                       , summaryBullets: ['coin']
+                       , resourceAuthor: 'bloup'};
 
-      Tldr.createAndSaveInstance(
-        { title: 'Blog NFA'
-        , url: 'http://mydomain.com'
-        , summaryBullets: ['coin']
-        , resourceAuthor: 'bloup'}, null,
-        function(err) {
+      Tldr.createAndSaveInstance(tldrData, null, function(err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -619,7 +622,7 @@ describe('Tldr', function () {
   });
 
 
-  describe('tldr history management', function(done) {
+  describe('history management', function(done) {
 
     it('should serialize only the fields we want to remember and be able to deserialize the string', function (done) {
       var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
@@ -694,8 +697,7 @@ describe('Tldr', function () {
         tldr.updateValidFields({ title: 'Hellooo' }, null, function () {
           tldr.updateValidFields({ summaryBullets: ['only one'] }, undefined, function () {
             TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
-              history.versions.length.should.equal(2);
-              console.log(history);
+              history.versions.length.should.equal(3);
 
               done();
             });
