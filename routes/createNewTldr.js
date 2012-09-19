@@ -60,11 +60,11 @@ function createNewTldr (req, res, next) {
       // If a user is logged, he gets to be the tldr's creator
       if (req.user) {
         // If this is the creator's first tldr, send him a congratulory email
-        if (creator.tldrsCreated.length === 1) {
+        if (req.user.tldrsCreated.length === 1) {
           // Send congratulory email
           mailer.sendEmail({ type: 'congratulationsFirstTldr'
-                           , to: creator.email
-                           , development: false
+                           , to: req.user.email
+                           , development: true
                            , values: { apiUrl: config.apiUrl, url: encodeURIComponent(tldr.url) }
                            });
         }
