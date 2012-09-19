@@ -39,10 +39,27 @@ TldrHistorySchema = new Schema(
 , { strict: true });
 
 
+/**
+ * Create a new entry (version) in this history
+ * @param{String} data Data to be saved, which is the serialized version of part of a tldr
+ * @param{String} creatorId Id of the creator of this entry
+ * @param{Function} callback Optional callback function
+ */
+TldrHistorySchema.methods.saveVersion = function (data, creatorId, callback) {
+  var tldrVersion = new TldrVersion({ data: data, creator: creatorId })
+    , cb = callback ? callback : function() {};
+
+  this.versions.unshift(tldrVersion);   // Versions need to be ordered from the latest onwards
+  this.save(cb);
+};
+
+
 
 // Define tldrVersion and tldrHistory models
 TldrVersion = mongoose.model('tldrVersion', TldrVersionSchema);
 TldrHistory = mongoose.model('tldrHistory', TldrHistorySchema);
+
+
 
 
 // Export Tldr
