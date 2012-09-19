@@ -907,7 +907,6 @@ describe('Webserver', function () {
         , obj
         , user;
 
-
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
