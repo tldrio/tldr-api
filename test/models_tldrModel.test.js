@@ -632,7 +632,7 @@ describe('Tldr', function () {
 
       tldr.save(function(err, _tldr) {
         var serializedVersion = _tldr.serialize()
-          , objectVersion = JSON.parse(serializedVersion);
+          , objectVersion = Tldr.deserialize(serializedVersion);
 
         (typeof serializedVersion).should.equal('string');
         objectVersion.title.should.equal(_tldr.title);

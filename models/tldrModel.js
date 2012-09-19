@@ -158,6 +158,16 @@ TldrSchema.methods.serialize = function () {
 
 
 /**
+ * Takes a serialized object string and returns the corresponding object
+ * @param {String} serializedVersion The string
+ * @return {Object} The object
+ */
+TldrSchema.statics.deserialize = function (serializedVersion) {
+  return JSON.parse(serializedVersion);
+};
+
+
+/**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
