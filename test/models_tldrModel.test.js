@@ -307,6 +307,24 @@ describe('Tldr', function () {
         });
     });
 
+    it('should create a new empty history when creating a new tldr', function (done) {
+      Tldr.createAndSaveInstance(
+        { title: 'Blog NFA'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'},
+        function (err) {
+          Tldr.find({resourceAuthor: 'bloup'})
+              .populate('history')
+              .exec(function (err,docs) {
+            docs[0].history.versions.length.should.equal(0);
+
+            done();
+          });
+        });
+    });
+
     it('should not save two tldrs with same url', function (done) {
       var tldr = { title: 'Blog NFA'
         , url: 'http://mydomain.com'
@@ -596,6 +614,44 @@ describe('Tldr', function () {
         done();
       });
     });
+
+  });
+
+
+  describe('#serialization and deserialization', function(done) {
+
+    it('should serialize only the fields we want to remember', function (done) {
+      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+                            title: 'tototiti',
+                            summaryBullets: ['toto', 'titi'],
+                            resourceAuthor: 'NFA Crew',
+                            resourceDate: '2012',
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                          });
+
+      tldr.save(function(err, _tldr) {
+        var serializedVersion = _tldr.serialize()
+          , objectVersion = JSON.parse(serializedVersion);
+
+        (typeof serializedVersion).should.equal('string');
+        objectVersion.title.should.equal(_tldr.title);
+        objectVersion.resourceAuthor.should.equal(_tldr.resourceAuthor);
+        objectVersion.summaryBullets.length.should.equal(_tldr.summaryBullets.length);
+        objectVersion.summaryBullets[0].should.equal(_tldr.summaryBullets[0]);
+        objectVersion.summaryBullets[1].should.equal(_tldr.summaryBullets[1]);
+
+        // resourceDate has been serialized and is not a date anymore
+        objectVersion.resourceDate.should.equal(_tldr.resourceDate.toISOString());
+
+        assert.isUndefined(objectVersion.url);
+        assert.isUndefined(objectVersion.createdAt);
+        assert.isUndefined(objectVersion.updatedAt);
+
+        done();
+      });
+    });
+
 
 
   });

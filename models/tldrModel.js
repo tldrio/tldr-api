@@ -16,6 +16,7 @@ var _ = require('underscore')
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
+  , fieldsToBeRemembered = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
@@ -113,6 +114,7 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user' }
+  , history: { type: ObjectId, ref: 'tldrHistory' }
   }
 , { strict: true });
 
@@ -128,13 +130,31 @@ TldrSchema = new Schema(
 
 TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance;
+    , instance
+    , history = new TldrHistory();
 
-  instance = new Tldr(validFields);
-  instance.save(callback);
+  history.save(function(err, _history) {
+    instance = new Tldr(validFields);
+    instance.history = _history._id;
+    instance.save(callback);
+  });
 };
 
 
+/**
+ * Return a serialized version of the fields to be remembered
+ * @return {String} The serialized version of the fields to be remembered
+ */
+TldrSchema.methods.serialize = function () {
+  var jsonVersion = {}
+    , self = this;
+
+  _.each(fieldsToBeRemembered, function(field) {
+    jsonVersion[field] = self[field];
+  });
+
+  return JSON.stringify(jsonVersion);
+}
 
 
 /**
