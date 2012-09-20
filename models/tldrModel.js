@@ -116,6 +116,7 @@ TldrSchema = new Schema(
                , required: false
   , creator: { type: ObjectId, ref: 'user' }
   , history: { type: ObjectId, ref: 'tldrHistory' }
+  , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   }
 , { strict: true });
 
@@ -158,6 +159,44 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
 
 /**
+ * Update tldr object.
+ * Only fields in userUpdatableFields are handled
+ * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Object} user Optional - the contributor who updated this tldr
+ * @param {Function} callback callback to be passed to save method
+ *
+ */
+
+TldrSchema.methods.updateValidFields = function (updates, user, callback) {
+  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
+    , self = this;
+
+  // First, update the tldr
+  _.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
+
+  self.updatedAt = new Date();
+  self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
+
+  // Try to save it
+  self.save(function(err, tldr) {
+    if (err) { return callback(err); }   // Return immediately if there is an error
+
+    // If there is a history, save this new version in it then run the callback with
+    // the expected signature for a save success: callback(null, tldr)
+    TldrHistory.findOne({ _id: self.history }, function(err, history) {
+      if (history) {
+        history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
+      } else {
+        callback(null, tldr);
+      }
+    });
+  });
+};
+
+
+/**
  * Return a serialized version of the fields to be remembered
  * @return {String} The serialized version of the fields to be remembered
  */
@@ -184,38 +223,31 @@ TldrSchema.statics.deserialize = function (serializedVersion) {
 
 
 /**
- * Update tldr object.
- * Only fields in userUpdatableFields are handled
- * @param {Object} updates Object containing fields to update with corresponding value
- * @param {Object} user Optional - the contributor who updated this tldr
- * @param {Function} callback callback to be passed to save method
- *
+ * Switch a tldr back one version
+ * @param {Function} callback Optional - to be called after having gone back, with (err, tldr)
+ * @return {void}
  */
+TldrSchema.methods.goBackOneVersion = function (callback) {
+  var self = this
+    , versionToGoBack
+    , cb = callback ? callback : function () {};
 
-TldrSchema.methods.updateValidFields = function (updates, user, callback) {
-  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
-    , self = this;
+  if (! this.history) { return cb(null, self); }   // If we cannot use history, simply do nothing
 
-  // First, update the tldr
-  _.each( validUpdateFields, function (validField) {
-    self[validField] = updates[validField];
-  });
+  TldrHistory.findOne({ _id: this.history }, function (err, history) {
+    // If we can't go back, simply do nothing
+    if (self.versionDisplayed + 1 >= history.versions.length) { return cb(null, self); }
 
-  self.updatedAt = new Date();
-
-  // Try to save it
-  self.save(function(err, tldr) {
-    if (err) { return callback(err); }   // Return immediately if there is an error
-
-    // If there is a history, save this new version in it then run the callback with
-    // the expected signature for a save success: callback(null, tldr)
-    TldrHistory.findOne({ _id: self.history }, function(err, history) {
-      if (history) {
-        history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
-      } else {
-        callback(null, tldr);
-      }
+    // Go back one version
+    versionToGoBack = Tldr.deserialize(history.versions[self.versionDisplayed + 1].data);
+    _.each(_.keys(versionToGoBack), function(key) {
+      self[key] = versionToGoBack[key];
     });
+
+    // Update versionDisplayed
+    self.versionDisplayed += 1;
+
+    self.save(callback);
   });
 };
 

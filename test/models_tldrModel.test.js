@@ -819,6 +819,65 @@ describe('Tldr', function () {
       });
     });
 
+    it('should be able to go back one version', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin', 'hihan']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+         , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
+         , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
+         , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
+         , deserialized;
+
+      User.createAndSaveInstance(userData1, function(err, user1) {
+        User.createAndSaveInstance(userData2, function(err, user2) {
+          User.createAndSaveInstance(userData3, function(err, user3) {
+            Tldr.createAndSaveInstance(tldrData, user1, function(err, tldr) {
+              tldr.updateValidFields({ title: 'Hellooo' }, user2, function () {
+                tldr.updateValidFields({ summaryBullets: ['only one'] }, user3, function () {
+
+                  // Actual test can now take place
+                  tldr.title.should.equal("Hellooo");
+                  tldr.summaryBullets[0].should.equal("only one");
+
+                  tldr.goBackOneVersion(function(err, tldr) {
+                    tldr.title.should.equal("Hellooo");
+                    tldr.summaryBullets[0].should.equal("coin");
+                    tldr.summaryBullets[1].should.equal("hihan");
+                    tldr.versionDisplayed.should.equal(1);
+
+                    tldr.goBackOneVersion(function(err, tldr) {
+                      tldr.title.should.equal("Blog NFA");
+                      tldr.summaryBullets[0].should.equal("coin");
+                      tldr.summaryBullets[1].should.equal("hihan");
+                      tldr.versionDisplayed.should.equal(2);
+
+                      // No previous version !
+                      tldr.goBackOneVersion(function(err, tldr) {
+                        tldr.title.should.equal("Blog NFA");
+                        tldr.summaryBullets[0].should.equal("coin");
+                        tldr.summaryBullets[1].should.equal("hihan");
+                        tldr.versionDisplayed.should.equal(2);
+
+                        tldr.updateValidFields({ title: 'reset' }, undefined, function (err, tldr) {
+                          tldr.title.should.equal('reset');
+                          tldr.versionDisplayed.should.equal(0);
+
+                          done();
+                        });
+                      });
+                    });
+                  });
+                })
+              });
+            });
+          });
+        });
+      });
+    });
+
+
 
 
   });
