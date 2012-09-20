@@ -57,7 +57,6 @@ server.use(function(req, res, next) {// Middleware to send a dummy empty favicon
 });
 
 
-
 /*
  * Environments declaration and
  * Express' default environment is 'development'
