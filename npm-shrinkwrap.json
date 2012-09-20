@@ -36,13 +36,13 @@
       "version": "0.3.1"
     },
     "express": {
-      "version": "3.0.0rc4",
+      "version": "3.0.0rc5",
       "dependencies": {
         "connect": {
-          "version": "2.4.4",
+          "version": "2.4.6",
           "dependencies": {
             "qs": {
-              "version": "0.4.2"
+              "version": "0.5.1"
             },
             "formidable": {
               "version": "1.0.11"

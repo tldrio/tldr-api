@@ -15,7 +15,7 @@
                   , "bunyan": "0.7.x"
                   , "connect-redis": "1.4.x"
                   , "consolidate": "0.3.x"
-                  , "express": "3.0.x"
+                  , "express": "3.0.0rc5"
                   , "jade": ">= 0.0.1"
                   , "hogan.js": "2.0.x"
                   , "mongoose": "2.7.x"
