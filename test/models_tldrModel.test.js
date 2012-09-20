@@ -662,7 +662,7 @@ describe('Tldr', function () {
   });
 
 
-  describe.only('history management', function(done) {
+  describe('history management', function(done) {
 
     it('should serialize only the fields we want to remember and be able to deserialize the string', function (done) {
       var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
@@ -808,53 +808,84 @@ describe('Tldr', function () {
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
-         , deserialized;
+         , deserialized, theTldr;
 
-      User.createAndSaveInstance(userData1, function(err, user1) {
-        User.createAndSaveInstance(userData2, function(err, user2) {
-          User.createAndSaveInstance(userData3, function(err, user3) {
-            Tldr.createAndSaveInstance(tldrData, user1, function(err, tldr) {
-              tldr.updateValidFields({ title: 'Hellooo' }, user2, function () {
-                tldr.updateValidFields({ summaryBullets: ['only one'] }, user3, function () {
+      // Create a user according to userData
+      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
 
-                  // Actual test can now take place
-                  tldr.title.should.equal("Hellooo");
-                  tldr.summaryBullets[0].should.equal("only one");
+      async.auto({
+        // Create 3 users and a tldr
+        user1: async.apply(createUser, userData1)
+      , user2: async.apply(createUser, userData2)
+      , user3: async.apply(createUser, userData3)
+      , tldr: ['user1', function(cb, results) {
+          Tldr.createAndSaveInstance(tldrData, results.user1, function(err, tldr) {
+            theTldr = tldr;   // Keep a pointer to our tldr
+            return cb(err, tldr);
+          });
+        }]
 
-                  tldr.goBackOneVersion(function(err, tldr) {
-                    tldr.title.should.equal("Hellooo");
-                    tldr.summaryBullets[0].should.equal("coin");
-                    tldr.summaryBullets[1].should.equal("hihan");
-                    tldr.versionDisplayed.should.equal(1);
-
-                    tldr.goBackOneVersion(function(err, tldr) {
-                      tldr.title.should.equal("Blog NFA");
-                      tldr.summaryBullets[0].should.equal("coin");
-                      tldr.summaryBullets[1].should.equal("hihan");
-                      tldr.versionDisplayed.should.equal(2);
-
-                      // No previous version !
-                      tldr.goBackOneVersion(function(err, tldr) {
-                        tldr.title.should.equal("Blog NFA");
-                        tldr.summaryBullets[0].should.equal("coin");
-                        tldr.summaryBullets[1].should.equal("hihan");
-                        tldr.versionDisplayed.should.equal(2);
-
-                        tldr.updateValidFields({ title: 'reset' }, undefined, function (err, tldr) {
-                          tldr.title.should.equal('reset');
-                          tldr.versionDisplayed.should.equal(0);
-
-                          done();
-                        });
-                      });
-                    });
-                  });
-                })
-              });
+        // Update the tldr twice and get the history of the tldr
+      , updated: ['tldr', 'user2', 'user3', function(cb, results) {
+          results.tldr.updateValidFields({ title: 'Hellooo' }, results.user2, function () {
+            results.tldr.updateValidFields({ summaryBullets: ['only one'] }, results.user3, function (err, tldr) {
+              return cb(err, tldr);
             });
           });
-        });
+        }]
+
+      , test1: ['updated', function(cb, results) {
+          theTldr.title.should.equal("Hellooo");
+          theTldr.summaryBullets[0].should.equal("only one");
+          cb();
+        }]
+
+      , gB1: ['test1', function(cb, results) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }]
+
+      , test2: ['gB1', function(cb) {
+          theTldr.title.should.equal("Hellooo");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(1);
+          cb();
+        }]
+
+      , gB2: ['test2', function(cb, results) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }]
+
+      , test3: ['gB2', function(cb) {
+          theTldr.title.should.equal("Blog NFA");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(2);
+          cb();
+        }]
+
+      , gB3: ['test3', function(cb, results) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }]
+
+      , test4: ['gB3', function(cb) {
+          theTldr.title.should.equal("Blog NFA");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(2);
+          cb();
+        }]
+
+      , test5: ['test4', function() {
+          theTldr.updateValidFields({ title: 'reset' }, undefined, function (err, theTldr) {
+            theTldr.title.should.equal('reset');
+            theTldr.versionDisplayed.should.equal(0);
+
+            done();
+          });
+        }]
       });
+
     });
 
 
