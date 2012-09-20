@@ -18,7 +18,8 @@ var should = require('chai').should()
   , TldrHistory = models.TldrHistory
   , server = require('../server')
   , db = server.db
-  , url = require('url');
+  , url = require('url')
+  , async = require('async');
 
 
 
