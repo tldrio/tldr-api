@@ -72,60 +72,50 @@ describe.only('TldrHistory', function () {
       function saveVersion (data, user, cb) { history.saveVersion(data, user, function(err) { cb(err); }) }
 
       async.parallel({
+        // Create user1 and user2
         user1: async.apply(createUser, userData1)
       , user2: async.apply(createUser, userData2)
-
       }, function(err, results) {
            async.waterfall([
              function(cb) { history.versions.length.should.equal(0); cb(); }
+
+             // Create the first two versions
            , async.apply(saveVersion, 'first blob', results.user1)
            , async.apply(saveVersion, 'second blob', results.user2)
-           ], function(err) {
-                console.log(history);
-                done();
-              });
+
+             // Test that the first two versions were saved as expected
+           , function(cb) {
+                history.versions[0].creator.should.equal(results.user2._id);
+                history.versions[0].data.should.equal('second blob');
+
+                history.versions[1].creator.should.equal(results.user1._id);
+                history.versions[1].data.should.equal('first blob');
+
+                cb();
+             }
+
+             // Create another two versions
+           , async.apply(saveVersion, 'third blob', results.user2)
+           , async.apply(saveVersion, 'fourth blob', results.user1)
+
+             // And test its still as expected
+           , function (cb) {
+               history.versions[0].data.should.equal('fourth blob');
+               history.versions[0].creator.should.equal(results.user1._id);
+
+               history.versions[1].data.should.equal('third blob');
+               history.versions[1].creator.should.equal(results.user2._id);
+
+               history.versions[2].data.should.equal('second blob');
+               history.versions[2].creator.should.equal(results.user2._id);
+
+               history.versions[3].data.should.equal('first blob');
+               history.versions[3].creator.should.equal(results.user1._id);
+
+               cb();
+             }
+           ], done);
          });
-
-
-
-
-
-      //User.createAndSaveInstance(userData1, function(err, user1) {
-        //User.createAndSaveInstance(userData2, function(err, user2) {
-          //history.versions.length.should.equal(0);
-
-          //history.saveVersion('first blob', user1, function() {
-            //history.saveVersion('second blob', null, function(err) {
-              //history.versions[0].data.should.equal('second blob');
-              //assert.isUndefined(history.versions[0].creator);
-
-              //history.versions[1].creator.should.equal(user1._id);
-              //history.versions[1].data.should.equal('first blob');
-
-              //history.saveVersion('third blob', user2, function() {
-                //history.saveVersion('fourth blob', undefined, function() {
-                  //history.versions[0].data.should.equal('fourth blob');
-                  //assert.isUndefined(history.versions[0].creator);
-
-                  //history.versions[1].data.should.equal('third blob');
-                  //history.versions[1].creator.should.equal(user2._id);
-
-                  //history.versions[2].data.should.equal('second blob');
-                  //assert.isUndefined(history.versions[2].creator);
-
-                  //history.versions[3].creator.should.equal(user1._id);
-                  //history.versions[3].data.should.equal('first blob');
-
-                  //done();
-                //});
-              //});
-            //});
-          //});
-        //});
-      //});
-
-
-
 
     });
 
