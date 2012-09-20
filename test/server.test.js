@@ -119,6 +119,7 @@ describe('Webserver', function () {
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
       throw {};
+      throw {};
 
       request.get({ headers: {"Accept": "application/json"}
                   , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
