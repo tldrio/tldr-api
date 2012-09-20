@@ -7,6 +7,7 @@
 
 var should = require('chai').should()
   , assert = require('chai').assert
+  , _ = require('underscore')
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose')
   , models = require('../lib/models')
@@ -25,7 +26,7 @@ var should = require('chai').should()
  */
 
 
-describe('TldrHistory', function () {
+describe.only('TldrHistory', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -36,16 +37,17 @@ describe('TldrHistory', function () {
   });
 
   beforeEach(function (done) {
-    User.remove({}, function(err) {
-      TldrHistory.remove({}, function (err) {
-        if (err) {throw done(err);}
-        done();
-      });
-    });
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
+
+    async.waterfall([
+      async.apply(theRemove, User)
+    , async.apply(theRemove, TldrHistory)
+    ], done);
   });
 
 
   describe('Basic behaviour', function () {
+
     it('Should create an history thats only the empty versions array', function (done) {
       var history = new TldrHistory();
       history.versions.length.should.equal(0);
