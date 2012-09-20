@@ -19,12 +19,12 @@ var i18n = require('../lib/i18n')
  *
  */
 
-// Holds one version of a tldr, defined as the data, the date it was created and its creator
+// Holds one version of a tldr, defined as the data to be versioned, the date it was created and its creator
 TldrVersionSchema = new Schema(
   { data: { type: String
           , required: true
           }
-  , timeStamp: { type: Date
+  , createdAt: { type: Date
                , default: Date.now
                }
   , creator: { type: ObjectId, ref: 'user' }

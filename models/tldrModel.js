@@ -17,7 +17,7 @@ var _ = require('underscore')
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
-  , fieldsToBeRemembered = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
+  , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
@@ -204,7 +204,7 @@ TldrSchema.methods.serialize = function () {
   var jsonVersion = {}
     , self = this;
 
-  _.each(fieldsToBeRemembered, function(field) {
+  _.each(versionedFields, function(field) {
     jsonVersion[field] = self[field];
   });
 
