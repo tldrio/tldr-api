@@ -13,7 +13,8 @@ var should = require('chai').should()
   , User = models.User
   , TldrHistory = models.TldrHistory
   , server = require('../server')
-  , db = server.db;
+  , db = server.db
+  , async = require('async');
 
 
 
