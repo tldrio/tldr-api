@@ -40,9 +40,11 @@ describe('Tldr', function () {
   });
 
   beforeEach(function (done) {
-    Tldr.remove( function (err) {
-      if (err) {throw done(err);}
-      done();
+    User.remove({}, function(err) {
+      Tldr.remove({}, function (err) {
+        if (err) {throw done(err);}
+        done();
+      });
     });
   });
 

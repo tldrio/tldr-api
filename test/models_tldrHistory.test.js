@@ -35,9 +35,11 @@ describe('TldrHistory', function () {
   });
 
   beforeEach(function (done) {
-    TldrHistory.remove({}, function (err) {
-      if (err) {throw done(err);}
-      done();
+    User.remove({}, function(err) {
+      TldrHistory.remove({}, function (err) {
+        if (err) {throw done(err);}
+        done();
+      });
     });
   });
 
