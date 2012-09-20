@@ -33,6 +33,7 @@ server.set('views', config.pageTemplates);
 server.locals = config.locals;
 
 
+
 /**
  * Middlewares
  *
@@ -61,7 +62,6 @@ server.use(function(req, res, next) {// Middleware to send a dummy empty favicon
  * Environments declaration and
  * Express' default environment is 'development'
  */
-
 
 server.configure('development', 'staging', 'production', function () {
   bunyan.setToLog = true;

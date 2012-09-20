@@ -281,32 +281,6 @@ describe('Tldr', function () {
 
   });
 
-  describe('#normalize', function () {
-    it('should remove common Xss vectors from user input', function (done) {
-
-      var tldr = new Tldr({
-        url: 'http://needforair.com/nutcrackers',
-        title: 'document.write Blog NFA',
-        summaryBullets: ['view.innerHTML', 'alert("THIS IS AN XSS ATTACK")'],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      , valErr;
-
-      tldr.save( function (err, doc) {
-        doc.summaryBullets[0].should.equal('view');
-        doc.summaryBullets[1].should.equal( 'alert&#40;"THIS IS AN XSS ATTACK"&#41;');
-        done();
-      });
-
-
-    });
-    
-  });
-  
-
 
   describe('#createAndSaveInstance', function () {
 
@@ -532,7 +506,7 @@ describe('Tldr', function () {
   });
 
 
-  describe('XSS prevention', function () {
+  describe('XSS prevention and user input cleaning and decoding', function () {
 
     it('Should sanitize user generated fields when creating a tldr with createAndSaveInstance', function (done) {
       var userInput = {
@@ -599,6 +573,30 @@ describe('Tldr', function () {
          done();
        });
     });
+
+    it('Should decode HTML entities', function (done) {
+
+      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+                            title: 'toto&nbsp;titi',
+                            summaryBullets: ['toto', 'tit&lt;i'],
+                            resourceAuthor: 'NFA Crew',
+                            resourceDate: '2012',
+                            createdAt: new Date(),
+                            updatedAt: new Date()
+                          })
+        , valErr;
+
+      tldr.save( function (err, doc) {
+        // We can test against the regular '<' character or its unicode escape equivalent
+        doc.summaryBullets[1].should.equal( 'tit<i');
+        doc.summaryBullets[1].should.equal( 'tit\u003ci');
+
+        // We need to use the unicode escape here because this is not a regular space but a non breakable space
+        doc.title.should.equal('toto\u00a0titi');
+        done();
+      });
+    });
+
 
   });
 

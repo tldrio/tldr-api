@@ -17,6 +17,7 @@ var bunyan = require('../lib/logger').bunyan
  * Updates the logged user's info except password.
  */
 function updateProfile(req, res, next) {
+  bunyan.incrementMetric('users.updateProfile.routeCalled');
 
   if (req.user) {
     if (req.body.username || req.body.email) {
@@ -40,16 +41,18 @@ function updateProfile(req, res, next) {
 
         // We send the confirmation link email in case of email change
         if (emailUpdate) {
-          mailer.sendConfirmToken(user, function(error, response){
-            if(error){
-              bunyan.warn('Error sending confirmation email', error);
-            }
-          });
+          // Send the link by email
+          mailer.sendEmail({ type: 'emailConfirmationToken'
+                           , to: user.email
+                           , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), websiteUrl: config.websiteUrl, user: user }
+                           });
         }
 
+        bunyan.incrementMetric('users.updateProfile.success');
         return res.send(200, user.getAuthorizedFields());
       });
     } else {
+      bunyan.incrementMetric('users.updateProfile.success');
       return res.send(200, req.user.getAuthorizedFields());
     }
   } else {

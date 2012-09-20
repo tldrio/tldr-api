@@ -16,7 +16,9 @@ var _ = require('underscore')
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
-  , check = require('validator').check;
+  , check = require('validator').check
+  , sanitize = require('validator').sanitize
+  ;
 
 
 
