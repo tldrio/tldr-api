@@ -65,39 +65,68 @@ describe.only('TldrHistory', function () {
                      , email: 'anothervalid@email.com'
                      };
 
-      User.createAndSaveInstance(userData1, function(err, user1) {
-        User.createAndSaveInstance(userData2, function(err, user2) {
-          history.versions.length.should.equal(0);
+      // Create a user according to userData
+      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
 
-          history.saveVersion('first blob', user1, function() {
-            history.saveVersion('second blob', null, function(err) {
-              history.versions[0].data.should.equal('second blob');
-              assert.isUndefined(history.versions[0].creator);
+      // Save a version in the history
+      function saveVersion (data, user, cb) { history.saveVersion(data, user, function(err) { cb(err); }) }
 
-              history.versions[1].creator.should.equal(user1._id);
-              history.versions[1].data.should.equal('first blob');
+      async.parallel({
+        user1: async.apply(createUser, userData1)
+      , user2: async.apply(createUser, userData2)
 
-              history.saveVersion('third blob', user2, function() {
-                history.saveVersion('fourth blob', undefined, function() {
-                  history.versions[0].data.should.equal('fourth blob');
-                  assert.isUndefined(history.versions[0].creator);
-
-                  history.versions[1].data.should.equal('third blob');
-                  history.versions[1].creator.should.equal(user2._id);
-
-                  history.versions[2].data.should.equal('second blob');
-                  assert.isUndefined(history.versions[2].creator);
-
-                  history.versions[3].creator.should.equal(user1._id);
-                  history.versions[3].data.should.equal('first blob');
-
-                  done();
-                });
+      }, function(err, results) {
+           async.waterfall([
+             function(cb) { history.versions.length.should.equal(0); cb(); }
+           , async.apply(saveVersion, 'first blob', results.user1)
+           , async.apply(saveVersion, 'second blob', results.user2)
+           ], function(err) {
+                console.log(history);
+                done();
               });
-            });
-          });
-        });
-      });
+         });
+
+
+
+
+
+      //User.createAndSaveInstance(userData1, function(err, user1) {
+        //User.createAndSaveInstance(userData2, function(err, user2) {
+          //history.versions.length.should.equal(0);
+
+          //history.saveVersion('first blob', user1, function() {
+            //history.saveVersion('second blob', null, function(err) {
+              //history.versions[0].data.should.equal('second blob');
+              //assert.isUndefined(history.versions[0].creator);
+
+              //history.versions[1].creator.should.equal(user1._id);
+              //history.versions[1].data.should.equal('first blob');
+
+              //history.saveVersion('third blob', user2, function() {
+                //history.saveVersion('fourth blob', undefined, function() {
+                  //history.versions[0].data.should.equal('fourth blob');
+                  //assert.isUndefined(history.versions[0].creator);
+
+                  //history.versions[1].data.should.equal('third blob');
+                  //history.versions[1].creator.should.equal(user2._id);
+
+                  //history.versions[2].data.should.equal('second blob');
+                  //assert.isUndefined(history.versions[2].creator);
+
+                  //history.versions[3].creator.should.equal(user1._id);
+                  //history.versions[3].data.should.equal('first blob');
+
+                  //done();
+                //});
+              //});
+            //});
+          //});
+        //});
+      //});
+
+
+
+
     });
 
 
