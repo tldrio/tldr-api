@@ -186,11 +186,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
     // If there is a history, save this new version in it then run the callback with
     // the expected signature for a save success: callback(null, tldr)
     TldrHistory.findOne({ _id: self.history }, function(err, history) {
-      if (history) {
-        history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
-      } else {
-        callback(null, tldr);
-      }
+      history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
     });
   });
 };

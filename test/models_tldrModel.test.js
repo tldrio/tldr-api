@@ -696,35 +696,6 @@ describe('Tldr', function () {
       });
     });
 
-    it('should behave as usual when there is no history (if the tldr was not created through createAndSaveInstance)', function (done) {
-      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
-                            title: 'tototiti',
-                            summaryBullets: ['toto', 'titi'],
-                            resourceAuthor: 'NFA Crew',
-                            resourceDate: '2012',
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                          });
-
-      tldr.save(function(err, _tldr) {
-        assert.isUndefined(_tldr.history);
-        _tldr.title.should.equal('tototiti');
-
-        _tldr.updateValidFields({ title: 'BLOUP' }, null, function (err, _tldr) {
-          assert.isUndefined(_tldr.history);
-          _tldr.title.should.equal('BLOUP');
-
-          _tldr.updateValidFields({ title: 'blip' }, undefined, function (err, _tldr) {
-            assert.isUndefined(_tldr.history);
-            _tldr.title.should.equal('blip');
-
-            done();
-          });
-        });
-      });
-    });
-
-
     it('should save previous version with the creator and contributors', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
