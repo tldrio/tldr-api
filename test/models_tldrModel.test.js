@@ -31,6 +31,7 @@ var should = require('chai').should()
 
 
 describe('Tldr', function () {
+  var user;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -43,28 +44,27 @@ describe('Tldr', function () {
   beforeEach(function (done) {
     User.remove({}, function(err) {
       Tldr.remove({}, function (err) {
-        if (err) {throw done(err);}
-        done();
+        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+          user = _user;
+          done();
+        });
+
       });
     });
   });
 
 
-  describe('#validators', function () {
+  describe.only('#validators', function () {
 
     it('should detect missing required url arg', function (done) {
-
-      var tldr = new Tldr({
+      var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
+      }
       , valErr;
 
-      tldr.save( function (err) {
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
@@ -73,7 +73,6 @@ describe('Tldr', function () {
 
         done();
       });
-
     });
 
     it('should accept only valid urls ', function (done) {
@@ -82,17 +81,14 @@ describe('Tldr', function () {
         url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()}
-        , tldr = new Tldr(tldrData)
+        resourceAuthor: 'NFA Crew'}
         , valErr;
 
-        tldr.save( function (err) {
+        Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
           err.name.should.equal('ValidationError');
 
           _.keys(err.errors).length.should.equal(1);
+          console.log("======");
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
