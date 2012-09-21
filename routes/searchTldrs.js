@@ -51,7 +51,6 @@ function searchTldrs (req, res, next) {
 
       // Success
       helpers.contentNegotiationForTldr(req, res, doc);
-
     });
 
     return;

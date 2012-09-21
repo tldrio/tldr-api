@@ -14,6 +14,9 @@ var i18n = require('../lib/i18n')
 
 
 function contentNegotiationForTldr (req, res, tldr) {
+    // Increment read count but don't wait for DB access to finish to return to client
+    tldr.incrementReadCount();
+
     if (req.accepts('text/html')) {
       bunyan.incrementMetric('tldrs.get.html');
       return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
