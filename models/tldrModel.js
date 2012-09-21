@@ -115,6 +115,7 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
+  , readCount: { type: Number, default: 0 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   }
@@ -238,6 +239,19 @@ TldrSchema.methods.goBackOneVersion = function (callback) {
     self.save(callback);
   });
 };
+
+
+/**
+ * Increment the view counter for this tldr
+ * @param {Function} cb Optional - Pass a callback if you want to resume flow after increment
+ * @return {void}
+ */
+TldrSchema.methods.incrementReadCount = function (cb) {
+  var callback = cb ? cb : function () {};   // If no cb provided, do nothing after increment
+
+  this.readCount += 1;
+  this.save(callback);
+}
 
 
 

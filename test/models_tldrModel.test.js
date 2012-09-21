@@ -256,8 +256,7 @@ describe('Tldr', function () {
 
     });
 
-
-  });
+  });   // ==== End of '#validators' ==== //
 
 
   describe('#createAndSaveInstance', function () {
@@ -368,7 +367,8 @@ describe('Tldr', function () {
           });
     });
 
-  });
+  });   // ==== End of '#createAndSaveInstance' ==== //
+
 
   describe('#updateValidFields', function () {
 
@@ -409,7 +409,8 @@ describe('Tldr', function () {
           });
         });
     });
-  });
+
+  });   // ==== End of '#updateValidFields' ==== //
 
 
   describe('#normalizeUrl', function() {
@@ -538,7 +539,7 @@ describe('Tldr', function () {
       done();
     });
 
-  });
+  });   // ==== End of '#normalizeUrl' ==== //
 
 
   describe('XSS prevention and user input cleaning and decoding', function () {
@@ -629,7 +630,7 @@ describe('Tldr', function () {
       });
     });
 
-  });
+  });   // ==== End of 'XSS prevention and user input cleaning and decoding' ==== //
 
 
   describe('history management', function(done) {
@@ -738,8 +739,7 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup'
-                     , createdAt: '2012'}
+                     , resourceAuthor: 'bloup' }
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
@@ -823,9 +823,32 @@ describe('Tldr', function () {
 
     });
 
+  });   // ==== End of 'history management' ==== //
+
+
+  describe('#incrementReadCount', function() {
+
+    it('should be able to increment the read count with a callback', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin', 'hihan']
+                     , resourceAuthor: 'bloup' }
+
+      Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
+        tldr.readCount.should.equal(0);
+        tldr.incrementReadCount(function() {
+          tldr.readCount.should.equal(1);
+          tldr.incrementReadCount(function() {
+            tldr.readCount.should.equal(2);
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#incrementReadCount' ==== //
 
 
 
-  });
 
 });
