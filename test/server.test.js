@@ -22,13 +22,17 @@ var should = require('chai').should()
 
 
 
-// Usable by async to log a user in
+// Usable by async to log a user in or out
 function logUserIn(email, password, cb) {
   request.post({ headers: {"Accept": "application/json"}
                , uri: rootUrl + '/users/login'
                , json: { email: email, password: password } }, function (error, response, body) { cb(error); });
 }
 
+function logUserOut(cb) {
+  request.get({ headers: {"Accept": "application/json"}
+              , uri: rootUrl + '/users/logout' }, function (error, response, body) { cb(error); });
+}
 
 
 /**
@@ -107,7 +111,7 @@ describe('Webserver', function () {
 
 
   // Test GET requests
-  describe('should handle GET request for', function () {
+  describe('GET tldrs', function () {
 
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
@@ -364,12 +368,19 @@ describe('Webserver', function () {
       });
     });
 
-  });
+  });   // ==== End of 'GET tldrs' ==== //
 
 
 
   //Test POST Requests
-  describe('Should handle POST requests', function () {
+  describe('POST tldrs - There is always a logged user for these tests', function () {
+    beforeEach(function(done) {
+      logUserIn('user1@nfa.com', 'supersecret', done);
+    });
+
+    afterEach(function(done) {
+      logUserOut(done);
+    });
 
     it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
@@ -379,29 +390,22 @@ describe('Webserver', function () {
         resourceAuthor: 'bozo le clown',
       };
 
-      async.waterfall([
-        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , function(cb) {
-          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-            res.statusCode.should.equal(201);
-            obj.title.should.equal('A title');
-            obj.createdAt.should.not.be.null;
-            Tldr.find({}, function(err, docs) {
-              var tldr;
-              docs.length.should.equal(numberOfTldrs + 1);
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        res.statusCode.should.equal(201);
+        obj.title.should.equal('A title');
+        obj.createdAt.should.not.be.null;
+        Tldr.find({}, function(err, docs) {
+          var tldr;
+          docs.length.should.equal(numberOfTldrs + 1);
 
-              Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
-                tldr = docs[0];
-                tldr.summaryBullets.should.include('A summary');
+          Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+            tldr = docs[0];
+            tldr.summaryBullets.should.include('A summary');
 
-                cb();
-              });
-            });
+            done();
           });
-        }
-      ], done);
-
-
+        });
+      });
     });
 
     it('Should handle POST request as an update if tldr already exists', function (done) {
@@ -414,22 +418,16 @@ describe('Webserver', function () {
         , updatedAt: new Date()
       };
 
-      async.waterfall([
-        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , function (cb) {
-          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-            res.statusCode.should.equal(204);
-            Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
-              var tldr = docs[0];
-              tldr.summaryBullets.should.include('Best Blog Ever');
-              tldr.title.should.equal('Nutcrackers article');
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        res.statusCode.should.equal(204);
+        Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+          var tldr = docs[0];
+          tldr.summaryBullets.should.include('Best Blog Ever');
+          tldr.title.should.equal('Nutcrackers article');
 
-              cb();
-            });
-          });
-        }
-      ], done);
-
+          done();
+        });
+      });
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
@@ -462,11 +460,18 @@ describe('Webserver', function () {
     });
 
 
-  });
+  });   // ==== End of 'POST tldrs' ==== //
 
 
   //Test PUT Requests
-  describe('Should handle PUT requests', function () {
+  describe('PUT tldrs - There is always a logged user for these tests', function () {
+    beforeEach(function(done) {
+      logUserIn('user1@nfa.com', 'supersecret', done);
+    });
+
+    afterEach(function(done) {
+      logUserOut(done);
+    });
 
     it('Should update an existing tldr with PUT motherfucker', function (done) {
       var tldrData = { summaryBullets: ['A new summary'] };
@@ -537,25 +542,24 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      async.waterfall([
-        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , function (cb) {
-          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-            res.statusCode.should.equal(201);
+      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        res.statusCode.should.equal(201);
 
-            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
-              res.statusCode.should.equal(200);
+        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
+          res.statusCode.should.equal(200);
 
-              cb();
-            });
-          });
-        }
-      ], done);
+          done();
+        });
+      });
     });
+
+  });   // ==== End of 'PUT tldrs' ==== //
+
+
+  describe('PUT users', function() {
 
     it('should be able to update the logged user\'s profile', function (done) {
       var obj;
-
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -612,7 +616,6 @@ describe('Webserver', function () {
 
     it('should be able to update the logged user\'s password only if new password and confirmation match', function (done) {
       var obj;
-
 
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -733,8 +736,7 @@ describe('Webserver', function () {
       });
     });
 
-
-  });
+  });   // ==== End of 'PUT users' ==== //
 
 
   describe('Authentication and session', function() {

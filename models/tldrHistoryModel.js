@@ -47,6 +47,7 @@ TldrHistorySchema = new Schema(
  */
 TldrHistorySchema.methods.saveVersion = function (data, creator, callback) {
   var tldrVersionData = creator ? { data: data, creator: creator._id} : { data: data }
+  //var tldrVersionData = { data: data, creator: creator._id}
     , tldrVersion = new TldrVersion(tldrVersionData)
     , cb = callback ? callback : function() {};
 
