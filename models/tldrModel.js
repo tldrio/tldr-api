@@ -114,7 +114,7 @@ TldrSchema = new Schema(
                , default: Date.now
                }
                , required: false
-  , creator: { type: ObjectId, ref: 'user' }
+  , creator: { type: ObjectId, ref: 'user', required: true }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   }
