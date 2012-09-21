@@ -22,14 +22,13 @@ var should = require('chai').should()
 
 
 
+// Usable by async to log a user in
+function logUserIn(email, password, cb) {
+  request.post({ headers: {"Accept": "application/json"}
+               , uri: rootUrl + '/users/login'
+               , json: { email: email, password: password } }, function (error, response, body) { cb(error); });
+}
 
-/*
- * Start Server and Client
-*/
-
-//start server
-server.listen(8686, function () {
-});
 
 
 /**
@@ -47,7 +46,9 @@ describe('Webserver', function () {
 
   before(function (done) {
     db.connectToDatabase(function() {
-      done();
+      server.listen(8686, function () {
+        done();
+      });
     });
   });
 
@@ -368,7 +369,7 @@ describe('Webserver', function () {
 
 
   //Test POST Requests
-  describe('Should handle POST requests', function () {
+  describe.only('Should handle POST requests', function () {
 
     it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
@@ -376,27 +377,31 @@ describe('Webserver', function () {
         url: 'http://yetanotherunusedurl.com/somepage',
         summaryBullets: ['A summary'],
         resourceAuthor: 'bozo le clown',
-        resourceDate: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
       };
 
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(201);
-        obj.title.should.equal('A title');
-        obj.createdAt.should.not.be.null;
-        Tldr.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs + 1);
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function(cb) {
+          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+            res.statusCode.should.equal(201);
+            obj.title.should.equal('A title');
+            obj.createdAt.should.not.be.null;
+            Tldr.find({}, function(err, docs) {
+              var tldr;
+              docs.length.should.equal(numberOfTldrs + 1);
 
-          Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('A summary');
+              Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+                tldr = docs[0];
+                tldr.summaryBullets.should.include('A summary');
 
-            done();
+                cb();
+              });
+            });
           });
-        });
-      });
+        }
+      ], done);
+
+
     });
 
     it('Should handle POST request as an update if tldr already exists', function (done) {

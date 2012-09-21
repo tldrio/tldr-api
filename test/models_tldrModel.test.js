@@ -269,7 +269,7 @@ describe('Tldr', function () {
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
-      Tldr.createAndSaveInstance(tldrData, null, function (err) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -293,12 +293,12 @@ describe('Tldr', function () {
                      , createdAt: '2012'}
         , deserialized;
 
-      Tldr.createAndSaveInstance(tldrData, null, function (err) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
           Tldr.find({resourceAuthor: 'bloup'})
               .populate('history')
               .exec(function (err,docs) {
             docs[0].history.versions.length.should.equal(1);
-            assert.isUndefined(docs[0].history.versions[0].creator);
+            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
 
             deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
             deserialized.title.should.equal(tldrData.title);
@@ -354,12 +354,12 @@ describe('Tldr', function () {
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
-        Tldr.createAndSaveInstance(tldr, null, function (err) {
+        Tldr.createAndSaveInstance(tldr, user, function (err) {
             if (err) { return done(err); }
             Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
-              Tldr.createAndSaveInstance(tldr, null, function (err) {
+              Tldr.createAndSaveInstance(tldr, user, function (err) {
                   err.should.not.be.null;
                   err.code.should.equal(11000);// 11000 is the code for duplicate key
                   done();
@@ -383,7 +383,7 @@ describe('Tldr', function () {
                        , summaryBullets: ['coin']
                        , resourceAuthor: 'bloup'};
 
-      Tldr.createAndSaveInstance(tldrData, null, function(err) {
+      Tldr.createAndSaveInstance(tldrData, user, function(err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -552,7 +552,7 @@ describe('Tldr', function () {
           resourceDate: '2012'
           };
 
-      Tldr.createAndSaveInstance(userInput, null, function (err, theTldr) {
+      Tldr.createAndSaveInstance(userInput, user, function (err, theTldr) {
         assert.isNull(err, 'no errors');
         theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
         theTldr.title.should.equal('Blog NFA');
@@ -578,7 +578,7 @@ describe('Tldr', function () {
           resourceAuthor: 'NFA Crewwindow.location',
           };
 
-      Tldr.createAndSaveInstance(goodUserInput, null, function (err, tldr) {
+      Tldr.createAndSaveInstance(goodUserInput, user, function (err, tldr) {
         assert.isNull(err, 'no errors');
         tldr.updateValidFields(userInput, undefined, function(err, theTldr) {
           assert.isNull(err, 'no errors');
@@ -602,7 +602,7 @@ describe('Tldr', function () {
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
           }
 
-       Tldr.createAndSaveInstance(userInput, null, function(err) {
+       Tldr.createAndSaveInstance(userInput, user, function(err) {
          err.name.should.equal('CastError');   // Cant cast normal strings to date
 
          done();
