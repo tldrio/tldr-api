@@ -739,6 +739,67 @@ describe('Webserver', function () {
   });   // ==== End of 'PUT users' ==== //
 
 
+  describe('Account and user creation', function() {
+    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
+      var userNumber, obj;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          // Only the data we want to send is sent
+          body.email.should.equal("valid@email.com");
+          body.username.should.equal("Louiiis");
+          assert.isUndefined(body.password);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(userNumber + 1);   // The user really is created
+
+            request.get({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/users/you' }, function (error, response, body) {
+
+              obj = JSON.parse(body);
+              obj.email.should.equal("valid@email.com");
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should not be able to create two accounts with same email', function (done) {
+      var userNumber, obj;
+
+      User.find({}, function(err, users) {
+        userNumber = users.length;
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/users'
+                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+          response.statusCode.should.equal(201);
+
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users'
+                       , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
+
+            response.statusCode.should.equal(409);
+            body.duplicateField.should.equal("email");
+
+            User.find({}, function (err, users) {
+              users.length.should.equal(userNumber + 1);   // Only one user is created
+
+              done();
+            });
+          });
+        });
+      });
+    });
+  });   // ==== End of 'Account and user creation' ==== //
+
+
   describe('Authentication and session', function() {
 
     it('Should not be able to log in as UserOne with a wrong password', function (done) {
@@ -918,12 +979,6 @@ describe('Webserver', function () {
           });
         }
       ], done);
-
-
-
-
-
-
     });
 
     it('Geting a tldr should populate creator if exists', function (done) {
@@ -976,65 +1031,10 @@ describe('Webserver', function () {
 
        });
     });
+  });   // ==== End of 'Authentication and session' ==== //
 
 
-    it('should be able to create a new user and send to the client the authorized fields. The newly created user should be logged in', function (done) {
-      var userNumber, obj;
-
-      User.find({}, function(err, users) {
-        userNumber = users.length;
-        request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users'
-                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
-
-          // Only the data we want to send is sent
-          body.email.should.equal("valid@email.com");
-          body.username.should.equal("Louiiis");
-          assert.isUndefined(body.password);
-
-          User.find({}, function (err, users) {
-            users.length.should.equal(userNumber + 1);   // The user really is created
-
-            request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you' }, function (error, response, body) {
-
-              obj = JSON.parse(body);
-              obj.email.should.equal("valid@email.com");
-
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('should not be able to create two accounts with same email', function (done) {
-      var userNumber, obj;
-
-      User.find({}, function(err, users) {
-        userNumber = users.length;
-        request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users'
-                     , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
-
-          response.statusCode.should.equal(201);
-
-          request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users'
-                       , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
-
-            response.statusCode.should.equal(409);
-            body.duplicateField.should.equal("email");
-
-            User.find({}, function (err, users) {
-              users.length.should.equal(userNumber + 1);   // Only one user is created
-
-              done();
-            });
-          });
-        });
-      });
-    });
+  describe('Email confirmation', function () {
 
     it('should confirm user email with the corresponding routes and valid confirmation token', function (done) {
       var obj, confirmEmailToken;
@@ -1137,7 +1137,7 @@ describe('Webserver', function () {
           });
         });
       });
-    });
+  });   // ==== End of 'Email confirmation' ==== //
 
 
   describe('Password reset', function() {
