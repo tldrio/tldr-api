@@ -369,7 +369,7 @@ describe('Webserver', function () {
 
 
   //Test POST Requests
-  describe.only('Should handle POST requests', function () {
+  describe('Should handle POST requests', function () {
 
     it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
       var tldrData = {
@@ -414,16 +414,22 @@ describe('Webserver', function () {
         , updatedAt: new Date()
       };
 
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(204);
-        Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
-          var tldr = docs[0];
-          tldr.summaryBullets.should.include('Best Blog Ever');
-          tldr.title.should.equal('Nutcrackers article');
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function (cb) {
+          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+            res.statusCode.should.equal(204);
+            Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+              var tldr = docs[0];
+              tldr.summaryBullets.should.include('Best Blog Ever');
+              tldr.title.should.equal('Nutcrackers article');
 
-          done();
-        });
-      });
+              cb();
+            });
+          });
+        }
+      ], done);
+
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
@@ -531,15 +537,20 @@ describe('Webserver', function () {
         updatedAt: new Date()
       };
 
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(201);
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function (cb) {
+          request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+            res.statusCode.should.equal(201);
 
-        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
-          res.statusCode.should.equal(200);
+            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
+              res.statusCode.should.equal(200);
 
-          done();
-        });
-      });
+              cb();
+            });
+          });
+        }
+      ], done);
     });
 
     it('should be able to update the logged user\'s profile', function (done) {
@@ -859,48 +870,58 @@ describe('Webserver', function () {
         , obj
         , user;
 
-      request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/tldrs'
-                   , json: tldrData1 }, function (error, response, body) {
-
-        Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
-          assert.isUndefined(tldr.creator);   // No user was logged in, so this tldr has no creator
-
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function(cb) {
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/login'
-                       , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
+                       , uri: rootUrl + '/tldrs'
+                       , json: tldrData1 }, function (error, response, body) {
 
-            user = body;
-            user.email.should.equal("user1@nfa.com");   // Login successful as User 1
-            request.post({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/tldrs'
-                         , json: tldrData2 }, function (error, response, body) {
+            Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
 
-              tldr = body;
-              tldr.creator.username.should.equal('UserOne');   // Should be an ObjectId, hence length of 24
               request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/tldrs'
-                           , json: tldrData3 }, function (error, response, body) {
+                           , uri: rootUrl + '/users/login'
+                           , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
-                request.get({ headers: {"Accept": "application/json"}
-                             , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+                user = body;
+                user.email.should.equal("user1@nfa.com");   // Login successful as User 1
+                request.post({ headers: {"Accept": "application/json"}
+                             , uri: rootUrl + '/tldrs'
+                             , json: tldrData2 }, function (error, response, body) {
 
-                  obj = JSON.parse(body);
-                  obj[1].url.should.equal("http://another.com/movie");
-                  obj[0].url.should.equal("http://another.com/again");
+                  tldr = body;
+                  tldr.creator.username.should.equal('UserOne');   // Should be an ObjectId, hence length of 24
+                  request.post({ headers: {"Accept": "application/json"}
+                               , uri: rootUrl + '/tldrs'
+                               , json: tldrData3 }, function (error, response, body) {
 
-                  request.get({ headers: {"Accept": "application/json"}
-                              , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                    request.get({ headers: {"Accept": "application/json"}
+                                 , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
 
-                    // Logout in case we have other tests after this one
-                    done();
+                      obj = JSON.parse(body);
+                      obj[1].url.should.equal("http://another.com/movie");
+                      obj[0].url.should.equal("http://another.com/again");
+
+                      request.get({ headers: {"Accept": "application/json"}
+                                  , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+
+                        // Logout in case we have other tests after this one
+                        cb();
+                      });
+                    });
                   });
                 });
               });
             });
           });
-        });
-      });
+        }
+      ], done);
+
+
+
+
+
+
     });
 
     it('Geting a tldr should populate creator if exists', function (done) {
