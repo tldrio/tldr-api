@@ -54,7 +54,7 @@ describe('Tldr', function () {
   });
 
 
-  describe.only('#validators', function () {
+  describe('#validators', function () {
 
     it('should detect missing required url arg', function (done) {
       var tldrData = {
@@ -319,7 +319,7 @@ describe('Tldr', function () {
                      , createdAt: '2012'}
         , userData = { username: 'blip'
                      , password: 'supersecret'
-                     , email: 'valid@email.com' }
+                     , email: 'valid@eZZZmail.com' }
         , deserialized;
 
         User.createAndSaveInstance(userData, function(err, user) {
@@ -611,17 +611,14 @@ describe('Tldr', function () {
 
     it('Should decode HTML entities', function (done) {
 
-      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+      var tldrData = { url: 'http://needforair.com/nutcrackers',
                             title: 'toto&nbsp;titi',
                             summaryBullets: ['toto', 'tit&lt;i'],
                             resourceAuthor: 'NFA Crew',
-                            resourceDate: '2012',
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                          })
+                     }
         , valErr;
 
-      tldr.save( function (err, doc) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err, doc) {
         // We can test against the regular '<' character or its unicode escape equivalent
         doc.summaryBullets[1].should.equal( 'tit<i');
         doc.summaryBullets[1].should.equal( 'tit\u003ci');
@@ -638,16 +635,13 @@ describe('Tldr', function () {
   describe('history management', function(done) {
 
     it('should serialize only the fields we want to remember and be able to deserialize the string', function (done) {
-      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+      var tldrData = { url: 'http://needforair.com/nutcrackers',
                             title: 'tototiti',
                             summaryBullets: ['toto', 'titi'],
                             resourceAuthor: 'NFA Crew',
-                            resourceDate: '2012',
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                          });
+                          };
 
-      tldr.save(function(err, _tldr) {
+      Tldr.createAndSaveInstance(tldrData, user, function(err, _tldr) {
         var serializedVersion = _tldr.serialize()
           , objectVersion = Tldr.deserialize(serializedVersion);
 
@@ -657,9 +651,6 @@ describe('Tldr', function () {
         objectVersion.summaryBullets.length.should.equal(_tldr.summaryBullets.length);
         objectVersion.summaryBullets[0].should.equal(_tldr.summaryBullets[0]);
         objectVersion.summaryBullets[1].should.equal(_tldr.summaryBullets[1]);
-
-        // resourceDate has been serialized and is not a date anymore
-        objectVersion.resourceDate.should.equal(_tldr.resourceDate.toISOString());
 
         assert.isUndefined(objectVersion.url);
         assert.isUndefined(objectVersion.createdAt);
