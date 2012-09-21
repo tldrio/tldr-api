@@ -127,7 +127,7 @@ TldrSchema = new Schema(
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
  * Also sets the creator if we have one and initializes the tldr history
  * @param {Object} userInput Object containing the fields to set for the tldr instance
- * @param {Object} creator Optional - creator of this tldr
+ * @param {Object} creator Creator of this tldr
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
@@ -139,21 +139,17 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
 
-    if (creator) {
-      instance.creator = creator._id;
-      instance.save(function(err, tldr) {
-        if (err) { return callback(err); }
+    instance.creator = creator._id;
+    instance.save(function(err, tldr) {
+      if (err) { return callback(err); }
 
-        creator.tldrsCreated.push(tldr._id);
-        creator.save(function(err, _user) {
-          if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+      creator.tldrsCreated.push(tldr._id);
+      creator.save(function(err, _user) {
+        if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-          callback(null, tldr);
-        });
+        callback(null, tldr);
       });
-    } else {
-      instance.save(callback);
-    }
+    });
   });
 };
 
@@ -162,7 +158,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
- * @param {Object} user Optional - the contributor who updated this tldr
+ * @param {Object} user The contributor who updated this tldr
  * @param {Function} callback callback to be passed to save method
  *
  */
@@ -227,8 +223,6 @@ TldrSchema.methods.goBackOneVersion = function (callback) {
   var self = this
     , versionToGoBack
     , cb = callback ? callback : function () {};
-
-  if (! this.history) { return cb(null, self); }   // If we cannot use history, simply do nothing
 
   TldrHistory.findOne({ _id: this.history }, function (err, history) {
     // If we can't go back, simply do nothing
