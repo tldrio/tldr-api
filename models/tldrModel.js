@@ -138,8 +138,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
-
     instance.creator = creator._id;
+
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
 
@@ -171,7 +171,6 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
-
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
@@ -179,8 +178,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.save(function(err, tldr) {
     if (err) { return callback(err); }   // Return immediately if there is an error
 
-    // If there is a history, save this new version in it then run the callback with
-    // the expected signature for a save success: callback(null, tldr)
+    // We respect the expected signature for an update success: callback(null, tldr)
     TldrHistory.findOne({ _id: self.history }, function(err, history) {
       history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
     });
