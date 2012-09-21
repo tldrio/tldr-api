@@ -115,7 +115,7 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user' }
-  , history: { type: ObjectId, ref: 'tldrHistory' }
+  , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   }
 , { strict: true });

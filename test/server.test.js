@@ -172,9 +172,18 @@ describe('Webserver', function () {
         , defaultLimit = 10
         , older, obj;
 
+      // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new Tldr({url: 'http://needforair.com/sopa/number' + i, title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: temp  }));
+        someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , title: 'sopa'
+                                , summaryBullets: ['Great article']
+                                , resourceAuthor: 'Louis'
+                                , resourceDate: new Date()
+                                , creator: user1._id
+                                , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
+                                , createdAt: new Date()
+                                , updatedAt: temp  }));
       }
 
       older = new Date(now - 10000 * (12));
