@@ -395,7 +395,7 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
 
             // Perform update
-            tldr.updateValidFields(updated, undefined, function(err) {
+            tldr.updateValidFields(updated, user, function(err) {
               if (err) { return done(err); }
 
               tldr.url.should.equal('http://mydomain.com/');
@@ -580,7 +580,7 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance(goodUserInput, user, function (err, tldr) {
         assert.isNull(err, 'no errors');
-        tldr.updateValidFields(userInput, undefined, function(err, theTldr) {
+        tldr.updateValidFields(userInput, user, function(err, theTldr) {
           assert.isNull(err, 'no errors');
           theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
           theTldr.title.should.equal('Blog NFA');
@@ -812,7 +812,7 @@ describe('Tldr', function () {
         }]
 
       , test5: ['test4', function() {
-          theTldr.updateValidFields({ title: 'reset' }, undefined, function (err, theTldr) {
+          theTldr.updateValidFields({ title: 'reset' }, user, function (err, theTldr) {
             theTldr.title.should.equal('reset');
             theTldr.versionDisplayed.should.equal(0);
 

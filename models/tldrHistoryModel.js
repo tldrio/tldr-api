@@ -27,7 +27,7 @@ TldrVersionSchema = new Schema(
   , createdAt: { type: Date
                , default: Date.now
                }
-  , creator: { type: ObjectId, ref: 'user' }
+  , creator: { type: ObjectId, ref: 'user', required: true }
   }
 , { strict: true });
 
@@ -42,13 +42,11 @@ TldrHistorySchema = new Schema(
 /**
  * Create a new entry (version) in this history
  * @param{String} data Data to be saved, which is the serialized version of part of a tldr
- * @param{String} creatorId Id of the creator of this entry
+ * @param{String} creator Creator of this entry
  * @param{Function} callback Optional callback function
  */
 TldrHistorySchema.methods.saveVersion = function (data, creator, callback) {
-  var tldrVersionData = creator ? { data: data, creator: creator._id} : { data: data }
-  //var tldrVersionData = { data: data, creator: creator._id}
-    , tldrVersion = new TldrVersion(tldrVersionData)
+  var tldrVersion= new TldrVersion({ data: data, creator: creator._id})
     , cb = callback ? callback : function() {};
 
   this.versions.unshift(tldrVersion);   // Versions need to be ordered from the latest onwards
