@@ -84,48 +84,28 @@ describe('Tldr', function () {
         resourceAuthor: 'NFA Crew'}
         , valErr;
 
-        Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
           _.keys(err.errors).length.should.equal(1);
-          console.log("======");
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          //domain extension is not valid
+          // Bad tld
           tldrData.url = "http://myfile.tld/movie";
-          tldr = new Tldr(tldrData);
-        tldr.save( function (err) {
-          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr.url.should.not.equal(null);
 
-          tldrData.url = "http://blog.nfa.com/movie?url=avengers";
-          tldr = new Tldr(tldrData);
-          tldr.save( function (err) {
-            assert.isNull(err);
+          Tldr.createAndSaveInstance(tldrData, user, function(err) {
+            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+            valErr.url.should.not.equal(null);
 
-            done();
+            tldrData.url = "http://blog.nfa.com/movie?url=avengers";
+
+            Tldr.createAndSaveInstance( tldrData, user, function (err) {
+              assert.isNull(err);
+
+              done();
+            });
           });
-        });
-      });
-
-    });
-
-    it('should use default createdAt and updatedAt args', function (done) {
-
-      var tldr = new Tldr({
-					url: 'http://needforair.com/nutcrackers',
-					title: 'Blog NFA',
-					summaryBullets: ['Awesome Blog'],
-          resourceAuthor: 'NFA Crew',
-          resourceDate: '2012'
-				})
-				, valErr;
-
-      tldr.save( function (err) {
-        assert.isNull(err, 'no errors');
-
-        done();
       });
 
     });
@@ -133,17 +113,14 @@ describe('Tldr', function () {
 
     it('should detect missing required summary arg', function (done) {
 
-      var tldr = new Tldr({
+      var tldrData = {
           url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
-          resourceDate: '2012',
-					createdAt: new Date(),
-					updatedAt: new Date()
-      })
+          }
         , valErr;
 
-      tldr.save( function (err) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
