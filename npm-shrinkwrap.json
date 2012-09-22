@@ -208,7 +208,7 @@
           }
         },
         "diff": {
-             "version": "1.0.2"
+           "version": "1.0.2"
         },
         "debug": {
           "version": "0.7.0"
