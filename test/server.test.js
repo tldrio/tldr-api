@@ -34,6 +34,10 @@ function logUserOut(cb) {
               , uri: rootUrl + '/users/logout' }, function (error, response, body) { cb(error); });
 }
 
+// Check for existence of tldr. Usable by async
+function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? {} : null); }); }
+function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? null : {}); }); }
+
 
 /**
  * Tests
@@ -81,6 +85,7 @@ describe('Webserver', function () {
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
+      , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
 
@@ -97,6 +102,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }) }
+           , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -341,34 +347,52 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should delete a tldr', function (done) {
-      Tldr.find({_id: tldr2._id}, function (err, docs) {
-        docs.length.should.equal(1);
-        request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + tldr2._id}, function (err, res, body) {
-          res.statusCode.should.equal(200);
-          res.body.should.contain(i18n.deletionOk);
-          Tldr.find({_id: tldr2._id}, function (err, docs) {
-            docs.length.should.equal(0);
-
-            Tldr.find({}, function(err, docs) {
-              docs.length.should.equal(numberOfTldrs - 1);
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('Should not delete anuthing if given a wrong id to delete', function (done) {
-      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/111111111100000000000000'}, function (err, res, body) {
-        Tldr.find({}, function(err, docs) {
-          docs.length.should.equal(numberOfTldrs);
-          done();
-        });
-      });
-    });
-
   });   // ==== End of 'GET tldrs' ==== //
+
+
+  describe.only('DELETE tldrs - through the use of GET', function() {
+    function deleteTldr(id, expectedCode, cb) {
+      request.get({ uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + id}, function (err, res, body) {
+        res.statusCode.should.equal(expectedCode);
+        cb();
+      });
+    }
+
+    it('Should delete a tldr only if the logged in user is an admin', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(deleteTldr, tldr2._id, 401)
+      , async.apply(tldrShouldExist, tldr2._id)
+      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , async.apply(deleteTldr, tldr2._id, 401)
+      , async.apply(tldrShouldExist, tldr2._id)
+      , async.apply(logUserOut)
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(deleteTldr, tldr2._id, 200)
+      , async.apply(tldrShouldNotExist, tldr2._id)
+      , function (cb) {
+          Tldr.find({}, function (err, docs) {
+            docs.length.should.equal(numberOfTldrs - 1);
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should not delete anything if given a wrong id to delete', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(deleteTldr, '111111111100000000001100', 200)   // Try to delete an inexistant tldr. Code is 200 as always for the deletion function
+      , function (cb) {
+          Tldr.find({}, function (err, docs) {
+            docs.length.should.equal(numberOfTldrs);   // But the check on the number of tldrs confirms the deletion took place
+            cb();
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'DELETE tldrs - through the use of GET' ==== //
 
 
 

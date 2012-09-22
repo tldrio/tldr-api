@@ -118,7 +118,7 @@ server.post('/tldrs', routes.createNewTldr);//POST create tldr
 server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
 
 // Admin
-server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', routes.deleteTldr);// delete tldr
+server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminCheck, routes.deleteTldr);   // delete tldr
 server.get( '/bloup'
           , middleware.adminCheck
           , function (req, res, next) {
