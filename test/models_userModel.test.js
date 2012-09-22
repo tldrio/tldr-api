@@ -762,7 +762,7 @@ describe('User', function () {
   });   // ==== End of 'XSS prevention' ==== //
 
 
-  describe.only('Admin role', function () {
+  describe('Admin role', function () {
 
     it('Louis Charles and Stan are admins and no other', function (done) {
       var userData1 = { email: "louis.chatriot@gmail.com", username: "LCzzz", password: "supersecret" }

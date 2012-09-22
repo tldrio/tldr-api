@@ -94,15 +94,18 @@ server.configure('staging', 'production', function () {
 server.post('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
-// This should be /users/:email/resetPassword but email encoding is a pain across browsers
+// Password reset
 server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
 server.post('/user/resetPassword', routes.resetPassword);
 
+// Account management
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 server.put('/users/you', routes.updateProfile);
 server.put('/users/you/updatePassword', routes.updatePassword);
+
+// User login/logout
 server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
 
@@ -113,7 +116,16 @@ server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs
 server.get('/tldrs/:id', routes.getTldrById);// GET a tldr by id
 server.post('/tldrs', routes.createNewTldr);//POST create tldr
 server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
+
+// Admin
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', routes.deleteTldr);// delete tldr
+server.get( '/bloup'
+          , middleware.adminCheck
+          , function (req, res, next) {
+              console.log("MIDDLEWARE 2 =====");
+              res.json(200, { message: 'RRR' });
+            });
+
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 server.options('*', function (req, res, next) {
