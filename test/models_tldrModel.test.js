@@ -734,7 +734,7 @@ describe('Tldr', function () {
     });
 
 
-    it.only('should be able to go back one version', function (done) {
+    it('should be able to go back one version', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
