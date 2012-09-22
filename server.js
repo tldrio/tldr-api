@@ -119,12 +119,6 @@ server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
 
 // Admin
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminCheck, routes.deleteTldr);   // delete tldr
-server.get( '/bloup'
-          , middleware.adminCheck
-          , function (req, res, next) {
-              console.log("MIDDLEWARE 2 =====");
-              res.json(200, { message: 'RRR' });
-            });
 
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
