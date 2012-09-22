@@ -734,92 +734,92 @@ describe('Tldr', function () {
     });
 
 
-    it('should be able to go back one version', function (done) {
+    it.only('should be able to go back one version', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup'
-                     , createdAt: '2012'}
+                     , resourceAuthor: 'bloup' }
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
-         , deserialized, theTldr;
+         , deserialized, theTldr
+         , users = {};
 
       // Create a user according to userData
-      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
 
-      async.auto({
+      async.waterfall([
         // Create 3 users and a tldr
-        user1: async.apply(createUser, userData1)
-      , user2: async.apply(createUser, userData2)
-      , user3: async.apply(createUser, userData3)
-      , tldr: ['user1', function(cb, results) {
-          Tldr.createAndSaveInstance(tldrData, results.user1, function(err, tldr) {
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
             theTldr = tldr;   // Keep a pointer to our tldr
-            return cb(err, tldr);
+            return cb(err);
           });
-        }]
+        }
 
         // Update the tldr twice and get the history of the tldr
-      , updated: ['tldr', 'user2', 'user3', function(cb, results) {
-          results.tldr.updateValidFields({ title: 'Hellooo' }, results.user2, function () {
-            results.tldr.updateValidFields({ summaryBullets: ['only one'] }, results.user3, function (err, tldr) {
-              return cb(err, tldr);
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function (err, tldr) {
+              return cb(err);
             });
           });
-        }]
+        }
 
-      , test1: ['updated', function(cb, results) {
+      , function(cb) {
           theTldr.title.should.equal("Hellooo");
           theTldr.summaryBullets[0].should.equal("only one");
           cb();
-        }]
+        }
 
-      , gB1: ['test1', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test2: ['gB1', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Hellooo");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(1);
           cb();
-        }]
+        }
 
-      , gB2: ['test2', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test3: ['gB2', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Blog NFA");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(2);
           cb();
-        }]
+        }
 
-      , gB3: ['test3', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test4: ['gB3', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Blog NFA");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(2);
           cb();
-        }]
+        }
 
-      , test5: ['test4', function() {
+      , function(cb) {
           theTldr.updateValidFields({ title: 'reset' }, user, function (err, theTldr) {
             theTldr.title.should.equal('reset');
             theTldr.versionDisplayed.should.equal(0);
 
-            done();
+            cb();
           });
-        }]
-      });
+        }
+      ], done);
 
     });
 
