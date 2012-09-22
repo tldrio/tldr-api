@@ -669,67 +669,71 @@ describe('Tldr', function () {
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
-         , deserialized;
+         , users = {}, theTldr, theHistory, deserialized;
 
-      // Create a user according to userData
-      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
+      // Create a user according to userData and store him in the users object
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
 
-      async.auto({
+      async.waterfall([
         // Create 3 users and a tldr
-        user1: async.apply(createUser, userData1)
-      , user2: async.apply(createUser, userData2)
-      , user3: async.apply(createUser, userData3)
-      , tldr: ['user1', function(cb, results) {
-          Tldr.createAndSaveInstance(tldrData, results.user1, function(err, tldr) {
-            return cb(err, tldr);
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
+            theTldr = tldr;
+            return cb(err);
           });
-        }]
+        }
 
         // First test
-      , test1: ['tldr', function(cb, results) {
-          assert.isDefined(results.tldr.history);
+      , function(cb) {
+          assert.isDefined(theTldr.history);
           done();
-        }]
+        }
 
         // Update the tldr twice and get the history of the tldr
-      , history: ['test1', 'tldr', 'user2', 'user3', function(cb, results) {
-          results.tldr.updateValidFields({ title: 'Hellooo' }, results.user2, function () {
-            results.tldr.updateValidFields({ summaryBullets: ['only one'] }, results.user3, function () {
-              TldrHistory.findOne({ _id: results.tldr.history }, function(err, history) { return cb(err, history); });
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function () {
+              TldrHistory.findOne({ _id: theTldr.history }, function(err, history) {
+                theHistory = history;
+                return cb(err);
+              });
             });
           });
-        }]
+        }
 
         // Second test, actually test the history
-      , test2: ['history', function(cb, results) {
-          results.history.versions.length.should.equal(3);
+      , function(cb) {
+          theHistory.versions.length.should.equal(3);
 
           // Data was saved as expected
-          deserialized = Tldr.deserialize(results.history.versions[0].data);
+          deserialized = Tldr.deserialize(theHistory.versions[0].data);
           deserialized.title.should.equal("Hellooo");
           deserialized.summaryBullets.length.should.equal(1);
           deserialized.summaryBullets[0].should.equal("only one");
 
-          deserialized = Tldr.deserialize(results.history.versions[1].data);
+          deserialized = Tldr.deserialize(theHistory.versions[1].data);
           deserialized.title.should.equal("Hellooo");
           deserialized.summaryBullets.length.should.equal(2);
           deserialized.summaryBullets[0].should.equal("coin");
           deserialized.summaryBullets[1].should.equal("hihan");
 
-          deserialized = Tldr.deserialize(results.history.versions[2].data);
+          deserialized = Tldr.deserialize(theHistory.versions[2].data);
           deserialized.title.should.equal("Blog NFA");
           deserialized.summaryBullets.length.should.equal(2);
           deserialized.summaryBullets[0].should.equal("coin");
           deserialized.summaryBullets[1].should.equal("hihan");
 
           // The data was saved with the correct creators
-          results.history.versions[0].creator.toString().should.equal(results.user3._id.toString());
-          results.history.versions[1].creator.toString().should.equal(results.user2._id.toString());
-          results.history.versions[2].creator.toString().should.equal(results.user1._id.toString());
+          theHistory.versions[0].creator.toString().should.equal(users.user3._id.toString());
+          theHistory.versions[1].creator.toString().should.equal(users.user2._id.toString());
+          theHistory.versions[2].creator.toString().should.equal(users.user1._id.toString());
 
-          done();
-        }]
-      });
+          cb();
+        }
+      ], done);
 
     });
 
