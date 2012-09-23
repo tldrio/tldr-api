@@ -1,12 +1,13 @@
 /**
  * Model Definition of Database using Mongoose
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Fucking Proprietary License
+ * Proprietary License
  */
 
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , mailer = require('../lib/mailer')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -16,8 +17,10 @@ var _ = require('underscore')
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
+  , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
+  , TldrHistory = require('./tldrHistoryModel')
   ;
 
 
@@ -111,8 +114,9 @@ TldrSchema = new Schema(
                , default: Date.now
                }
                , required: false
-  , creator: { type: ObjectId, ref: 'user' }   // See mongoose doc - populate
-  , contributors: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
+  , creator: { type: ObjectId, ref: 'user', required: true }
+  , history: { type: ObjectId, ref: 'tldrHistory', required: true }
+  , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   }
 , { strict: true });
 
@@ -120,27 +124,41 @@ TldrSchema = new Schema(
 
 
 /**
- * Create a new instance of Tldr and populate it
- * Only fields in userSetableFields are handled
+ * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
+ * Also sets the creator if we have one and initializes the tldr history
  * @param {Object} userInput Object containing the fields to set for the tldr instance
+ * @param {Object} creator Creator of this tldr
  * @param {Function} callback Function to call after the creation of the tldr
  */
 
-TldrSchema.statics.createAndSaveInstance = function (userInput, callback) {
+TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance;
+    , instance = new Tldr(validFields)
+    , history = new TldrHistory();
 
-  instance = new Tldr(validFields);
-  instance.save(callback);
+  history.saveVersion(instance.serialize(), creator, function (err, _history) {
+    instance.history = _history._id;
+    instance.creator = creator._id;
+
+    instance.save(function(err, tldr) {
+      if (err) { return callback(err); }
+
+      creator.tldrsCreated.push(tldr._id);
+      creator.save(function(err, _user) {
+        if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+
+        callback(null, tldr);
+      });
+    });
+  });
 };
-
-
 
 
 /**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Object} user The contributor who updated this tldr
  * @param {Function} callback callback to be passed to save method
  *
  */
@@ -149,16 +167,76 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
+  // First, update the tldr
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
-
   self.updatedAt = new Date();
-  if (typeof user !== 'undefined') {
-    self.contributors.push(user);
-  }
+  self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
-  self.save(callback);
+  // Try to save it
+  self.save(function(err, tldr) {
+    if (err) { return callback(err); }   // Return immediately if there is an error
+
+    // We respect the expected signature for an update success: callback(null, tldr)
+    TldrHistory.findOne({ _id: self.history }, function(err, history) {
+      history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
+    });
+  });
+};
+
+
+/**
+ * Return a serialized version of the fields to be remembered
+ * @return {String} The serialized version of the fields to be remembered
+ */
+TldrSchema.methods.serialize = function () {
+  var jsonVersion = {}
+    , self = this;
+
+  _.each(versionedFields, function(field) {
+    jsonVersion[field] = self[field];
+  });
+
+  return JSON.stringify(jsonVersion);
+}
+
+
+/**
+ * Takes a serialized object string and returns the corresponding object
+ * @param {String} serializedVersion The string
+ * @return {Object} The object
+ */
+TldrSchema.statics.deserialize = function (serializedVersion) {
+  return JSON.parse(serializedVersion);
+};
+
+
+/**
+ * Switch a tldr back one version
+ * @param {Function} callback Optional - to be called after having gone back, with (err, tldr)
+ * @return {void}
+ */
+TldrSchema.methods.goBackOneVersion = function (callback) {
+  var self = this
+    , versionToGoBack
+    , cb = callback ? callback : function () {};
+
+  TldrHistory.findOne({ _id: this.history }, function (err, history) {
+    // If we can't go back, simply do nothing
+    if (self.versionDisplayed + 1 >= history.versions.length) { return cb(null, self); }
+
+    // Go back one version
+    versionToGoBack = Tldr.deserialize(history.versions[self.versionDisplayed + 1].data);
+    _.each(_.keys(versionToGoBack), function(key) {
+      self[key] = versionToGoBack[key];
+    });
+
+    // Update versionDisplayed
+    self.versionDisplayed += 1;
+
+    self.save(callback);
+  });
 };
 
 

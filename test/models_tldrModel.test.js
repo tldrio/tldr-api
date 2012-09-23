@@ -14,9 +14,12 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Tldr = models.Tldr
+  , User = models.User
+  , TldrHistory = models.TldrHistory
   , server = require('../server')
   , db = server.db
-  , url = require('url');
+  , url = require('url')
+  , async = require('async');
 
 
 
@@ -28,6 +31,7 @@ var should = require('chai').should()
 
 
 describe('Tldr', function () {
+  var user;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -38,9 +42,14 @@ describe('Tldr', function () {
   });
 
   beforeEach(function (done) {
-    Tldr.remove( function (err) {
-      if (err) {throw done(err);}
-      done();
+    User.remove({}, function(err) {
+      Tldr.remove({}, function (err) {
+        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+          user = _user;
+          done();
+        });
+
+      });
     });
   });
 
@@ -48,18 +57,14 @@ describe('Tldr', function () {
   describe('#validators', function () {
 
     it('should detect missing required url arg', function (done) {
-
-      var tldr = new Tldr({
+      var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
+      }
       , valErr;
 
-      tldr.save( function (err) {
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
@@ -68,7 +73,6 @@ describe('Tldr', function () {
 
         done();
       });
-
     });
 
     it('should accept only valid urls ', function (done) {
@@ -77,54 +81,31 @@ describe('Tldr', function () {
         url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()}
-        , tldr = new Tldr(tldrData)
+        resourceAuthor: 'NFA Crew'}
         , valErr;
 
-        tldr.save( function (err) {
+        Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
           _.keys(err.errors).length.should.equal(1);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          //domain extension is not valid
+          // Bad tld
           tldrData.url = "http://myfile.tld/movie";
-          tldr = new Tldr(tldrData);
-        tldr.save( function (err) {
-          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr.url.should.not.equal(null);
 
-          tldrData.url = "http://blog.nfa.com/movie?url=avengers";
-          tldr = new Tldr(tldrData);
-          tldr.save( function (err) {
-            assert.isNull(err);
+          Tldr.createAndSaveInstance(tldrData, user, function(err) {
+            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+            valErr.url.should.not.equal(null);
 
-            done();
+            tldrData.url = "http://blog.nfa.com/movie?url=avengers";
+
+            Tldr.createAndSaveInstance( tldrData, user, function (err) {
+              assert.isNull(err);
+
+              done();
+            });
           });
-        });
-      });
-
-    });
-
-    it('should use default createdAt and updatedAt args', function (done) {
-
-      var tldr = new Tldr({
-					url: 'http://needforair.com/nutcrackers',
-					title: 'Blog NFA',
-					summaryBullets: ['Awesome Blog'],
-          resourceAuthor: 'NFA Crew',
-          resourceDate: '2012'
-				})
-				, valErr;
-
-      tldr.save( function (err) {
-        assert.isNull(err, 'no errors');
-
-        done();
       });
 
     });
@@ -132,17 +113,14 @@ describe('Tldr', function () {
 
     it('should detect missing required summary arg', function (done) {
 
-      var tldr = new Tldr({
+      var tldrData = {
           url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
-          resourceDate: '2012',
-					createdAt: new Date(),
-					updatedAt: new Date()
-      })
+          }
         , valErr;
 
-      tldr.save( function (err) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
         err.name.should.equal('ValidationError');
 
         _.keys(err.errors).length.should.equal(1);
@@ -285,13 +263,13 @@ describe('Tldr', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      Tldr.createAndSaveInstance(
-        { title: 'Blog NFA'
+      var tldrData = { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , createdAt: '2012'},
-        function (err) {
+        , createdAt: '2012'};
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -307,6 +285,68 @@ describe('Tldr', function () {
         });
     });
 
+    it('should initialize a new tldr\'s history with the first version of the data', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , deserialized;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          Tldr.find({resourceAuthor: 'bloup'})
+              .populate('history')
+              .exec(function (err,docs) {
+            docs[0].history.versions.length.should.equal(1);
+            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
+
+            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+            deserialized.title.should.equal(tldrData.title);
+            deserialized.resourceAuthor.should.equal(tldrData.resourceAuthor);
+            deserialized.summaryBullets.length.should.equal(tldrData.summaryBullets.length);
+            deserialized.summaryBullets[0].should.equal(tldrData.summaryBullets[0]);
+
+            done();
+          });
+        });
+    });
+
+    it('should set a new tldr\'s creator and reflect it in the history', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , userData = { username: 'blip'
+                     , password: 'supersecret'
+                     , email: 'valid@eZZZmail.com' }
+        , deserialized;
+
+        User.createAndSaveInstance(userData, function(err, user) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+          Tldr.find({resourceAuthor: 'bloup'})
+              .populate('history')
+              .exec(function (err, docs) {
+
+
+            // The history is initialized with the tldr's creator
+            docs[0].history.versions.length.should.equal(1);
+            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
+            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+            deserialized.title.should.equal(tldrData.title);
+
+            // The right creator is set and he the tldr is part of his tldrsCreated
+            docs[0].creator.toString().should.equal(user._id.toString());
+            User.findOne({ _id: docs[0].creator }, function (err, reUser) {
+              reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
     it('should not save two tldrs with same url', function (done) {
       var tldr = { title: 'Blog NFA'
         , url: 'http://mydomain.com'
@@ -314,16 +354,12 @@ describe('Tldr', function () {
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
-        Tldr.createAndSaveInstance(
-          tldr,
-          function (err) {
+        Tldr.createAndSaveInstance(tldr, user, function (err) {
             if (err) { return done(err); }
             Tldr.find({url: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
-              Tldr.createAndSaveInstance(
-                tldr,
-                function (err) {
+              Tldr.createAndSaveInstance(tldr, user, function (err) {
                   err.should.not.be.null;
                   err.code.should.equal(11000);// 11000 is the code for duplicate key
                   done();
@@ -341,14 +377,13 @@ describe('Tldr', function () {
                       , summaryBullets: ['new2']
                       , title: 'Blog NeedForAir'
                       , resourceAuthor: 'new3'
-                      , createdAt: '2012'};
+                      , createdAt: '2012'}
+          , tldrData = { title: 'Blog NFA'
+                       , url: 'http://mydomain.com'
+                       , summaryBullets: ['coin']
+                       , resourceAuthor: 'bloup'};
 
-      Tldr.createAndSaveInstance(
-        { title: 'Blog NFA'
-        , url: 'http://mydomain.com'
-        , summaryBullets: ['coin']
-        , resourceAuthor: 'bloup'},
-        function(err) {
+      Tldr.createAndSaveInstance(tldrData, user, function(err) {
           if (err) { return done(err); }
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             if (err) { return done(err); }
@@ -360,7 +395,7 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
 
             // Perform update
-            tldr.updateValidFields(updated, undefined, function(err) {
+            tldr.updateValidFields(updated, user, function(err) {
               if (err) { return done(err); }
 
               tldr.url.should.equal('http://mydomain.com/');
@@ -517,7 +552,7 @@ describe('Tldr', function () {
           resourceDate: '2012'
           };
 
-      Tldr.createAndSaveInstance(userInput, function (err, theTldr) {
+      Tldr.createAndSaveInstance(userInput, user, function (err, theTldr) {
         assert.isNull(err, 'no errors');
         theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
         theTldr.title.should.equal('Blog NFA');
@@ -543,9 +578,9 @@ describe('Tldr', function () {
           resourceAuthor: 'NFA Crewwindow.location',
           };
 
-      Tldr.createAndSaveInstance(goodUserInput, function (err, tldr) {
+      Tldr.createAndSaveInstance(goodUserInput, user, function (err, tldr) {
         assert.isNull(err, 'no errors');
-        tldr.updateValidFields(userInput, undefined, function(err, theTldr) {
+        tldr.updateValidFields(userInput, user, function(err, theTldr) {
           assert.isNull(err, 'no errors');
           theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
           theTldr.title.should.equal('Blog NFA');
@@ -567,7 +602,7 @@ describe('Tldr', function () {
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
           }
 
-       Tldr.createAndSaveInstance(userInput, function(err) {
+       Tldr.createAndSaveInstance(userInput, user, function(err) {
          err.name.should.equal('CastError');   // Cant cast normal strings to date
 
          done();
@@ -576,17 +611,14 @@ describe('Tldr', function () {
 
     it('Should decode HTML entities', function (done) {
 
-      var tldr = new Tldr({ url: 'http://needforair.com/nutcrackers',
+      var tldrData = { url: 'http://needforair.com/nutcrackers',
                             title: 'toto&nbsp;titi',
                             summaryBullets: ['toto', 'tit&lt;i'],
                             resourceAuthor: 'NFA Crew',
-                            resourceDate: '2012',
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                          })
+                     }
         , valErr;
 
-      tldr.save( function (err, doc) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err, doc) {
         // We can test against the regular '<' character or its unicode escape equivalent
         doc.summaryBullets[1].should.equal( 'tit<i');
         doc.summaryBullets[1].should.equal( 'tit\u003ci');
@@ -597,9 +629,207 @@ describe('Tldr', function () {
       });
     });
 
-
   });
 
 
+  describe('history management', function(done) {
+
+    it('should serialize only the fields we want to remember and be able to deserialize the string', function (done) {
+      var tldrData = { url: 'http://needforair.com/nutcrackers',
+                            title: 'tototiti',
+                            summaryBullets: ['toto', 'titi'],
+                            resourceAuthor: 'NFA Crew',
+                          };
+
+      Tldr.createAndSaveInstance(tldrData, user, function(err, _tldr) {
+        var serializedVersion = _tldr.serialize()
+          , objectVersion = Tldr.deserialize(serializedVersion);
+
+        (typeof serializedVersion).should.equal('string');
+        objectVersion.title.should.equal(_tldr.title);
+        objectVersion.resourceAuthor.should.equal(_tldr.resourceAuthor);
+        objectVersion.summaryBullets.length.should.equal(_tldr.summaryBullets.length);
+        objectVersion.summaryBullets[0].should.equal(_tldr.summaryBullets[0]);
+        objectVersion.summaryBullets[1].should.equal(_tldr.summaryBullets[1]);
+
+        assert.isUndefined(objectVersion.url);
+        assert.isUndefined(objectVersion.createdAt);
+        assert.isUndefined(objectVersion.updatedAt);
+
+        done();
+      });
+    });
+
+    it('should save previous version with the creator and contributors', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin', 'hihan']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+         , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
+         , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
+         , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
+         , users = {}, theTldr, theHistory, deserialized;
+
+      // Create a user according to userData and store him in the users object
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
+
+      async.waterfall([
+        // Create 3 users and a tldr
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
+            theTldr = tldr;
+            return cb(err);
+          });
+        }
+
+        // First test
+      , function(cb) {
+          assert.isDefined(theTldr.history);
+          done();
+        }
+
+        // Update the tldr twice and get the history of the tldr
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function () {
+              TldrHistory.findOne({ _id: theTldr.history }, function(err, history) {
+                theHistory = history;
+                return cb(err);
+              });
+            });
+          });
+        }
+
+        // Second test, actually test the history
+      , function(cb) {
+          theHistory.versions.length.should.equal(3);
+
+          // Data was saved as expected
+          deserialized = Tldr.deserialize(theHistory.versions[0].data);
+          deserialized.title.should.equal("Hellooo");
+          deserialized.summaryBullets.length.should.equal(1);
+          deserialized.summaryBullets[0].should.equal("only one");
+
+          deserialized = Tldr.deserialize(theHistory.versions[1].data);
+          deserialized.title.should.equal("Hellooo");
+          deserialized.summaryBullets.length.should.equal(2);
+          deserialized.summaryBullets[0].should.equal("coin");
+          deserialized.summaryBullets[1].should.equal("hihan");
+
+          deserialized = Tldr.deserialize(theHistory.versions[2].data);
+          deserialized.title.should.equal("Blog NFA");
+          deserialized.summaryBullets.length.should.equal(2);
+          deserialized.summaryBullets[0].should.equal("coin");
+          deserialized.summaryBullets[1].should.equal("hihan");
+
+          // The data was saved with the correct creators
+          theHistory.versions[0].creator.toString().should.equal(users.user3._id.toString());
+          theHistory.versions[1].creator.toString().should.equal(users.user2._id.toString());
+          theHistory.versions[2].creator.toString().should.equal(users.user1._id.toString());
+
+          cb();
+        }
+      ], done);
+
+    });
+
+
+    it('should be able to go back one version', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin', 'hihan']
+                     , resourceAuthor: 'bloup' }
+         , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
+         , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
+         , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
+         , deserialized, theTldr
+         , users = {};
+
+      // Create a user according to userData
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
+
+      async.waterfall([
+        // Create 3 users and a tldr
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
+            theTldr = tldr;   // Keep a pointer to our tldr
+            return cb(err);
+          });
+        }
+
+        // Update the tldr twice and get the history of the tldr
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function (err, tldr) {
+              return cb(err);
+            });
+          });
+        }
+
+      , function(cb) {
+          theTldr.title.should.equal("Hellooo");
+          theTldr.summaryBullets[0].should.equal("only one");
+          cb();
+        }
+
+      , function(cb) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }
+
+      , function(cb) {
+          theTldr.title.should.equal("Hellooo");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(1);
+          cb();
+        }
+
+      , function(cb) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }
+
+      , function(cb) {
+          theTldr.title.should.equal("Blog NFA");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(2);
+          cb();
+        }
+
+      , function(cb) {
+          theTldr.goBackOneVersion(function() { return cb(); });
+        }
+
+      , function(cb) {
+          theTldr.title.should.equal("Blog NFA");
+          theTldr.summaryBullets[0].should.equal("coin");
+          theTldr.summaryBullets[1].should.equal("hihan");
+          theTldr.versionDisplayed.should.equal(2);
+          cb();
+        }
+
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'reset' }, user, function (err, theTldr) {
+            theTldr.title.should.equal('reset');
+            theTldr.versionDisplayed.should.equal(0);
+
+            cb();
+          });
+        }
+      ], done);
+
+    });
+
+
+
+
+  });
 
 });

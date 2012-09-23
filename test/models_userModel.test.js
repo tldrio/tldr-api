@@ -378,22 +378,18 @@ describe('User', function () {
           _.isArray(tldrs).should.equal(true);
           tldrs.length.should.equal(0);
 
-          Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-            Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
-              models.setTldrCreator(tldr1, user, function(err) {
-                models.setTldrCreator(tldr2, user, function(err) {
-                  // user doesn't contain the data in his created tldrs
-                  assert.isUndefined(user.tldrsCreated[0].url);
+          Tldr.createAndSaveInstance(tldrData1, user, function(err, tldr1) {
+            Tldr.createAndSaveInstance(tldrData2, user,  function(err, tldr2) {
+              // user doesn't contain the data in his created tldrs
+              assert.isUndefined(user.tldrsCreated[0].url);
 
-                  user.getCreatedTldrs(function(tldrs) {
-                    tldrs[1].url.should.equal('http://myfile.com/movie');
-                    tldrs[0].url.should.equal('http://another.com/movie');
-                    tldrs[0].creator.username.should.equal('NFADeploy');
-                    assert.isUndefined(tldrs[0].creator.password);
+              user.getCreatedTldrs(function(tldrs) {
+                tldrs[1].url.should.equal('http://myfile.com/movie');
+                tldrs[0].url.should.equal('http://another.com/movie');
+                tldrs[0].creator.username.should.equal('NFADeploy');
+                assert.isUndefined(tldrs[0].creator.password);
 
-                    done();
-                  });
-                });
+                done();
               });
             });
           });
