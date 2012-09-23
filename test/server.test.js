@@ -522,7 +522,6 @@ describe('Webserver', function () {
   });   // ==== End of 'POST tldrs' ==== //
 
 
-  //Test PUT Requests
   describe('PUT tldrs - There is always a logged user for these tests', function () {
     beforeEach(function(done) {
       logUserIn('user1@nfa.com', 'supersecret', done);
@@ -613,6 +612,45 @@ describe('Webserver', function () {
     });
 
   });   // ==== End of 'PUT tldrs' ==== //
+
+
+  describe('GET users', function () {
+
+    it('admins should be able to access any user\'s data', function (done) {
+      var obj;
+
+      async.waterfall([
+        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.email.should.equal('user1@nfa.com');
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('non admin cannot access user data through /users/:id', function (done) {
+      var obj;
+
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
+            res.statusCode.should.equal(401);
+            obj = JSON.parse(body);
+            obj.message.should.equal(i18n.notAnAdmin);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'GET users' ==== //
 
 
   describe('PUT users', function() {

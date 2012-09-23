@@ -117,7 +117,7 @@ server.get('/tldrs/:id', routes.getTldrById);
 server.post('/tldrs', routes.createNewTldr);
 server.put('/tldrs/:id', routes.updateTldrWithId);
 
-// Admin
+// Admin only routes
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 server.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
