@@ -112,13 +112,14 @@ server.get('/users/logout', routes.logout);
 // tldrs
 server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
 server.get('/tldrs', routes.searchTldrs); // Convenience route
-server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs (convenience route)
-server.get('/tldrs/:id', routes.getTldrById);// GET a tldr by id
-server.post('/tldrs', routes.createNewTldr);//POST create tldr
-server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
+server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
+server.get('/tldrs/:id', routes.getTldrById);
+server.post('/tldrs', routes.createNewTldr);
+server.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Admin
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
+server.get('/users/:id', routes.getUserById);
 
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
