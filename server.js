@@ -119,7 +119,7 @@ server.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Admin
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
-server.get('/users/:id', routes.getUserById);
+server.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
