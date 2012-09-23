@@ -36,7 +36,7 @@ function updateCallback (err, docs, req, res, next) {
   if (err) {
     bunyan.incrementMetric('tldrs.update.error');
     if (err.message === 'Invalid ObjectId') {
-      return next({ statusCode: 403, body: { _id: i18n.invalidTldrId} } );
+      return next({ statusCode: 403, body: { _id: i18n.invalidId} } );
     } else {
       return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
     }
