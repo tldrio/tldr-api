@@ -25,6 +25,7 @@ function getTldrById (req, res, next) {
 
   // If a logged admin wants to access the admin-only representation of the resource
   if (req.user && req.user.isAdmin() && req.query.admin == 'true') {
+    req.isAdminRequest = true;
     query.populate('history');
   }
 
