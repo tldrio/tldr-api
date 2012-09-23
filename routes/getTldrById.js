@@ -17,11 +17,18 @@ var Tldr = require('../lib/models').Tldr
 
 function getTldrById (req, res, next) {
 
-  var id = req.params.id;
+  var id = req.params.id
+    , query;
 
-  Tldr.findOne({_id: id})
-      .populate('creator', 'username')
-      .exec( function (err, tldr) {
+  query = Tldr.findOne({_id: id})
+              .populate('creator', 'username');
+
+  // If a logged admin wants to access the admin-only representation of the resource
+  if (req.user && req.user.isAdmin() && req.query.admin == 'true') {
+    query.populate('history');
+  }
+
+  query.exec( function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:

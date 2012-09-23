@@ -350,7 +350,7 @@ describe('Webserver', function () {
   });   // ==== End of 'GET tldrs' ==== //
 
 
-  describe.only('DELETE tldrs - through the use of GET', function() {
+  describe('DELETE tldrs - through the use of GET', function() {
     function deleteTldr(id, expectedCode, cb) {
       request.get({ uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + id}, function (err, res, body) {
         res.statusCode.should.equal(expectedCode);
