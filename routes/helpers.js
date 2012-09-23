@@ -15,7 +15,7 @@ var i18n = require('../lib/i18n')
 
 function contentNegotiationForTldr (req, res, tldr) {
     // If this is an admin type request, simply return data as JSON
-    if (req.accepts('text/html') && ! req.isAdminRequest) {
+    if (req.accepts('text/html') && req.query.admin !== 'true') {
       bunyan.incrementMetric('tldrs.get.html');
       return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
     } else {  // Send json by default
