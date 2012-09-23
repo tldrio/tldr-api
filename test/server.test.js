@@ -18,15 +18,22 @@ var should = require('chai').should()
   , User = models.User
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
-  , request = require('request');
-
+  , request = require('request')
+  // Global variables used throughout the tests
+  , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
+  , user1
+  , client;
 
 
 // Usable by async to log a user in or out
 function logUserIn(email, password, cb) {
   request.post({ headers: {"Accept": "application/json"}
                , uri: rootUrl + '/users/login'
-               , json: { email: email, password: password } }, function (error, response, body) { cb(error); });
+               , json: { email: email, password: password } }
+    , function (error, response, body) {
+        response.statusCode.should.equal(200);   // If we couldnt log in the test will fail
+        cb(error);
+      });
 }
 
 function logUserOut(cb) {
@@ -38,15 +45,27 @@ function logUserOut(cb) {
 function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? {} : null); }); }
 function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? null : {}); }); }
 
+// Check for population of a tldr's history (here the tldr #2)
+function tldrHistoryCheck (options, cb) {
+  var uri = rootUrl + '/tldrs/' + tldr2._id + (options.tryToBeAdmin ? '?admin=true' : '')
+    , test = options.historyShouldBePopulated ? assert.isDefined : assert.isUndefined;
+
+  request.get({ headers: {"Accept": "application/json"}, uri: uri }, function (err, res, body) {
+    var obj = JSON.parse(res.body);
+    res.statusCode.should.equal(200);
+    obj.url.should.equal('http://avc.com/mba-monday');
+    test(obj.history.versions);
+    cb();
+  });
+}
+
+
 
 /**
  * Tests
 */
 
 describe('Webserver', function () {
-  var tldr1, tldr2, tldr3, tldr4, numberOfTldrs
-    , user1
-    , client;
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
@@ -144,14 +163,31 @@ describe('Webserver', function () {
     });
 
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
-
       request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, body) {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
+        assert.isUndefined(obj.history.versions);
         done();
       });
+    });
 
+    it('get a tldr by id with history not populated if nobody or a non admin is logged in', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      ], done);
+    });
+
+    it('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: false, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: true })
+      ], done);
     });
 
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
@@ -173,7 +209,6 @@ describe('Webserver', function () {
       });
 
     });
-
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
