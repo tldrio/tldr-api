@@ -53,7 +53,7 @@ function createNewTldr (req, res, next) {
       bunyan.incrementMetric('tldrs.creation.creationSuccess');
 
       mailer.sendEmail({ type: 'adminTldrWasCreated'
-                       , development: true
+                       , development: false
                        , values: { user: req.user, tldr: tldr, apiUrl: config.apiUrl }
                        });
 
