@@ -205,7 +205,7 @@ function createAndSaveInstance(userInput, callback) {
     bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
         // First, create the UserHistory for this user by saving his first action (the creation of his account)
-        history.saveAction("accountCreation", "ddd", function(err, _history) {
+        history.saveAction("accountCreation", "Account was created", function(err, _history) {
           validFields.password = hash;
           validFields.confirmedEmail = false;
           validFields.confirmEmailToken = customUtils.uid(13);

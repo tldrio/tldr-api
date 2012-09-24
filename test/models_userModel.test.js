@@ -13,6 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../lib/models')
   , User = models.User
+  , UserHistory = models.UserHistory
   , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
@@ -338,7 +339,7 @@ describe('User', function () {
       });
     });
 
-    it('should set default createdAt, updatedAt and lastActive', function (done) {
+    it('should set default createdAt, updatedAt, lastActive and history', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -350,7 +351,12 @@ describe('User', function () {
         assert.isDefined(user.createdAt);
         assert.isDefined(user.lastActive);
         assert.isDefined(user.updatedAt);
-        done();
+        assert.isDefined(user.history);
+
+        UserHistory.findOne({ _id: user.history }, function(err, history) {
+          history.actions[0].type.should.equal("accountCreation");
+          done();
+        });
       });
     });
 
