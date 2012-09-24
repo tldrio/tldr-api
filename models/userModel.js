@@ -10,6 +10,7 @@ var mongoose = require('mongoose')
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
   , UserSchema, User
+  , UserHistory = require('./userHistoryModel')
   , bcrypt = require('bcrypt')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
@@ -193,7 +194,8 @@ function updateValidFields (data, callback) {
  */
 function createAndSaveInstance(userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance;
+    , instance
+    , history = new UserHistory();
 
   // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
   // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
@@ -202,14 +204,17 @@ function createAndSaveInstance(userInput, callback) {
   if (validatePassword(validFields.password)) {
     bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
       bcrypt.hash(validFields.password, salt, function (err, hash) {
-        validFields.password = hash;
-        // Set confirmEmailToken - length 13 is very important
-        validFields.confirmedEmail = false;
-        validFields.confirmEmailToken = customUtils.uid(13);
-        // Set usernameLowerCased
-        validFields.usernameLowerCased = validFields.username.toLowerCase();
-        instance = new User(validFields);
-        instance.save(callback);
+        // First, create the UserHistory for this user by saving his first action (the creation of his account)
+        history.saveAction("accountCreation", "ddd", function(err, _history) {
+          validFields.password = hash;
+          validFields.confirmedEmail = false;
+          validFields.confirmEmailToken = customUtils.uid(13);
+          validFields.usernameLowerCased = validFields.username.toLowerCase();
+          instance = new User(validFields);
+
+          instance.history = _history;
+          instance.save(callback);
+        });
       });
     });
   } else {
@@ -320,6 +325,7 @@ UserSchema = new Schema(
                         }
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
+  , history: { type: ObjectId, ref: 'userHistory', required: true }
   }
 , { strict: true });
 

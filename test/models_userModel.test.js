@@ -54,6 +54,7 @@ describe('User', function () {
       var user = new User({ username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
                            , password: 'supersecret!'
+                           , history: '111111111111111111111111'   // Dummy history since it is required
                            })
         , valErr;
 
@@ -71,7 +72,8 @@ describe('User', function () {
       var user = new User({ email: 'email@email.com'
                            , username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
-                               })
+                           , history: '111111111111111111111111'   // Dummy history since it is required
+                           })
         , valErr;
 
       user.save(function(err) {
@@ -87,6 +89,7 @@ describe('User', function () {
     it('should not save a user that has no username', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'Axcxxname'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -115,6 +118,7 @@ describe('User', function () {
                      , username: 'NFADeploy'
                      , usernameLowerCased: 'nfadeploy'
                      , email: 'bademail'
+                     , history: '111111111111111111111111'   // Dummy history since it is required
                      }
         , valErr, user;
 
@@ -133,6 +137,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -166,6 +171,7 @@ describe('User', function () {
                                , password: 'secre'
                                , username: 'NFADeploy'
                                , usernameLowerCased: 'nfadeploy'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -198,9 +204,10 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal(i18n.validateUserPwd);
+        assert.isDefined(valErr.history);   // History set only if password is valid
         done();
       });
     });
@@ -570,6 +577,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -597,6 +605,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
                , token;
 
@@ -628,6 +637,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -647,6 +657,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -672,6 +683,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -693,6 +705,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {

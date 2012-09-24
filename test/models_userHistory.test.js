@@ -26,7 +26,7 @@ var should = require('chai').should()
  */
 
 
-describe.only('UserHistory', function () {
+describe('UserHistory', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
