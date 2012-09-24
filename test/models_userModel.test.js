@@ -484,6 +484,27 @@ describe('User', function () {
   });   // ==== End of 'update password' ==== //
 
 
+  describe.only('#saveAction as a wrapper around UserHistory.saveAction', function () {
+
+    it('For a normally created user, saveAction should simply save a new action', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.saveAction("action 1", "data 1", function() {
+          user.saveAction("action 2", "data 2", function(err, history) {
+            history.actions[0].type.should.equal('action 2');
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#saveAction' ==== //
+
+
   describe('should update the user updatable fields (email and username)', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
