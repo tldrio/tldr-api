@@ -229,7 +229,7 @@ function createAndSaveInstance(userInput, callback) {
 }
 
 
-/*
+/**
  * Update a user password
  * @param {String} currentPassword supplied by user for checking purposes
  * @param {String} newPassword chosen by user
@@ -263,6 +263,22 @@ function updatePassword (currentPassword, newPassword, callback) {
 
     callback(errors);
   });
+}
+
+
+/**
+ * Save a new action to the user's history. This wrapper around UserHistory.saveAction
+ * is useful since it checks that the history exists and creates it on the fly before saving the action
+ * @param {String} type Type of action, see UserHistory.saveAction
+ * @param {String} data Action data, see UserHistory.saveAction
+ * @param {Function} cb Optional callback
+ */
+function saveAction (type, data, cb) {
+  //var 
+  //callback = function () {
+  
+  //}
+
 }
 
 
