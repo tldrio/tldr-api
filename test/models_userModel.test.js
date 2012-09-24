@@ -484,7 +484,7 @@ describe('User', function () {
   });   // ==== End of 'update password' ==== //
 
 
-  describe.only('#saveAction as a wrapper around UserHistory.saveAction', function () {
+  describe('#saveAction as a wrapper around UserHistory.saveAction', function () {
 
     it('For a normally created user, saveAction should simply save a new action', function (done) {
       var userData = { username: 'NFADeploy'
@@ -496,9 +496,40 @@ describe('User', function () {
         user.saveAction("action 1", "data 1", function() {
           user.saveAction("action 2", "data 2", function(err, history) {
             history.actions[0].type.should.equal('action 2');
+            history.actions[0].data.should.equal('data 2');
+            history.actions[1].type.should.equal('action 1');
+            history.actions[1].data.should.equal('data 1');
             done();
           });
         });
+      });
+    });
+
+    it('For a user with no history, saveAction should create the history first', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , theUser;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        User.update({_id: user._id}, { $unset: {history: 1} }, function(err) {
+          User.findOne({ _id: user._id }, function(err, _theUser) {
+            theUser = _theUser;
+            assert.isUndefined(theUser.history);
+
+            theUser.saveAction("bloup", "blip", function () {
+              assert.isDefined(theUser.history);
+
+              UserHistory.findOne({ _id: theUser.history }, function (err, history) {
+                history.actions[0].type.should.equal('bloup');
+                history.actions[0].data.should.equal('blip');
+                done();
+              });
+            });
+          });
+        });
+
       });
     });
 

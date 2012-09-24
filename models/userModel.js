@@ -366,6 +366,7 @@ UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
+UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 UserSchema.methods.updateLastActive = updateLastActive;
