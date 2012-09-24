@@ -54,6 +54,31 @@ describe.only('UserHistory', function () {
       done();
     });
 
+    it('Should push actions with the saveAction method', function (done) {
+      var history = new UserHistory();
+
+      function saveAction (type, data, cb) {
+        history.saveAction(type, data, function (err, his) {
+          cb(err);
+        });
+      }
+
+      async.waterfall([
+        async.apply(saveAction, 'one type', 'some data')
+      , async.apply(saveAction, 'another type', 'another data')
+      , async.apply(saveAction, 'one type', 'blip blop')
+      , function (cb) {
+          history.actions[0].type.should.equal('one type');
+          history.actions[0].data.should.equal('blip blop');
+          history.actions[1].type.should.equal('another type');
+          history.actions[1].data.should.equal('another data');
+          history.actions[2].type.should.equal('one type');
+          history.actions[2].data.should.equal('some data');
+          cb();
+        }
+      ], done);
+    });
+
   });   // ==== End of 'Basic behaviour' ==== //
 });
 
