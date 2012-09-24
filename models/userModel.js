@@ -274,11 +274,19 @@ function updatePassword (currentPassword, newPassword, callback) {
  * @param {Function} cb Optional callback
  */
 function saveAction (type, data, cb) {
-  //var 
-  //callback = function () {
-  
-  //}
+  var self = this
+    , newHistory;
 
+  if (! self.history) {
+    newHistory = new UserHistory();
+    newHistory.saveAction(type, data, function (err, _history) {
+      self.history = _history; cb(err);
+    });
+  } else {
+    UserHistory.findOne({ _id: self.history }, function (err, history) {
+     history.saveAction(type, data, cb);
+    });
+  }
 }
 
 
