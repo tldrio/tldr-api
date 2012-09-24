@@ -409,7 +409,43 @@ describe('Tldr', function () {
           });
         });
     });
-  });
+
+    // Test the on-the-fly history creation in update to prevent the bug caused
+    // by the migration where the history was flagged as required, preventing
+    // update of any tldr created beforehand with no history
+    it('should create a history on the fly if the tldr hasnt got one yet', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , theTldr;
+
+      async.waterfall([
+        function (cb) {   // Create a tldr with no history
+          Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
+            Tldr.update({_id: tldr._id}, { $unset: {history: 1} }, function(err) {
+              Tldr.findOne({ _id: tldr._id }, function(err, _theTldr) {
+                // theTldr holds the tldr created from which we forcibly removed the history
+                theTldr = _theTldr;
+                assert.isUndefined(theTldr.history);
+                theTldr.title.should.equal('Blog NFA');
+                cb();
+              });
+            });
+          });
+        }
+      , function() {
+          theTldr.updateValidFields({ title: 'bloup' }, user, function(err) {
+            // After an update, theTldr has an history, and the title was correctly updated
+            assert.isDefined(theTldr.history);
+            theTldr.title.should.equal('bloup');
+            done();
+          })
+        }
+      ]);
+    });
+
+  });   // ==== End of '#updateValidFields' ==== //
 
 
   describe('#normalizeUrl', function() {
