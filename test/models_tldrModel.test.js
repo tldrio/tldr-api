@@ -435,11 +435,16 @@ describe('Tldr', function () {
           });
         }
       , function() {
-          theTldr.updateValidFields({ title: 'bloup' }, user, function(err) {
+          theTldr.updateValidFields({ title: 'bloup' }, user, function(err, tldr) {
             // After an update, theTldr has an history, and the title was correctly updated
             assert.isDefined(theTldr.history);
             theTldr.title.should.equal('bloup');
-            done();
+
+            // The history should have saved this new version
+            TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+              Tldr.deserialize(history.versions[0].data).title.should.equal('bloup');
+              done();
+            });
           })
         }
       ]);

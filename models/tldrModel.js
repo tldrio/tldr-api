@@ -168,36 +168,17 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
 
-  async.waterfall([
-    function(cb) {   // === Since the migration to "history.required=true" some tldrs may not have a history. Create it on-the-fly
-      var newHistory;
+  // First, update the tldr
+  _.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
+  self.updatedAt = new Date();
+  self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
-      if (! self.history) {
-        newHistory = new TldrHistory();
-        newHistory.save(function (err, _history) { self.history = _history; cb(err); });
-      } else {
-        cb();
-      }
-    }
-  , function() {   // === Actual update
-      // First, update the tldr
-      _.each( validUpdateFields, function (validField) {
-        self[validField] = updates[validField];
-      });
-      self.updatedAt = new Date();
-      self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
-
-      // Try to save it
-      self.save(function(err, tldr) {
-        if (err) { return callback(err); }   // Return immediately if there is an error
-
-        // We respect the expected signature for an update success: callback(null, tldr)
-        TldrHistory.findOne({ _id: self.history }, function(err, history) {
-          history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
-        });
-      });
-    }
-  ]);
+  self.saveVersion( self.serialize(), user, function() {   // Will create the history if it doesn't exist so as toi avoid validation errors
+    // Try to save it
+    self.save(callback);
+  });
 };
 
 
