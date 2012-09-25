@@ -450,6 +450,31 @@ describe('Tldr', function () {
       ]);
     });
 
+    it.only('should not save version to history if an update is not successful', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , theTldr;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        theTldr = tldr;
+        TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+          history.versions.length.should.equal(1);   // History has the first version of the tldr
+
+          // Won't validate
+          theTldr.updateValidFields({ title: '' }, user, function(err) {
+            assert.isDefined(err);   // Update failed
+
+            TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+              history.versions.length.should.equal(1);   // History should not have been modified
+              done();
+            });
+          });
+        });
+      });
+    });
+
   });   // ==== End of '#updateValidFields' ==== //
 
 

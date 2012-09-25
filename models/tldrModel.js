@@ -175,7 +175,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
-  self.saveVersion( self.serialize(), user, function() {   // Will create the history if it doesn't exist so as toi avoid validation errors
+  self.saveVersion( self.serialize(), user, function(err, history) {   // Will create the history if it doesn't exist so as toi avoid validation errors
     // Try to save it
     self.save(callback);
   });
