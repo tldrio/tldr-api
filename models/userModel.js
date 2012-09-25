@@ -280,7 +280,8 @@ function saveAction (type, data, cb) {
   if (! self.history) {
     newHistory = new UserHistory();
     newHistory.saveAction(type, data, function (err, _history) {
-      self.history = _history; cb(err);
+      self.history = _history;
+      self.save(cb);
     });
   } else {
     UserHistory.findOne({ _id: self.history }, function (err, history) {

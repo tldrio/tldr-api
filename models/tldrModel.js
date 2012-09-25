@@ -198,9 +198,31 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
       });
     }
   ]);
-
-
 };
+
+
+/**
+ * Save a new version of the tldr's history. This wrapper around TldrHistory.saveVersion
+ * is useful since it checks that the history exists and creates it on the fly before saving the version
+ * @param {String} data Version data, see TldrHistory.saveVersion
+ * @param {String} creator Creator of this version, see TldrHistory.saveVersion
+ * @param {Function} cb Optional callback
+ */
+TldrSchema.methods.saveVersion = function (data, creator, cb) {
+  var self = this
+    , newHistory;
+
+  if (! self.history) {
+    newHistory = new TldrHistory();
+    newHistory.saveVersion(data, creator, function (err, _history) {
+      self.history = _history; cb(err, _history);
+    });
+  } else {
+    TldrHistory.findOne({ _id: self.history }, function (err, history) {
+     history.saveVersion(data, creator, cb);
+    });
+  }
+}
 
 
 /**
