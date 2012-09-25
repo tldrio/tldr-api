@@ -505,7 +505,7 @@ describe('User', function () {
       });
     });
 
-    it.only('For a user with no history, saveAction should create the history first', function (done) {
+    it('For a user with no history, saveAction should create the history first', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -513,14 +513,14 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err, user) {
         User.update({_id: user._id}, { $unset: {history: 1} }, function(err) {
-          User.findOne({ _id: user._id }, function(err, theUser) {
-            assert.isUndefined(theUser.history);
+          User.findOne({ _id: user._id }, function(err, user) {
+            assert.isUndefined(user.history);
 
-            theUser.saveAction("bloup", "blip", function () {
-              User.findOne({ _id: theUser }, function(err, theUser) {
-                assert.isDefined(theUser.history);
+            user.saveAction("bloup", "blip", function () {
+              User.findOne({ _id: user }, function(err, user) {
+                assert.isDefined(user.history);
 
-                UserHistory.findOne({ _id: theUser.history }, function (err, history) {
+                UserHistory.findOne({ _id: user.history }, function (err, history) {
                   history.actions[0].type.should.equal('bloup');
                   history.actions[0].data.should.equal('blip');
                   done();
@@ -529,7 +529,6 @@ describe('User', function () {
             });
           });
         });
-
       });
     });
 

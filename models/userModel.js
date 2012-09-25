@@ -271,7 +271,7 @@ function updatePassword (currentPassword, newPassword, callback) {
  * is useful since it checks that the history exists and creates it on the fly before saving the action
  * @param {String} type Type of action, see UserHistory.saveAction
  * @param {String} data Action data, see UserHistory.saveAction
- * @param {Function} cb Optional callback
+ * @param {Function} cb Optional callback (only the err argument should be used)
  */
 function saveAction (type, data, cb) {
   var self = this

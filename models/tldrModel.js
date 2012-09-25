@@ -215,7 +215,8 @@ TldrSchema.methods.saveVersion = function (data, creator, cb) {
   if (! self.history) {
     newHistory = new TldrHistory();
     newHistory.saveVersion(data, creator, function (err, _history) {
-      self.history = _history; cb(err, _history);
+      self.history = _history;
+      self.save(cb);
     });
   } else {
     TldrHistory.findOne({ _id: self.history }, function (err, history) {
