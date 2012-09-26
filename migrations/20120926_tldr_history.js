@@ -52,7 +52,7 @@ async.waterfall([
               if (err) { return cb(err); }
 
               tldrs[i].history = newHistory;
-              tldrs[i].save(function() {
+              tldrs[i].save(function(err) {
                 if (err) { return cb(err); }
 
                 i += 1;
