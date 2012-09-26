@@ -450,7 +450,7 @@ describe('Tldr', function () {
       ]);
     });
 
-    it.only('should not save version to history if an update is not successful', function (done) {
+    it('should not save version to history if an update is not successful', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
