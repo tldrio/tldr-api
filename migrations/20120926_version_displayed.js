@@ -33,40 +33,23 @@ async.waterfall([
 
     console.log("Adding missing versionDisplayed to tldrs");
 
-    Tldr.find({ versionDisplayed: undefined }, function(err, tldrs) {
+    Tldr.find({ }, function(err, tldrs) {
       if (err) { return cb(err); }
-
-      console.log('Found some tldrs with no versionDisplayed: ' + tldrs.length);
 
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          if (! tldrs[i].versionDisplayed) {
-            console.log('Adding versionDisplayed to: ' + tldrs[i]._id);
+          console.log('Adding versionDisplayed to: ' + tldrs[i]._id);
 
-            tldrs[i].versionDisplayed = 0;
-            tldrs[i].save(function() {
-              if (err) { return cb(err); }
+          tldrs[i].versionDisplayed = 0;
+          tldrs[i].save(function() {
+            if (err) { return cb(err); }
 
-              i += 1;
-              cb();
-            });
-          }
+            i += 1;
+            cb();
+          });
         }
       , cb);
-    });
-  }
-
-  // Check that all tldrs have a versionDisplayed
-, function (cb) {
-    Tldr.find({ versionDisplayed: undefined }, function(err, tldrs) {
-      if (tldrs.length === 0) {
-        console.log("Everything worked");
-      } else {
-        console.log("Wtf it didnt work");
-      }
-
-      cb();
     });
   }
 ], function (err) {
