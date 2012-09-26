@@ -17,7 +17,8 @@ var should = require('chai').should()
   , server = require('../server')
   , db = server.db
   , url = require('url')
-  , bcrypt = require('bcrypt');
+  , bcrypt = require('bcrypt')
+  , async = require('async');
 
 
 
@@ -181,7 +182,7 @@ describe('User', function () {
         done();
       });
     });
-  });
+  });   // ==== End of '#validators' ==== //
 
 
 
@@ -346,7 +347,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of '#createAndSaveInstance' ==== //
 
 
   describe('#getCreatedTldrs', function() {
@@ -397,7 +398,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of '#getCreatedTldrs' ==== //
 
 
   describe('#updatePassword', function() {
@@ -467,7 +468,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'update password' ==== //
 
 
   describe('should update the user updatable fields (email and username)', function() {
@@ -560,7 +561,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'should update the user updatable fields' ==== //
 
 
   describe('Reset password functions', function() {
@@ -714,7 +715,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'reset password functions' ==== //
 
 
   describe('XSS prevention', function() {
@@ -735,7 +736,7 @@ describe('User', function () {
         done();
       });
     });
-  
+
     it('Should sanitize all user-inputed fields and the fields derived from user input when updating', function (done) {
       var goodUserInput = { email: 'blip@email.com'
                                , password: 'supersecret!'
@@ -757,8 +758,40 @@ describe('User', function () {
         });
       });
     });
-  
-  });
+
+  });   // ==== End of 'XSS prevention' ==== //
+
+
+  describe('Admin role', function () {
+
+    it('Louis Charles and Stan are admins and no other', function (done) {
+      var userData1 = { email: "louis.chatriot@gmail.com", username: "LCzzz", password: "supersecret" }
+        , userData2 = { email: "stanislas.marion@gmail.com", username: "SMzzz", password: "supersecret" }
+        , userData3 = { email: "charles.miglietti@gmail.com", username: "CMzzz", password: "supersecret" }
+        , userData4 = { email: "rebecca.black@gmail.com", username: "RBzzz", password: "supersecret" }
+        , users = {};
+
+      // Create a user according to userData and store him in the users object
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
+
+      async.waterfall([
+        async.apply(createUser, userData1, 'lc')
+      , async.apply(createUser, userData2, 'sm')
+      , async.apply(createUser, userData3, 'cm')
+      , async.apply(createUser, userData4, 'rb')
+      , function (cb) {
+          users.lc.isAdmin().should.equal(true);
+          users.sm.isAdmin().should.equal(true);
+          users.cm.isAdmin().should.equal(true);
+          users.rb.isAdmin().should.equal(false);
+
+          cb();
+        }
+      ], done);
+    });
+
+
+  });   // ==== End of 'Admin role' ==== //
 
 
 
