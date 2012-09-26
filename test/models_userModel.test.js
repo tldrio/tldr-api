@@ -767,7 +767,7 @@ describe('User', function () {
     it('Louis Charles and Stan are admins and no other', function (done) {
       var userData1 = { email: "louis.chatriot@gmail.com", username: "LCzzz", password: "supersecret" }
         , userData2 = { email: "stanislas.marion@gmail.com", username: "SMzzz", password: "supersecret" }
-        , userData3 = { email: "charles.miglietti@gmail.com", username: "CMzzz", password: "supersecret" }
+        , userData3 = { email: "charles@tldr.io", username: "CMzzz", password: "supersecret" }
         , userData4 = { email: "rebecca.black@gmail.com", username: "RBzzz", password: "supersecret" }
         , users = {};
 
