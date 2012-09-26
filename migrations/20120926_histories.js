@@ -34,6 +34,8 @@ async.waterfall([
     console.log("Adding missing histories to tldrs");
 
     Tldr.find({ history: undefined }, function(err, tldrs) {
+      if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
+
       console.log('Found some tldrs with no history: ' + tldrs.length);
 
       async.whilst(
@@ -46,11 +48,11 @@ async.waterfall([
 
             newHistory = new TldrHistory();
             newHistory.save(function (err) {
-              if (err) { return cb(err); }
+              if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
 
               tldrs[i].history = newHistory;
               tldrs[i].save(function() {
-                if (err) { return cb(err); }
+                if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
 
                 i += 1;
                 cb();
