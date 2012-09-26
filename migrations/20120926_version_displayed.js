@@ -42,7 +42,7 @@ async.waterfall([
           console.log('Adding versionDisplayed to: ' + tldrs[i]._id);
 
           tldrs[i].versionDisplayed = 0;
-          tldrs[i].save(function() {
+          tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 
             i += 1;
