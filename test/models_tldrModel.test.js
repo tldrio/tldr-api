@@ -467,7 +467,8 @@ describe('Tldr', function () {
 
     it('should update users histories when they update a tldr', function (done) {
       // This test is part of the "should save current version with the creator and contributors, and update users histories"
-      // test in the "history management" suite
+      // test in the "history management" suite. This stub is here so that you don't wonder whether the 'save user action' part
+      // of updateValidFields is really tested or not.
       done();
     });
 
