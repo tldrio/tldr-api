@@ -212,7 +212,7 @@ function createAndSaveInstance(userInput, callback) {
           validFields.usernameLowerCased = validFields.username.toLowerCase();
           instance = new User(validFields);
 
-          instance.history = _history;
+          instance.history = _history._id;
           instance.save(callback);
         });
       });
