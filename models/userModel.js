@@ -267,6 +267,19 @@ function updatePassword (currentPassword, newPassword, callback) {
 
 
 /**
+ * Wrapper around UserHistory.saveAction to be used in tldr creation and update
+ * @param {String} type Type of action, see UserHistory.saveAction
+ * @param {String} data Action data, see UserHistory.saveAction
+ * @param {Function} cb Optional callback (signature: err, history)
+ */
+function saveAction (type, data, cb) {
+  UserHistory.findOne({ _id: this.history }, function (err, history) {
+    history.saveAction(type, data, cb);
+  });
+}
+
+
+/**
  * Returns true if and only if the user is an admin
  * @return {boolean} Is the user an admin ?
  */
@@ -342,6 +355,7 @@ UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
+UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 UserSchema.methods.updateLastActive = updateLastActive;
