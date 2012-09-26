@@ -465,6 +465,12 @@ describe('Tldr', function () {
       });
     });
 
+    it('should update users histories when they update a tldr', function (done) {
+      // This test is part of the "should save current version with the creator and contributors, and update users histories"
+      // test in the "history management" suite
+      done();
+    });
+
   });   // ==== End of '#updateValidFields' ==== //
 
 
@@ -716,7 +722,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should save previous version with the creator and contributors', function (done) {
+    it('should save current version with the creator and contributors, and update users histories', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
@@ -745,7 +751,7 @@ describe('Tldr', function () {
         // First test
       , function(cb) {
           assert.isDefined(theTldr.history);
-          done();
+          cb();
         }
 
         // Update the tldr twice and get the history of the tldr
@@ -788,6 +794,35 @@ describe('Tldr', function () {
           theHistory.versions[2].creator.toString().should.equal(users.user1._id.toString());
 
           cb();
+        }
+
+        // Third test, test the users' histories were correctly updated
+      , function (cb) {
+          var des;
+
+          User.findOne({ _id: users.user2._id })
+              .populate('history')
+              .exec(function (err, user) {
+
+            user.history.actions.length.should.equal(2);
+            user.history.actions[0].type.should.equal('tldrUpdate');
+            des = Tldr.deserialize(user.history.actions[0].data);
+            des.title.should.equal('Hellooo');
+            des.summaryBullets[0].should.equal('coin');
+            des.summaryBullets[1].should.equal('hihan');
+
+            User.findOne({ _id: users.user3._id })
+            .populate('history')
+            .exec(function (err, user) {
+
+              user.history.actions.length.should.equal(2);
+              user.history.actions[0].type.should.equal('tldrUpdate');
+              des = Tldr.deserialize(user.history.actions[0].data);
+              des.title.should.equal('Hellooo');
+              des.summaryBullets[0].should.equal('only one');
+              cb();
+            });
+          });
         }
       ], done);
 

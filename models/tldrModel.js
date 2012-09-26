@@ -184,11 +184,17 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
 
   // Try to save it
   self.save(function (err, tldr) {
-    if (err) { return callback(err); }
+    if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
 
+    // Update both histories
+    // Don't return an error if an history couldnt be saved, simply log it
     TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
-      history.saveVersion(tldr.serialize(), user, function() {
-        callback(null, tldr);
+      history.saveVersion(tldr.serialize(), user, function(err) {
+        if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+        user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
+          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+          callback(null, tldr);
+        });
       });
     });
   });
