@@ -137,18 +137,25 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , instance = new Tldr(validFields)
     , history = new TldrHistory();
 
+  // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
     instance.creator = creator._id;
 
+    // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
 
+      // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);
       creator.save(function(err, _user) {
         if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-        callback(null, tldr);
+        // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+        creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+          callback(null, tldr);
+        });
       });
     });
   });
