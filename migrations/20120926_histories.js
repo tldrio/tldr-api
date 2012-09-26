@@ -1,11 +1,15 @@
 /*
- * This migration was necessary once we defined the new required field "history" on Tldr and User
- * It adds a new history to all Tldrs and Users that currently don't have one
+ * This migration was necessary once we defined the new required field "history" on Tldr
+ * It adds a new history to all tldrs that currently don't have one
  * Date: 26/09/2012
  *
  */
 
 var async = require('async')
+  , _ = require('underscore')
+  , models = require('../lib/models')
+  , Tldr = models.Tldr
+  , TldrHistory = models.TldrHistory
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
   , db = new DbObject( config.dbHost
@@ -23,14 +27,44 @@ async.waterfall([
       cb();
     });
   }
+  // Add a new TldrHistory to tldrs that currently don't have one
 , function (cb) {
-    console.log("Do something");
-    cb();
+    var i = 0;
+
+    console.log("Adding missing histories to tldrs");
+
+    Tldr.find({ history: undefined }, function(err, tldrs) {
+      console.log('Found some tldrs with no history: ' + tldrs.length);
+
+      async.whilst(
+        function () { return i < tldrs.length; }
+      , function (cb) {
+          var newHistory;
+
+          if (! tldrs[i].history) {
+            console.log('Adding history to: ' + tldrs[i]._id);
+
+            newHistory = new TldrHistory();
+            newHistory.save(function (err) {
+              if (err) { return cb(err); }
+
+              tldrs[i].history = newHistory;
+              tldrs[i].save(function() {
+                if (err) { return cb(err); }
+
+                i += 1;
+                cb();
+              });
+            });
+          }
+        }
+      , cb);
+    });
   }
-, function (cb) {
+], function () {
     db.closeDatabaseConnection(function () {
       console.log("Closed connection to database");
       process.exit(0);
     });
   }
-]);
+);
