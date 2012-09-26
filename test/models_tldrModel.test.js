@@ -91,8 +91,8 @@ describe('Tldr', function () {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          // Bad tld
-          tldrData.url = "http://myfile.tld/movie";
+          // Bad protocol
+          tldrData.url = "ftp://myfile.tld/movie";
 
           Tldr.createAndSaveInstance(tldrData, user, function(err) {
             valErr = models.getAllValidationErrorsWithExplanations(err.errors);
