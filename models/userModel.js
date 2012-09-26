@@ -261,6 +261,19 @@ function updatePassword (currentPassword, newPassword, callback) {
 }
 
 
+/**
+ * Returns true if and only if the user is an admin
+ * @return {boolean} Is the user an admin ?
+ */
+function isAdmin() {
+  var adminEmails = { "louis.chatriot@gmail.com": true
+                    , "stanislas.marion@gmail.com": true
+                    , "charles.miglietti@gmail.com": true };
+
+  return adminEmails[this.email] ? true : false;
+}
+
+
 
 
 /**
@@ -317,14 +330,15 @@ UserSchema = new Schema(
  *
  */
 
+UserSchema.methods.createConfirmToken = createConfirmToken;
+UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.createConfirmToken = createConfirmToken;
+UserSchema.methods.isAdmin = isAdmin;
+UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updatePassword = updatePassword;
 UserSchema.methods.updateLastActive = updateLastActive;
-UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
-UserSchema.methods.resetPassword = resetPassword;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
