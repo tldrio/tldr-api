@@ -179,8 +179,8 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.save(function (err, tldr) {
     if (err) { return callback(err); }
 
-    TldrHistory.findOne({ _id: tldr.history }, function (err) {
-      history.saveVersion(data, creator, function() {
+    TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
+      history.saveVersion(tldr.serialize(), user, function() {
         callback(null, tldr);
       });
     });
