@@ -268,7 +268,7 @@ function updatePassword (currentPassword, newPassword, callback) {
 function isAdmin() {
   var adminEmails = { "louis.chatriot@gmail.com": true
                     , "stanislas.marion@gmail.com": true
-                    , "charles.miglietti@gmail.com": true };
+                    , "charles@tldr.io": true };
 
   return adminEmails[this.email] ? true : false;
 }
