@@ -27,6 +27,7 @@ async.waterfall([
       cb();
     });
   }
+
   // Add a new TldrHistory to tldrs that currently don't have one
 , function (cb) {
     var i = 0;
@@ -34,7 +35,7 @@ async.waterfall([
     console.log("Adding missing histories to tldrs");
 
     Tldr.find({ history: undefined }, function(err, tldrs) {
-      if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
+      if (err) { return cb(err); }
 
       console.log('Found some tldrs with no history: ' + tldrs.length);
 
@@ -48,11 +49,11 @@ async.waterfall([
 
             newHistory = new TldrHistory();
             newHistory.save(function (err) {
-              if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
+              if (err) { return cb(err); }
 
               tldrs[i].history = newHistory;
               tldrs[i].save(function() {
-                if (err) { console.log('Something unexpected occur, stop migration'); return cb(err); }
+                if (err) { return cb(err); }
 
                 i += 1;
                 cb();
@@ -63,7 +64,24 @@ async.waterfall([
       , cb);
     });
   }
-], function () {
+
+  // Check that all tldrs have a TldrHistory now
+, function (cb) {
+    Tldr.find({ history: undefined }, function(err, tldrs) {
+      if (tldrs.length === 0) {
+        console.log("Everything worked");
+      } else {
+        console.log("Wtf it didnt work");
+      }
+
+      cb();
+    });
+  }
+], function (err) {
+    if (err) {
+      console.log('Something unexpected occured, stopped migration. ', err);
+    }
+
     db.closeDatabaseConnection(function () {
       console.log("Closed connection to database");
       process.exit(0);
