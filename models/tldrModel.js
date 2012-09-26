@@ -39,10 +39,9 @@ var _ = require('underscore')
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
 // The real validation will take place with the resolve mechanism
 function validateUrl (value) {
-  try {
-    check(value).isUrl();
+  if (value && value.match(/^(http:\/\/|https:\/\/)/)) {
     return true;
-  } catch(e) {
+  } else {
     return false;
   }
 }
