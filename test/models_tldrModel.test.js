@@ -323,28 +323,28 @@ describe('Tldr', function () {
         , deserialized;
 
         User.createAndSaveInstance(userData, function(err, user) {
-        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-          Tldr.find({resourceAuthor: 'bloup'})
-              .populate('history')
-              .exec(function (err, docs) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            Tldr.find({resourceAuthor: 'bloup'})
+            .populate('history')
+            .exec(function (err, docs) {
 
 
-            // The history is initialized with the tldr's creator
-            docs[0].history.versions.length.should.equal(1);
-            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
-            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
-            deserialized.title.should.equal(tldrData.title);
+              // The history is initialized with the tldr's creator
+              docs[0].history.versions.length.should.equal(1);
+              docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
+              deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+              deserialized.title.should.equal(tldrData.title);
 
-            // The right creator is set and he the tldr is part of his tldrsCreated
-            docs[0].creator.toString().should.equal(user._id.toString());
-            User.findOne({ _id: docs[0].creator }, function (err, reUser) {
-              reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
+              // The right creator is set and he the tldr is part of his tldrsCreated
+              docs[0].creator.toString().should.equal(user._id.toString());
+              User.findOne({ _id: docs[0].creator }, function (err, reUser) {
+                reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
 
-              done();
+                done();
+              });
             });
           });
         });
-      });
     });
 
     it('should not save two tldrs with same url', function (done) {
@@ -368,7 +368,37 @@ describe('Tldr', function () {
           });
     });
 
-  });
+    it('should set a new tldr\'s creator and reflect it in the history', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , userData = { username: 'blip'
+                     , password: 'supersecret'
+                     , email: 'valid@eZZZmail.com' }
+        , deserialized;
+
+        User.createAndSaveInstance(userData, function(err, user) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            User.findOne({ _id: user._id })
+            .populate('history')
+            .exec(function (err, user) {
+              // The history is initialized with the tldr's creator
+              user.history.actions.length.should.equal(2);
+              user.history.actions[0].type.should.equal('tldrCreation');
+              deserialized = Tldr.deserialize(user.history.actions[0].data);
+              deserialized.title.should.equal(tldrData.title);
+
+              user.history.actions[1].type.should.equal('accountCreation');
+
+              done();
+            });
+          });
+        });
+    });
+
+  });   // ==== End of '#createAndSaveInstance' ==== //
 
   describe('#updateValidFields', function () {
 
@@ -410,39 +440,36 @@ describe('Tldr', function () {
         });
     });
 
-    // Test the on-the-fly history creation in update to prevent the bug caused
-    // by the migration where the history was flagged as required, preventing
-    // update of any tldr created beforehand with no history
-    it('should create a history on the fly if the tldr hasnt got one yet', function (done) {
+    it('should not save version to history if an update is not successful', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
                      , resourceAuthor: 'bloup'}
         , theTldr;
 
-      async.waterfall([
-        function (cb) {   // Create a tldr with no history
-          Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
-            Tldr.update({_id: tldr._id}, { $unset: {history: 1} }, function(err) {
-              Tldr.findOne({ _id: tldr._id }, function(err, _theTldr) {
-                // theTldr holds the tldr created from which we forcibly removed the history
-                theTldr = _theTldr;
-                assert.isUndefined(theTldr.history);
-                theTldr.title.should.equal('Blog NFA');
-                cb();
-              });
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        theTldr = tldr;
+        TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+          history.versions.length.should.equal(1);   // History has the first version of the tldr
+
+          // Won't validate
+          theTldr.updateValidFields({ title: '' }, user, function(err) {
+            assert.isDefined(err);   // Update failed
+
+            TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+              history.versions.length.should.equal(1);   // History should not have been modified
+              done();
             });
           });
-        }
-      , function() {
-          theTldr.updateValidFields({ title: 'bloup' }, user, function(err) {
-            // After an update, theTldr has an history, and the title was correctly updated
-            assert.isDefined(theTldr.history);
-            theTldr.title.should.equal('bloup');
-            done();
-          })
-        }
-      ]);
+        });
+      });
+    });
+
+    it('should update users histories when they update a tldr', function (done) {
+      // This test is part of the "should save current version with the creator and contributors, and update users histories"
+      // test in the "history management" suite. This stub is here so that you don't wonder whether the 'save user action' part
+      // of updateValidFields is really tested or not.
+      done();
     });
 
   });   // ==== End of '#updateValidFields' ==== //
@@ -696,7 +723,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should save previous version with the creator and contributors', function (done) {
+    it('should save current version with the creator and contributors, and update users histories', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
@@ -725,7 +752,7 @@ describe('Tldr', function () {
         // First test
       , function(cb) {
           assert.isDefined(theTldr.history);
-          done();
+          cb();
         }
 
         // Update the tldr twice and get the history of the tldr
@@ -768,6 +795,35 @@ describe('Tldr', function () {
           theHistory.versions[2].creator.toString().should.equal(users.user1._id.toString());
 
           cb();
+        }
+
+        // Third test, test the users' histories were correctly updated
+      , function (cb) {
+          var des;
+
+          User.findOne({ _id: users.user2._id })
+              .populate('history')
+              .exec(function (err, user) {
+
+            user.history.actions.length.should.equal(2);
+            user.history.actions[0].type.should.equal('tldrUpdate');
+            des = Tldr.deserialize(user.history.actions[0].data);
+            des.title.should.equal('Hellooo');
+            des.summaryBullets[0].should.equal('coin');
+            des.summaryBullets[1].should.equal('hihan');
+
+            User.findOne({ _id: users.user3._id })
+            .populate('history')
+            .exec(function (err, user) {
+
+              user.history.actions.length.should.equal(2);
+              user.history.actions[0].type.should.equal('tldrUpdate');
+              des = Tldr.deserialize(user.history.actions[0].data);
+              des.title.should.equal('Hellooo');
+              des.summaryBullets[0].should.equal('only one');
+              cb();
+            });
+          });
         }
       ], done);
 

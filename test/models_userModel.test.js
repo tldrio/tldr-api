@@ -13,6 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../lib/models')
   , User = models.User
+  , UserHistory = models.UserHistory
   , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
@@ -54,6 +55,7 @@ describe('User', function () {
       var user = new User({ username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
                            , password: 'supersecret!'
+                           , history: '111111111111111111111111'   // Dummy history since it is required
                            })
         , valErr;
 
@@ -71,7 +73,8 @@ describe('User', function () {
       var user = new User({ email: 'email@email.com'
                            , username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
-                               })
+                           , history: '111111111111111111111111'   // Dummy history since it is required
+                           })
         , valErr;
 
       user.save(function(err) {
@@ -87,6 +90,7 @@ describe('User', function () {
     it('should not save a user that has no username', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'Axcxxname'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -115,6 +119,7 @@ describe('User', function () {
                      , username: 'NFADeploy'
                      , usernameLowerCased: 'nfadeploy'
                      , email: 'bademail'
+                     , history: '111111111111111111111111'   // Dummy history since it is required
                      }
         , valErr, user;
 
@@ -133,6 +138,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -166,6 +172,7 @@ describe('User', function () {
                                , password: 'secre'
                                , username: 'NFADeploy'
                                , usernameLowerCased: 'nfadeploy'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -198,9 +205,10 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal(i18n.validateUserPwd);
+        assert.isDefined(valErr.history);   // History set only if password is valid
         done();
       });
     });
@@ -331,7 +339,7 @@ describe('User', function () {
       });
     });
 
-    it('should set default createdAt, updatedAt and lastActive', function (done) {
+    it('should set default createdAt, updatedAt, lastActive and history', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -343,7 +351,12 @@ describe('User', function () {
         assert.isDefined(user.createdAt);
         assert.isDefined(user.lastActive);
         assert.isDefined(user.updatedAt);
-        done();
+        assert.isDefined(user.history);
+
+        UserHistory.findOne({ _id: user.history }, function(err, history) {
+          history.actions[0].type.should.equal("accountCreation");
+          done();
+        });
       });
     });
 
@@ -471,6 +484,30 @@ describe('User', function () {
   });   // ==== End of 'update password' ==== //
 
 
+  describe('#saveAction as a wrapper around UserHistory.saveAction', function () {
+
+    it('For a normally created user, saveAction should simply save a new action', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.saveAction("action 1", "data 1", function() {
+          user.saveAction("action 2", "data 2", function(err, history) {
+            history.actions[0].type.should.equal('action 2');
+            history.actions[0].data.should.equal('data 2');
+            history.actions[1].type.should.equal('action 1');
+            history.actions[1].data.should.equal('data 1');
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#saveAction' ==== //
+
+
   describe('should update the user updatable fields (email and username)', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
@@ -570,6 +607,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -597,6 +635,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
                , token;
 
@@ -628,6 +667,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -647,6 +687,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -672,6 +713,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -693,6 +735,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
