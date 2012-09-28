@@ -1,0 +1,13 @@
+This <a href="{{url}}">webpage</a> needs a instant summary.<br><br>
+
+{{#user}}
+A happy user is a returning user <br><br>
+Email <a href="mailto:{{user.email}}?subject=You%20didn't%20find%20what%20you%20wanted%3F
+  &body=Hey%20{{user.username}}%2C%20we%20were%20told%20that%20your%20were%20looking%20a%20tl%3Bdr%20for%20.%20As%20it%20was%20missing%20and%20we%20didnt%20want%20to%20disappoint%20you%20we%20tldrized%20the%20page%20for%20you.%20Here%20is%20the%20link.%20Enjoy%20and%20share%20it.
+  ">{{user.username}}</a> when it's done 
+{{/user}}
+
+{{^user}}
+The user was not logged so we can't impress him and tell him how reactiv we are.
+{{/user}}
+
