@@ -17,7 +17,8 @@ function contentNegotiationForTldr (req, res, tldr) {
     // Increment read count but don't wait for DB access to finish to return to client
     tldr.incrementReadCount();
 
-    if (req.accepts('text/html')) {
+    // If this is an admin type request, simply return data as JSON
+    if (req.accepts('text/html') && req.query.admin !== 'true') {
       bunyan.incrementMetric('tldrs.get.html');
       return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
     } else {  // Send json by default
@@ -39,7 +40,7 @@ function updateCallback (err, docs, req, res, next) {
   if (err) {
     bunyan.incrementMetric('tldrs.update.error');
     if (err.message === 'Invalid ObjectId') {
-      return next({ statusCode: 403, body: { _id: i18n.invalidTldrId} } );
+      return next({ statusCode: 403, body: { _id: i18n.invalidId} } );
     } else {
       return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
     }

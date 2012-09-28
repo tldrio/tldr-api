@@ -18,15 +18,22 @@ var should = require('chai').should()
   , User = models.User
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
-  , request = require('request');
-
+  , request = require('request')
+  // Global variables used throughout the tests
+  , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
+  , user1
+  , client;
 
 
 // Usable by async to log a user in or out
 function logUserIn(email, password, cb) {
   request.post({ headers: {"Accept": "application/json"}
                , uri: rootUrl + '/users/login'
-               , json: { email: email, password: password } }, function (error, response, body) { cb(error); });
+               , json: { email: email, password: password } }
+    , function (error, response, body) {
+        response.statusCode.should.equal(200);   // If we couldnt log in the test will fail
+        cb(error);
+      });
 }
 
 function logUserOut(cb) {
@@ -34,15 +41,31 @@ function logUserOut(cb) {
               , uri: rootUrl + '/users/logout' }, function (error, response, body) { cb(error); });
 }
 
+// Check for existence of tldr. Usable by async
+function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? {} : null); }); }
+function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? null : {}); }); }
+
+// Check for population of a tldr's history (here the tldr #2)
+function tldrHistoryCheck (options, cb) {
+  var uri = rootUrl + '/tldrs/' + tldr2._id + (options.tryToBeAdmin ? '?admin=true' : '')
+    , test = options.historyShouldBePopulated ? assert.isDefined : assert.isUndefined;
+
+  request.get({ headers: {"Accept": "application/json"}, uri: uri }, function (err, res, body) {
+    var obj = JSON.parse(res.body);
+    res.statusCode.should.equal(200);
+    obj.url.should.equal('http://avc.com/mba-monday');
+    test(obj.history.versions);
+    cb();
+  });
+}
+
+
 
 /**
  * Tests
 */
 
 describe('Webserver', function () {
-  var tldr1, tldr2, tldr3, tldr4, numberOfTldrs
-    , user1
-    , client;
 
   // The done arg is very important ! If absent tests run synchronously
   // that means there is n chance you receive a response to your request
@@ -81,6 +104,7 @@ describe('Webserver', function () {
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
+      , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
 
@@ -97,6 +121,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }) }
+           , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -138,14 +163,31 @@ describe('Webserver', function () {
     });
 
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
-
       request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, body) {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
+        assert.isUndefined(obj.history.versions);
         done();
       });
+    });
 
+    it('get a tldr by id with history not populated if nobody or a non admin is logged in', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      ], done);
+    });
+
+    it('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: false, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: true })
+      ], done);
     });
 
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
@@ -167,7 +209,6 @@ describe('Webserver', function () {
       });
 
     });
-
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
@@ -341,34 +382,52 @@ describe('Webserver', function () {
       });
     });
 
-    it('Should delete a tldr', function (done) {
-      Tldr.find({_id: tldr2._id}, function (err, docs) {
-        docs.length.should.equal(1);
-        request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + tldr2._id}, function (err, res, body) {
-          res.statusCode.should.equal(200);
-          res.body.should.contain(i18n.deletionOk);
-          Tldr.find({_id: tldr2._id}, function (err, docs) {
-            docs.length.should.equal(0);
-
-            Tldr.find({}, function(err, docs) {
-              docs.length.should.equal(numberOfTldrs - 1);
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('Should not delete anuthing if given a wrong id to delete', function (done) {
-      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/111111111100000000000000'}, function (err, res, body) {
-        Tldr.find({}, function(err, docs) {
-          docs.length.should.equal(numberOfTldrs);
-          done();
-        });
-      });
-    });
-
   });   // ==== End of 'GET tldrs' ==== //
+
+
+  describe('DELETE tldrs - through the use of GET', function() {
+    function deleteTldr(id, expectedCode, cb) {
+      request.get({ uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + id}, function (err, res, body) {
+        res.statusCode.should.equal(expectedCode);
+        cb();
+      });
+    }
+
+    it('Should delete a tldr only if the logged in user is an admin', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , async.apply(deleteTldr, tldr2._id, 401)
+      , async.apply(tldrShouldExist, tldr2._id)
+      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , async.apply(deleteTldr, tldr2._id, 401)
+      , async.apply(tldrShouldExist, tldr2._id)
+      , async.apply(logUserOut)
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(deleteTldr, tldr2._id, 200)
+      , async.apply(tldrShouldNotExist, tldr2._id)
+      , function (cb) {
+          Tldr.find({}, function (err, docs) {
+            docs.length.should.equal(numberOfTldrs - 1);
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should not delete anything if given a wrong id to delete', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , async.apply(deleteTldr, '111111111100000000001100', 200)   // Try to delete an inexistant tldr. Code is 200 as always for the deletion function
+      , function (cb) {
+          Tldr.find({}, function (err, docs) {
+            docs.length.should.equal(numberOfTldrs);   // But the check on the number of tldrs confirms the deletion took place
+            cb();
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'DELETE tldrs - through the use of GET' ==== //
 
 
 
@@ -463,7 +522,6 @@ describe('Webserver', function () {
   });   // ==== End of 'POST tldrs' ==== //
 
 
-  //Test PUT Requests
   describe('PUT tldrs - There is always a logged user for these tests', function () {
     beforeEach(function(done) {
       logUserIn('user1@nfa.com', 'supersecret', done);
@@ -554,6 +612,45 @@ describe('Webserver', function () {
     });
 
   });   // ==== End of 'PUT tldrs' ==== //
+
+
+  describe('GET users', function () {
+
+    it('admins should be able to access any user\'s data', function (done) {
+      var obj;
+
+      async.waterfall([
+        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            obj = JSON.parse(body);
+            obj.email.should.equal('user1@nfa.com');
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('non admin cannot access user data through /users/:id', function (done) {
+      var obj;
+
+      async.waterfall([
+        async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
+            res.statusCode.should.equal(401);
+            obj = JSON.parse(body);
+            obj.message.should.equal(i18n.notAnAdmin);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'GET users' ==== //
 
 
   describe('PUT users', function() {

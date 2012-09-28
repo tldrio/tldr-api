@@ -91,8 +91,8 @@ describe('Tldr', function () {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
-          // Bad tld
-          tldrData.url = "http://myfile.tld/movie";
+          // Bad protocol
+          tldrData.url = "ftp://myfile.tld/movie";
 
           Tldr.createAndSaveInstance(tldrData, user, function(err) {
             valErr = models.getAllValidationErrorsWithExplanations(err.errors);
@@ -322,28 +322,28 @@ describe('Tldr', function () {
         , deserialized;
 
         User.createAndSaveInstance(userData, function(err, user) {
-        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-          Tldr.find({resourceAuthor: 'bloup'})
-              .populate('history')
-              .exec(function (err, docs) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            Tldr.find({resourceAuthor: 'bloup'})
+            .populate('history')
+            .exec(function (err, docs) {
 
 
-            // The history is initialized with the tldr's creator
-            docs[0].history.versions.length.should.equal(1);
-            docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
-            deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
-            deserialized.title.should.equal(tldrData.title);
+              // The history is initialized with the tldr's creator
+              docs[0].history.versions.length.should.equal(1);
+              docs[0].history.versions[0].creator.toString().should.equal(user._id.toString());
+              deserialized = Tldr.deserialize(docs[0].history.versions[0].data);
+              deserialized.title.should.equal(tldrData.title);
 
-            // The right creator is set and he the tldr is part of his tldrsCreated
-            docs[0].creator.toString().should.equal(user._id.toString());
-            User.findOne({ _id: docs[0].creator }, function (err, reUser) {
-              reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
+              // The right creator is set and he the tldr is part of his tldrsCreated
+              docs[0].creator.toString().should.equal(user._id.toString());
+              User.findOne({ _id: docs[0].creator }, function (err, reUser) {
+                reUser.tldrsCreated[0].toString().should.equal(docs[0]._id.toString());
 
-              done();
+                done();
+              });
             });
           });
         });
-      });
     });
 
     it('should not save two tldrs with same url', function (done) {
@@ -365,6 +365,36 @@ describe('Tldr', function () {
                 });
             });
           });
+    });
+
+    it('should set a new tldr\'s creator and reflect it in the history', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'
+                     , createdAt: '2012'}
+        , userData = { username: 'blip'
+                     , password: 'supersecret'
+                     , email: 'valid@eZZZmail.com' }
+        , deserialized;
+
+        User.createAndSaveInstance(userData, function(err, user) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            User.findOne({ _id: user._id })
+            .populate('history')
+            .exec(function (err, user) {
+              // The history is initialized with the tldr's creator
+              user.history.actions.length.should.equal(2);
+              user.history.actions[0].type.should.equal('tldrCreation');
+              deserialized = Tldr.deserialize(user.history.actions[0].data);
+              deserialized.title.should.equal(tldrData.title);
+
+              user.history.actions[1].type.should.equal('accountCreation');
+
+              done();
+            });
+          });
+        });
     });
 
   });   // ==== End of '#createAndSaveInstance' ==== //
@@ -408,6 +438,38 @@ describe('Tldr', function () {
             });
           });
         });
+    });
+
+    it('should not save version to history if an update is not successful', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , theTldr;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        theTldr = tldr;
+        TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+          history.versions.length.should.equal(1);   // History has the first version of the tldr
+
+          // Won't validate
+          theTldr.updateValidFields({ title: '' }, user, function(err) {
+            assert.isDefined(err);   // Update failed
+
+            TldrHistory.findOne({ _id: theTldr.history }, function (err, history) {
+              history.versions.length.should.equal(1);   // History should not have been modified
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should update users histories when they update a tldr', function (done) {
+      // This test is part of the "should save current version with the creator and contributors, and update users histories"
+      // test in the "history management" suite. This stub is here so that you don't wonder whether the 'save user action' part
+      // of updateValidFields is really tested or not.
+      done();
     });
 
   });   // ==== End of '#updateValidFields' ==== //
@@ -661,7 +723,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should save previous version with the creator and contributors', function (done) {
+    it('should save current version with the creator and contributors, and update users histories', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
@@ -670,67 +732,100 @@ describe('Tldr', function () {
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
-         , deserialized;
+         , users = {}, theTldr, theHistory, deserialized;
 
-      // Create a user according to userData
-      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
+      // Create a user according to userData and store him in the users object
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
 
-      async.auto({
+      async.waterfall([
         // Create 3 users and a tldr
-        user1: async.apply(createUser, userData1)
-      , user2: async.apply(createUser, userData2)
-      , user3: async.apply(createUser, userData3)
-      , tldr: ['user1', function(cb, results) {
-          Tldr.createAndSaveInstance(tldrData, results.user1, function(err, tldr) {
-            return cb(err, tldr);
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
+            theTldr = tldr;
+            return cb(err);
           });
-        }]
+        }
 
         // First test
-      , test1: ['tldr', function(cb, results) {
-          assert.isDefined(results.tldr.history);
-          done();
-        }]
+      , function(cb) {
+          assert.isDefined(theTldr.history);
+          cb();
+        }
 
         // Update the tldr twice and get the history of the tldr
-      , history: ['test1', 'tldr', 'user2', 'user3', function(cb, results) {
-          results.tldr.updateValidFields({ title: 'Hellooo' }, results.user2, function () {
-            results.tldr.updateValidFields({ summaryBullets: ['only one'] }, results.user3, function () {
-              TldrHistory.findOne({ _id: results.tldr.history }, function(err, history) { return cb(err, history); });
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function () {
+              TldrHistory.findOne({ _id: theTldr.history }, function(err, history) {
+                theHistory = history;
+                return cb(err);
+              });
             });
           });
-        }]
+        }
 
         // Second test, actually test the history
-      , test2: ['history', function(cb, results) {
-          results.history.versions.length.should.equal(3);
+      , function(cb) {
+          theHistory.versions.length.should.equal(3);
 
           // Data was saved as expected
-          deserialized = Tldr.deserialize(results.history.versions[0].data);
+          deserialized = Tldr.deserialize(theHistory.versions[0].data);
           deserialized.title.should.equal("Hellooo");
           deserialized.summaryBullets.length.should.equal(1);
           deserialized.summaryBullets[0].should.equal("only one");
 
-          deserialized = Tldr.deserialize(results.history.versions[1].data);
+          deserialized = Tldr.deserialize(theHistory.versions[1].data);
           deserialized.title.should.equal("Hellooo");
           deserialized.summaryBullets.length.should.equal(2);
           deserialized.summaryBullets[0].should.equal("coin");
           deserialized.summaryBullets[1].should.equal("hihan");
 
-          deserialized = Tldr.deserialize(results.history.versions[2].data);
+          deserialized = Tldr.deserialize(theHistory.versions[2].data);
           deserialized.title.should.equal("Blog NFA");
           deserialized.summaryBullets.length.should.equal(2);
           deserialized.summaryBullets[0].should.equal("coin");
           deserialized.summaryBullets[1].should.equal("hihan");
 
           // The data was saved with the correct creators
-          results.history.versions[0].creator.toString().should.equal(results.user3._id.toString());
-          results.history.versions[1].creator.toString().should.equal(results.user2._id.toString());
-          results.history.versions[2].creator.toString().should.equal(results.user1._id.toString());
+          theHistory.versions[0].creator.toString().should.equal(users.user3._id.toString());
+          theHistory.versions[1].creator.toString().should.equal(users.user2._id.toString());
+          theHistory.versions[2].creator.toString().should.equal(users.user1._id.toString());
 
-          done();
-        }]
-      });
+          cb();
+        }
+
+        // Third test, test the users' histories were correctly updated
+      , function (cb) {
+          var des;
+
+          User.findOne({ _id: users.user2._id })
+              .populate('history')
+              .exec(function (err, user) {
+
+            user.history.actions.length.should.equal(2);
+            user.history.actions[0].type.should.equal('tldrUpdate');
+            des = Tldr.deserialize(user.history.actions[0].data);
+            des.title.should.equal('Hellooo');
+            des.summaryBullets[0].should.equal('coin');
+            des.summaryBullets[1].should.equal('hihan');
+
+            User.findOne({ _id: users.user3._id })
+            .populate('history')
+            .exec(function (err, user) {
+
+              user.history.actions.length.should.equal(2);
+              user.history.actions[0].type.should.equal('tldrUpdate');
+              des = Tldr.deserialize(user.history.actions[0].data);
+              des.title.should.equal('Hellooo');
+              des.summaryBullets[0].should.equal('only one');
+              cb();
+            });
+          });
+        }
+      ], done);
 
     });
 
@@ -743,83 +838,84 @@ describe('Tldr', function () {
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
          , userData3 = { username: 'eeh3hhe', password: 'goo3p2ssword', email: 't3li2@email.com' }
-         , deserialized, theTldr;
+         , deserialized, theTldr
+         , users = {};
 
       // Create a user according to userData
-      function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
 
-      async.auto({
+      async.waterfall([
         // Create 3 users and a tldr
-        user1: async.apply(createUser, userData1)
-      , user2: async.apply(createUser, userData2)
-      , user3: async.apply(createUser, userData3)
-      , tldr: ['user1', function(cb, results) {
-          Tldr.createAndSaveInstance(tldrData, results.user1, function(err, tldr) {
+        async.apply(createUser, userData1, 'user1')
+      , async.apply(createUser, userData2, 'user2')
+      , async.apply(createUser, userData3, 'user3')
+      , function(cb) {
+          Tldr.createAndSaveInstance(tldrData, users.user1, function(err, tldr) {
             theTldr = tldr;   // Keep a pointer to our tldr
-            return cb(err, tldr);
+            return cb(err);
           });
-        }]
+        }
 
         // Update the tldr twice and get the history of the tldr
-      , updated: ['tldr', 'user2', 'user3', function(cb, results) {
-          results.tldr.updateValidFields({ title: 'Hellooo' }, results.user2, function () {
-            results.tldr.updateValidFields({ summaryBullets: ['only one'] }, results.user3, function (err, tldr) {
-              return cb(err, tldr);
+      , function(cb) {
+          theTldr.updateValidFields({ title: 'Hellooo' }, users.user2, function () {
+            theTldr.updateValidFields({ summaryBullets: ['only one'] }, users.user3, function (err, tldr) {
+              return cb(err);
             });
           });
-        }]
+        }
 
-      , test1: ['updated', function(cb, results) {
+      , function(cb) {
           theTldr.title.should.equal("Hellooo");
           theTldr.summaryBullets[0].should.equal("only one");
           cb();
-        }]
+        }
 
-      , gB1: ['test1', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test2: ['gB1', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Hellooo");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(1);
           cb();
-        }]
+        }
 
-      , gB2: ['test2', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test3: ['gB2', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Blog NFA");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(2);
           cb();
-        }]
+        }
 
-      , gB3: ['test3', function(cb, results) {
+      , function(cb) {
           theTldr.goBackOneVersion(function() { return cb(); });
-        }]
+        }
 
-      , test4: ['gB3', function(cb) {
+      , function(cb) {
           theTldr.title.should.equal("Blog NFA");
           theTldr.summaryBullets[0].should.equal("coin");
           theTldr.summaryBullets[1].should.equal("hihan");
           theTldr.versionDisplayed.should.equal(2);
           cb();
-        }]
+        }
 
-      , test5: ['test4', function() {
+      , function(cb) {
           theTldr.updateValidFields({ title: 'reset' }, user, function (err, theTldr) {
             theTldr.title.should.equal('reset');
             theTldr.versionDisplayed.should.equal(0);
 
-            done();
+            cb();
           });
-        }]
-      });
+        }
+      ], done);
 
     });
 

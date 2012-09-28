@@ -21,6 +21,7 @@ var _ = require('underscore')
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
+  , async = require('async');
   ;
 
 
@@ -38,10 +39,9 @@ var _ = require('underscore')
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
 // The real validation will take place with the resolve mechanism
 function validateUrl (value) {
-  try {
-    check(value).isUrl();
+  if (value && value.match(/^(http:\/\/|https:\/\/)/)) {
     return true;
-  } catch(e) {
+  } else {
     return false;
   }
 }
@@ -137,18 +137,25 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , instance = new Tldr(validFields)
     , history = new TldrHistory();
 
+  // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
     instance.creator = creator._id;
 
+    // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
 
+      // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);
       creator.save(function(err, _user) {
         if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-        callback(null, tldr);
+        // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+        creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+          callback(null, tldr);
+        });
       });
     });
   });
@@ -176,12 +183,19 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
   // Try to save it
-  self.save(function(err, tldr) {
-    if (err) { return callback(err); }   // Return immediately if there is an error
+  self.save(function (err, tldr) {
+    if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
 
-    // We respect the expected signature for an update success: callback(null, tldr)
-    TldrHistory.findOne({ _id: self.history }, function(err, history) {
-      history.saveVersion( self.serialize(), user, function(err, history) { callback(null, tldr); } );
+    // Update both histories
+    // Don't return an error if an history couldnt be saved, simply log it
+    TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
+      history.saveVersion(tldr.serialize(), user, function(err) {
+        if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+        user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
+          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+          callback(null, tldr);
+        });
+      });
     });
   });
 };
