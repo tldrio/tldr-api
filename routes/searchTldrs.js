@@ -48,11 +48,13 @@ function searchTldrs (req, res, next) {
 
       if (!doc) {
 
-      // Advertise admins there is a summary emergency
-      mailer.sendEmail({ type: 'adminSummaryEmergency'
-                       , development: false
-                       , values: { url: url, user: req.user }
-                       });
+        // Advertise admins there is a summary emergency
+        if (req.user && !req.user.isAdmin()) {
+          mailer.sendEmail({ type: 'adminSummaryEmergency'
+                           , development: false
+                           , values: { url: url, user: req.user }
+                           });
+        }
 
         return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
       }
