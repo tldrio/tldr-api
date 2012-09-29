@@ -2,7 +2,7 @@ This <a href="{{url}}">webpage</a> needs an instant summary.<br><br>
 
 {{#user}}
 A happy user is a returning user <br><br>
-Email <a href="mailto%3A%7B%7Buser.email%7D%7D%3Fsubject%3DThe%20tldr%20you%20looked%20up%20didn't%20exist%3F%20It%20does%20now!%26body%3DHey%20%7B%7Buser.username%7D%7D%2C%20%0AWe%20were%20notified%20that%20you%20tried%20to%20read%20the%20tl%3Bdr%20of%20INSERT%20PAGE%20HERE.%20We're%20sorry%20it%20was%20missing%20and%20since%20we%20didn't%20want%20to%20let%20you%20down%20we%20tldrized%20the%20page%20for%20you.%20Here%20is%20the%20LINK.%20Enjoy%20and%20share%20it.">
+Email <a href="mailto:{{user.email}}?subject=The%20tldr%20you%20looked%20up%20didn't%20exist%3F%20It%20does%20now!&body=Hey%20{{user.username}}%2C%0AWe%20were%20notified%20that%20you%20tried%20to%20read%20the%20tl%3Bdr%20of%20INSERT%20PAGE%20HERE.%0AWe're%20sorry%20it%20was%20missing%20and%20since%20we%20didn't%20want%20to%20let%20you%20down%20we%20tldrized%20the%20page%20for%20you.%0AHere%20is%20the%20LINK.%20Enjoy%20and%20share%20it!">
   {{user.username}}
 </a> when it's done
 {{/user}}
