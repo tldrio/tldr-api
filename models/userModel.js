@@ -286,7 +286,17 @@ function saveAction (type, data, cb) {
 function isAdmin() {
   var adminEmails = { "louis.chatriot@gmail.com": true
                     , "stanislas.marion@gmail.com": true
-                    , "charles@tldr.io": true };
+                    , "charles.miglietti@gmail.com": true
+                    , "stan@tldr.io": true
+                    , "charles@tldr.io": true
+                    , "louis@tldr.io": true
+                    , "stan@needforair.com": true
+                    , "charles@needforair.com": true
+                    , "louis@needforair.com": true
+                    , "l.ouis.chatriot@gmail.com": true
+                    , "s.tanislas.marion@gmail.com": true
+                    , "c.harles.miglietti@gmail.com": true
+  };
 
   return adminEmails[this.email] ? true : false;
 }
