@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--[if IE]>         <html class="ie" lang="en"> <![endif]-->
+<!--[if !(IE)]><!--> <html lang="en"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Read summaries of interesting content</title>
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta property="og:title" content="tl;dr" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://tldr.io" />
+    <meta property="og:image" content="http://www.tldr.io/assets/img/fbicon.png" />
+    <meta property="og:site_name" content="tldr.io" />
+    <meta property="og:description" content="The Web, Summarized by People" />
+    <meta property="fb:app_id" content="250458838406360"/>
+
+    <!-- Le styles -->
+    <link rel="stylesheet" href="assets/css/bootstrap.css">
+    <link rel="shortcut icon" href="assets/img/favicon.ico" type="image/x-icon"/> 
+    <style>
+      /* this needs to be between bootstrap.css and bootstrap-responsive.css, see the docs for further information*/
+      body {
+        padding-top: 100px;
+      }
+    </style>
+    <link rel="stylesheet" href="assets/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="assets/css/website.css">
+
+    <!--<script src="js/vendor/modernizr-2.6.1.min.js"></script>-->
+  </head>
+
+  <body>
+    {{>ieWarning}}
+    <div class="all-but-footer">
+      {{>navbar}}
+
+      <div class="container">
+        {{>content}}
+      </div>
+    </div>
+
+    {{>footer}}
+
+    {{> website/index}}
+
+    <!--Require main js with Require.js-->
+    <script src="src/website.js"></script>
+    <!-- google analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-33656717-1']);
+      _gaq.push(['_setDomainName', 'tldr.io']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+
+    <script type="text/javascript">
+      var uvOptions = {};
+      (function() {
+        var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+        uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/6utztJ9n3FIrccQdnnCJg.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+      })();
+    </script>
+  </body>
+</html>

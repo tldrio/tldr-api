@@ -14,7 +14,9 @@ var express = require('express')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
-  , customUtils = require('./lib/customUtils');
+  , customUtils = require('./lib/customUtils')
+  , hogan = require('hogan.js')
+  , customHogan = require('./lib/customHogan');
 
 
 
@@ -27,9 +29,9 @@ server.db = new DbObject( config.dbHost
                         );
 
 // Used for HTML templating
-server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
+server.engine('mustache', customHogan); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', config.pageTemplates);
+server.set('views', 'templates');
 server.locals = config.locals;
 
 
@@ -86,7 +88,7 @@ server.configure('staging', 'production', function () {
 
 
 /**
- * Routes
+ * Routes for the API
  *
  */
 
@@ -121,11 +123,37 @@ server.put('/tldrs/:id', routes.updateTldrWithId);
 server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 server.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
-
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 server.options('*', function (req, res, next) {
   res.send(200);
 });
+
+
+/*
+ * Routes for the website, which all respond HTML
+ *
+ */
+server.get('/index', function(req, res, next) {
+  var compiledTest;
+
+  fs.readFile('templates/website/test.mustache', 'utf8', function (err, test) {
+    fs.readFile('templates/website/index.mustache', 'utf8', function (err, index) {
+      compiledTest = hogan.compile(test);
+
+      console.log(hogan.scan(test));
+
+      console.log("================================");
+
+      console.log(compiledTest.render({ planet: 'World'
+                                      }
+                                    , { index: hogan.compile(index)
+                                      } ));
+
+      res.render('website/basicLayout', {});
+    });
+  });
+});
+
 
 
 /*
