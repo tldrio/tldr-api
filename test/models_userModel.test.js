@@ -807,11 +807,19 @@ describe('User', function () {
 
   describe('Admin role', function () {
 
-    it('Louis Charles and Stan are admins and no other', function (done) {
+    it('Louis Charles and Stan and their fake accounts are admins and no other', function (done) {
       var userData1 = { email: "louis.chatriot@gmail.com", username: "LCzzz", password: "supersecret" }
         , userData2 = { email: "stanislas.marion@gmail.com", username: "SMzzz", password: "supersecret" }
         , userData3 = { email: "charles@tldr.io", username: "CMzzz", password: "supersecret" }
         , userData4 = { email: "rebecca.black@gmail.com", username: "RBzzz", password: "supersecret" }
+
+        // Fake accounts created on the basis of Louis' account
+        , userData5 = { email: "louis.chatrio.t@gmail.com", username: "LCzzz1", password: "supersecret" }
+        , userData6 = { email: "lo.uis.chatriot@gmail.com", username: "LCzzz2", password: "supersecret" }
+        , userData7 = { email: "louis.cha.triot@gmail.com", username: "LCzzz3", password: "supersecret" }
+        , userData8 = { email: "loui.s.chatriot@gmail.com", username: "LCzzz4", password: "supersecret" }
+        , userData9 = { email: "l.ouis.chatriot@gmail.com", username: "LCzzz5", password: "supersecret" }
+
         , users = {};
 
       // Create a user according to userData and store him in the users object
@@ -822,11 +830,25 @@ describe('User', function () {
       , async.apply(createUser, userData2, 'sm')
       , async.apply(createUser, userData3, 'cm')
       , async.apply(createUser, userData4, 'rb')
+
+        // Fake users based on Louis' account
+      , async.apply(createUser, userData5, 'lc1')
+      , async.apply(createUser, userData6, 'lc2')
+      , async.apply(createUser, userData7, 'lc3')
+      , async.apply(createUser, userData8, 'lc4')
+      , async.apply(createUser, userData9, 'lc5')
       , function (cb) {
           users.lc.isAdmin().should.equal(true);
           users.sm.isAdmin().should.equal(true);
           users.cm.isAdmin().should.equal(true);
           users.rb.isAdmin().should.equal(false);
+
+          // Fake accounts based on Louis' should be admins too
+          users.lc1.isAdmin().should.equal(true);
+          users.lc2.isAdmin().should.equal(true);
+          users.lc3.isAdmin().should.equal(true);
+          users.lc4.isAdmin().should.equal(true);
+          users.lc5.isAdmin().should.equal(true);
 
           cb();
         }
