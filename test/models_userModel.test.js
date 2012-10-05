@@ -820,6 +820,11 @@ describe('User', function () {
         , userData8 = { email: "loui.s.chatriot@gmail.com", username: "LCzzz4", password: "supersecret" }
         , userData9 = { email: "l.ouis.chatriot@gmail.com", username: "LCzzz5", password: "supersecret" }
 
+        // Fake accounts created on the basis of Louis' account
+        , userData10 = { email: "c.harles.miglietti@gmail.com", username: "CMzzzz1", password: "supersecret" }
+        , userData11 = { email: "charles@needforair.com", username: "CMzzz2", password: "supersecret" }
+        , userData12 = { email: "charles.miglietti@gmail.com", username: "CMzzz3", password: "supersecret" }
+
         , users = {};
 
       // Create a user according to userData and store him in the users object
@@ -837,6 +842,12 @@ describe('User', function () {
       , async.apply(createUser, userData7, 'lc3')
       , async.apply(createUser, userData8, 'lc4')
       , async.apply(createUser, userData9, 'lc5')
+
+        // Fake users based on Charles' account
+      , async.apply(createUser, userData10, 'cm1')
+      , async.apply(createUser, userData11, 'cm2')
+      , async.apply(createUser, userData12, 'cm3')
+
       , function (cb) {
           users.lc.isAdmin().should.equal(true);
           users.sm.isAdmin().should.equal(true);
@@ -849,6 +860,11 @@ describe('User', function () {
           users.lc3.isAdmin().should.equal(true);
           users.lc4.isAdmin().should.equal(true);
           users.lc5.isAdmin().should.equal(true);
+          
+          // Fake accounts based on Charles' should be admins too
+          users.cm1.isAdmin().should.equal(true);
+          users.cm2.isAdmin().should.equal(true);
+          users.cm3.isAdmin().should.equal(true);
 
           cb();
         }
