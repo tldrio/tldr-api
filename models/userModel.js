@@ -285,13 +285,16 @@ function saveAction (type, data, cb) {
  */
 function isAdmin() {
   var adminEmails = { "louis.chatriot@gmail.com": true
-                    , "stanislas.marion@gmail.com": true
-                    , "charles@tldr.io": true
                     , "louis.chatrio.t@gmail.com": true
                     , "lo.uis.chatriot@gmail.com": true
                     , "louis.cha.triot@gmail.com": true
                     , "loui.s.chatriot@gmail.com": true
                     , "l.ouis.chatriot@gmail.com": true
+                    , "charles.miglietti@gmail.com": true
+                    , "charles@tldr.io": true
+                    , "charles@needforair.com": true
+                    , "c.harles.miglietti@gmail.com": true
+                    , "stanislas.marion@gmail.com": true
                     };
 
   return adminEmails[this.email] ? true : false;
