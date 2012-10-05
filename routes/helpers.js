@@ -21,9 +21,10 @@ function contentNegotiationForTldr (req, res, tldr) {
 
     // If this is an admin type request, simply return data as JSON
     if (req.accepts('text/html') && req.query.admin !== 'true') {
-      bunyan.incrementMetric('tldrs.get.html');
       // parse url to get favicon and hostname
       var hostname = url.parse(tldr.url).hostname;
+      // increment metric
+      bunyan.incrementMetric('tldrs.get.html');
       // We serve the tldr Page
       return res.render('page', _.extend({ hostname: hostname }, tldr ));
     } else {  // Send json by default
