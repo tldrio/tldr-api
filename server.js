@@ -129,6 +129,8 @@ server.options('*', function (req, res, next) {
 });
 
 
+
+
 /*
  * Routes for the website, which all respond HTML
  *
@@ -136,8 +138,7 @@ server.options('*', function (req, res, next) {
 server.get('/index', function(req, res, next) {
   var compiledTest;
 
-  debugger;
-  res.render('website/test', { planet: "World" } );
+  res.render('website/basicLayout', { values: {}, partials: { content: '{{>website/pages/index}}' } });
 });
 
 
