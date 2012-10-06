@@ -29,9 +29,9 @@ server.db = new DbObject( config.dbHost
                         );
 
 // Used for HTML templating
-server.engine('mustache', customHogan); // Assign Hogan engine to .mustache files
+server.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', 'templates');
+server.set('views', config.templatesDir);
 server.locals = config.locals;
 
 
@@ -149,6 +149,7 @@ server.get('/index', function(req, res, next) {
                                     //, { index: hogan.compile(index)
                                       //} ));
 
+      debugger;
       res.render('website/test', { planet: "World" } );
     //});
   //});
@@ -157,13 +158,14 @@ server.get('/index', function(req, res, next) {
 
 
 /*
- * Connect to database, then start server
+ * Compile all templates and partials, connect to database, then start server
  */
 if (module.parent === null) { // Code to execute only when running as main
-  server.db.connectToDatabase(function() {
-    //bunyan.info('Connection to database successful');
-    server.listen(config.svPort, function (){
-      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+  customHogan.readAndCompileTemplates('website/', function () {
+    server.db.connectToDatabase(function() {
+      server.listen(config.svPort, function (){
+        bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+      });
     });
   });
 }
