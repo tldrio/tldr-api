@@ -136,7 +136,11 @@ server.options('*', function (req, res, next) {
  *
  */
 server.get('/index', function(req, res, next) {
-  res.render('website/basicLayout', { values: {}, partials: { content: '{{>website/pages/index}}' } });
+  var values = {};
+
+  values.websiteUrl = config.websiteUrl;
+
+  res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/index}}' } });
 });
 
 
