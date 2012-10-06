@@ -149,7 +149,7 @@ server.get('/index', function(req, res, next) {
                                     //, { index: hogan.compile(index)
                                       //} ));
 
-      res.render('website/test', { planet: "World" });
+      res.render('website/test', { planet: "World" } );
     //});
   //});
 });
