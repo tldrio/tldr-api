@@ -136,23 +136,8 @@ server.options('*', function (req, res, next) {
 server.get('/index', function(req, res, next) {
   var compiledTest;
 
-  //fs.readFile('templates/website/test.mustache', 'utf8', function (err, test) {
-    //fs.readFile('templates/website/index.mustache', 'utf8', function (err, index) {
-      //compiledTest = hogan.compile(test);
-
-      //console.log(hogan.scan(test));
-
-      //console.log("================================");
-
-      //console.log(compiledTest.render({ planet: 'World'
-                                      //}
-                                    //, { index: hogan.compile(index)
-                                      //} ));
-
-      debugger;
-      res.render('website/test', { planet: "World" } );
-    //});
-  //});
+  debugger;
+  res.render('website/test', { planet: "World" } );
 });
 
 
