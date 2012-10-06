@@ -136,8 +136,6 @@ server.options('*', function (req, res, next) {
  *
  */
 server.get('/index', function(req, res, next) {
-  var compiledTest;
-
   res.render('website/basicLayout', { values: {}, partials: { content: '{{>website/pages/index}}' } });
 });
 
