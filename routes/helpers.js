@@ -10,7 +10,9 @@ var i18n = require('../lib/i18n')
   , _ = require('underscore')
   , config = require('../lib/config')
   , bunyan = require('../lib/logger').bunyan
-  , mailer = require('../lib/mailer');
+  , mailer = require('../lib/mailer')
+  , url = require('url')
+  ;
 
 
 function contentNegotiationForTldr (req, res, tldr) {
@@ -19,8 +21,12 @@ function contentNegotiationForTldr (req, res, tldr) {
 
     // If this is an admin type request, simply return data as JSON
     if (req.accepts('text/html') && req.query.admin !== 'true') {
+      // parse url to get favicon and hostname
+      var hostname = url.parse(tldr.url).hostname;
+      // increment metric
       bunyan.incrementMetric('tldrs.get.html');
-      return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
+      // We serve the tldr Page
+      return res.render('page', _.extend({ hostname: hostname }, tldr ));
     } else {  // Send json by default
       bunyan.incrementMetric('tldrs.get.json');
       return res.json(200, tldr); // We serve the raw tldr data
