@@ -16,6 +16,7 @@ var express = require('express')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
   , hogan = require('hogan.js')
+  , cssNames = require('/home/louis/Projects/tldr-clients/src/app/lib/css-names.js')   // TEMPORARY, this sucks! The best would be to stop using css names altogether, of course
   , customHogan = require('./lib/customHogan');
 
 
@@ -139,6 +140,7 @@ server.get('/index', function(req, res, next) {
   var values = {};
 
   values.websiteUrl = config.websiteUrl;
+  values.css = cssNames;
 
   res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/index}}' } });
 });
