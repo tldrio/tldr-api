@@ -825,6 +825,12 @@ describe('User', function () {
         , userData11 = { email: "charles@needforair.com", username: "CMzzz2", password: "supersecret" }
         , userData12 = { email: "charles.miglietti@gmail.com", username: "CMzzz3", password: "supersecret" }
 
+        // Fake accounts created on the basis of Louis' account
+        , userData13 = { email: "stan@tldr.io", username: "SMzzz1", password: "supersecret" }
+        , userData14 = { email: "s.tanislas.marion@gmail.com", username: "SMzzz2", password: "supersecret" }
+        , userData15 = { email: "st.anislas.marion@gmail.com", username: "SMzzz3", password: "supersecret" }
+        , userData16 = { email: "sta.nislas.marion@gmail.com", username: "SMzzz4", password: "supersecret" }
+        , userData17 = { email: "stan.islas.marion@gmail.com", username: "SMzzz5", password: "supersecret" }
         , users = {};
 
       // Create a user according to userData and store him in the users object
@@ -848,6 +854,13 @@ describe('User', function () {
       , async.apply(createUser, userData11, 'cm2')
       , async.apply(createUser, userData12, 'cm3')
 
+        // Fake users based on Stan' account
+      , async.apply(createUser, userData13, 'sm1')
+      , async.apply(createUser, userData14, 'sm2')
+      , async.apply(createUser, userData15, 'sm3')
+      , async.apply(createUser, userData16, 'sm4')
+      , async.apply(createUser, userData17, 'sm5')
+
       , function (cb) {
           users.lc.isAdmin().should.equal(true);
           users.sm.isAdmin().should.equal(true);
@@ -860,11 +873,18 @@ describe('User', function () {
           users.lc3.isAdmin().should.equal(true);
           users.lc4.isAdmin().should.equal(true);
           users.lc5.isAdmin().should.equal(true);
-          
+
           // Fake accounts based on Charles' should be admins too
           users.cm1.isAdmin().should.equal(true);
           users.cm2.isAdmin().should.equal(true);
           users.cm3.isAdmin().should.equal(true);
+
+          // Fake accounts based on Stan' should be admins too
+          users.sm1.isAdmin().should.equal(true);
+          users.sm2.isAdmin().should.equal(true);
+          users.sm3.isAdmin().should.equal(true);
+          users.sm4.isAdmin().should.equal(true);
+          users.sm5.isAdmin().should.equal(true);
 
           cb();
         }

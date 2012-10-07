@@ -295,6 +295,11 @@ function isAdmin() {
                     , "charles@needforair.com": true
                     , "c.harles.miglietti@gmail.com": true
                     , "stanislas.marion@gmail.com": true
+                    , "stan@tldr.io": true
+                    , "s.tanislas.marion@gmail.com": true
+                    , "st.anislas.marion@gmail.com": true
+                    , "sta.nislas.marion@gmail.com": true
+                    , "stan.islas.marion@gmail.com": true
                     };
 
   return adminEmails[this.email] ? true : false;
