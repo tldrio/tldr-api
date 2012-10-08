@@ -130,7 +130,6 @@ server.options('*', function (req, res, next) {
 
 
 
-
 /*
  * Routes for the website, which all respond HTML
  *
@@ -149,8 +148,6 @@ server.get('/signup', function(req, res, next) {
 
   res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/signup}}' } });
 });
-
-
 
 
 /*
