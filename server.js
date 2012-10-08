@@ -138,6 +138,7 @@ server.options('*', function (req, res, next) {
 server.get('/index', function(req, res, next) {
   var values = {};
 
+  if (req.query.logout) { req.logOut(); }
   values.user = req.user;
 
   res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/index}}' } });

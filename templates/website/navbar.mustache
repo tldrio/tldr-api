@@ -28,15 +28,15 @@
             </a>
 
             <ul id="login-widget" class="dropdown-menu dropdown-form">
-              {{#invalidInput}}
-              <li>
+              <!-- If there are login errors, they are displayed here -->
+              <li id="login-invalid-input" style="display: none;">
                 <div class="alert">
                   <button type="button" class="close" data-dismiss="alert">×</button>
-                  <small>{{invalidInput}}</small>
+                  <small id='login-error-message'></small>
                 </div>
               </li>
-              {{/invalidInput}}
 
+              <!-- Login form -->
               <li>
                 <form>
                   <fieldset>
@@ -64,7 +64,7 @@
                 <li class="divider"></li>
                 <li><a href="tldrscreated">My <em>tl;drs</em></a></li>
                 <li class="divider"></li>
-                <li><a href="#" id="login-status-logout">Sign out</a></li>
+                <li><a href="/index?logout=true" id="login-status-logout">Sign out</a></li>
             </ul>
           {{/user}}
        </ul>
