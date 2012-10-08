@@ -138,8 +138,17 @@ server.options('*', function (req, res, next) {
 server.get('/index', function(req, res, next) {
   var values = {};
 
+  values.user = req.user;
+
   res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/index}}' } });
 });
+
+server.get('/signup', function(req, res, next) {
+  var values = {};
+
+  res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/signup}}' } });
+});
+
 
 
 

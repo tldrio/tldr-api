@@ -10,8 +10,63 @@
         <li{{#whatisit}} class="active"{{/whatisit}}><a href="whatisit">What is this?</a></li>
       </ul>
 
+        <!-- Right part of the navbar, holding the signup and login links -->
+        <ul class="nav pull-right" id="login-status">
 
-      <ul class="nav pull-right" id="login-status"></ul>
+          {{^user}}
+            <li>
+              <a href="/signup">Sign up!</a>
+            </li>
+            <li class="divider-vertical"></li>
+
+            <li  class="dropdown">
+              <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
+                <small>Already a member?</small>
+                Log in
+              <b class="caret"></b>
+            </a>
+
+            <ul class="dropdown-menu dropdown-form">
+              {{#invalidInput}}
+              <li>
+                <div class="alert">
+                  <button type="button" class="close" data-dismiss="alert">×</button>
+                  <small>{{invalidInput}}</small>
+                </div>
+              </li>
+              {{/invalidInput}}
+
+              <li>
+                <form>
+                  <fieldset>
+                    <input type="text" id="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
+                    <input type="password" id="login-status-password" placeholder="Password" value="{{password}}" name="password">
+                    <button type="submit" class="btn btn-primary" id="login-status-submit">Log in</button>
+                    <a href="forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
+                  </fieldset>
+                </form>
+              </li>
+            </ul>
+
+          {{/user}}
+
+
+          {{#user}}
+            <li  class="dropdown">
+              <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
+                {{user.username}}
+              <b class="caret"></b>
+            </a>
+
+            <ul class="dropdown-menu dropdown-form">
+                <li><a href="account">My account</a></li>
+                <li class="divider"></li>
+                <li><a href="tldrscreated">My <em>tl;drs</em></a></li>
+                <li class="divider"></li>
+                <li><a href="#" id="login-status-logout">Sign out</a></li>
+            </ul>
+          {{/user}}
+       </ul>
 
     </div>
   </div>
