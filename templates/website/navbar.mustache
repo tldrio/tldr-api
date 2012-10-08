@@ -11,8 +11,9 @@
       </ul>
 
         <!-- Right part of the navbar, holding the signup and login links -->
-        <ul class="nav pull-right" id="login-status">
+        <ul class="nav pull-right">
 
+          <!-- User is not logged, display the login widget -->
           {{^user}}
             <li>
               <a href="/signup">Sign up!</a>
@@ -26,7 +27,7 @@
               <b class="caret"></b>
             </a>
 
-            <ul class="dropdown-menu dropdown-form">
+            <ul id="login-widget" class="dropdown-menu dropdown-form">
               {{#invalidInput}}
               <li>
                 <div class="alert">
@@ -47,10 +48,10 @@
                 </form>
               </li>
             </ul>
-
           {{/user}}
 
 
+          <!-- User is logged, display his personal space -->
           {{#user}}
             <li  class="dropdown">
               <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
