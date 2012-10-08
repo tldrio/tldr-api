@@ -61,6 +61,7 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
+        hostname: 'bite'
       }
       , valErr;
 
@@ -81,6 +82,7 @@ describe('Tldr', function () {
         url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
+        hostname: 'bite',
         resourceAuthor: 'NFA Crew'}
         , valErr;
 
@@ -109,7 +111,6 @@ describe('Tldr', function () {
       });
 
     });
-
 
     it('should detect missing required summary arg', function (done) {
 
@@ -395,6 +396,25 @@ describe('Tldr', function () {
             });
           });
         });
+    });
+
+    it('should automatically set required hostname', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+          if (err) { return done(err); }
+          docs[0].hostname.should.equal('needforair.com');
+          done();
+        });
+      });
     });
 
   });   // ==== End of '#createAndSaveInstance' ==== //
