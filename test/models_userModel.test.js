@@ -824,6 +824,9 @@ describe('User', function () {
         , userData10 = { email: "c.harles.miglietti@gmail.com", username: "CMzzzz1", password: "supersecret" }
         , userData11 = { email: "charles@needforair.com", username: "CMzzz2", password: "supersecret" }
         , userData12 = { email: "charles.miglietti@gmail.com", username: "CMzzz3", password: "supersecret" }
+        , userData18 = { email: "char.les.miglietti@gmail.com", username: "CMzzz4", password: "supersecret" }
+        , userData19 = { email: "ch.arles.miglietti@gmail.com", username: "CMzzz5", password: "supersecret" }
+        , userData20 = { email: "cha.rles.miglietti@gmail.com", username: "CMzzz6", password: "supersecret" }
 
         // Fake accounts created on the basis of Louis' account
         , userData13 = { email: "stan@tldr.io", username: "SMzzz1", password: "supersecret" }
@@ -853,6 +856,9 @@ describe('User', function () {
       , async.apply(createUser, userData10, 'cm1')
       , async.apply(createUser, userData11, 'cm2')
       , async.apply(createUser, userData12, 'cm3')
+      , async.apply(createUser, userData18, 'cm4')
+      , async.apply(createUser, userData19, 'cm5')
+      , async.apply(createUser, userData20, 'cm6')
 
         // Fake users based on Stan' account
       , async.apply(createUser, userData13, 'sm1')
@@ -878,6 +884,9 @@ describe('User', function () {
           users.cm1.isAdmin().should.equal(true);
           users.cm2.isAdmin().should.equal(true);
           users.cm3.isAdmin().should.equal(true);
+          users.cm4.isAdmin().should.equal(true);
+          users.cm5.isAdmin().should.equal(true);
+          users.cm6.isAdmin().should.equal(true);
 
           // Fake accounts based on Stan' should be admins too
           users.sm1.isAdmin().should.equal(true);

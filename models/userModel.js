@@ -294,6 +294,9 @@ function isAdmin() {
                     , "charles@tldr.io": true
                     , "charles@needforair.com": true
                     , "c.harles.miglietti@gmail.com": true
+                    , "ch.arles.miglietti@gmail.com": true
+                    , "cha.rles.miglietti@gmail.com": true
+                    , "char.les.miglietti@gmail.com": true
                     , "stanislas.marion@gmail.com": true
                     , "stan@tldr.io": true
                     , "s.tanislas.marion@gmail.com": true
