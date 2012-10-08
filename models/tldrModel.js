@@ -122,6 +122,17 @@ TldrSchema = new Schema(
 , { strict: true });
 
 
+/**
+ * Virtuals
+ *
+ */
+
+TldrSchema
+  .virtual('hostname')
+  .get(function () {
+    return url.parse(this.url).hostname;
+  })
+;
 
 
 /**
