@@ -93,6 +93,9 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , hostname: { type: String
+              , required: true
+              }
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
            , set: customUtils.sanitizeInput
@@ -121,9 +124,6 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
-
-
-
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
  * Also sets the creator if we have one and initializes the tldr history
@@ -142,6 +142,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
 
+    // Populate hostname field
+    instance.hostname = customUtils.getHostnameFromUrl(instance.url);
     // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }

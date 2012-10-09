@@ -67,7 +67,7 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.url.should.not.equal(null);
 
@@ -87,7 +87,7 @@ describe('Tldr', function () {
         Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
-          _.keys(err.errors).length.should.equal(1);
+          _.keys(err.errors).length.should.equal(2);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
@@ -109,7 +109,6 @@ describe('Tldr', function () {
       });
 
     });
-
 
     it('should detect missing required summary arg', function (done) {
 
@@ -395,6 +394,25 @@ describe('Tldr', function () {
             });
           });
         });
+    });
+
+    it('should automatically set required hostname', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+          if (err) { return done(err); }
+          docs[0].hostname.should.equal('needforair.com');
+          done();
+        });
+      });
     });
 
   });   // ==== End of '#createAndSaveInstance' ==== //

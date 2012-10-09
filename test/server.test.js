@@ -222,6 +222,7 @@ describe('Webserver', function () {
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , hostname: 'needforair.com'
                                 , title: 'sopa'
                                 , summaryBullets: ['Great article']
                                 , resourceAuthor: 'Louis'
