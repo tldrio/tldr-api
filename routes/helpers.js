@@ -14,17 +14,13 @@ var i18n = require('../lib/i18n')
 
 
 function contentNegotiationForTldr (req, res, tldr) {
-  var values = tldr;
-
   // Increment read count but don't wait for DB access to finish to return to client
   tldr.incrementReadCount();
 
   // If this is an admin type request, simply return data as JSON
   if (req.accepts('text/html') && req.query.admin !== 'true') {
     bunyan.incrementMetric('tldrs.get.html');
-    values.pageScript = config.pageScript;
-    values.basePageAssets = config.basePageAssets;
-    return res.render('page/layout', { values: values
+    return res.render('page/layout', { values: tldr
                                      , partials: { } } ); // We serve the tldr Page
   } else {  // Send json by default
     bunyan.incrementMetric('tldrs.get.json');
