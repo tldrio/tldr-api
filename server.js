@@ -134,11 +134,13 @@ server.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
+server.get('/about', routes.website_about);
 server.get('/index', routes.website_index);
-server.get('/signup', routes.website_signup);
 server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                     , routes.website_index);
+server.get('/signup', routes.website_signup);
 server.get('/summaries', routes.website_summaries);
+server.get('/whatisit', routes.website_whatisit);
 
 
 
