@@ -144,6 +144,7 @@ server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
 server.get('/resetPassword', routes.website_resetPassword);
 server.get('/signup', routes.website_signup);
 server.get('/summaries', routes.website_summaries);
+server.get('/tldrscreated', routes.website_tldrscreated);
 server.get('/whatisit', routes.website_whatisit);
 
 
