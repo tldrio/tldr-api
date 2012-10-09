@@ -135,9 +135,11 @@ server.options('*', function (req, res, next) {
  *
  */
 server.get('/about', routes.website_about);
+server.get('/forgotPassword', routes.website_forgotPassword);
 server.get('/index', routes.website_index);
 server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                     , routes.website_index);
+server.get('/resetPassword', routes.website_resetPassword);
 server.get('/signup', routes.website_signup);
 server.get('/summaries', routes.website_summaries);
 server.get('/whatisit', routes.website_whatisit);
