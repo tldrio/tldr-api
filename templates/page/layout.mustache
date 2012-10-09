@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  {{>page/header}}
+  <body>
+
+    <!--Navbar-->
+    <div class="navbar navbar-static-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="http://tldr.io" target="_blank">tl;dr</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span7 offset3 well-white">
+          {{>page/tldr.read.page}}
+        </div>
+      </div>
+      <div id="page-help">
+        <div class="row-fluid">
+          <div class="span7 offset3">
+            <span class="help-inline">This is a summarized version.</span>
+            <a href="{{url}}" target="_blank" id="read-full-article" class="btn btn-primary btn-large">Read full article</a>
+          </div>
+        </div>
+        <div class="row-fluid">
+          <div class="span7 offset3">
+            <a id="cta-to-tldr" href="http://tldr.io/whatisit" target="_blank"><small>Where does this summary come from?</small></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script {{{pageScript}}} ></script>
+    <!-- google analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-33656717-1']);
+      _gaq.push(['_setDomainName', 'tldr.io']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+
+  </body>
+</html>
+

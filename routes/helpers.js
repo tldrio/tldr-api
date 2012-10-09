@@ -14,17 +14,22 @@ var i18n = require('../lib/i18n')
 
 
 function contentNegotiationForTldr (req, res, tldr) {
-    // Increment read count but don't wait for DB access to finish to return to client
-    tldr.incrementReadCount();
+  var values = tldr;
 
-    // If this is an admin type request, simply return data as JSON
-    if (req.accepts('text/html') && req.query.admin !== 'true') {
-      bunyan.incrementMetric('tldrs.get.html');
-      return res.render('page', _.extend({}, tldr )); // We serve the tldr Page
-    } else {  // Send json by default
-      bunyan.incrementMetric('tldrs.get.json');
-      return res.json(200, tldr); // We serve the raw tldr data
-    }
+  // Increment read count but don't wait for DB access to finish to return to client
+  tldr.incrementReadCount();
+
+  // If this is an admin type request, simply return data as JSON
+  if (req.accepts('text/html') && req.query.admin !== 'true') {
+    bunyan.incrementMetric('tldrs.get.html');
+    values.pageScript = config.pageScript;
+    values.basePageAssets = config.basePageAssets;
+    return res.render('page/layout', { values: values
+                                     , partials: { } } ); // We serve the tldr Page
+  } else {  // Send json by default
+    bunyan.incrementMetric('tldrs.get.json');
+    return res.json(200, tldr); // We serve the raw tldr data
+  }
 }
 
 /**
