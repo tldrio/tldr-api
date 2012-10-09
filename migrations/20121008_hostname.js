@@ -1,7 +1,7 @@
 /*
- * This migration was necessary once we defined the new required field 'readCount' on tldr
+ * This migration was necessary once we defined the new required field 'hostname' on tldr
  * We set it to 0 for all tldrs
- * Date: 26/09/2012
+ * Date: 09/10/2012
  *
  */
 
@@ -28,7 +28,7 @@ async.waterfall([
     });
   }
 
-  // Add the versionDisplayed field
+  // Add the hostname field to all tldr docs
 , function (cb) {
     var i = 0;
 
@@ -51,6 +51,18 @@ async.waterfall([
           });
         }
       , cb);
+    });
+  }
+  // test that all the tldrs docs have a hostname field
+, function (cb) {
+    Tldr.find({ hostname: { $exists: false } }, function(err, tldrs) {
+      if (tldrs.length === 0) {
+        console.log("Everything worked");
+      } else {
+        console.log("Wtf it didnt work");
+      }
+
+      cb();
     });
   }
 ], function (err) {
