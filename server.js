@@ -8,7 +8,6 @@ var express = require('express')
   , DbObject = require('./lib/db')
   , mongoose = require('mongoose')
   , models = require('./lib/models')
-  , consolidate = require('consolidate')
   , server                               // Will store our express serverr
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
@@ -32,8 +31,6 @@ server.db = new DbObject( config.dbHost
 server.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
 server.set('views', config.templatesDir);
-//server.locals = config.locals;
-
 
 
 /**
