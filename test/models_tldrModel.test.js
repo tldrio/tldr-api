@@ -61,14 +61,13 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        hostname: 'bite'
       }
       , valErr;
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.url.should.not.equal(null);
 
@@ -82,14 +81,13 @@ describe('Tldr', function () {
         url: 'javascript:function(){}',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
-        hostname: 'bite',
         resourceAuthor: 'NFA Crew'}
         , valErr;
 
         Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
-          _.keys(err.errors).length.should.equal(1);
+          _.keys(err.errors).length.should.equal(2);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 

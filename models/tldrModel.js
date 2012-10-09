@@ -15,7 +15,7 @@ var _ = require('underscore')
   , TldrSchema
   , Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'hostname', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
@@ -143,7 +143,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.creator = creator._id;
 
     // Populate hostname field
-    instance.hostname = instance.hostname || customUtils.getHostnameFromUrl(instance.url);
+    instance.hostname = customUtils.getHostnameFromUrl(instance.url);
     // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }

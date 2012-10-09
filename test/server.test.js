@@ -98,11 +98,11 @@ describe('Webserver', function () {
   beforeEach(function (done) {
 
     // dummy models
-    var tldrData1 = {url: 'http://needforair.com/nutcrackers', hostname: 'needforair.com', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+    var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
     //We need an object ID for this one for PUT test
-      , tldrData2 = {url: 'http://avc.com/mba-monday', hostname: 'needforair.com', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', hostname: 'needforair.com', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData4 = {url: 'http://needforair.com/sopa', hostname: 'needforair.com', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
 
@@ -491,7 +491,7 @@ describe('Webserver', function () {
     });
 
     it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = { hostname: 'bite', summaryBullets: ['summary'] };   // Summary can't be empty
+      var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
       request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(403);
