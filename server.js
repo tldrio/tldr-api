@@ -8,13 +8,14 @@ var express = require('express')
   , DbObject = require('./lib/db')
   , mongoose = require('mongoose')
   , models = require('./lib/models')
-  , consolidate = require('consolidate')
   , server                               // Will store our express serverr
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
-  , customUtils = require('./lib/customUtils');
+  , customUtils = require('./lib/customUtils')
+  , hogan = require('hogan.js')
+  , customHogan = require('./lib/customHogan');
 
 
 
@@ -27,11 +28,9 @@ server.db = new DbObject( config.dbHost
                         );
 
 // Used for HTML templating
-server.engine('mustache', consolidate.hogan); // Assign Hogan engine to .mustache files
+server.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
 server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', config.pageTemplates);
-server.locals = config.locals;
-
+server.set('views', config.templatesDir);
 
 
 /**
@@ -55,7 +54,6 @@ server.use(function(req, res, next) {// Middleware to send a dummy empty favicon
     return next();
   }
 });
-
 
 
 /*
@@ -87,7 +85,7 @@ server.configure('staging', 'production', function () {
 
 
 /**
- * Routes
+ * Routes for the API
  *
  */
 
@@ -95,26 +93,32 @@ server.configure('staging', 'production', function () {
 server.post('/confirm', routes.confirmUserEmail);
 server.get('/resendConfirmToken', routes.resendConfirmToken);
 
-// This should be /users/:email/resetPassword but email encoding is a pain across browsers
+// Password reset
 server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
 server.post('/user/resetPassword', routes.resetPassword);
 
+// Account management
 server.post('/users', routes.createNewUser); // User creation
 server.get('/users/you', routes.getLoggedUser);// Get/set personal information
 server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 server.put('/users/you', routes.updateProfile);
 server.put('/users/you/updatePassword', routes.updatePassword);
+
+// User login/logout
 server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 server.get('/users/logout', routes.logout);
 
 // tldrs
-server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
+server.get('/tldrs/search', routes.searchTldrs);
 server.get('/tldrs', routes.searchTldrs); // Convenience route
-server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);// GET latest tldrs (convenience route)
-server.get('/tldrs/:id', routes.getTldrById);// GET a tldr by id
-server.post('/tldrs', routes.createNewTldr);//POST create tldr
-server.put('/tldrs/:id', routes.updateTldrWithId);//PUT update tldr
-server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', routes.deleteTldr);// delete tldr
+server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
+server.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
+server.post('/tldrs', routes.createNewTldr);
+server.put('/tldrs/:id', routes.updateTldrWithId);
+
+// Admin only routes
+server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
+server.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 server.options('*', function (req, res, next) {
@@ -122,17 +126,43 @@ server.options('*', function (req, res, next) {
 });
 
 
+
 /*
- * Connect to database, then start server
+ * Routes for the website, which all respond HTML
+ *
+ */
+server.get('/about', routes.website_about);
+server.get('/account', routes.website_account);
+server.get('/confirmEmail', routes.website_confirmEmail);
+server.get('/forgotPassword', routes.website_forgotPassword);
+server.get('/index', routes.website_index);
+server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
+                    , routes.website_index);
+server.get('/resetPassword', routes.website_resetPassword);
+server.get('/signup', routes.website_signup);
+server.get('/summaries', routes.website_summaries);
+server.get('/tldrscreated', routes.website_tldrscreated);
+server.get('/whatisit', routes.website_whatisit);
+
+
+
+
+
+/*
+ * Compile all templates and partials, connect to database, then start server
  */
 if (module.parent === null) { // Code to execute only when running as main
-  server.db.connectToDatabase(function() {
-    //bunyan.info('Connection to database successful');
-    server.listen(config.svPort, function (){
-      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+  customHogan.readAndCompileTemplates('page/', function () {
+    customHogan.readAndCompileTemplates('website/', function () {
+      server.db.connectToDatabase(function() {
+        server.listen(config.svPort, function (){
+          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+        });
+      });
     });
   });
 }
+
 
 
 // exports

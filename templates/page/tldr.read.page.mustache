@@ -1,0 +1,39 @@
+<div class="tldr-read-container">
+
+  <div class="tldr-tldr">
+    <h3 class="tldr-title">{{title}}</h3>
+
+    <div class="tldr-metadata">
+
+      <span>
+        tl;dr by
+        {{#creator}}
+        <span><em>{{creator.username}}</em></span>
+        {{/creator}}
+        {{^creator}}
+          <span><em>Anonymous</em></span>
+        {{/creator}}
+      </span>
+    </div>
+
+    <div class="tldr-summary">
+      <ul>
+        {{#summaryBullets}}
+        <li class="tldr-bullet">
+          <i class="icon-stop"></i>
+                {{.}}
+        </li>
+        {{/summaryBullets}}
+      </ul>
+    </div>
+  </div>
+
+  <div class="sharing-container">
+    <button class="btn btn-large dropdown-toggle" data-toggle="dropdown">
+      <i class="icon-share-alt"></i>
+      Share
+    </button>
+  </div>
+
+</div>
+

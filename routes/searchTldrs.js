@@ -8,6 +8,7 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , helpers = require('./helpers')
+  , mailer = require('../lib/mailer')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , i18n = require('../lib/i18n');
 
@@ -46,12 +47,20 @@ function searchTldrs (req, res, next) {
       }
 
       if (!doc) {
+
+        // Advertise admins there is a summary emergency
+        if (req.user && !req.user.isAdmin()) {
+          mailer.sendEmail({ type: 'adminSummaryEmergency'
+                           , development: false
+                           , values: { url: url, user: req.user }
+                           });
+        }
+
         return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
       }
 
       // Success
       helpers.contentNegotiationForTldr(req, res, doc);
-
     });
 
     return;

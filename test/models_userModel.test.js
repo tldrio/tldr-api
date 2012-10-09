@@ -13,11 +13,13 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../lib/models')
   , User = models.User
+  , UserHistory = models.UserHistory
   , Tldr = models.Tldr
   , server = require('../server')
   , db = server.db
   , url = require('url')
-  , bcrypt = require('bcrypt');
+  , bcrypt = require('bcrypt')
+  , async = require('async');
 
 
 
@@ -53,6 +55,7 @@ describe('User', function () {
       var user = new User({ username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
                            , password: 'supersecret!'
+                           , history: '111111111111111111111111'   // Dummy history since it is required
                            })
         , valErr;
 
@@ -70,7 +73,8 @@ describe('User', function () {
       var user = new User({ email: 'email@email.com'
                            , username: 'NFADeploy'
                            , usernameLowerCased: 'nfadeploy'
-                               })
+                           , history: '111111111111111111111111'   // Dummy history since it is required
+                           })
         , valErr;
 
       user.save(function(err) {
@@ -86,6 +90,7 @@ describe('User', function () {
     it('should not save a user that has no username', function (done) {
       var user = new User({ email: 'email@email.com'
                                , password: 'Axcxxname'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -114,6 +119,7 @@ describe('User', function () {
                      , username: 'NFADeploy'
                      , usernameLowerCased: 'nfadeploy'
                      , email: 'bademail'
+                     , history: '111111111111111111111111'   // Dummy history since it is required
                      }
         , valErr, user;
 
@@ -132,6 +138,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -165,6 +172,7 @@ describe('User', function () {
                                , password: 'secre'
                                , username: 'NFADeploy'
                                , usernameLowerCased: 'nfadeploy'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
         , valErr;
 
@@ -181,7 +189,7 @@ describe('User', function () {
         done();
       });
     });
-  });
+  });   // ==== End of '#validators' ==== //
 
 
 
@@ -197,9 +205,10 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(1);
+        _.keys(err.errors).length.should.equal(2);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal(i18n.validateUserPwd);
+        assert.isDefined(valErr.history);   // History set only if password is valid
         done();
       });
     });
@@ -330,7 +339,7 @@ describe('User', function () {
       });
     });
 
-    it('should set default createdAt, updatedAt and lastActive', function (done) {
+    it('should set default createdAt, updatedAt, lastActive and history', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -342,11 +351,16 @@ describe('User', function () {
         assert.isDefined(user.createdAt);
         assert.isDefined(user.lastActive);
         assert.isDefined(user.updatedAt);
-        done();
+        assert.isDefined(user.history);
+
+        UserHistory.findOne({ _id: user.history }, function(err, history) {
+          history.actions[0].type.should.equal("accountCreation");
+          done();
+        });
       });
     });
 
-  });
+  });   // ==== End of '#createAndSaveInstance' ==== //
 
 
   describe('#getCreatedTldrs', function() {
@@ -378,22 +392,18 @@ describe('User', function () {
           _.isArray(tldrs).should.equal(true);
           tldrs.length.should.equal(0);
 
-          Tldr.createAndSaveInstance(tldrData1, function(err, tldr1) {
-            Tldr.createAndSaveInstance(tldrData2, function(err, tldr2) {
-              models.setTldrCreator(tldr1, user, function(err) {
-                models.setTldrCreator(tldr2, user, function(err) {
-                  // user doesn't contain the data in his created tldrs
-                  assert.isUndefined(user.tldrsCreated[0].url);
+          Tldr.createAndSaveInstance(tldrData1, user, function(err, tldr1) {
+            Tldr.createAndSaveInstance(tldrData2, user,  function(err, tldr2) {
+              // user doesn't contain the data in his created tldrs
+              assert.isUndefined(user.tldrsCreated[0].url);
 
-                  user.getCreatedTldrs(function(tldrs) {
-                    tldrs[1].url.should.equal('http://myfile.com/movie');
-                    tldrs[0].url.should.equal('http://another.com/movie');
-                    tldrs[0].creator.username.should.equal('NFADeploy');
-                    assert.isUndefined(tldrs[0].creator.password);
+              user.getCreatedTldrs(function(tldrs) {
+                tldrs[1].url.should.equal('http://myfile.com/movie');
+                tldrs[0].url.should.equal('http://another.com/movie');
+                tldrs[0].creator.username.should.equal('NFADeploy');
+                assert.isUndefined(tldrs[0].creator.password);
 
-                    done();
-                  });
-                });
+                done();
               });
             });
           });
@@ -401,7 +411,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of '#getCreatedTldrs' ==== //
 
 
   describe('#updatePassword', function() {
@@ -471,7 +481,31 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'update password' ==== //
+
+
+  describe('#saveAction as a wrapper around UserHistory.saveAction', function () {
+
+    it('For a normally created user, saveAction should simply save a new action', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.saveAction("action 1", "data 1", function() {
+          user.saveAction("action 2", "data 2", function(err, history) {
+            history.actions[0].type.should.equal('action 2');
+            history.actions[0].data.should.equal('data 2');
+            history.actions[1].type.should.equal('action 1');
+            history.actions[1].data.should.equal('data 1');
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#saveAction' ==== //
 
 
   describe('should update the user updatable fields (email and username)', function() {
@@ -564,7 +598,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'should update the user updatable fields' ==== //
 
 
   describe('Reset password functions', function() {
@@ -573,6 +607,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -600,6 +635,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                })
                , token;
 
@@ -631,6 +667,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -650,6 +687,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -675,6 +713,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -696,6 +735,7 @@ describe('User', function () {
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
                                });
 
       user.save(function(err) {
@@ -718,7 +758,7 @@ describe('User', function () {
       });
     });
 
-  });
+  });   // ==== End of 'reset password functions' ==== //
 
 
   describe('XSS prevention', function() {
@@ -739,7 +779,7 @@ describe('User', function () {
         done();
       });
     });
-  
+
     it('Should sanitize all user-inputed fields and the fields derived from user input when updating', function (done) {
       var goodUserInput = { email: 'blip@email.com'
                                , password: 'supersecret!'
@@ -761,8 +801,78 @@ describe('User', function () {
         });
       });
     });
-  
-  });
+
+  });   // ==== End of 'XSS prevention' ==== //
+
+
+  describe('Admin role', function () {
+
+    it('Louis Charles and Stan and their fake accounts are admins and no other', function (done) {
+      var userData1 = { email: "louis.chatriot@gmail.com", username: "LCzzz", password: "supersecret" }
+        , userData2 = { email: "stanislas.marion@gmail.com", username: "SMzzz", password: "supersecret" }
+        , userData3 = { email: "charles@tldr.io", username: "CMzzz", password: "supersecret" }
+        , userData4 = { email: "rebecca.black@gmail.com", username: "RBzzz", password: "supersecret" }
+
+        // Fake accounts created on the basis of Louis' account
+        , userData5 = { email: "louis.chatrio.t@gmail.com", username: "LCzzz1", password: "supersecret" }
+        , userData6 = { email: "lo.uis.chatriot@gmail.com", username: "LCzzz2", password: "supersecret" }
+        , userData7 = { email: "louis.cha.triot@gmail.com", username: "LCzzz3", password: "supersecret" }
+        , userData8 = { email: "loui.s.chatriot@gmail.com", username: "LCzzz4", password: "supersecret" }
+        , userData9 = { email: "l.ouis.chatriot@gmail.com", username: "LCzzz5", password: "supersecret" }
+
+        // Fake accounts created on the basis of Louis' account
+        , userData10 = { email: "c.harles.miglietti@gmail.com", username: "CMzzzz1", password: "supersecret" }
+        , userData11 = { email: "charles@needforair.com", username: "CMzzz2", password: "supersecret" }
+        , userData12 = { email: "charles.miglietti@gmail.com", username: "CMzzz3", password: "supersecret" }
+
+        , users = {};
+
+      // Create a user according to userData and store him in the users object
+      function createUser (userData, name, cb) { User.createAndSaveInstance(userData, function(err, user) { users[name] = user; return cb(err); }); }
+
+      async.waterfall([
+        async.apply(createUser, userData1, 'lc')
+      , async.apply(createUser, userData2, 'sm')
+      , async.apply(createUser, userData3, 'cm')
+      , async.apply(createUser, userData4, 'rb')
+
+        // Fake users based on Louis' account
+      , async.apply(createUser, userData5, 'lc1')
+      , async.apply(createUser, userData6, 'lc2')
+      , async.apply(createUser, userData7, 'lc3')
+      , async.apply(createUser, userData8, 'lc4')
+      , async.apply(createUser, userData9, 'lc5')
+
+        // Fake users based on Charles' account
+      , async.apply(createUser, userData10, 'cm1')
+      , async.apply(createUser, userData11, 'cm2')
+      , async.apply(createUser, userData12, 'cm3')
+
+      , function (cb) {
+          users.lc.isAdmin().should.equal(true);
+          users.sm.isAdmin().should.equal(true);
+          users.cm.isAdmin().should.equal(true);
+          users.rb.isAdmin().should.equal(false);
+
+          // Fake accounts based on Louis' should be admins too
+          users.lc1.isAdmin().should.equal(true);
+          users.lc2.isAdmin().should.equal(true);
+          users.lc3.isAdmin().should.equal(true);
+          users.lc4.isAdmin().should.equal(true);
+          users.lc5.isAdmin().should.equal(true);
+          
+          // Fake accounts based on Charles' should be admins too
+          users.cm1.isAdmin().should.equal(true);
+          users.cm2.isAdmin().should.equal(true);
+          users.cm3.isAdmin().should.equal(true);
+
+          cb();
+        }
+      ], done);
+    });
+
+
+  });   // ==== End of 'Admin role' ==== //
 
 
 
