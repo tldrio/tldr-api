@@ -2,12 +2,12 @@
   <div class="navbar-inner">
     <div class="container">
 
-      <a class="brand" href="./">tl;dr</a>
+      <a class="brand" href="/">tl;dr</a>
 
       <ul class="nav">
-        <li{{#index}} class="active"{{/index}}><a href="./">Home</a></li>
-        <li{{#summaries}} class="active"{{/summaries}}><a href="summaries">I want some tl;drs!</a></li>
-        <li{{#whatisit}} class="active"{{/whatisit}}><a href="whatisit">What is this?</a></li>
+        <li{{#index}} class="active"{{/index}}><a href="/">Home</a></li>
+        <li{{#summaries}} class="active"{{/summaries}}><a href="/summaries">I want some tl;drs!</a></li>
+        <li{{#whatisit}} class="active"{{/whatisit}}><a href="/whatisit">What is this?</a></li>
       </ul>
 
         <!-- Right part of the navbar, holding the signup and login links -->
@@ -43,7 +43,7 @@
                     <input type="text" id="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
                     <input type="password" id="login-status-password" placeholder="Password" value="{{password}}" name="password">
                     <button type="submit" class="btn btn-primary" id="login-status-submit">Log in</button>
-                    <a href="forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
+                    <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
                   </fieldset>
                 </form>
               </li>
@@ -60,9 +60,9 @@
             </a>
 
             <ul class="dropdown-menu dropdown-form">
-                <li><a href="account">My account</a></li>
+                <li><a href="/account">My account</a></li>
                 <li class="divider"></li>
-                <li><a href="tldrscreated">My <em>tl;drs</em></a></li>
+                <li><a href="/tldrscreated">My <em>tl;drs</em></a></li>
                 <li class="divider"></li>
                 <li><a href="/logout" id="login-status-logout">Sign out</a></li>
             </ul>

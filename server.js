@@ -109,10 +109,10 @@ server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser
 server.get('/users/logout', routes.logout);
 
 // tldrs
-server.get('/tldrs/search', routes.searchTldrs);// Search tldrs
+server.get('/tldrs/search', routes.searchTldrs);
 server.get('/tldrs', routes.searchTldrs); // Convenience route
 server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
-server.get('/tldrs/:id', routes.getTldrById);
+server.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
 server.post('/tldrs', routes.createNewTldr);
 server.put('/tldrs/:id', routes.updateTldrWithId);
 
