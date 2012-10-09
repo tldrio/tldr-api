@@ -15,7 +15,7 @@
 
           <!-- User is not logged, display the login widget -->
           {{^user}}
-            <li>
+            <li{{#signup}} class="active"{{/signup}}>
               <a href="/signup">Sign up!</a>
             </li>
             <li class="divider-vertical"></li>

@@ -8,6 +8,10 @@
 module.exports = function (req, res, next) {
   var values = {};
 
-  res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/signup}}' } });
+  values.signup = true;
+
+  res.render('website/basicLayout', { values: values
+                                    , partials: { content: '{{>website/pages/signup}}' }
+                                    });
 }
 

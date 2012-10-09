@@ -9,6 +9,9 @@ module.exports = function (req, res, next) {
   var values = {};
 
   values.user = req.user;
+  values.index = true;
 
-  res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/index}}' } });
+  res.render('website/basicLayout', { values: values
+                                    , partials: { content: '{{>website/pages/index}}' }
+                                    });
 }

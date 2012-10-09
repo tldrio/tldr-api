@@ -9,7 +9,10 @@ module.exports = function (req, res, next) {
   var values = {};
 
   values.user = req.user;
+  values.summaries = true;
 
-  res.render('website/basicLayout', { values: values, partials: { content: '{{>website/pages/summaries}}' } });
+  res.render('website/basicLayout', { values: values
+                                    , partials: { content: '{{>website/pages/summaries}}' }
+                                    });
 }
 
