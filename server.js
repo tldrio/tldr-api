@@ -135,6 +135,8 @@ server.options('*', function (req, res, next) {
  *
  */
 server.get('/about', routes.website_about);
+server.get('/account', routes.website_account);
+server.get('/confirmEmail', routes.website_confirmEmail);
 server.get('/forgotPassword', routes.website_forgotPassword);
 server.get('/index', routes.website_index);
 server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
