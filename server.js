@@ -47,14 +47,6 @@ server.use(passport.session());
 server.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
 server.use(server.router); // Map routes
 server.use(middleware.handleErrors); // Use middleware to handle errors
-server.use(function(req, res, next) {// Middleware to send a dummy empty favicon so as to be able to debug easily
-  if (req.url === '/favicon.ico') {
-    return res.send(200, '');
-  } else {
-    return next();
-  }
-});
-
 
 /*
  * Environments declaration and
