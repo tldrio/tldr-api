@@ -171,6 +171,7 @@ app.launchServer = function (cb) {
 
 /*
  * Stop the server and then close the connection to the database
+ * No new connections will be accepted but existing ones will be served before closing
  */
 app.stopServer = function (cb) {
   var callback = cb ? cb : function () {}
@@ -192,6 +193,17 @@ app.stopServer = function (cb) {
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
 }
+
+
+/*
+ * If SIGINT is received (from Ctrl+C or from Upstart), gracefully stop the server then exit the process
+ */
+process.on('SIGINT', function () {
+  app.stopServer(function () {
+    bunyan.info('Exiting process');
+    process.exit(0);
+  });
+});
 
 
 
