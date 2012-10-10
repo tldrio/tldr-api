@@ -18,17 +18,6 @@ function contentNegotiationForTldr (req, res, tldr) {
     // Increment read count but don't wait for DB access to finish to return to client
     tldr.incrementReadCount();
 
-    // Advertise admins there is a hit
-    if ( (req.user && !req.user.isAdmin()) || !req.user) {
-      mailer.sendEmail({ type: 'adminTldrHit'
-                       , development: false
-                       , values: { url: tldr.url
-                                 , user: req.user
-                                 , type: req.accepts('text/html')? 'page' : 'bookmarklet'
-                                 }
-                       });
-    }
-
     // If this is an admin type request, simply return data as JSON
     if (req.accepts('text/html') && req.query.admin !== 'true') {
       // increment metric
