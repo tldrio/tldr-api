@@ -78,7 +78,7 @@ describe('Webserver', function () {
   });
 
   after(function (done) {
-    db.closeDatabaseConnection(done);
+    app.stopServer(done);
   });
 
   // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)

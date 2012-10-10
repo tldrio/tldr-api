@@ -3,6 +3,7 @@
  */
 
 var express = require('express')
+  , http = require('http')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , DbObject = require('./lib/db')
@@ -137,23 +138,48 @@ app.get('/tldrscreated', routes.website_tldrscreated);
 app.get('/whatisit', routes.website_whatisit);
 
 
-
 /*
  * Compile all templates and partials, connect to database, then start server
  */
 app.launchServer = function (cb) {
-  var callback = cb ? cb : function () {};
+  var callback = cb ? cb : function () {}
+    , self = this;
 
   customHogan.readAndCompileTemplates('page', function () {
     customHogan.readAndCompileTemplates('website', function () {
-      app.db.connectToDatabase(function(err) {
+      self.db.connectToDatabase(function(err) {
         if (err) { return callback(err); }
 
-        app.listen(config.svPort, function (err) {
-          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', app.name, config.env, config.svPort, config.dbName, config.dbPort);
-          callback();
+        self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
+
+        // Handle any connection error gracefully
+        self.apiServer.on('error', function () {
+          bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
+          process.exit(1);
         });
+
+        // Begin to listen. If the callback gets called, it means the server was successfully launched
+        self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
+          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
+          callback();
+        }]);
       });
+    });
+  });
+}
+
+
+/*
+ * Stop the server and then close the connection to the database
+ */
+app.stopServer = function (cb) {
+  var callback = cb ? cb : function () {}
+    , self = this;
+
+  self.db.closeDatabaseConnection(function () {
+    self.apiServer.close(function () {
+      bunyan.info('Server was stopped');
+      callback();
     });
   });
 }
