@@ -22,7 +22,10 @@ function contentNegotiationForTldr (req, res, tldr) {
     if ( (req.user && !req.user.isAdmin()) || !req.user) {
       mailer.sendEmail({ type: 'adminTldrHit'
                        , development: false
-                       , values: { url: tldr.url, user: req.user }
+                       , values: { url: tldr.url
+                                 , user: req.user
+                                 , type: req.accepts('text/html')? 'page' : 'bookmarklet'
+                                 }
                        });
     }
 
