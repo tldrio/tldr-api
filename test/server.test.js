@@ -74,15 +74,7 @@ describe('Webserver', function () {
   // before mocha quits
 
   before(function (done) {
-    customHogan.readAndCompileTemplates('page/', function () {
-      customHogan.readAndCompileTemplates('website/', function () {
-        db.connectToDatabase(function() {
-          server.listen(8686, function () {
-            done();
-          });
-        });
-      });
-    });
+    server.launchServer(done);
   });
 
   after(function (done) {

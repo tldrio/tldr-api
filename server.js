@@ -138,21 +138,33 @@ server.get('/whatisit', routes.website_whatisit);
 
 
 
-
-
 /*
  * Compile all templates and partials, connect to database, then start server
  */
-if (module.parent === null) { // Code to execute only when running as main
+server.launchServer = function (cb) {
+  var callback = cb ? cb : function () {};
+
   customHogan.readAndCompileTemplates('page', function () {
     customHogan.readAndCompileTemplates('website', function () {
-      server.db.connectToDatabase(function() {
-        server.listen(config.svPort, function (){
+      server.db.connectToDatabase(function(err) {
+        if (err) { return callback(err); }
+
+        server.listen(config.svPort, function (err) {
           bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+          callback();
         });
       });
     });
   });
+}
+
+
+/*
+ * If we executed this module directly, launch the server.
+ * If not, let the module which required server.js launch it.
+ */
+if (module.parent === null) { // Code to execute only when running as main
+  server.launchServer();
 }
 
 
