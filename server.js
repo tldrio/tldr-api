@@ -8,7 +8,7 @@ var express = require('express')
   , DbObject = require('./lib/db')
   , mongoose = require('mongoose')
   , models = require('./lib/models')
-  , server                               // Will store our express serverr
+  , app                               // Will store our express app
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
@@ -19,18 +19,18 @@ var express = require('express')
 
 
 
-server = express(); // Instantiate server
+app = express();
 
-// Store db Instance in server. Avoid multiple instantiation in test files
-server.db = new DbObject( config.dbHost
+// Store db Instance in app. Avoid multiple instantiation in test files
+app.db = new DbObject( config.dbHost
                         , config.dbName
                         , config.dbPort
                         );
 
 // Used for HTML templating
-server.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
-server.set('view engine', 'mustache'); // Set mustache as the default extension
-server.set('views', config.templatesDir);
+app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
+app.set('view engine', 'mustache'); // Set mustache as the default extension
+app.set('views', config.templatesDir);
 
 
 /**
@@ -38,22 +38,22 @@ server.set('views', config.templatesDir);
  *
  */
 
-server.use(middleware.CORS);
-server.use(express.bodyParser());
-server.use(express.cookieParser());// Parse cookie data and use redis to store session data
-server.use(express.session(config.session));
-server.use(passport.initialize());// Use Passport for authentication and sessions
-server.use(passport.session());
-server.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
-server.use(server.router); // Map routes
-server.use(middleware.handleErrors); // Use middleware to handle errors
+app.use(middleware.CORS);
+app.use(express.bodyParser());
+app.use(express.cookieParser());// Parse cookie data and use redis to store session data
+app.use(express.session(config.session));
+app.use(passport.initialize());// Use Passport for authentication and sessions
+app.use(passport.session());
+app.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
+app.use(app.router); // Map routes
+app.use(middleware.handleErrors); // Use middleware to handle errors
 
 /*
  * Environments declaration and
  * Express' default environment is 'development'
  */
 
-server.configure('development', 'staging', 'production', function () {
+app.configure('development', 'staging', 'production', function () {
   bunyan.setToLog = true;
 });
 
@@ -62,12 +62,12 @@ server.configure('development', 'staging', 'production', function () {
  * stop if it is run in production, but log a fatal error and send an email to us.
  * Of course, this piece of code should NEVER have to be called
  *
- * For development, we want the server to stop to understand what went wrong
+ * For development, we want the app to stop to understand what went wrong
  *
  * We don't do this for tests as it messes up mocha
  * The process needs to keep on running
  */
-server.configure('staging', 'production', function () {
+app.configure('staging', 'production', function () {
   // The process needs to keep on running
   process.on('uncaughtException', function(err) {
     bunyan.fatal({error: err, message: 'An uncaught exception was thrown'});
@@ -82,38 +82,38 @@ server.configure('staging', 'production', function () {
  */
 
 // Email confirmation
-server.post('/confirm', routes.confirmUserEmail);
-server.get('/resendConfirmToken', routes.resendConfirmToken);
+app.post('/confirm', routes.confirmUserEmail);
+app.get('/resendConfirmToken', routes.resendConfirmToken);
 
 // Password reset
-server.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
-server.post('/user/resetPassword', routes.resetPassword);
+app.post('/user/sendResetPasswordEmail', routes.sendResetPasswordEmail);
+app.post('/user/resetPassword', routes.resetPassword);
 
 // Account management
-server.post('/users', routes.createNewUser); // User creation
-server.get('/users/you', routes.getLoggedUser);// Get/set personal information
-server.get('/users/you/createdtldrs', routes.getCreatedTldrs);
-server.put('/users/you', routes.updateProfile);
-server.put('/users/you/updatePassword', routes.updatePassword);
+app.post('/users', routes.createNewUser); // User creation
+app.get('/users/you', routes.getLoggedUser);// Get/set personal information
+app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
+app.put('/users/you', routes.updateProfile);
+app.put('/users/you/updatePassword', routes.updatePassword);
 
 // User login/logout
-server.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
-server.get('/users/logout', routes.logout);
+app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
+app.get('/users/logout', routes.logout);
 
 // tldrs
-server.get('/tldrs/search', routes.searchTldrs);
-server.get('/tldrs', routes.searchTldrs); // Convenience route
-server.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
-server.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
-server.post('/tldrs', routes.createNewTldr);
-server.put('/tldrs/:id', routes.updateTldrWithId);
+app.get('/tldrs/search', routes.searchTldrs);
+app.get('/tldrs', routes.searchTldrs); // Convenience route
+app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
+app.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
+app.post('/tldrs', routes.createNewTldr);
+app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Admin only routes
-server.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
-server.get('/users/:id', middleware.adminOnly, routes.getUserById);
+app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
+app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
-server.options('*', function (req, res, next) {
+app.options('*', function (req, res, next) {
   res.send(200);
 });
 
@@ -123,34 +123,34 @@ server.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
-server.get('/about', routes.website_about);
-server.get('/account', routes.website_account);
-server.get('/confirmEmail', routes.website_confirmEmail);
-server.get('/forgotPassword', routes.website_forgotPassword);
-server.get('/index', routes.website_index);
-server.get('/logout', function (req, res, next) { req.logOut(); return next(); }
+app.get('/about', routes.website_about);
+app.get('/account', routes.website_account);
+app.get('/confirmEmail', routes.website_confirmEmail);
+app.get('/forgotPassword', routes.website_forgotPassword);
+app.get('/index', routes.website_index);
+app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                     , routes.website_index);
-server.get('/resetPassword', routes.website_resetPassword);
-server.get('/signup', routes.website_signup);
-server.get('/summaries', routes.website_summaries);
-server.get('/tldrscreated', routes.website_tldrscreated);
-server.get('/whatisit', routes.website_whatisit);
+app.get('/resetPassword', routes.website_resetPassword);
+app.get('/signup', routes.website_signup);
+app.get('/summaries', routes.website_summaries);
+app.get('/tldrscreated', routes.website_tldrscreated);
+app.get('/whatisit', routes.website_whatisit);
 
 
 
 /*
  * Compile all templates and partials, connect to database, then start server
  */
-server.launchServer = function (cb) {
+app.launchServer = function (cb) {
   var callback = cb ? cb : function () {};
 
   customHogan.readAndCompileTemplates('page', function () {
     customHogan.readAndCompileTemplates('website', function () {
-      server.db.connectToDatabase(function(err) {
+      app.db.connectToDatabase(function(err) {
         if (err) { return callback(err); }
 
-        server.listen(config.svPort, function (err) {
-          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', server.name, config.env, config.svPort, config.dbName, config.dbPort);
+        app.listen(config.svPort, function (err) {
+          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', app.name, config.env, config.svPort, config.dbName, config.dbPort);
           callback();
         });
       });
@@ -164,10 +164,10 @@ server.launchServer = function (cb) {
  * If not, let the module which required server.js launch it.
  */
 if (module.parent === null) { // Code to execute only when running as main
-  server.launchServer();
+  app.launchServer();
 }
 
 
 
 // exports
-module.exports = server;
+module.exports = app;

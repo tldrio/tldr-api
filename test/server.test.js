@@ -9,9 +9,9 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
-  , server = require('../server')
+  , app = require('../server')
   , models = require('../lib/models')
-  , db = server.db
+  , db = app.db
   , mongoose = require('mongoose')
   , customHogan = require('../lib/customHogan')
   , async = require('async')
@@ -74,7 +74,7 @@ describe('Webserver', function () {
   // before mocha quits
 
   before(function (done) {
-    server.launchServer(done);
+    app.launchServer(done);
   });
 
   after(function (done) {
