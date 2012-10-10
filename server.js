@@ -197,13 +197,15 @@ if (module.parent === null) { // Code to execute only when running as main
 
 /*
  * If SIGINT is received (from Ctrl+C or from Upstart), gracefully stop the server then exit the process
+ * FOR NOW: commented out because browsers use hanging connections so every shutdown actually takes a few seconds (~5) if a browser connected to the server
+ *          which makes for a way too long restart
  */
-process.on('SIGINT', function () {
-  app.stopServer(function () {
-    bunyan.info('Exiting process');
-    process.exit(0);
-  });
-});
+//process.on('SIGINT', function () {
+  //app.stopServer(function () {
+    //bunyan.info('Exiting process');
+    //process.exit(0);
+  //});
+//});
 
 
 
