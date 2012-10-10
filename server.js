@@ -176,9 +176,9 @@ app.stopServer = function (cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  self.db.closeDatabaseConnection(function () {
-    self.apiServer.close(function () {
-      bunyan.info('Server was stopped');
+  self.apiServer.close(function () {
+    self.db.closeDatabaseConnection(function () {
+      bunyan.info('Server was stopped and connection to the database closed');
       callback();
     });
   });
