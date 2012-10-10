@@ -13,9 +13,9 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , User = models.User
   , Tldr = models.Tldr
-  , server = require('../server')
-  , db = server.db;
-
+  , config = require('../lib/config')
+  , DbObject = require('../lib/db')
+  , db = new DbObject(config.dbHost, config.dbName, config.dbPort);
 
 
 /**
@@ -27,6 +27,7 @@ describe('Models', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
+    //done();
   });
 
   after(function (done) {

@@ -13,8 +13,9 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , User = models.User
   , TldrHistory = models.TldrHistory
-  , server = require('../server')
-  , db = server.db
+  , config = require('../lib/config')
+  , DbObject = require('../lib/db')
+  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , async = require('async');
 
 
