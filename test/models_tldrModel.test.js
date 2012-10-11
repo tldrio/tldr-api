@@ -494,7 +494,7 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
-  describe.only('#normalizeUrl', function() {
+  describe('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
