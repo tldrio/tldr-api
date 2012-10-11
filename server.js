@@ -41,19 +41,8 @@ app.set('views', config.templatesDir);
 
 app.use(middleware.CORS);
 app.use(express.bodyParser());
-
-app.use(function (req, res, next) {
-  console.log("====================tldr============================");
-  console.log(req.headers);
-  console.log("-----tldr-----");
-  console.log(req.headers.cookie);
-
-  return next();
-});
-
 app.use(express.cookieParser());// Parse cookie data and use redis to store session data
 app.use(express.session(config.session));
-app.use(middleware.resendCookieWithGoodDomain);
 app.use(passport.initialize());// Use Passport for authentication and sessions
 app.use(passport.session());
 app.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
