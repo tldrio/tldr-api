@@ -42,15 +42,6 @@ app.set('views', config.templatesDir);
 app.use(middleware.CORS);
 app.use(express.bodyParser());
 app.use(express.cookieParser());// Parse cookie data and use redis to store session data
-
-app.use(function (req, res, next) {
-  console.log(req.headers);
-  console.log("================");
-  console.log(req.cookies);
-
-  return next();
-});
-
 app.use(express.session(config.session));
 app.use(passport.initialize());// Use Passport for authentication and sessions
 app.use(passport.session());
