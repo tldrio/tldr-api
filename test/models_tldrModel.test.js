@@ -523,6 +523,19 @@ describe('Tldr', function () {
       done();
     });
 
+    it('Should keep querystring for whitelisted domains but remove the utm ones and sort the remaining arguments', function (done) {
+      var theUrl = "http://www.youtube.com/?aRg=valuEEe";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe");
+
+      var theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
+
+      var theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
+
+      done();
+    });
+
     it('Should keep correctly formatted urls with only domain/subdomain, adding a forgotten trailing slash', function (done) {
       var theUrl = "http://domain.tld/";
       normalizeUrl(theUrl).should.equal("http://domain.tld/");
