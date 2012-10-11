@@ -494,7 +494,7 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
-  describe('#normalizeUrl', function() {
+  describe.only('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
@@ -503,11 +503,22 @@ describe('Tldr', function () {
       theUrl = "http://domain.tld/path/res/";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
 
-      //theUrl = "http://domain.tld/path/file.extension?arg=value&otherarg=othervalue";
-      //normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension?arg=value&otherarg=othervalue");
+      theUrl = "http://domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      //theUrl = "http://domain.tld/?aRg=valuEEe";
-      //normalizeUrl(theUrl).should.equal("http://domain.tld/?aRg=valuEEe");
+
+      done();
+    });
+
+    it('Should remove the querystring for non whitelisted websites', function (done) {
+      var theUrl = "http://domain.tld/?aRg=valuEEe";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
+
+      theUrl = "http://subdomain.domain.tld?arg=value";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
+
+      theUrl = "http://subdomain.domain.tld/bloup/blap?arg=value";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/bloup/blap");
 
       done();
     });
@@ -524,9 +535,6 @@ describe('Tldr', function () {
 
       theUrl = "http://subdomain.domain.tld";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
-
-      //theUrl = "http://subdomain.domain.tld?arg=value";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/?arg=value");
 
       done();
     });
@@ -564,12 +572,6 @@ describe('Tldr', function () {
 
       theUrl = "http://www.domain.tld/path#!bloup";
       normalizeUrl(theUrl).should.equal("http://www.domain.tld/path#!bloup");
-
-      //theUrl = "http://www.domain.tld/path?arg=value#!bloup";
-      //normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value#!bloup");
-
-      //theUrl = "http://www.domain.tld/path?arg=value#bloup";
-      //normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value");
 
       done();
     });
