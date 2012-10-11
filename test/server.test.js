@@ -9,16 +9,18 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
-  , server = require('../server')
+  , app = require('../server')
   , models = require('../lib/models')
-  , db = server.db
+  , db = app.db
   , mongoose = require('mongoose')
+  , customHogan = require('../lib/customHogan')
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+
   // Global variables used throughout the tests
   , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
   , user1
@@ -72,15 +74,11 @@ describe('Webserver', function () {
   // before mocha quits
 
   before(function (done) {
-    db.connectToDatabase(function() {
-      server.listen(8686, function () {
-        done();
-      });
-    });
+    app.launchServer(done);
   });
 
   after(function (done) {
-    db.closeDatabaseConnection(done);
+    app.stopServer(done);
   });
 
   // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)

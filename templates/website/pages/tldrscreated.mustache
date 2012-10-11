@@ -1,0 +1,51 @@
+<!--Impressing title-->
+<header class="jumbotron">
+  <h1>The <em>tl;drs</em> you created</h1>
+</header>
+
+<ul id="created-tldrs-collection">
+
+{{#tldrsCreated}}
+      <div class="row-fluid">
+        <div class="span7 offset3 well-white">
+
+        <!-- Display the tldr -->
+        <div class="tldr-read-container">
+          <div class="tldr-tldr">
+              <h4><a class="tldr-title" target="_blank" href="{{url}}">{{title}}</a></h4>
+            <div class="tldr-metadata">
+              {{#creator}}
+              <span>
+                tl;dr by
+                  <span><em>{{creator.username}}</em></span>
+              </span>
+              {{/creator}}
+            </div>
+
+            <div class="tldr-summary">
+              <ul>
+                {{#summaryBullets}}
+                  <li class="tldr-bullet">
+                    <i class="icon-stop"></i>
+                      {{.}}
+                  </li>
+                {{/summaryBullets}}
+              </ul>
+            </div>
+          </div>
+          <div class="sharing-container"></div>
+        </div>
+
+        </div>
+      </div>
+{{/tldrsCreated}}
+
+</ul>
+
+
+
+
+
+
+
+
