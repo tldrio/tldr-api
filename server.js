@@ -43,9 +43,9 @@ app.use(middleware.CORS);
 app.use(express.bodyParser());
 
 app.use(function (req, res, next) {
-  console.log("================================================");
+  console.log("====================tldr============================");
   console.log(req.headers);
-  console.log("-----");
+  console.log("-----tldr-----");
   console.log(req.headers.cookie);
 
   return next();
