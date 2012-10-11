@@ -41,6 +41,16 @@ app.set('views', config.templatesDir);
 
 app.use(middleware.CORS);
 app.use(express.bodyParser());
+
+app.use(function (req, res, next) {
+  console.log("================================================");
+  console.log(req.headers);
+  console.log("-----");
+  console.log(req.headers.cookie);
+
+  return next();
+});
+
 app.use(express.cookieParser());// Parse cookie data and use redis to store session data
 app.use(express.session(config.session));
 app.use(middleware.resendCookieWithGoodDomain);
