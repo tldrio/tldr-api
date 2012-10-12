@@ -21,7 +21,7 @@ var async = require('async')
 var adminTldrsBetweenDates = function (begin, end, cb) {
     var admins = 0, nonAdmins = 0;
 
-    Tldr.find({})
+    Tldr.find({ createdAt: { $gt: begin, $lt: end } })
         .populate('creator')
         .exec(function(err, tldrs) {
           if (err) { return cb(err); }
