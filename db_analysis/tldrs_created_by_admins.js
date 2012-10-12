@@ -18,17 +18,7 @@ var async = require('async')
                      , config.dbPort
                      );
 
-
-async.waterfall([
-  function (cb) {
-    db.connectToDatabase(function() {
-      console.log('Connected');
-      cb();
-    });
-  }
-
-  // Add the hostname field to all tldr docs
-, function (cb) {
+var adminTldrsBetweenDates = function (begin, end, cb) {
     var admins = 0, nonAdmins = 0;
 
     Tldr.find({})
@@ -42,15 +32,32 @@ async.waterfall([
             } else {
               nonAdmins += 1;
             }
-            console.log(tldr);
           });
 
+          console.log("=======================");
+          console.log("Begin: ", begin)
+          console.log("End: ", end)
           console.log("ADMINS: ", admins);
           console.log("NON ADMINS: ", nonAdmins);
 
           cb();
         });
+}
+
+
+async.waterfall([
+  function (cb) {
+    db.connectToDatabase(function() {
+      console.log('Connected');
+      cb();
+    });
   }
+
+  // Add the hostname field to all tldr docs
+, async.apply(adminTldrsBetweenDates, new Date(2012, 8, 17, 0, 0, 0), new Date(2012, 8, 23, 23, 59, 59))
+, async.apply(adminTldrsBetweenDates, new Date(2012, 8, 24, 0, 0, 0), new Date(2012, 8, 30, 23, 59, 59))
+, async.apply(adminTldrsBetweenDates, new Date(2012, 9, 1, 0, 0, 0), new Date(2012, 9, 7, 23, 59, 59))
+, async.apply(adminTldrsBetweenDates, new Date(2012, 9, 8, 0, 0, 0), new Date(2012, 9, 14, 23, 59, 59))
 ], function (err) {
     db.closeDatabaseConnection(function () {
       console.log('Closed connection to database');
