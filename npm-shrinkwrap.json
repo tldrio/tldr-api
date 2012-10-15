@@ -103,6 +103,14 @@
     "hogan.js": {
       "version": "2.0.0"
     },
+    "mailchimp": {
+      "version": "0.9.1",
+      "dependencies": {
+        "qs": {
+          "version": "0.5.1"
+        }
+      }
+    },
     "mongoose": {
       "version": "2.7.4",
       "dependencies": {
