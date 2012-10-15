@@ -142,8 +142,11 @@ app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/resetPassword', routes.website_resetPassword);
 
 // Private pages
-app.get('/account', middleware.loggedInOnly(routes.website_account));
-app.get('/tldrscreated', middleware.loggedInOnly(routes.website_tldrscreated));
+app.get('/account', middleware.loggedInOnly, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
+
+
+
 
 /*
  * Compile all templates and partials, connect to database, then start server
