@@ -35,7 +35,7 @@ function createNewUser(req, res, next) {
 
     bunyan.incrementMetric('users.creation.success');
 
-    mailchimpSync.addNewUser();
+    mailchimpSync.addNewUser({ email: user.email, username: user.username });
 
 
     // Log user in right away after his creation
