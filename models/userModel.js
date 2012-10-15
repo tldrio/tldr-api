@@ -17,8 +17,8 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , check = require('validator').check
-  , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email', 'notificationsSettings']                // updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings'];         // fields that can be sent to the user
 
 
 
@@ -333,6 +333,10 @@ UserSchema = new Schema(
   , lastActive: { type: Date
                 , default: Date.now
                 }
+  , notificationsSettings: { edit: { type: Boolean, default: true}
+                           , like: { type: Boolean, default: true}
+                           , read: { type: Boolean, default: true}
+                           }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
