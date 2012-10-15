@@ -1,1 +1,27 @@
-Login, dawg
+{{#needToLogin}}
+YOU NEED TO LOGIN TO ACCESS THIS PAGE
+{{/needToLogin}}
+
+<section class="marketing">
+  <h1>Why use <em>tl;dr</em>?</h1>
+  <p class="marketing-byline">Want to know more? Read on!</p>
+
+  <span id="login-page-login-widget">
+    <!-- If there are login errors, they are displayed here -->
+    <div class="alert login-invalid-input" style="display: none;">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      <small id='login-error-message'></small>
+    </div>
+
+    <!-- Login form -->
+    <form>
+      <fieldset>
+        <input type="text" id="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
+        <input type="password" id="login-status-password" placeholder="Password" value="{{password}}" name="password">
+        <button type="submit" class="btn btn-primary login-status-submit">Log in</button>
+        <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
+      </fieldset>
+    </form>
+  </span>
+
+</section>
