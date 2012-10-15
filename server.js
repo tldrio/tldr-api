@@ -141,6 +141,9 @@ app.get('/confirmEmail', routes.website_confirmEmail);
 app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/resetPassword', routes.website_resetPassword);
 
+// User profiles, leaderboard ...
+//app.get('/user/');
+
 // Private pages
 app.get('/account', middleware.loggedInOnly, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
