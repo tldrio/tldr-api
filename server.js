@@ -134,6 +134,7 @@ app.get('/whatisit', routes.website_whatisit);
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                  , routes.website_index);
+app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
 app.get('/confirmEmail', routes.website_confirmEmail);
