@@ -124,19 +124,25 @@ app.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
+// General pages
 app.get('/about', routes.website_about);
-app.get('/account', routes.website_account);
-app.get('/confirmEmail', routes.website_confirmEmail);
-app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/index', routes.website_index);
-app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
-                    , routes.website_index);
-app.get('/resetPassword', routes.website_resetPassword);
 app.get('/signup', routes.website_signup);
 app.get('/summaries', routes.website_summaries);
-app.get('/tldrscreated', routes.website_tldrscreated);
 app.get('/whatisit', routes.website_whatisit);
 
+// Login, logout
+app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
+                 , routes.website_index);
+
+// Email confirmation, password recovery
+app.get('/confirmEmail', routes.website_confirmEmail);
+app.get('/forgotPassword', routes.website_forgotPassword);
+app.get('/resetPassword', routes.website_resetPassword);
+
+// Private pages
+app.get('/account', routes.website_account);
+app.get('/tldrscreated', routes.website_tldrscreated);
 
 /*
  * Compile all templates and partials, connect to database, then start server
