@@ -142,7 +142,7 @@ app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/resetPassword', routes.website_resetPassword);
 
 // Private pages
-app.get('/account', routes.website_account);
+app.get('/account', middleware.loggedInOnly(routes.website_account));
 app.get('/tldrscreated', routes.website_tldrscreated);
 
 /*

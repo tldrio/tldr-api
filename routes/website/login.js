@@ -8,6 +8,9 @@
 module.exports = function (req, res, next) {
   var values = {};
 
+  values.user = req.user;
+  values.needToLogin = req.query.returnUrl;   // A returnUrl means login was called because a non logged user tried to view a loggedInOnly page
+
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/login}}' }
                                     });
