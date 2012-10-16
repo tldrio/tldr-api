@@ -142,7 +142,7 @@ app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/resetPassword', routes.website_resetPassword);
 
 // User profiles, leaderboard ...
-//app.get('/user/');
+app.get('/userprofile/:username', routes.website_userPublicProfile);
 
 // Private pages
 app.get('/account', middleware.loggedInOnly, routes.website_account);
