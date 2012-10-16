@@ -6,7 +6,8 @@
 
 var models = require('../../lib/models')
   , User = models.User
-  , customUtils = require('../../lib/customUtils');
+  , customUtils = require('../../lib/customUtils')
+  , async = require('async');
 
 
 module.exports = function (req, res, next) {
@@ -15,17 +16,31 @@ module.exports = function (req, res, next) {
 
   values.loggedUser = req.user;
 
-  User.findOne({ usernameLowerCased: usernameLowerCased })
-      .populate('tldrsCreated')   // TODO : use limit here
-      .exec(function (err, user) {
-              if (err || !user) { values.userNotFound = true; }
+  async.waterfall([
+    function (cb) {
+      User.findOne({ usernameLowerCased: usernameLowerCased })
+          .exec(function (err, user) {
+            if (err || !user) { values.userNotFound = true; }
 
-              values.user = user;
-              values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
+            values.user = user;
+            values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
 
-              res.render('website/basicLayout', { values: values
-                                                , partials: { content: '{{>website/pages/userPublicProfile}}' }
-                                                });
-            });
+            cb();
+          });
+    }
+  , function (cb) {
+      User.findOne({ usernameLowerCased: usernameLowerCased })
+          .populate('tldrsCreated', '_id title')
+          .exec(function (err, user) {
+            values.tldrsCreatedToDisplay = user.tldrsCreated;
+
+            cb();
+          });
+    }
+  ], function (err) {   // Render the page
+       res.render('website/basicLayout', { values: values
+                                         , partials: { content: '{{>website/pages/userPublicProfile}}' }
+                                         });
+     });
 }
 
