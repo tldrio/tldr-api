@@ -12,13 +12,20 @@
   <h1>{{user.username}} ({{user.tldrsCreated.length}})</h1><br>
   Joined on {{user.createdAtReadable}}<br><br>
 
+  <hr>
+
   {{#user.createdMoreThanOneTldr}}
     <strong>Latest tldrs created by {{user.username}}:</strong>
+    <ul>
+    {{#tldrsCreatedToDisplay}}
+      <li> <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+      </li>
+    {{/tldrsCreatedToDisplay}}
+    </ul>
   {{/user.createdMoreThanOneTldr}}
-  {{#tldrsCreatedToDisplay}}
-    <li> <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
-    </li>
-  {{/tldrsCreatedToDisplay}}
+
+  <hr>
+
 </div>
 </div>
 

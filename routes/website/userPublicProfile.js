@@ -33,6 +33,7 @@ module.exports = function (req, res, next) {
   , function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
           .populate('tldrsCreated', '_id title', {}, { limit: 5, sort: [['createdAt', -1]] })
+          .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
               values.tldrsCreatedToDisplay = user.tldrsCreated;
