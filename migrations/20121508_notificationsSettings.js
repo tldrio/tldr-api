@@ -42,7 +42,11 @@ async.waterfall([
       , function (cb) {
           console.log('Adding notificationsSettings to: ' + users[i]._id);
 
-          users[i].notificationsSettings = { edit: true, like: true, read: true };
+          users[i].notificationsSettings = { edit: true
+                                           , like: true
+                                           , newsletter: true
+                                           , serviceUpdates: true
+                                           , read: true };
 
           users[i].save(function(err) {
             if (err) { return cb(err); }
