@@ -131,6 +131,7 @@ app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/index', routes.website_index);
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                     , routes.website_index);
+app.get('/notifications', routes.website_notifications);
 app.get('/resetPassword', routes.website_resetPassword);
 app.get('/signup', routes.website_signup);
 app.get('/summaries', routes.website_summaries);

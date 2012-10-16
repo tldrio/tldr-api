@@ -148,6 +148,19 @@ function getCreatedTldrs (callback) {
     });
 }
 
+/*
+ * Get the notifications of the user
+ *
+ * @param {Function} callback function to be called with the results after having fetched the notifs
+ */
+function getNotifications (callback) {
+  User.findOne({_id: this._id})
+    .populate('notifications')
+    .exec(function(err, doc) {
+      if (err) {throw err;}
+      callback(doc);
+    });
+}
 
 /*
  * Update lastActive field
@@ -381,6 +394,7 @@ UserSchema = new Schema(
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
+UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
