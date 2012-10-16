@@ -344,6 +344,7 @@ UserSchema = new Schema(
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
                            }
+  , notifications: [{ type: ObjectId, ref: 'notification' }]
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String

@@ -24,10 +24,10 @@ NotificationSchema = new Schema(
   { createdAt: { type: Date
                , default: Date.now
                }
-  , from: {}
-  , on: {}
-  , to: {}
-  , type: {}
+  , from: { type: ObjectId, ref: 'user' }
+  , tldr: { type: ObjectId, ref: 'tldr' }
+  , to: { type: ObjectId, ref: 'user' }
+  , type: { type: String }
   }
 , { strict: true });
 
@@ -35,8 +35,11 @@ NotificationSchema = new Schema(
  * Create a new Notification instance
  */
 
-NotificationSchema.statics.createAndSaveInstance = function () {
-  console.log('Create and Save Notif');
+NotificationSchema.statics.createAndSaveInstance = function (options, cb) {
+  var notification;
+
+  notification = new Notification(options);
+  notification.save(cb);
 };
 
 

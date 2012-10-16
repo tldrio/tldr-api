@@ -20,9 +20,11 @@ function contentNegotiationForTldr (req, res, tldr) {
   tldr.incrementReadCount();
 
   // TODO dont send notif if user is admin
-  notificator.publish({ type: 'tldrRead'
-                      , from: req.user
-                      , on: tldr
+  notificator.publish({ type: 'read'
+                      , from: req.user ? req.user._id : undefined
+                      , tldr: tldr._id
+                      // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                      , to: tldr.creator._id
                       });
 
   // If this is an admin type request, simply return data as JSON
