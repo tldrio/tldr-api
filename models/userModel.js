@@ -345,8 +345,10 @@ function isAdmin() {
 }
 
 
-/*
+/**
  * Returns the URL to this user's gravatar
+ * @param {String or Number} _size Width and height of the avatar served by Gravatar
+ * @return {String} url of the avatar
  */
 function getGravatarUrl(_size) {
   var hash = this.email.trim().toLowerCase()

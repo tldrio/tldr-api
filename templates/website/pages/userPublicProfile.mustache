@@ -9,11 +9,22 @@
 
 <div class="row-fluid">
 <div class="span8 offset2 well-white">
-  <h1>{{user.username}} ({{user.tldrsCreated.length}})</h1><br>
-  Joined on {{user.createdAtReadable}}<br><br>
 
+  <!-- Username, reputation, basic info and avatar -->
+  <div class="row-fluid">
+    <div class="span3">
+    <h1>{{user.username}} ({{user.tldrsCreated.length}})</h1><br>
+    Joined on {{user.createdAtReadable}}
+    </div>
+
+    <div class="offset6 span3">
+      <img src="{{user.avatarUrl}}" alt="avatar">
+    </div>
+  </div>
+
+
+  <!-- Latest created tldrs if any -->
   <hr>
-
   {{#user.createdMoreThanOneTldr}}
     <strong>Latest tldrs created by {{user.username}}:</strong>
     <ul>
@@ -24,7 +35,6 @@
     </ul>
   {{/user.createdMoreThanOneTldr}}
 
-  <hr>
 
 </div>
 </div>
