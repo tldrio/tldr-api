@@ -148,8 +148,6 @@ app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
 // User profiles, leaderboard ...
 app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
-//console.log(app.routes);
-
 
 
 /*
