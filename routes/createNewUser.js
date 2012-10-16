@@ -6,10 +6,11 @@
 
 
 var bunyan = require('../lib/logger').bunyan
-  , mailer = require('../lib/mailer')
   , config = require('../lib/config')
-  , models = require('../lib/models')
   , i18n = require('../lib/i18n')
+  , mailchimpSync = require('../lib/mailchimpSync')
+  , mailer = require('../lib/mailer')
+  , models = require('../lib/models')
   , User = models.User;
 
 
@@ -33,6 +34,9 @@ function createNewUser(req, res, next) {
     }
 
     bunyan.incrementMetric('users.creation.success');
+
+    mailchimpSync.addNewUser({ email: user.email, username: user.username });
+
 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
