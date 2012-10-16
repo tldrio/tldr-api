@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
   , bcrypt = require('bcrypt')
+  , crypto = require('crypto')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
@@ -344,6 +345,21 @@ function isAdmin() {
 }
 
 
+/*
+ * Returns the URL to this user's gravatar
+ */
+function getGravatarUrl(_size) {
+  var hash = this.email.trim().toLowerCase()
+    , md5 = crypto.createHash('md5')
+    , size = _size ? _size : '100';
+
+  md5.update(hash, 'utf8')
+
+  // By default, we return the cartoonish mystery-man
+  return "https://secure.gravatar.com/avatar/" + md5.digest('hex') + "?d=mm&s=" + size;
+}
+
+
 
 
 /**
@@ -408,6 +424,7 @@ UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
+UserSchema.methods.getGravatarUrl = getGravatarUrl;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;

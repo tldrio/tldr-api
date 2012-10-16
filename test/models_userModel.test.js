@@ -551,6 +551,25 @@ describe('User', function () {
   });   // ==== End of '#saveAction' ==== //
 
 
+  describe('#getGravatarUrl', function () {
+
+    it('Should calculate the correct gravatar url', function (done) {
+      var userData = { username: 'Louis'
+                     , password: 'notTOOshort'
+                     , email: 'louis.chatriot@gmail.com'
+                     }
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.getGravatarUrl().should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm&s=100');
+        user.getGravatarUrl(300).should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm&s=300');
+      });
+
+      done();
+    });
+
+  });   // ==== End of '#getGravatarUrl' ==== //
+
+
   describe('should update the user updatable fields (email and username)', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
