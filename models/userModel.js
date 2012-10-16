@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
   , ObjectId = Schema.ObjectId
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
+  , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
   , bcrypt = require('bcrypt')
@@ -158,6 +159,7 @@ function updateLastActive (callback) {
   });
 }
 
+
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
  */
@@ -176,6 +178,9 @@ function updateValidFields (data, callback) {
   if (self.username !== data.username) {
     self.usernameLowerCased = data.username.toLowerCase();
   }
+
+  // Update profile info on Mailchimp
+  mailchimpSync.syncSettings(self, data);
 
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
@@ -336,6 +341,8 @@ UserSchema = new Schema(
   , notificationsSettings: { edit: { type: Boolean, default: true}
                            , like: { type: Boolean, default: true}
                            , read: { type: Boolean, default: true}
+                           , newsletter: { type: Boolean, default: true}
+                           , serviceUpdates: { type: Boolean, default: true}
                            }
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
