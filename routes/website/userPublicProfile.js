@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
   var values = {}
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
 
-  values.user = req.user;
+  values.loggedUser = req.user;
 
   User.findOne({ usernameLowerCased: usernameLowerCased })
       .populate('tldrsCreated')

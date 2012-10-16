@@ -14,7 +14,7 @@
         <ul class="nav pull-right">
 
           <!-- User is not logged, display the login widget -->
-          {{^user}}
+          {{^loggedUser}}
             <li{{#signup}} class="active"{{/signup}}>
               <a href="/signup">Sign up!</a>
             </li>
@@ -48,14 +48,14 @@
                 </form>
               </li>
             </ul>
-          {{/user}}
+          {{/loggedUser}}
 
 
           <!-- User is logged, display his personal space -->
-          {{#user}}
+          {{#loggedUser}}
             <li  class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <span id="logged-user-username">{{user.username}}</span>
+                <span id="logged-user-username">{{loggedUser.username}}</span>
               <b class="caret"></b>
             </a>
 
@@ -66,7 +66,7 @@
                 <li class="divider"></li>
                 <li><a href="/logout" id="login-status-logout">Sign out</a></li>
             </ul>
-          {{/user}}
+          {{/loggedUser}}
        </ul>
 
     </div>

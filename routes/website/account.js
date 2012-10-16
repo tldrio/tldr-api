@@ -8,7 +8,7 @@
 module.exports = function (req, res, next) {
   var values = {};
 
-  values.user = req.user;
+  values.loggedUser = req.user;
 
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/account}}' }
