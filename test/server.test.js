@@ -199,15 +199,6 @@ describe('Webserver', function () {
 
     });
 
-    it('a non existing route', function (done) {
-
-      request.get({uri: rootUrl + '/nonexistingroute'}, function (err, res, body) {
-        res.statusCode.should.equal(404);
-        done();
-      });
-
-    });
-
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
       var someTldrs = []

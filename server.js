@@ -141,13 +141,14 @@ app.get('/confirmEmail', routes.website_confirmEmail);
 app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/resetPassword', routes.website_resetPassword);
 
-// User profiles, leaderboard ...
-app.get('/userprofile/:username', routes.website_userPublicProfile);
-
 // Private pages
 app.get('/account', middleware.loggedInOnly, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
 
+// User profiles, leaderboard ...
+app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
+//console.log(app.routes);
 
 
 
