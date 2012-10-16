@@ -1,7 +1,22 @@
 {{#userNotFound}}
-USER NOT FOUND
+<div class="alert alert-error">
+  This user doesn't exist!
+</div>
 {{/userNotFound}}
 
+
 {{^userNotFound}}
-CA MARCHE
+
+<div class="row-fluid">
+<div class="span8 offset2 well-white">
+  <h1>{{user.username}} ({{user.tldrsCreated.length}})</h1><br>
+  Joined on {{user.createdAtReadable}}<br><br>
+  <strong>Latest tldrs:</strong>
+  {{#user.tldrsCreated}}
+    <li> <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+    </li>
+  {{/user.tldrsCreated}}
+</div>
+</div>
+
 {{/userNotFound}}

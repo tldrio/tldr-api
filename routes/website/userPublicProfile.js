@@ -5,7 +5,8 @@
 */
 
 var models = require('../../lib/models')
-  , User = models.User;
+  , User = models.User
+  , customUtils = require('../../lib/customUtils');
 
 
 module.exports = function (req, res, next) {
@@ -15,9 +16,12 @@ module.exports = function (req, res, next) {
   values.loggedUser = req.user;
 
   User.findOne({ usernameLowerCased: usernameLowerCased })
-      .populate('tldrsCreated')
+      .populate('tldrsCreated')   // TODO : use limit here
       .exec(function (err, user) {
               if (err || !user) { values.userNotFound = true; }
+
+              values.user = user;
+              values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
 
               res.render('website/basicLayout', { values: values
                                                 , partials: { content: '{{>website/pages/userPublicProfile}}' }
