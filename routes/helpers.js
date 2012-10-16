@@ -19,6 +19,7 @@ function contentNegotiationForTldr (req, res, tldr) {
   // Increment read count but don't wait for DB access to finish to return to client
   tldr.incrementReadCount();
 
+  // TODO dont send notif if user is admin
   notificator.publish({ type: 'tldrRead'
                       , from: req.user
                       , on: tldr
