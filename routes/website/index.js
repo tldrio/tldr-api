@@ -8,6 +8,7 @@
 module.exports = function (req, res, next) {
   var values = {};
 
+  debugger;
   values.loggedUser = req.user;
   values.index = true;
 
