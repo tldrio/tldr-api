@@ -8,6 +8,7 @@
 module.exports = function (req, res, next) {
   var values = {};
 
+  console.log(req.params.username);
   values.user = req.user;
 
   res.render('website/basicLayout', { values: values
