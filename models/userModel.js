@@ -19,7 +19,7 @@ var mongoose = require('mongoose')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , check = require('validator').check
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id']         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarUrl']         // fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -356,7 +356,6 @@ function updateGravatarEmail(gravatarEmail, callback) {
   this.gravatarUrl = getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
 }
-
 
 // Separated from the function above to be able to use it without having to save
 function getGravatarUrlFromEmail (email) {
