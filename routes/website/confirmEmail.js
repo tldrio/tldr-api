@@ -6,11 +6,8 @@
 
 
 module.exports = function (req, res, next) {
-  var values = {};
 
-  values.user = req.user;
-
-  res.render('website/basicLayout', { values: values
+  res.render('website/basicLayout', { values: req.renderingValues
                                     , partials: { content: '{{>website/pages/confirmEmail}}' }
                                     });
 }

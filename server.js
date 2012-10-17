@@ -127,19 +127,19 @@ app.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
-app.get('/about', routes.website_about);
-app.get('/account', routes.website_account);
-app.get('/confirmEmail', routes.website_confirmEmail);
-app.get('/forgotPassword', routes.website_forgotPassword);
-app.get('/index', routes.website_index);
+app.get('/about', middleware.attachRenderingValues, routes.website_about);
+app.get('/account', middleware.attachRenderingValues, routes.website_account);
+app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
+app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
+app.get('/index', middleware.attachRenderingValues, routes.website_index);
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
                     , routes.website_index);
-app.get('/notifications', routes.website_notifications);
-app.get('/resetPassword', routes.website_resetPassword);
+app.get('/notifications', middleware.attachRenderingValues, routes.website_notifications);
+app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
 app.get('/signup', routes.website_signup);
-app.get('/summaries', routes.website_summaries);
-app.get('/tldrscreated', routes.website_tldrscreated);
-app.get('/whatisit', routes.website_whatisit);
+app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
+app.get('/tldrscreated', middleware.attachRenderingValues, routes.website_tldrscreated);
+app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 
 
 /*

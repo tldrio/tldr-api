@@ -6,9 +6,8 @@
 
 
 module.exports = function (req, res, next) {
-  var values = {};
+  var values = req.renderingValues;
 
-  values.user = req.user;
   values.user.getCreatedTldrs(function(tldrs) {
     values.tldrsCreated = tldrs;
 

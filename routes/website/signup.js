@@ -7,7 +7,6 @@
 
 module.exports = function (req, res, next) {
   var values = {};
-
   values.signup = true;
 
   res.render('website/basicLayout', { values: values
