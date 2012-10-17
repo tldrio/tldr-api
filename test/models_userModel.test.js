@@ -577,7 +577,6 @@ describe('User', function () {
               done();
             });
           });
-
         });
       });
     });
