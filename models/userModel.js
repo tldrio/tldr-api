@@ -19,7 +19,7 @@ var mongoose = require('mongoose')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , check = require('validator').check
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarUrl']         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarEmail', 'gravatarUrl']         // fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -249,6 +249,7 @@ function createAndSaveInstance(userInput, callback) {
           instance = new User(validFields);
 
           instance.history = _history._id;
+          instance.gravatarEmail = instance.email;
           instance.gravatarUrl = getGravatarUrlFromEmail(instance.email);
           instance.save(callback);
         });
@@ -353,6 +354,7 @@ function isAdmin() {
  * @return {void}
  */
 function updateGravatarEmail(gravatarEmail, callback) {
+  this.gravatarEmail = gravatarEmail ? gravatarEmail : '';
   this.gravatarUrl = getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
 }
@@ -362,7 +364,7 @@ function getGravatarUrlFromEmail (email) {
   var hash = email ? email.trim().toLowerCase() : ''
     , md5 = crypto.createHash('md5');
 
-  md5.update(hash, 'utf8')
+  md5.update(hash, 'utf8');
 
   // If user has no avatar linked to this email, the cartoonish mystery-man will be used
   return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
@@ -416,8 +418,9 @@ UserSchema = new Schema(
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
-  , gravatarUrl: { type: String    // If not set or to a non existent Gravatar email ('' included), the default Gravatar (mystery man) will be served
-                 }
+  , gravatarEmail: { type: String
+                   , set: customUtils.sanitizeAndNormalizeEmail }
+  , gravatarUrl: { type: String }    // We keep it here for easy access
   }
 , { strict: true });
 

@@ -563,14 +563,17 @@ describe('User', function () {
         user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
           assert.isNull(err);
           user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+          user.gravatarEmail.should.equal('louis.chatriot@gmail.com');
 
           user.updateGravatarEmail('', function (err, user) {
             assert.isNull(err);
             user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+            user.gravatarEmail.should.equal('');
 
             user.updateGravatarEmail(null, function (err, user) {
               assert.isNull(err);
               user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+              user.gravatarEmail.should.equal('');
 
               done();
             });
@@ -586,6 +589,7 @@ describe('User', function () {
                      }
       User.createAndSaveInstance(userData, function(err, user) {
         user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+        user.gravatarEmail.should.equal('louis.chatriot@gmail.com');
 
         done();
       });
