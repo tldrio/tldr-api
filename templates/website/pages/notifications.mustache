@@ -7,12 +7,31 @@
 
   <ul id="notifications-collection">
 
-  {{#notifications}}
+    {{#notifications}}
 
-  <li class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
-    notif: user {{from}} did {{type}} on {{tldr}}. Date {{displayDate}}
-  </li>
-  {{/notifications}}
+    <li class="notification-list-wrapper">
+      <div class="row-fluid">
+        <div class="span6 offset3">
+          <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
+            {{#from.username}}
+            <strong>{{from.username}}</strong>
+            {{/from.username}}
+            {{^from.username}}
+            <strong>An anonymous user</strong>
+            {{/from.username}}
+
+            just {{type}} your tl;dr <strong>{{tldr.title}}</strong>. 
+            <div class="notification-date">
+              {{displayDate}}
+            </div>
+          </div>
+          <div class="notification-separator">
+          </div>
+        </div>
+      </div>
+    </li>
+
+    {{/notifications}}
 
   </ul>
 

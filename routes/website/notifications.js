@@ -4,13 +4,32 @@
  * Proprietary License
 */
 
-var _ = require('underscore');
+var _ = require('underscore')
+  , Notification = require('../../lib/models').Notification;
 
 function notificationsRoute (req, res, next) {
 
-  res.render('website/basicLayout', { values: req.renderingValues
-             , partials: { content: '{{>website/pages/notifications}}' }
+  var values = req.renderingValues
+    , notifications = values.notifications;
+
+    // We populate the fields we need for display
+  Notification.find({ _id: { $in: _.pluck(notifications, '_id')} })
+  .populate('tldr', 'title')
+  .populate('from', 'username')
+  .sort('createdAt', -1)
+  .exec(function(err, populatedNotifs) {
+    values.notifications = populatedNotifs;
+    
+    // Nice date Display
+    _.each(values.notifications, function (notif) {
+      values.notifications.displayDate = (new Date(notif.createdAt)).toDateString();
+    });
+
+    res.render('website/basicLayout', { values: values
+               , partials: { content: '{{>website/pages/notifications}}' }
+    });
   });
 }
+
 
 module.exports = notificationsRoute;
