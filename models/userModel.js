@@ -249,6 +249,7 @@ function createAndSaveInstance(userInput, callback) {
           instance = new User(validFields);
 
           instance.history = _history._id;
+          instance.setGravatarUrl(instance.email);
           instance.save(callback);
         });
       });

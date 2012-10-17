@@ -560,8 +560,6 @@ describe('User', function () {
                      }
 
       User.createAndSaveInstance(userData, function(err, user) {
-        assert.isUndefined(user.gravatarUrl);
-
         user.setGravatarUrl("louis.chatriot@gmail.com", function (err, user) {
           assert.isNull(err);
           user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
@@ -580,6 +578,19 @@ describe('User', function () {
         });
       });
     });
+
+    it('should set the gravatar url with the user\'s email when creating him', function (done) {
+      var userData = { username: 'Louis'
+                     , password: 'notTOOshort'
+                     , email: 'louis.chatriot@gmail.com'
+                     }
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+
+        done();
+      });
+    });
+
 
   });   // ==== End of '#getGravatarUrl' ==== //
 
