@@ -33,11 +33,14 @@ app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache 
 app.set('view engine', 'mustache'); // Set mustache as the default extension
 app.set('views', config.templatesDir);
 
+// Trust the nginx proxy
+app.enable('trust proxy');
 
 /**
  * Middlewares
  *
  */
+
 
 app.use(middleware.CORS);
 app.use(express.bodyParser());

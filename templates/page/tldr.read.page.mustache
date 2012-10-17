@@ -1,19 +1,19 @@
 <div class="tldr-read-container">
 
   <div class="tldr-tldr">
-    <h3 class="tldr-title">{{title}}</h3>
+    <div class="tldr-header">
+      <img class="tldr-favicon" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+      <span class="tldr-title">{{title}}</span>
+      <span class="tldr-hostname">({{hostname}})</span>
+    </div>
 
     <div class="tldr-metadata">
-
+      {{#creator}}
       <span>
         tl;dr by
-        {{#creator}}
-        <span><em>{{creator.username}}</em></span>
-        {{/creator}}
-        {{^creator}}
-          <span><em>Anonymous</em></span>
-        {{/creator}}
+          <span><em>{{creator.username}}</em></span>
       </span>
+      {{/creator}}
     </div>
 
     <div class="tldr-summary">
