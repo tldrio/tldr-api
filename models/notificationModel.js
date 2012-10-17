@@ -28,6 +28,7 @@ NotificationSchema = new Schema(
   , tldr: { type: ObjectId, ref: 'tldr' }
   , to: { type: ObjectId, ref: 'user' }
   , type: { type: String }
+  , unseen: { type: Boolean, default: true }
   }
 , { strict: true });
 
@@ -35,13 +36,18 @@ NotificationSchema = new Schema(
  * Create a new Notification instance
  */
 
-NotificationSchema.statics.createAndSaveInstance = function (options, cb) {
+function createAndSaveInstance (options, cb) {
   var notification;
 
   notification = new Notification(options);
   notification.save(cb);
 };
 
+/**
+ * Statics and methods
+ */
+
+NotificationSchema.statics.createAndSaveInstance = createAndSaveInstance;
 
 // Define tldr model
 Notification = mongoose.model('notification', NotificationSchema);
