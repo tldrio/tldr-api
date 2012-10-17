@@ -41,17 +41,6 @@ app.enable('trust proxy');
  *
  */
 
-app.use(function (req, res, next) {
-  console.log("======");
-  console.log(req.headers);
-  console.log('--------');
-  console.log(req.protocol);
-  console.log('--------');
-  console.log(req.ip);
-  console.log(req.ips);
-  next();
-});
-
 
 app.use(middleware.CORS);
 app.use(express.bodyParser());
