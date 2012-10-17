@@ -48,6 +48,7 @@ app.use(function (req, res, next) {
   console.log(req.protocol);
   console.log('--------');
   console.log(req.ip);
+  console.log(req.ips);
   next();
 });
 
