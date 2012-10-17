@@ -3,6 +3,8 @@
  * Used with POST and paramters newGravatarUrl
  */
 
+var i18n = require('../lib/i18n');
+
 module.exports = function (req, res, next) {
   if (req.user) {
     req.user.updateGravatarEmail(req.body.newGravatarEmail, function (err, user) {
