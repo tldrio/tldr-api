@@ -43,7 +43,7 @@ async.waterfall([
       , function (cb) {
           console.log('Adding gravatarUrl to: ' + users[i]._id);
 
-          users[i].setGravatarUrl(users[i].email, function(err) {
+          users[i].newGravatarEmail(users[i].email, function(err) {
             if (err) { return cb(err); }
 
             i += 1;

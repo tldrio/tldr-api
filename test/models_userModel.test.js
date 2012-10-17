@@ -551,7 +551,7 @@ describe('User', function () {
   });   // ==== End of '#saveAction' ==== //
 
 
-  describe.only('Gravatar url management', function () {
+  describe('Gravatar url management', function () {
 
     it('#setGravatarUrl should set the correct Gravatar url, even if the email parameter is empty or missing', function (done) {
       var userData = { username: 'Louis'
@@ -560,15 +560,15 @@ describe('User', function () {
                      }
 
       User.createAndSaveInstance(userData, function(err, user) {
-        user.setGravatarUrl("louis.chatriot@gmail.com", function (err, user) {
+        user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
           assert.isNull(err);
           user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
 
-          user.setGravatarUrl('', function (err, user) {
+          user.updateGravatarEmail('', function (err, user) {
             assert.isNull(err);
             user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
 
-            user.setGravatarUrl(null, function (err, user) {
+            user.updateGravatarEmail(null, function (err, user) {
               assert.isNull(err);
               user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
 

@@ -249,7 +249,7 @@ function createAndSaveInstance(userInput, callback) {
           instance = new User(validFields);
 
           instance.history = _history._id;
-          instance.setGravatarUrl(instance.email);
+          instance.gravatarUrl = getGravatarUrlFromEmail(instance.email);
           instance.save(callback);
         });
       });
@@ -352,15 +352,21 @@ function isAdmin() {
  * @param {Function} callback To be called after having set the Gravatar url
  * @return {void}
  */
-function setGravatarUrl(gravatarEmail, callback) {
-  var hash = gravatarEmail ? gravatarEmail.trim().toLowerCase() : ''
+function updateGravatarEmail(gravatarEmail, callback) {
+  this.gravatarUrl = getGravatarUrlFromEmail(gravatarEmail);
+  this.save(callback);
+}
+
+
+// Separated from the function above to be able to use it without having to save
+function getGravatarUrlFromEmail (email) {
+  var hash = email ? email.trim().toLowerCase() : ''
     , md5 = crypto.createHash('md5');
 
   md5.update(hash, 'utf8')
 
   // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  this.gravatarUrl = 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
-  this.save(callback);
+  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
 }
 
 
@@ -430,13 +436,13 @@ UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.setGravatarUrl = setGravatarUrl;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
-UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.updateGravatarEmail = updateGravatarEmail;
 UserSchema.methods.updateLastActive = updateLastActive;
+UserSchema.methods.updatePassword = updatePassword;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
