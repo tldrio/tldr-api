@@ -6,9 +6,12 @@
 module.exports = function (req, res, next) {
 
   if (req.user) {
-    req.user.updateGravatarEmail(req.body.newGravatarUrl, function () {
-    
-    
+    req.user.updateGravatarEmail(req.body.newGravatarUrl, function (err, user) {
+      if (err) {
+        return next({ statusCode: 500, message: i18n.couldntUpdateGravatarEmail });
+      } else {
+        return res.send(200, req.user.getAuthorizedFields());
+      }
     });
 
   } else {
