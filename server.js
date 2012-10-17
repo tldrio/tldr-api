@@ -34,7 +34,7 @@ app.set('view engine', 'mustache'); // Set mustache as the default extension
 app.set('views', config.templatesDir);
 
 // Trust the nginx proxy
-//app.enable('trust proxy');
+app.enable('trust proxy');
 
 /**
  * Middlewares
