@@ -346,19 +346,20 @@ function isAdmin() {
 
 
 /**
- * Returns the URL to this user's gravatar
- * @param {String or Number} _size Width and height of the avatar served by Gravatar
- * @return {String} url of the avatar
+ * Sets the URL to this user's gravatar
+ * @param {String} gravatarEmail Email to be linked to the Gravatar account
+ * @param {Function} callback To be called after having set the Gravatar url
+ * @return {void}
  */
-function getGravatarUrl(_size) {
-  var hash = this.email.trim().toLowerCase()
-    , md5 = crypto.createHash('md5')
-    , size = _size ? _size : '100';
+function setGravatarUrl(gravatarEmail, callback) {
+  var hash = gravatarEmail ? gravatarEmail.trim().toLowerCase() : ''
+    , md5 = crypto.createHash('md5');
 
   md5.update(hash, 'utf8')
 
-  // By default, we return the cartoonish mystery-man
-  return "https://secure.gravatar.com/avatar/" + md5.digest('hex') + "?d=mm&s=" + size;
+  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
+  this.gravatarUrl = 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
+  this.save(callback);
 }
 
 
@@ -409,6 +410,8 @@ UserSchema = new Schema(
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
+  , gravatarUrl: { type: String    // If not set or to a non existent Gravatar email ('' included), the default Gravatar (mystery man) will be served
+                 }
   }
 , { strict: true });
 
@@ -426,7 +429,7 @@ UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.getGravatarUrl = getGravatarUrl;
+UserSchema.methods.setGravatarUrl = setGravatarUrl;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;

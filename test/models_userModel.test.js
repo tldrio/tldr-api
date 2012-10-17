@@ -551,20 +551,35 @@ describe('User', function () {
   });   // ==== End of '#saveAction' ==== //
 
 
-  describe('#getGravatarUrl', function () {
+  describe.only('Gravatar url management', function () {
 
-    it('Should calculate the correct gravatar url', function (done) {
+    it('#setGravatarUrl should set the correct Gravatar url, even if the email parameter is empty or missing', function (done) {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
-                     , email: 'louis.chatriot@gmail.com'
+                     , email: 'validzzzzz@gmail.com'
                      }
 
       User.createAndSaveInstance(userData, function(err, user) {
-        user.getGravatarUrl().should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm&s=100');
-        user.getGravatarUrl(300).should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm&s=300');
-      });
+        assert.isUndefined(user.gravatarUrl);
 
-      done();
+        user.setGravatarUrl("louis.chatriot@gmail.com", function (err, user) {
+          assert.isNull(err);
+          user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+
+          user.setGravatarUrl('', function (err, user) {
+            assert.isNull(err);
+            user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+
+            user.setGravatarUrl(null, function (err, user) {
+              assert.isNull(err);
+              user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+
+              done();
+            });
+          });
+
+        });
+      });
     });
 
   });   // ==== End of '#getGravatarUrl' ==== //
