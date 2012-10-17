@@ -12,6 +12,7 @@ var _ = require('underscore')
   , Notification
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
+  , updatableFields = ['unseen']
   ;
 
 
@@ -43,11 +44,24 @@ function createAndSaveInstance (options, cb) {
   notification.save(cb);
 };
 
+function updateStatus (data) {
+
+  var validUpdateFields = _.intersection(_.keys(data), updatableFields)
+    , self = this;
+
+  _.each(validUpdateFields, function(field) {
+    self[field] = data[field];
+  });
+
+  self.save();
+}
+
 /**
  * Statics and methods
  */
 
 NotificationSchema.statics.createAndSaveInstance = createAndSaveInstance;
+NotificationSchema.methods.updateStatus = updateStatus;
 
 // Define tldr model
 Notification = mongoose.model('notification', NotificationSchema);

@@ -3,16 +3,20 @@
   <h1>Notifications</h1>
 </header>
 
-<ul id="notifications-collection">
+<section id="notifications-container">
 
-{{#notifications}}
-<div>
-notif: user {{from}} did {{type}} on {{tldr}}
-</div>
-{{/notifications}}
+  <ul id="notifications-collection">
 
-</ul>
+  {{#notifications}}
 
+  <li class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
+    notif: user {{from}} did {{type}} on {{tldr}}. Date {{displayDate}}
+  </li>
+  {{/notifications}}
+
+  </ul>
+
+</section>
 
 
 
