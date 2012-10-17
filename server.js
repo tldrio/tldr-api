@@ -99,6 +99,7 @@ app.get('/users/you', routes.getLoggedUser);// Get/set personal information
 app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
+app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
