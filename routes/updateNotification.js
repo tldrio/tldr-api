@@ -20,11 +20,17 @@ function updateNotification(req, res, next) {
     var id = req.params.id;
 
     Notification.findOne({ _id: id}, function (err, notif) {
-      notif.updateStatus(req.body);
+      if (err) {
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif} } );
+      }
+      notif.updateStatus(req.body, function (err, notif) {
+        if (err) {
+          return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif} } );
+        }
+        return res.send(200, notif);
+      });
     });
 
-    //Dont wait update is done to return
-    return res.send(200);
   } else {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);
     return res.json(401, { message: i18n.unauthorized} );

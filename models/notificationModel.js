@@ -44,7 +44,7 @@ function createAndSaveInstance (options, cb) {
   notification.save(cb);
 };
 
-function updateStatus (data) {
+function updateStatus (data, cb) {
 
   var validUpdateFields = _.intersection(_.keys(data), updatableFields)
     , self = this;
@@ -53,7 +53,7 @@ function updateStatus (data) {
     self[field] = data[field];
   });
 
-  self.save();
+  self.save(cb);
 }
 
 /**
