@@ -110,7 +110,7 @@ app.post('/tldrs', routes.createNewTldr);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
-app.put('/notif/:id', routes.updateNotification);
+app.put('/notifications/:id', routes.updateNotification);
 
 // Admin only routes
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr

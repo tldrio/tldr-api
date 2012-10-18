@@ -7,6 +7,7 @@
 var bunyan = require('../lib/logger').bunyan
   , _ = require('underscore')
   , config = require('../lib/config')
+  , i18n = require('../lib/i18n')
   , Notification = require('../lib/models').Notification;
 
 
@@ -23,6 +24,11 @@ function updateNotification(req, res, next) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif} } );
       }
+
+      if ( notif.to.toString() !== req.user._id.toString() ) {
+        return res.json(401, { message: i18n.unauthorized} );
+      }
+
       notif.updateStatus(req.body, function (err, notif) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif} } );
