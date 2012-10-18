@@ -16,8 +16,8 @@ var mongoose = require('mongoose')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
-  , userSetableFields = ['email', 'username', 'password']      // Setable fields by user
   , check = require('validator').check
+  , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'bio']                // Updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarEmail', 'gravatarUrl', 'bio']         // Fields that can be sent to the user
   , reservedUsernames;
@@ -432,7 +432,8 @@ UserSchema = new Schema(
                    , set: customUtils.sanitizeAndNormalizeEmail }
   , gravatarUrl: { type: String }    // We keep it here for easy access
   , bio: { type: String
-         , validate: [validateBio, i18n.validateUserBio] }
+         , validate: [validateBio, i18n.validateUserBio]
+         , set: customUtils.sanitizeInput}
   }
 , { strict: true });
 

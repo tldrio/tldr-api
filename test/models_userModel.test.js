@@ -599,7 +599,7 @@ describe('User', function () {
   });   // ==== End of '#getGravatarUrl' ==== //
 
 
-  describe.only('should update the user updatable fields', function() {
+  describe('should update the user updatable fields', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
@@ -860,7 +860,7 @@ describe('User', function () {
   });   // ==== End of 'reset password functions' ==== //
 
 
-  describe('XSS prevention', function() {
+  describe.only('XSS prevention', function() {
 
     it('Should sanitize all user-inputed fields and the fields derived from user input when saving with createAndSaveInstance', function (done) {
       var userInput = { email: 'ema-moz-bindingil@email.com'
@@ -868,12 +868,14 @@ describe('User', function () {
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
+                               , bio: 'something'
                                };
 
       User.createAndSaveInstance(userInput, function(err, theUser) {
         theUser.email.should.equal('email@email.com');
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
+        assert.isUndefined(theUser.bio);
 
         done();
       });
@@ -888,6 +890,7 @@ describe('User', function () {
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
+                               , bio: 'something not cool like a document.write is here'
                                };
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
@@ -895,6 +898,7 @@ describe('User', function () {
           theUser.email.should.equal('email@email.com');
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
+          theUser.bio.should.equal('something not cool like a  is here');
 
           done();
         });
