@@ -281,11 +281,13 @@ describe('User', function () {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
+                     , bio: 'already a bio'
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
         user.confirmedEmail.should.be.false;
+        assert.isUndefined(user.bio);
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
@@ -860,7 +862,7 @@ describe('User', function () {
   });   // ==== End of 'reset password functions' ==== //
 
 
-  describe.only('XSS prevention', function() {
+  describe('XSS prevention', function() {
 
     it('Should sanitize all user-inputed fields and the fields derived from user input when saving with createAndSaveInstance', function (done) {
       var userInput = { email: 'ema-moz-bindingil@email.com'
