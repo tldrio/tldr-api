@@ -871,6 +871,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something'
+                               , gravatarEmail: 'bloup@emdocument.writeail.com'
                                };
 
       User.createAndSaveInstance(userInput, function(err, theUser) {
@@ -878,6 +879,7 @@ describe('User', function () {
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
         assert.isUndefined(theUser.bio);
+        theUser.gravatarEmail.should.equal('email@email.com');
 
         done();
       });
@@ -901,6 +903,21 @@ describe('User', function () {
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');
+
+          done();
+        });
+      });
+    });
+
+    it('Should sanitize gravatarEmail', function (done) {
+      var goodUserInput = { email: 'blip@email.com'
+                               , password: 'supersecret!'
+                               , username: 'quelquun'
+                               };
+
+      User.createAndSaveInstance(goodUserInput, function(err, user) {
+        user.updateGravatarEmail('badocument.write@email.com', function (err, theUser) {
+          theUser.gravatarEmail.should.equal('ba@email.com');
 
           done();
         });
