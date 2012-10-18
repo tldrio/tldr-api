@@ -63,7 +63,7 @@ function updateCallback (err, docs, req, res, next) {
 
       mailer.sendEmail({ type: 'adminTldrWasEdited'
                        , development: false
-                       , values: { user: req.user, tldr: updatedTldr, apiUrl: config.apiUrl }
+                       , values: { user: req.user, tldr: updatedTldr }
                        });
 
       // With 204 even if a object is provided it's not sent by express
