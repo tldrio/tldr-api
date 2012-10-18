@@ -599,15 +599,18 @@ describe('User', function () {
   });   // ==== End of '#getGravatarUrl' ==== //
 
 
-  describe('should update the user updatable fields (email and username)', function() {
+  describe.only('should update the user updatable fields', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
+                     , bio: 'first bio'
                      }
         , newData = { username: 'NFAMasterDeploy'
                     , password: 'anothergood'
-                    , email: 'another@valid.com'};
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -618,6 +621,7 @@ describe('User', function () {
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("another@valid.com");
+          user2.bio.should.equal("Another bio !!");
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
@@ -632,7 +636,9 @@ describe('User', function () {
                      }
         , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
           , password: 'anothergood'
-          , email: 'another@valid.com'};
+          , email: 'anothervalid'
+          , bio: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -642,7 +648,9 @@ describe('User', function () {
         assert.isNull(err);
 
         user.updateValidFields(newData, function(err, user3) {
-          assert.isNotNull(err.username);
+          assert.isDefined(err.errors.username);
+          assert.isDefined(err.errors.email);
+          assert.isDefined(err.errors.bio);
 
           done();
         });

@@ -16,10 +16,10 @@ var mongoose = require('mongoose')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
-  , userSetableFields = ['email', 'username', 'password']      // setable fields by user
+  , userSetableFields = ['email', 'username', 'password']      // Setable fields by user
   , check = require('validator').check
-  , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarEmail', 'gravatarUrl']         // fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email', 'bio']                // Updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarEmail', 'gravatarUrl', 'bio']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -89,6 +89,16 @@ function validatePassword (value) {
     check(value).len(6);
     return true;
   } catch(e) {
+    return false;
+  }
+}
+
+
+// bio should be less than 500 characters
+function validateBio (value) {
+  if (! value || value.length <= 500) {
+    return true;
+  } else {
     return false;
   }
 }
@@ -421,6 +431,8 @@ UserSchema = new Schema(
   , gravatarEmail: { type: String
                    , set: customUtils.sanitizeAndNormalizeEmail }
   , gravatarUrl: { type: String }    // We keep it here for easy access
+  , bio: { type: String
+         , validate: [validateBio, i18n.validateUserBio] }
   }
 , { strict: true });
 
