@@ -8,6 +8,7 @@
 module.exports = function (req, res, next) {
   var values = {};
 
+  values.loggedUser = req.user;
   values.signup = true;
 
   res.render('website/basicLayout', { values: values

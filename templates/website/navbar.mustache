@@ -14,7 +14,7 @@
         <ul class="nav pull-right">
 
           <!-- User is not logged, display the login widget -->
-          {{^user}}
+          {{^loggedUser}}
             <li{{#signup}} class="active"{{/signup}}>
               <a href="/signup">Sign up!</a>
             </li>
@@ -29,10 +29,10 @@
 
             <ul id="login-widget" class="dropdown-menu dropdown-form">
               <!-- If there are login errors, they are displayed here -->
-              <li id="login-invalid-input" style="display: none;">
+              <li class="login-invalid-input" style="display: none;">
                 <div class="alert">
                   <button type="button" class="close" data-dismiss="alert">×</button>
-                  <small id='login-error-message'></small>
+                  <small class='login-error-message'></small>
                 </div>
               </li>
 
@@ -40,22 +40,22 @@
               <li>
                 <form>
                   <fieldset>
-                    <input type="text" id="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
-                    <input type="password" id="login-status-password" placeholder="Password" value="{{password}}" name="password">
-                    <button type="submit" class="btn btn-primary" id="login-status-submit">Log in</button>
+                    <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
+                    <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password">
+                    <button type="submit" class="btn btn-primary login-status-submit">Log in</button>
                     <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
                   </fieldset>
                 </form>
               </li>
             </ul>
-          {{/user}}
+          {{/loggedUser}}
 
 
           <!-- User is logged, display his personal space -->
-          {{#user}}
+          {{#loggedUser}}
             <li  class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <span id="logged-user-username">{{user.username}}</span>
+                <span id="logged-user-username">{{loggedUser.username}}</span>
               <b class="caret"></b>
             </a>
 
@@ -66,7 +66,7 @@
                 <li class="divider"></li>
                 <li><a href="/logout" id="login-status-logout">Sign out</a></li>
             </ul>
-          {{/user}}
+          {{/loggedUser}}
        </ul>
 
     </div>

@@ -105,6 +105,48 @@ describe('User', function () {
       });
     });
 
+    it('should not save a user that has a reserved username', function (done) {
+      var userData = { email: 'email@email.com'
+                               , username: 'index'
+                               , password: 'Axcxxname'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
+                               }
+        , valErr;
+
+      function testUsername (username, cb) {
+        userData.username = username;
+        User.createAndSaveInstance(userData, function(err) {
+          err.name.should.equal('ValidationError');
+
+          _.keys(err.errors).length.should.equal(1);
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          valErr.username.should.equal(i18n.validateUserNameNotReserved);
+          cb();
+        });
+      }
+
+      // Test all reserved routes
+      async.waterfall([
+        async.apply(testUsername, 'confirm')
+      , async.apply(testUsername, 'users')
+      , async.apply(testUsername, 'tldrs')
+      , async.apply(testUsername, 'about')
+      , async.apply(testUsername, 'index')
+      , async.apply(testUsername, 'signup')
+      , async.apply(testUsername, 'summaries')
+      , async.apply(testUsername, 'whatisit')
+      , async.apply(testUsername, 'logout')
+      , async.apply(testUsername, 'login')
+      , async.apply(testUsername, 'confirmemail')
+      , async.apply(testUsername, 'confirmEmail')
+      , async.apply(testUsername, 'forgotpassword')
+      , async.apply(testUsername, 'forgotPassword')
+      , async.apply(testUsername, 'resetpassword')
+      , async.apply(testUsername, 'account')
+      , async.apply(testUsername, 'tldrscreated')
+      ], done);
+    });
+
     it('validate email address - email', function (done) {
 
       // Unit test the rule

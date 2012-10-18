@@ -1,0 +1,32 @@
+{{#userNotFound}}
+<div class="alert alert-error">
+  This user doesn't exist!
+</div>
+{{/userNotFound}}
+
+
+{{^userNotFound}}
+
+<div class="row-fluid">
+<div class="span8 offset2 well-white">
+  <h1>{{user.username}} ({{user.tldrsCreated.length}})</h1><br>
+  Joined on {{user.createdAtReadable}}<br><br>
+
+  <hr>
+
+  {{#user.createdMoreThanOneTldr}}
+    <strong>Latest tldrs created by {{user.username}}:</strong>
+    <ul>
+    {{#tldrsCreatedToDisplay}}
+      <li> <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+      </li>
+    {{/tldrsCreatedToDisplay}}
+    </ul>
+  {{/user.createdMoreThanOneTldr}}
+
+  <hr>
+
+</div>
+</div>
+
+{{/userNotFound}}

@@ -127,18 +127,30 @@ app.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
+// General pages
 app.get('/about', routes.website_about);
-app.get('/account', routes.website_account);
-app.get('/confirmEmail', routes.website_confirmEmail);
-app.get('/forgotPassword', routes.website_forgotPassword);
 app.get('/index', routes.website_index);
-app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
-                    , routes.website_index);
-app.get('/resetPassword', routes.website_resetPassword);
 app.get('/signup', routes.website_signup);
 app.get('/summaries', routes.website_summaries);
-app.get('/tldrscreated', routes.website_tldrscreated);
 app.get('/whatisit', routes.website_whatisit);
+
+// Login, logout
+app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
+                 , routes.website_index);
+app.get('/login', routes.website_login);
+
+// Email confirmation, password recovery
+app.get('/confirmEmail', routes.website_confirmEmail);
+app.get('/forgotPassword', routes.website_forgotPassword);
+app.get('/resetPassword', routes.website_resetPassword);
+
+// Private pages
+app.get('/account', middleware.loggedInOnly, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
+
+// User profiles, leaderboard ...
+app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
 
 
 /*

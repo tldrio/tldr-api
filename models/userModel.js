@@ -18,7 +18,31 @@ var mongoose = require('mongoose')
   , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , check = require('validator').check
   , userUpdatableFields = ['username', 'email']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id'];         // fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id']         // fields that can be sent to the user
+  , reservedUsernames;
+
+
+// All reserved usernames. For now these are all the one-step
+// routes for the API and the website
+// All names sould be lowercased here
+reservedUsernames = {
+    'confirm': true
+  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
+  , 'users': true
+  , 'tldrs': true
+  , 'about': true
+  , 'index': true
+  , 'signup': true
+  , 'summaries': true
+  , 'whatisit': true
+  , 'logout': true
+  , 'login': true
+  , 'confirmemail': true
+  , 'forgotpassword': true
+  , 'resetpassword': true
+  , 'account': true
+  , 'tldrscreated': true
+};
 
 
 
@@ -46,6 +70,17 @@ function validateUsername (value) {
     return false;
   }
 }
+
+
+// Validates that the given username is not reserved
+function usernameNotReserved (value) {
+  if ( value && ! reservedUsernames[value.toLowerCase()] ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 // password should be non empty and longer than 6 characters
 function validatePassword (value) {
@@ -342,7 +377,7 @@ UserSchema = new Schema(
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
   , username: { type: String
               , required: true
-              , validate: [validateUsername, i18n.validateUserName]
+              // Validation is done below because we need two different validators
               , set: customUtils.sanitizeInput
               }
   , updatedAt: { type: Date
@@ -359,6 +394,9 @@ UserSchema = new Schema(
   }
 , { strict: true });
 
+// Validate username
+UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
+UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
 
 
 /**
