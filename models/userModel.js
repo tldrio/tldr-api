@@ -19,7 +19,7 @@ var mongoose = require('mongoose')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'bio']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatarEmail', 'gravatarUrl', 'bio']         // Fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -259,8 +259,8 @@ function createAndSaveInstance(userInput, callback) {
           instance = new User(validFields);
 
           instance.history = _history._id;
-          instance.gravatarEmail = instance.email;
-          instance.gravatarUrl = getGravatarUrlFromEmail(instance.email);
+          instance.gravatar = { email: instance.email
+                              , url: getGravatarUrlFromEmail(instance.email) };
           instance.save(callback);
         });
       });
@@ -364,8 +364,9 @@ function isAdmin() {
  * @return {void}
  */
 function updateGravatarEmail(gravatarEmail, callback) {
-  this.gravatarEmail = gravatarEmail ? gravatarEmail : '';
-  this.gravatarUrl = getGravatarUrlFromEmail(gravatarEmail);
+  this.gravatar = {};
+  this.gravatar.email = gravatarEmail ? gravatarEmail : '';
+  this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
 }
 
@@ -428,9 +429,10 @@ UserSchema = new Schema(
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
-  , gravatarEmail: { type: String
-                   , set: customUtils.sanitizeAndNormalizeEmail }
-  , gravatarUrl: { type: String }    // We keep it here for easy access
+  , gravatar: { email: { type: String
+                       , set: customUtils.sanitizeAndNormalizeEmail }
+              , url: { type: String }
+              }
   , bio: { type: String
          , validate: [validateBio, i18n.validateUserBio]
          , set: customUtils.sanitizeInput}

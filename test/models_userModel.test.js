@@ -555,7 +555,7 @@ describe('User', function () {
 
   describe('Gravatar url management', function () {
 
-    it('#setGravatarUrl should set the correct Gravatar url, even if the email parameter is empty or missing', function (done) {
+    it('#updateGravatarUrl should set the correct Gravatar url, even if the email parameter is empty or missing', function (done) {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
                      , email: 'validzzzzz@gmail.com'
@@ -564,18 +564,18 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err, user) {
         user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
           assert.isNull(err);
-          user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
-          user.gravatarEmail.should.equal('louis.chatriot@gmail.com');
+          user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+          user.gravatar.email.should.equal('louis.chatriot@gmail.com');
 
           user.updateGravatarEmail('', function (err, user) {
             assert.isNull(err);
-            user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
-            user.gravatarEmail.should.equal('');
+            user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+            user.gravatar.email.should.equal('');
 
             user.updateGravatarEmail(null, function (err, user) {
               assert.isNull(err);
-              user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
-              user.gravatarEmail.should.equal('');
+              user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+              user.gravatar.email.should.equal('');
 
               done();
             });
@@ -590,8 +590,8 @@ describe('User', function () {
                      , email: 'louis.chatriot@gmail.com'
                      }
       User.createAndSaveInstance(userData, function(err, user) {
-        user.gravatarUrl.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
-        user.gravatarEmail.should.equal('louis.chatriot@gmail.com');
+        user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+        user.gravatar.email.should.equal('louis.chatriot@gmail.com');
 
         done();
       });
@@ -871,7 +871,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something'
-                               , gravatarEmail: 'bloup@emdocument.writeail.com'
+                               , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
       User.createAndSaveInstance(userInput, function(err, theUser) {
@@ -879,7 +879,7 @@ describe('User', function () {
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
         assert.isUndefined(theUser.bio);
-        theUser.gravatarEmail.should.equal('email@email.com');
+        theUser.gravatar.email.should.equal('email@email.com');
 
         done();
       });
@@ -917,7 +917,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
         user.updateGravatarEmail('badocument.write@email.com', function (err, theUser) {
-          theUser.gravatarEmail.should.equal('ba@email.com');
+          theUser.gravatar.email.should.equal('ba@email.com');
 
           done();
         });
