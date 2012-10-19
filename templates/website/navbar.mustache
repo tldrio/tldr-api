@@ -58,14 +58,14 @@
                 <span id="logged-user-username">
                   {{user.username}} 
                   {{#unseenNotifications}}
-                  <span id="user-unseen-notif-count">({{unseenNotifications}})</span>
+                  <span id="user-unseen-notif-count">{{unseenNotifications}}</span>
                   {{/unseenNotifications}}
                 </span>
               <b class="caret"></b>
             </a>
 
             <ul class="dropdown-menu dropdown-form">
-                <li><a href="/notifications">My notifications</a></li>
+                <li><a href="/notifications">My notifications <span id="user-unseen-notif-count">{{unseenNotifications}}</span></a></li>
                 <li class="divider"></li>
                 <li><a href="/account">My account</a></li>
                 <li class="divider"></li>

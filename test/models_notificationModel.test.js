@@ -74,5 +74,4 @@ describe('Notification', function () {
 
   });
 
-
 });
