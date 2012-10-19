@@ -17,26 +17,15 @@ module.exports = function (req, res, next) {
   values.loggedUser = req.user;
 
   async.waterfall([
-    function (cb) {   // Get user info. For now, reputation is the number of created tldrs
+    function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
-          .exec(function (err, user) {
-            if (err || !user) {
-              values.userNotFound = true;
-            } else {
-              values.user = user;
-              values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
-              values.user.createdMoreThanOneTldr = (user.tldrsCreated.length > 0);
-            }
-            cb();
-          });
-    }
-  , function (cb) {   // Only populate the latest tldrs the user created, in a specific object
-      User.findOne({ usernameLowerCased: usernameLowerCased })
-          .populate('tldrsCreated', '_id title', {}, { limit: 5, sort: [['createdAt', -1]] })
+          .populate('tldrsCreated', '_id title', {}, { limit: 20, sort: [['createdAt', -1]] })
           .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
-              values.tldrsCreatedToDisplay = user.tldrsCreated;
+              values.user = user;
+              values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
+              values.user.createdMoreThanOneTldr = (user.tldrsCreated.length > 0);
             }
 
             cb();
