@@ -26,6 +26,8 @@ module.exports = function (req, res, next) {
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.createdMoreThanOneTldr = (user.tldrsCreated.length > 0);
+            } else {
+              values.userNotFound = true;
             }
 
             cb();
