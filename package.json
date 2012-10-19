@@ -18,7 +18,7 @@
                   , "express": "3.0.0rc5"
                   , "jade": ">= 0.0.1"
                   , "hogan.js": "2.0.x"
-                  , "mongoose": "2.7.x"
+                  , "mongoose": "3.3.x"
                   , "nodemailer": "0.3.x"
                   , "passport": "0.1.10"
                   , "passport-local": "0.1.3"
