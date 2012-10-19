@@ -35,13 +35,13 @@ async.waterfall([
 
     console.log('Adding and populating the gravatarUrl field to the user schema');
 
-    User.find({ gravatarUrl: { $exists: false } }, function(err, users) {
+    User.find({ gravatar: { $exists: false } }, function(err, users) {
       if (err) { return cb(err); }
 
       async.whilst(
         function () { return i < users.length; }
       , function (cb) {
-          console.log('Adding gravatarUrl to: ' + users[i]._id);
+          console.log('Adding gravatar to: ' + users[i]._id);
 
           users[i].updateGravatarEmail(users[i].email, function(err) {
             if (err) { return cb(err); }
@@ -55,7 +55,7 @@ async.waterfall([
   }
   // test that all the users docs have a gravatarUrl field
 , function (cb) {
-    User.find({ gravatarUrl: { $exists: false } }, function(err, users) {
+    User.find({ gravatar: { $exists: false } }, function(err, users) {
       if (users.length === 0) {
         console.log("Everything worked");
       } else {
