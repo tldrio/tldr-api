@@ -281,11 +281,13 @@ describe('User', function () {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
+                     , bio: 'already a bio'
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
         user.confirmedEmail.should.be.false;
+        assert.isUndefined(user.bio);
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
@@ -551,15 +553,66 @@ describe('User', function () {
   });   // ==== End of '#saveAction' ==== //
 
 
-  describe('should update the user updatable fields (email and username)', function() {
+  describe('Gravatar url management', function () {
+
+    it('#updateGravatarUrl should set the correct Gravatar url, even if the email parameter is empty or missing', function (done) {
+      var userData = { username: 'Louis'
+                     , password: 'notTOOshort'
+                     , email: 'validzzzzz@gmail.com'
+                     }
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
+          assert.isNull(err);
+          user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+          user.gravatar.email.should.equal('louis.chatriot@gmail.com');
+
+          user.updateGravatarEmail('', function (err, user) {
+            assert.isNull(err);
+            user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+            user.gravatar.email.should.equal('');
+
+            user.updateGravatarEmail(null, function (err, user) {
+              assert.isNull(err);
+              user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e?d=mm');
+              user.gravatar.email.should.equal('');
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should set the gravatar url with the user\'s email when creating him', function (done) {
+      var userData = { username: 'Louis'
+                     , password: 'notTOOshort'
+                     , email: 'louis.chatriot@gmail.com'
+                     }
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+        user.gravatar.email.should.equal('louis.chatriot@gmail.com');
+
+        done();
+      });
+    });
+
+
+  });   // ==== End of '#getGravatarUrl' ==== //
+
+
+  describe('should update the user updatable fields', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
+                     , bio: 'first bio'
                      }
         , newData = { username: 'NFAMasterDeploy'
                     , password: 'anothergood'
-                    , email: 'another@valid.com'};
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -570,6 +623,7 @@ describe('User', function () {
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("another@valid.com");
+          user2.bio.should.equal("Another bio !!");
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
@@ -584,7 +638,9 @@ describe('User', function () {
                      }
         , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
           , password: 'anothergood'
-          , email: 'another@valid.com'};
+          , email: 'anothervalid'
+          , bio: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          };
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
@@ -594,7 +650,9 @@ describe('User', function () {
         assert.isNull(err);
 
         user.updateValidFields(newData, function(err, user3) {
-          assert.isNotNull(err.username);
+          assert.isDefined(err.errors.username);
+          assert.isDefined(err.errors.email);
+          assert.isDefined(err.errors.bio);
 
           done();
         });
@@ -812,12 +870,16 @@ describe('User', function () {
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
+                               , bio: 'something'
+                               , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
       User.createAndSaveInstance(userInput, function(err, theUser) {
         theUser.email.should.equal('email@email.com');
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
+        assert.isUndefined(theUser.bio);
+        theUser.gravatar.email.should.equal('email@email.com');
 
         done();
       });
@@ -832,6 +894,7 @@ describe('User', function () {
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
+                               , bio: 'something not cool like a document.write is here'
                                };
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
@@ -839,6 +902,22 @@ describe('User', function () {
           theUser.email.should.equal('email@email.com');
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
+          theUser.bio.should.equal('something not cool like a  is here');
+
+          done();
+        });
+      });
+    });
+
+    it('Should sanitize gravatarEmail', function (done) {
+      var goodUserInput = { email: 'blip@email.com'
+                               , password: 'supersecret!'
+                               , username: 'quelquun'
+                               };
+
+      User.createAndSaveInstance(goodUserInput, function(err, user) {
+        user.updateGravatarEmail('badocument.write@email.com', function (err, theUser) {
+          theUser.gravatar.email.should.equal('ba@email.com');
 
           done();
         });
