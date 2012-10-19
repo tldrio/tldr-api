@@ -3,6 +3,11 @@ test:
 	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec
 	@echo "Tests finished, setting environment back to development"
 
+testMail:
+	@echo "TLDR - Launching tests. Setting environment to test"
+	@ NODE_ENV="testMail" ./node_modules/.bin/mocha --reporter spec -t 10000 test/mails.test.js
+	@echo "Tests finished, setting environment back to development"
+
 testPretty:
 	@echo "TLDR - Launching tests. Setting environment to test"
 	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec | ./node_modules/.bin/bunyan -o simple
