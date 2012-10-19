@@ -21,8 +21,8 @@ function notificationsRoute (req, res, next) {
     values.notifications = populatedNotifs;
     
     // Nice date Display
-    _.each(values.notifications, function (notif) {
-      values.notifications.displayDate = (new Date(notif.createdAt)).toDateString();
+    _.each(values.notifications, function (notif, i) {
+      values.notifications[i].displayDate = (new Date(notif.createdAt)).toDateString();
     });
 
     res.render('website/basicLayout', { values: values

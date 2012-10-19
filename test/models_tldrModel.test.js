@@ -503,11 +503,35 @@ describe('Tldr', function () {
       theUrl = "http://domain.tld/path/res/";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/res/");
 
-      //theUrl = "http://domain.tld/path/file.extension?arg=value&otherarg=othervalue";
-      //normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension?arg=value&otherarg=othervalue");
+      theUrl = "http://domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      //theUrl = "http://domain.tld/?aRg=valuEEe";
-      //normalizeUrl(theUrl).should.equal("http://domain.tld/?aRg=valuEEe");
+
+      done();
+    });
+
+    it('Should remove the querystring for non whitelisted websites', function (done) {
+      var theUrl = "http://domain.tld/?aRg=valuEEe";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
+
+      theUrl = "http://subdomain.domain.tld?arg=value";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
+
+      theUrl = "http://subdomain.domain.tld/bloup/blap?arg=value";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/bloup/blap");
+
+      done();
+    });
+
+    it('Should keep querystring for whitelisted domains but remove the utm ones and sort the remaining arguments', function (done) {
+      var theUrl = "http://www.youtube.com/?aRg=valuEEe";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe");
+
+      var theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
+
+      var theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
 
       done();
     });
@@ -524,9 +548,6 @@ describe('Tldr', function () {
 
       theUrl = "http://subdomain.domain.tld";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
-
-      //theUrl = "http://subdomain.domain.tld?arg=value";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/?arg=value");
 
       done();
     });
@@ -564,12 +585,6 @@ describe('Tldr', function () {
 
       theUrl = "http://www.domain.tld/path#!bloup";
       normalizeUrl(theUrl).should.equal("http://www.domain.tld/path#!bloup");
-
-      //theUrl = "http://www.domain.tld/path?arg=value#!bloup";
-      //normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value#!bloup");
-
-      //theUrl = "http://www.domain.tld/path?arg=value#bloup";
-      //normalizeUrl(theUrl).should.equal("http://www.domain.tld/path?arg=value");
 
       done();
     });

@@ -6,9 +6,8 @@
 
 
 module.exports = function (req, res, next) {
-  var values = {};
+  var values = req.renderingValues;
   values.signup = true;
-
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/signup}}' }
                                     });

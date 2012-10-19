@@ -20,7 +20,7 @@ function updateProfile(req, res, next) {
   bunyan.incrementMetric('users.updateProfile.routeCalled');
 
   if (req.user) {
-    if (req.body.username || req.body.email || req.body.notificationsSettings) {
+    if (req.body.username || req.body.email || req.body.bio || req.body.notificationsSettings) {
 
       var emailUpdate = false;
       if (req.body.email !== req.user.email) {

@@ -8,7 +8,7 @@
 module.exports = function (req, res, next) {
   var values = req.renderingValues;
 
-  values.user.getCreatedTldrs(function(tldrs) {
+  values.loggedUser.getCreatedTldrs(function(tldrs) {
     values.tldrsCreated = tldrs;
 
     res.render('website/basicLayout', { values: values

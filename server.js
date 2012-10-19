@@ -33,11 +33,14 @@ app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache 
 app.set('view engine', 'mustache'); // Set mustache as the default extension
 app.set('views', config.templatesDir);
 
+// Trust the nginx proxy
+app.enable('trust proxy');
 
 /**
  * Middlewares
  *
  */
+
 
 app.use(middleware.CORS);
 app.use(express.bodyParser());
@@ -96,6 +99,7 @@ app.get('/users/you', routes.getLoggedUser);// Get/set personal information
 app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
+app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
@@ -127,19 +131,31 @@ app.options('*', function (req, res, next) {
  * Routes for the website, which all respond HTML
  *
  */
+// General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
-app.get('/account', middleware.attachRenderingValues, routes.website_account);
-app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
-app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
 app.get('/index', middleware.attachRenderingValues, routes.website_index);
-app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
-                    , routes.website_index);
-app.get('/notifications', middleware.attachRenderingValues, routes.website_notifications);
-app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
 app.get('/signup', routes.website_signup);
 app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
-app.get('/tldrscreated', middleware.attachRenderingValues, routes.website_tldrscreated);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
+
+// Login, logout
+app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
+                 , routes.website_index);
+app.get('/login', routes.website_login);
+
+// Email confirmation, password recovery
+app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
+app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
+app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
+
+// Private pages
+app.get('/account', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_tldrscreated);
+app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_notifications);
+
+// User profiles, leaderboard ...
+app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
 
 
 /*

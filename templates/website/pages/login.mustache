@@ -1,0 +1,35 @@
+<section class="marketing">
+  <h1>Login</h1>
+
+  {{#needToLogin}}
+    <div class="alert alert-error">
+      You need to be logged in to view this page.
+    </div>
+  {{/needToLogin}}
+
+  <div class="row-fluid">
+  <div class="span4 offset4 well-white">
+
+  <span id="login-page-login-widget">
+    <br>
+    <!-- If there are login errors, they are displayed here -->
+    <div class="alert login-invalid-input" style="display: none;">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      <small class='login-error-message'></small>
+    </div>
+
+    <!-- Login form -->
+    <form>
+      <fieldset>
+        <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email"><br><br>
+        <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password"><br><br>
+        <button type="submit" class="btn btn-primary login-status-submit">Log in</button><br><br>
+        <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a><br><br>
+      </fieldset>
+    </form>
+  </span>
+
+  </div>
+  </div>
+
+</section>

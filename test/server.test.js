@@ -201,15 +201,6 @@ describe('Webserver', function () {
 
     });
 
-    it('a non existing route', function (done) {
-
-      request.get({uri: rootUrl + '/nonexistingroute'}, function (err, res, body) {
-        res.statusCode.should.equal(404);
-        done();
-      });
-
-    });
-
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
       var someTldrs = []
@@ -669,7 +660,8 @@ describe('Webserver', function () {
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfa.com"
-                             , username: "yepyep" } }, function (error, response, body) {
+                             , username: "yepyep"
+                             , bio: "yipee yop" } }, function (error, response, body) {
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -678,6 +670,7 @@ describe('Webserver', function () {
             obj = JSON.parse(body);
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
+            obj.bio.should.equal("yipee yop");
 
             done();
            });
@@ -832,6 +825,30 @@ describe('Webserver', function () {
          });
       });
       });
+    });
+
+    it('should be able to update a user\'s gravatar email and url', function (done) {
+      async.waterfall([
+        function (cb) {
+          user1.gravatar.url.should.equal('https://secure.gravatar.com/avatar/f0bc417475309b482b4ee5479f2e844e?d=mm');
+          user1.gravatar.email.should.equal('user1@nfa.com');
+          cb();
+        }
+      , async.apply(logUserOut)
+      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/users/you/updateGravatarEmail'
+                       , json: { newGravatarEmail: 'louis.chatriot@gmail.com' } }, function (error, response, body) {
+            response.statusCode.should.equal(200);
+            User.findOne({ email: 'user1@nfa.com' }, function (err, user) {
+              user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+              user.gravatar.email.should.equal('louis.chatriot@gmail.com');
+              cb();
+            });
+          });
+        }
+      ], done);
     });
 
   });   // ==== End of 'PUT users' ==== //

@@ -13,13 +13,38 @@ var mongoose = require('mongoose')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
   , bcrypt = require('bcrypt')
+  , crypto = require('crypto')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
-  , userSetableFields = ['email', 'username', 'password']      // setable fields by user
   , check = require('validator').check
-  , userUpdatableFields = ['username', 'email', 'notificationsSettings']                // updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings'];         // fields that can be sent to the user
+  , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
+  , userUpdatableFields = ['username', 'email', 'notificationsSettings','bio']                // Updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio']         // Fields that can be sent to the user
+  , reservedUsernames;
+
+
+// All reserved usernames. For now these are all the one-step
+// routes for the API and the website
+// All names sould be lowercased here
+reservedUsernames = {
+    'confirm': true
+  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
+  , 'users': true
+  , 'tldrs': true
+  , 'about': true
+  , 'index': true
+  , 'signup': true
+  , 'summaries': true
+  , 'whatisit': true
+  , 'logout': true
+  , 'login': true
+  , 'confirmemail': true
+  , 'forgotpassword': true
+  , 'resetpassword': true
+  , 'account': true
+  , 'tldrscreated': true
+};
 
 
 
@@ -48,12 +73,33 @@ function validateUsername (value) {
   }
 }
 
+
+// Validates that the given username is not reserved
+function usernameNotReserved (value) {
+  if ( value && ! reservedUsernames[value.toLowerCase()] ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
 // password should be non empty and longer than 6 characters
 function validatePassword (value) {
   try {
     check(value).len(6);
     return true;
   } catch(e) {
+    return false;
+  }
+}
+
+
+// bio should be less than 500 characters
+function validateBio (value) {
+  if (! value || value.length <= 500) {
+    return true;
+  } else {
     return false;
   }
 }
@@ -231,6 +277,8 @@ function createAndSaveInstance(userInput, callback) {
           instance = new User(validFields);
 
           instance.history = _history._id;
+          instance.gravatar = { email: instance.email
+                              , url: getGravatarUrlFromEmail(instance.email) };
           instance.save(callback);
         });
       });
@@ -327,6 +375,31 @@ function isAdmin() {
 }
 
 
+/**
+ * Sets the URL to this user's gravatar
+ * @param {String} gravatarEmail Email to be linked to the Gravatar account
+ * @param {Function} callback To be called after having set the Gravatar url
+ * @return {void}
+ */
+function updateGravatarEmail(gravatarEmail, callback) {
+  this.gravatar = {};
+  this.gravatar.email = gravatarEmail ? gravatarEmail : '';
+  this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
+  this.save(callback);
+}
+
+// Separated from the function above to be able to use it without having to save
+function getGravatarUrlFromEmail (email) {
+  var hash = email ? email.trim().toLowerCase() : ''
+    , md5 = crypto.createHash('md5');
+
+  md5.update(hash, 'utf8');
+
+  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
+  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
+}
+
+
 
 
 /**
@@ -367,7 +440,7 @@ UserSchema = new Schema(
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
   , username: { type: String
               , required: true
-              , validate: [validateUsername, i18n.validateUserName]
+              // Validation is done below because we need two different validators
               , set: customUtils.sanitizeInput
               }
   , updatedAt: { type: Date
@@ -381,9 +454,19 @@ UserSchema = new Schema(
   , resetPasswordToken: { type: String }
   , resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
+  , gravatar: { email: { type: String
+                       , set: customUtils.sanitizeAndNormalizeEmail }
+              , url: { type: String }
+              }
+  , bio: { type: String
+         , validate: [validateBio, i18n.validateUserBio]
+         , set: customUtils.sanitizeInput}
   }
 , { strict: true });
 
+// Validate username
+UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
+UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
 
 
 /**
@@ -400,8 +483,9 @@ UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
-UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.updateGravatarEmail = updateGravatarEmail;
 UserSchema.methods.updateLastActive = updateLastActive;
+UserSchema.methods.updatePassword = updatePassword;
 
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
