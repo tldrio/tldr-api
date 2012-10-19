@@ -4,11 +4,13 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
   var values = {};
 
   values.loggedUser = req.user;
+  values.websiteUrl = config.websiteUrl;
   values.loggedUser.getCreatedTldrs(function(tldrs) {
     values.tldrsCreated = tldrs;
 
