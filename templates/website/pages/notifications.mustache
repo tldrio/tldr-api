@@ -5,13 +5,17 @@
 
 <section id="notifications-container">
 
-  <ul id="notifications-collection">
+  <div class="row-fluid">
+    <div class="span6 offset3">
 
-    {{#notifications}}
 
-    <li class="notification-list-wrapper">
-      <div class="row-fluid">
-        <div class="span6 offset3">
+      <ul id="notifications-collection">
+
+        <input type="button" class="btn btn-small offset9" id="mark-all-notif-read" value="Mark all as read">
+        <div class="notification-separator"> </div>
+        {{#notifications}}
+
+        <li class="notification-list-wrapper">
           <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
             {{#from.username}}
             <strong>{{from.username}}</strong>
@@ -21,19 +25,21 @@
             {{/from.username}}
 
             just {{type}} your tl;dr <strong>{{tldr.title}}</strong>. 
+            {{#unseen}}
+            <i class="icon-ok-sign mark-notif-read"></i>
+            {{/unseen}}
             <div class="notification-date">
               {{displayDate}}
             </div>
           </div>
-          <div class="notification-separator">
-          </div>
-        </div>
-      </div>
-    </li>
+          <div class="notification-separator"> </div>
+        </li>
 
-    {{/notifications}}
+        {{/notifications}}
 
-  </ul>
+      </ul>
+    </div>
+  </div>
 
 </section>
 
