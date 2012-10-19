@@ -43,7 +43,7 @@ function sendResetPasswordEmail (req, res, next) {
             // Send reset password email
             mailer.sendEmail({ type: 'resetPassword'
                              , to: user.email
-                             , values: { user: user, websiteUrl: config.websiteUrl, email: encodeURIComponent(user.email), token: encodeURIComponent(user.resetPasswordToken) }
+                             , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(user.resetPasswordToken) }
                              });
           }
         });

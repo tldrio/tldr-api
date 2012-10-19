@@ -24,7 +24,7 @@ function resendConfirmToken (req, res, next) {
       // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
                        , to: user.email
-                       , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), websiteUrl: config.websiteUrl, user: user }
+                       , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
                        });
 
       return res.json(200, { message: i18n.confirmEmailTokenSent});
