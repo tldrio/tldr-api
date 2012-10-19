@@ -658,7 +658,8 @@ describe('Webserver', function () {
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfa.com"
-                             , username: "yepyep" } }, function (error, response, body) {
+                             , username: "yepyep"
+                             , bio: "yipee yop" } }, function (error, response, body) {
 
           request.get({ headers: {"Accept": "application/json"}
                       , uri: rootUrl + '/users/you' }, function (error, response, body) {
@@ -667,6 +668,7 @@ describe('Webserver', function () {
             obj = JSON.parse(body);
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
+            obj.bio.should.equal("yipee yop");
 
             done();
            });
