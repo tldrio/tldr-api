@@ -114,7 +114,7 @@ describe('Webserver', function () {
            user1 = user;
 
            // Create the four tldrs. Their creator is user1
-           async.parallel([
+           async.waterfall([
              function(cb) { Tldr.createAndSaveInstance(tldrData1, user1, function(err, tldr) { tldr1 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }) }

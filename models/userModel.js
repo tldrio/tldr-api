@@ -185,7 +185,7 @@ function getAuthorizedFields() {
  */
 function getCreatedTldrs (callback) {
   Tldr.find({'creator': this._id})
-    .sort('url',1 )
+    .sort('url')
     .populate('creator', 'username')
     .exec(function(err, docs) {
       if (err) {throw err;}
