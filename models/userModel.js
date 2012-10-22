@@ -424,9 +424,7 @@ UserSchema = new Schema(
   , lastActive: { type: Date
                 , default: Date.now
                 }
-  , notificationsSettings: { edit: { type: Boolean, default: true}
-                           , like: { type: Boolean, default: true}
-                           , read: { type: Boolean, default: true}
+  , notificationsSettings: { read: { type: Boolean, default: true}
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
                            }

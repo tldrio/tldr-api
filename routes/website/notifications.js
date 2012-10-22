@@ -16,7 +16,7 @@ function notificationsRoute (req, res, next) {
   Notification.find({ _id: { $in: _.pluck(notifications, '_id')} })
   .populate('tldr', 'title')
   .populate('from', 'username')
-  .sort('createdAt', -1)
+  .sort('-createdAt')
   .exec(function(err, populatedNotifs) {
     values.notifications = populatedNotifs;
     
