@@ -4,6 +4,7 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues;

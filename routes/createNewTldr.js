@@ -54,7 +54,7 @@ function createNewTldr (req, res, next) {
 
       mailer.sendEmail({ type: 'adminTldrWasCreated'
                        , development: false
-                       , values: { user: req.user, tldr: tldr, apiUrl: config.apiUrl }
+                       , values: { user: req.user, tldr: tldr }
                        });
 
       // If a user is logged, he gets to be the tldr's creator
@@ -65,7 +65,7 @@ function createNewTldr (req, res, next) {
           mailer.sendEmail({ type: 'congratulationsFirstTldr'
                            , to: req.user.email
                            , development: true
-                           , values: { apiUrl: config.apiUrl, url: encodeURIComponent(tldr.url) }
+                           , values: { url: encodeURIComponent(tldr.url) }
                            });
         }
 

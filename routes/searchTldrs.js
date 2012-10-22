@@ -51,7 +51,7 @@ function searchTldrs (req, res, next) {
         // Advertise admins there is a summary emergency
         if (req.user && !req.user.isAdmin()) {
           mailer.sendEmail({ type: 'adminSummaryEmergency'
-                           , development: false
+                           , development: prod
                            , values: { url: url, user: req.user }
                            });
         }
@@ -78,7 +78,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
     Tldr.find({})
-     .sort('updatedAt', -1)
+     .sort('-updatedAt')
      .limit(limit)
      .populate('creator', 'username')
      .lt('updatedAt', olderthan)
@@ -97,7 +97,7 @@ function searchTldrs (req, res, next) {
     startat = Math.max(0, startat);
 
     Tldr.find({})
-     .sort('updatedAt', -1)
+     .sort('-updatedAt')
      .limit(limit)
      .skip(startat)
      .populate('creator', 'username')
