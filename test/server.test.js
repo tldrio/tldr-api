@@ -200,7 +200,7 @@ describe('Webserver', function () {
     });
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
-    it.only('Search tldrs with custom query', function (done) {
+    it('Search tldrs with custom query', function (done) {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date()
