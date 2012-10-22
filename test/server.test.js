@@ -114,7 +114,7 @@ describe('Webserver', function () {
            user1 = user;
 
            // Create the four tldrs. Their creator is user1
-           async.parallel([
+           async.waterfall([
              function(cb) { Tldr.createAndSaveInstance(tldrData1, user1, function(err, tldr) { tldr1 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }) }
@@ -200,7 +200,7 @@ describe('Webserver', function () {
     });
 
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
-    it('Search tldrs with custom query', function (done) {
+    it.only('Search tldrs with custom query', function (done) {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date()

@@ -51,7 +51,7 @@ describe('Database', function () {
     , async.apply(theRemove, Tldr)
     ], function(err) {
          User.createAndSaveInstance(userData, function (err, user) {
-           async.parallel([
+           async.waterfall([
              function(cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, tldr) { cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, tldr) { cb(); }) }
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user, function(err, tldr) { cb(); }) }

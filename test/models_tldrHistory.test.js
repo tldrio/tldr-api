@@ -72,7 +72,7 @@ describe('TldrHistory', function () {
       // Save a version in the history
       function saveVersion (data, user, cb) { history.saveVersion(data, user, function(err) { cb(err); }) }
 
-      async.parallel({
+      async.series({
         // Create user1 and user2
         user1: async.apply(createUser, userData1)
       , user2: async.apply(createUser, userData2)
