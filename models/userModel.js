@@ -18,8 +18,8 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
-  , userUpdatableFields = ['username', 'email', 'bio']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio']         // Fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -97,6 +97,16 @@ function validatePassword (value) {
 // bio should be less than 500 characters
 function validateBio (value) {
   if (! value || value.length <= 500) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+// Twitter handle should be null or a string beginning with '@' and less than 16 characters
+function validateTwitterHandle (value) {
+  if (! value || (value.length <= 16 && value[0] === '@')) {
     return true;
   } else {
     return false;
@@ -436,6 +446,9 @@ UserSchema = new Schema(
   , bio: { type: String
          , validate: [validateBio, i18n.validateUserBio]
          , set: customUtils.sanitizeInput}
+  , twitterHandle: { type: String
+                   , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
+                   , set: customUtils.sanitizeInput }
   }
 , { strict: true });
 
