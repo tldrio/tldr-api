@@ -134,7 +134,7 @@ app.options('*', function (req, res, next) {
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
 app.get('/index', middleware.attachRenderingValues, routes.website_index);
-app.get('/signup', routes.website_signup);
+app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 

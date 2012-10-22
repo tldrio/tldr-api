@@ -7,6 +7,7 @@
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , customUtils = require('../lib/customUtils')
   , mongoose = require('mongoose')
   , NotificationSchema
   , Notification
@@ -30,6 +31,7 @@ NotificationSchema = new Schema(
   , to: { type: ObjectId, ref: 'user' }
   , type: { type: String }
   , unseen: { type: Boolean, default: true }
+  , uniqueId: { type: String, required: true, unique: true}
   }
 , { strict: true });
 
@@ -40,9 +42,16 @@ NotificationSchema = new Schema(
 function createAndSaveInstance (options, cb) {
   var notification;
 
+  options.uniqueId = options.type + options.to + options.tldr ;
+  if (options.from === undefined) {
+    options.uniqueId +=  customUtils.uid(24) ;
+  } else {
+    options.uniqueId += options.from;
+  }
+
   notification = new Notification(options);
   notification.save(cb);
-};
+}
 
 function updateStatus (data, cb) {
 
