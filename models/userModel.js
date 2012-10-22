@@ -378,7 +378,7 @@ function getGravatarUrlFromEmail (email) {
   md5.update(hash, 'utf8');
 
   // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=mm';
+  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
 }
 
 

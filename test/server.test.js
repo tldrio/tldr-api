@@ -828,7 +828,7 @@ describe('Webserver', function () {
     it('should be able to update a user\'s gravatar email and url', function (done) {
       async.waterfall([
         function (cb) {
-          user1.gravatar.url.should.equal('https://secure.gravatar.com/avatar/f0bc417475309b482b4ee5479f2e844e?d=mm');
+          user1.gravatar.url.should.equal('https://secure.gravatar.com/avatar/f0bc417475309b482b4ee5479f2e844e?d=wavatar');
           user1.gravatar.email.should.equal('user1@nfa.com');
           cb();
         }
@@ -840,7 +840,7 @@ describe('Webserver', function () {
                        , json: { newGravatarEmail: 'louis.chatriot@gmail.com' } }, function (error, response, body) {
             response.statusCode.should.equal(200);
             User.findOne({ email: 'user1@nfa.com' }, function (err, user) {
-              user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=mm');
+              user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=wavatar');
               user.gravatar.email.should.equal('louis.chatriot@gmail.com');
               cb();
             });
