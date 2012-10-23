@@ -50,7 +50,6 @@
             </ul>
           {{/loggedUser}}
 
-
           <!-- User is logged, display his personal space -->
           {{#loggedUser}}
             <li  class="dropdown">
@@ -59,14 +58,14 @@
                 <span id="logged-user-username">
                   {{loggedUser.username}} 
                   {{#unseenNotifications}}
-                  <span id="user-unseen-notif-count">{{unseenNotifications}}</span>
+                  <span class="badge badge-important">{{unseenNotifications}}</span>
                   {{/unseenNotifications}}
                 </span>
               <b class="caret"></b>
             </a>
 
             <ul class="dropdown-menu dropdown-form">
-                <li><a href="/notifications">My notifications {{#unseenNotifications}}<span id="user-unseen-notif-count">{{unseenNotifications}}</span>{{/unseenNotifications}}</a></li>
+                <li><a href="/notifications">My notifications {{#unseenNotifications}}<span class="badge badge-important">{{unseenNotifications}}</span>{{/unseenNotifications}}</a></li>
                 <li class="divider"></li>
                 <li><a href="/account">My account</a></li>
                 <li class="divider"></li>
