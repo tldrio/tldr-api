@@ -91,7 +91,7 @@ describe.only('Topic', function () {
       });
     });
 
-    it('Should save a topic that satisfies validation', function (done) {
+    it('Should save a topic that satisfies validation and initialize the posts array', function (done) {
       var topicData = { title: "youpla"
                      , unusedField: "test"
                      };
@@ -100,13 +100,64 @@ describe.only('Topic', function () {
         assert.isNull(err);
         topic.title.should.equal("youpla");
         topic.creator.toString().should.equal(user._id.toString());
+        topic.posts.length.should.equal(0);
         assert.isUndefined(topic.unusedField);
+
         done();
       });
     });
 
 
   });   // ==== End of 'createAndSaveInstance' ==== //
+
+
+  describe('#addPost', function () {
+
+    it('Should not add a new post if it doesnt pass validation', function (done) {
+      var topicData = { title: "A title" }
+        , postData = { text: "" }
+        , valErr
+        ;
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        topic.addPost(postData, user, function (err, post) {
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          valErr.text.should.equal(i18n.validatePostText);
+          _.keys(valErr).length.should.equal(1);
+
+          Topic.findOne({ _id: topic._id}, function (err, topic) {
+            topic.posts.length.should.equal(0);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should add new posts to a topic if it passes validation. New posts are added at the end of the topic', function (done) {
+      var topicData = { title: "A title" }
+        , postData1 = { text: "first post yeaaah" }
+        , postData2 = { text: "oh noes im only second" }
+        ;
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        topic.addPost(postData1, user, function (err, post) {
+          topic.addPost(postData2, user, function (err, post) {
+            Topic.findOne({ _id: topic._id })
+            .populate('posts')
+            .exec(function (err, topic) {
+              topic.posts.length.should.equal(2);
+              topic.posts[0].text.should.equal('first post yeaaah');
+              topic.posts[1].text.should.equal('oh noes im only second');
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#addPost' ==== //
+
 
 
   describe('XSS prevention', function () {
@@ -122,7 +173,7 @@ describe.only('Topic', function () {
     });
   
   
-  });
+  });   // ==== End of 'XSS prevention' ==== //
 
 
 

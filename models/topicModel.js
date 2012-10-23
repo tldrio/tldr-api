@@ -8,8 +8,7 @@ var i18n = require('../lib/i18n')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , check = require('validator').check
-  , models = require('../lib/models')
-  , Post = models.Post
+  , Post = require('../models/postModel')
   , Schema = mongoose.Schema
   , ObjectId = mongoose.Schema.ObjectId
   , TopicSchema, Topic
@@ -73,14 +72,19 @@ TopicSchema.statics.createAndSaveInstance = function (userInput, creator, cb) {
  * Create a new post and add it to the topic
  * @param {Object} userInput Content of the post
  * @param {User} creator Creator of the post
- * @param {Function} cb Optional callback. Signature: err, topic
+ * @param {Function} cb Optional callback. Signature: err, post
  */
 TopicSchema.methods.addPost = function (userInput, creator, cb) {
-  var callback = cb ? cb : function () {};
+  var callback = cb ? cb : function () {}
+    , self = this;
 
   Post.createAndSaveInstance(userInput, creator, function (err, post) {
-    this.posts.push(post);   // TODO: Mongoose claims this is atomic, but I think it's not. Check MongoDB's doc
-    this.save(callback);
+    if (err) { return callback(err); }
+
+    self.posts.push(post);   // TODO: Mongoose claims this is atomic, but I think it's not. Check MongoDB's doc
+    self.save(function (err, topic) {   // There can't be an error here
+      callback(null, post);
+    });
   });
 }
 
