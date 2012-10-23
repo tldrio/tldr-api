@@ -36,6 +36,7 @@ PostSchema = new Schema(
           , set: customUtils.sanitizeInput
           , required: true
           }
+  , creator: { type: ObjectId, ref: 'user', required: true }
   }
 , { strict: true });
 
@@ -46,11 +47,16 @@ PostSchema = new Schema(
 
 /**
  * @param {Object} userInput Data entered to create this post
+ * @param {Object} creator Creator of this post
  * @param {Function} cb Optional callback. Signature: err, post
  */
-PostSchema.statics.createAndSaveInstance = function (userInput, cb) {
+PostSchema.statics.createAndSaveInstance = function (userInput, creator, cb) {
   var newPost = new Post(userInput)
-    , callback = cb ? cb : function () {};
+    , callback = cb ? cb : function () {}
+    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
+    ;
+
+  newPost.creator = creatorId;
 
   newPost.save(callback);
 }
