@@ -51,7 +51,7 @@ function searchTldrs (req, res, next) {
         // Advertise admins there is a summary emergency
         if (req.user && !req.user.isAdmin()) {
           mailer.sendEmail({ type: 'adminSummaryEmergency'
-                           , development: prod
+                           , development: false
                            , values: { url: url, user: req.user }
                            });
         }
