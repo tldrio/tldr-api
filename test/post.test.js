@@ -19,7 +19,7 @@ var should = require('chai').should()
   , async = require('async');
 
 
-describe.only('Post', function () {
+describe('Post', function () {
   var user;
 
   before(function (done) {
@@ -76,10 +76,13 @@ describe.only('Post', function () {
       Post.createAndSaveInstance(postData, null, function (err, post) {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.creator.should.equal('required');
+        _.keys(valErr).length.should.equal(1);
 
         Post.createAndSaveInstance(postData, undefined, function (err, post) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.creator.should.equal('required');
+          _.keys(valErr).length.should.equal(1);
+
           done();
         });
       });
