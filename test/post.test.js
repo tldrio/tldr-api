@@ -86,12 +86,15 @@ describe.only('Post', function () {
     });
 
     it('Should save a post that satisfies validation', function (done) {
-      var postData = { text: "youpla" };
+      var postData = { text: "youpla"
+                     , unusedField: "test"
+                     };
 
       Post.createAndSaveInstance(postData, user, function (err, post) {
         assert.isNull(err);
         post.text.should.equal("youpla");
         post.creator.toString().should.equal(user._id.toString());
+        assert.isUndefined(post.unusedField);
         done();
       });
     });
@@ -99,6 +102,21 @@ describe.only('Post', function () {
 
   });   // ==== End of 'createAndSaveInstance' ==== //
 
+
+  describe('XSS prevention', function () {
+
+    it('posts should be protected at creation against XSS', function (done) {
+      var postData = { text: "youpdocument.writela"
+                     };
+
+      Post.createAndSaveInstance(postData, user, function (err, post) {
+        post.text.should.equal("youpla");
+        done();
+      });
+    });
+  
+  
+  });
 
 
 

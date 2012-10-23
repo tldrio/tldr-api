@@ -20,7 +20,8 @@ var i18n = require('../lib/i18n')
 
 // Holds the whole history of a tldr, indexed by url
 TopicSchema = new Schema(
-  { dummy: { type: String }
+  { title: { type: String
+           }
   }
 , { strict: true });
 
