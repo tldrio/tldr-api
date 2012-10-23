@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
             if (! err && user) {
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
-              values.user.createdMoreThanOneTldr = (user.tldrsCreated.length > 0);
+              values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + ' - tldr.io';
             } else {
               values.userNotFound = true;
