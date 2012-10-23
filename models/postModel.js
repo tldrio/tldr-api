@@ -46,8 +46,9 @@ PostSchema = new Schema(
  */
 
 /**
+ * Create a new post and persist it to the database
  * @param {Object} userInput Data entered to create this post
- * @param {Object} creator Creator of this post
+ * @param {User} creator Creator of this post
  * @param {Function} cb Optional callback. Signature: err, post
  */
 PostSchema.statics.createAndSaveInstance = function (userInput, creator, cb) {

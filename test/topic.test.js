@@ -20,7 +20,7 @@ var should = require('chai').should()
   , async = require('async');
 
 
-describe('Topic', function () {
+describe.only('Topic', function () {
   var user;
 
   before(function (done) {
