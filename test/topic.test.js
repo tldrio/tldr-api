@@ -156,6 +156,32 @@ describe.only('Topic', function () {
       });
     });
 
+    it('Should update lastPostAt iif someone posts succesfully to a topic', function (done) {
+      var topicData = { title: "A title" }
+        , postData1 = { text: "first post yeaaah" }
+        , postData2 = { text: "oh noes im only second" }
+        , date0, date1, date2, date3;
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        date0 = topic.lastPostAt;
+        topic.addPost(postData1, user, function (err, post) {
+          date1 = topic.lastPostAt;
+          topic.addPost(postData2, user, function (err, post) {
+            date2 = topic.lastPostAt;
+            assert.isTrue(date1 - date0 > 0);
+            assert.isTrue(date2 - date1 > 0);
+
+            topic.addPost({}, user, function (err, post) {
+              date3 = topic.lastPostAt;
+              date3.should.equal(date2);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
   });   // ==== End of '#addPost' ==== //
 
 
