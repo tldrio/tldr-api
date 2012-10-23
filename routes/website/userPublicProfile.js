@@ -7,7 +7,6 @@
 var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
-  , _ = require('underscore')
   , async = require('async');
 
 
