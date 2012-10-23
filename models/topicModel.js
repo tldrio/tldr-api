@@ -42,6 +42,9 @@ TopicSchema = new Schema(
            }
   , creator: { type: ObjectId, ref: 'user', required: true }
   , posts: [{ type: ObjectId, ref: 'post' }]
+  , lastPostAt: { type: Date
+                , default: Date.now
+                }
   }
 , { strict: true });
 
@@ -82,6 +85,7 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
     if (err) { return callback(err); }
 
     self.posts.push(post);   // TODO: Mongoose claims this is atomic, but I think it's not. Check MongoDB's doc
+    self.lastPostAt = new Date();
     self.save(function (err, topic) {   // There can't be an error here
       callback(null, post);
     });
