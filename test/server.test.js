@@ -44,8 +44,8 @@ function logUserOut(cb) {
 }
 
 // Check for existence of tldr. Usable by async
-function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? {} : null); }); }
-function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length == 0 ? null : {}); }); }
+function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? {} : null); }); }
+function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? null : {}); }); }
 
 // Check for population of a tldr's history (here the tldr #2)
 function tldrHistoryCheck (options, cb) {
@@ -103,8 +103,9 @@ describe('Webserver', function () {
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
+      ;
 
-    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
       async.apply(theRemove, User)
@@ -115,10 +116,10 @@ describe('Webserver', function () {
 
            // Create the four tldrs. Their creator is user1
            async.waterfall([
-             function(cb) { Tldr.createAndSaveInstance(tldrData1, user1, function(err, tldr) { tldr1 = tldr; cb(); }) }
-           , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }) }
-           , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }) }
-           , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }) }
+             function(cb) { Tldr.createAndSaveInstance(tldrData1, user1, function(err, tldr) { tldr1 = tldr; cb(); }); }
+           , function(cb) { Tldr.createAndSaveInstance(tldrData2, user1, function(err, tldr) { tldr2 = tldr; cb(); }); }
+           , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }); }
+           , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }); }
            , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });

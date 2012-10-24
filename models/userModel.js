@@ -232,6 +232,20 @@ function updateValidFields (data, callback) {
 }
 
 
+/**
+ * given email, compute md5 hash and assemble gravatar url
+ *
+ */
+function getGravatarUrlFromEmail (email) {
+  var hash = email ? email.trim().toLowerCase() : ''
+    , md5 = crypto.createHash('md5');
+
+  md5.update(hash, 'utf8');
+
+  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
+  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
+}
+
 /*
  * Create a User instance and save it to the database
  * All defaults are located here instead of in the schema or in setters
@@ -356,7 +370,6 @@ function isAdmin() {
   return adminEmails[this.email] ? true : false;
 }
 
-
 /**
  * Sets the URL to this user's gravatar
  * @param {String} gravatarEmail Email to be linked to the Gravatar account
@@ -370,16 +383,6 @@ function updateGravatarEmail(gravatarEmail, callback) {
   this.save(callback);
 }
 
-// Separated from the function above to be able to use it without having to save
-function getGravatarUrlFromEmail (email) {
-  var hash = email ? email.trim().toLowerCase() : ''
-    , md5 = crypto.createHash('md5');
-
-  md5.update(hash, 'utf8');
-
-  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
-}
 
 
 

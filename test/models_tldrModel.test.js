@@ -527,10 +527,10 @@ describe('Tldr', function () {
       var theUrl = "http://www.youtube.com/?aRg=valuEEe";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe");
 
-      var theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
+      theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
 
-      var theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
+      theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
 
       done();
@@ -697,7 +697,7 @@ describe('Tldr', function () {
           summaryBullets: ['AwBlog', 'Bzzzup'],
           resourceAuthor: 'Someone',
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
-          }
+          };
 
        Tldr.createAndSaveInstance(userInput, user, function(err) {
          err.name.should.equal('CastError');   // Cant cast normal strings to date
@@ -716,9 +716,8 @@ describe('Tldr', function () {
         , valErr;
 
       Tldr.createAndSaveInstance(tldrData, user, function (err, doc) {
-        // We can test against the regular '<' character or its unicode escape equivalent
+        // We can test against the regular '<' character
         doc.summaryBullets[1].should.equal( 'tit<i');
-        doc.summaryBullets[1].should.equal( 'tit\u003ci');
 
         // We need to use the unicode escape here because this is not a regular space but a non breakable space
         doc.title.should.equal('toto\u00a0titi');
@@ -962,7 +961,7 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup' }
+                     , resourceAuthor: 'bloup' };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
         tldr.readCount.should.equal(0);

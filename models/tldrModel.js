@@ -21,7 +21,7 @@ var _ = require('underscore')
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
-  , async = require('async');
+  , async = require('async')
   ;
 
 
@@ -216,7 +216,7 @@ TldrSchema.methods.serialize = function () {
   });
 
   return JSON.stringify(jsonVersion);
-}
+};
 
 
 /**
@@ -267,7 +267,7 @@ TldrSchema.methods.incrementReadCount = function (cb) {
 
   this.readCount += 1;
   this.save(callback);
-}
+};
 
 
 

@@ -559,7 +559,7 @@ describe('User', function () {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
                      , email: 'validzzzzz@gmail.com'
-                     }
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
@@ -588,7 +588,7 @@ describe('User', function () {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
                      , email: 'louis.chatriot@gmail.com'
-                     }
+                     };
       User.createAndSaveInstance(userData, function(err, user) {
         user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=wavatar');
         user.gravatar.email.should.equal('louis.chatriot@gmail.com');
@@ -749,7 +749,7 @@ describe('User', function () {
           assert.isNull(err);
 
           assert.isDefined(user.resetPasswordToken);
-          token = user.resetPasswordToken
+          token = user.resetPasswordToken;
 
           user.createResetPasswordToken(function(err) {
             assert.isNull(err);
@@ -889,8 +889,8 @@ describe('User', function () {
       var goodUserInput = { email: 'blip@email.com'
                                , password: 'supersecret!'
                                , username: 'quelquun'
-                               };
-      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               }
+        , userInput = { email: 'ema-moz-bindingil@email.com'
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
