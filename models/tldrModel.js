@@ -63,7 +63,7 @@ function validateBullets (value) {
 //Titles should be defined, non empty and not be too long
 function validateTitle (value) {
   try {
-    check(value).len(1, 70);
+    check(value).len(1, 200);
     return true;
   } catch(e) {
     return false;
