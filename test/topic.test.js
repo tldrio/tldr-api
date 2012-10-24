@@ -185,6 +185,20 @@ describe('Topic', function () {
   });   // ==== End of '#addPost' ==== //
 
 
+  describe.only('#createTopicAndFirstPost', function () {
+
+    it('Description', function (done) {
+      Topic.createTopicAndFirstPost({}, {}, null, function () {
+      
+      
+        done();
+      });
+
+    });
+
+
+  });   // ==== End of '#createTopicAndFirstPost' ==== //
+
 
   describe('XSS prevention', function () {
 

@@ -9,6 +9,8 @@ var i18n = require('../lib/i18n')
   , customUtils = require('../lib/customUtils')
   , check = require('validator').check
   , Post = require('../models/postModel')
+  , _ = require('underscore')
+  , bunyan = require('../lib/logger').bunyan
   , Schema = mongoose.Schema
   , ObjectId = mongoose.Schema.ObjectId
   , TopicSchema, Topic
@@ -115,9 +117,39 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
  * @param {Function} cb Optional callback. Signature: err, topic
  */
 TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, creator, cb) {
+  var newTopic = prepareTopicForCreation(topicData, creator)
+    , firstPost = Post.preparePostForCreation(postData, creator)
+    , callback = cb ? cb : function () {}
+    , errors = null;
 
+  newTopic.validate(function (terr) {
+    firstPost.validate(function (perr) {
+      // This is a bit more verbose but we want to respec the usual errors signature
+      if ((terr && terr.errors) || (perr && perr.errors)) {
+        errors = { name: 'ValidationError'
+                 , message: 'Validation failed'
+                 , errors: _.extend( terr && terr.errors ? terr.errors : {}
+                                   , perr && perr.errors ? perr.errors : {} ) };
 
+        callback(errors);
+      }
+
+      Topic.createAndSaveInstance(topicData, creator, function (err, topic) {
+        if (err) { return bunyan.error("What the heck ? Saving topic failed but validation was OK!"); }
+
+        topic.addPost(postData, creator, function (err, post) {
+          if (err) { return bunyan.error("What the heck ? Saving post failed but validation was OK!"); }
+
+          callback(null, topic);
+        });
+      });
+    });
+  });
 }
+
+
+// Expose prepareTopicForCreation
+TopicSchema.statics.prepareTopicForCreation = prepareTopicForCreation;
 
 
 

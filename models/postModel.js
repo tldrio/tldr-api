@@ -76,6 +76,10 @@ PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
 }
 
 
+// Expose preparePostForCreation
+PostSchema.statics.preparePostForCreation = preparePostForCreation;
+
+
 // Define the model
 Post = mongoose.model('post', PostSchema);
 
