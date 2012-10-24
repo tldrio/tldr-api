@@ -17,7 +17,7 @@ module.exports = function (req, res, next) {
   values.loggedUser = req.user;
 
   async.waterfall([
-    function (cb) {   // Only populate the latest tldrs the user created, in a specific object
+      function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
           .populate('tldrsCreated', '_id title', {}, { limit: 20, sort: [['createdAt', -1]] })
           .populate('history')
@@ -25,13 +25,27 @@ module.exports = function (req, res, next) {
             if (! err && user) {
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
-              values.user.numberTldrsCreated = req.user.tldrsCreated.length ;
+              values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + ' - tldr.io';
             } else {
               values.userNotFound = true;
             }
 
-            cb();
+            cb(null);
+          });
+    }
+    // Second query to get the total length of tldrsCreated - Seems Not very optimal but otherwise
+    // it would require to populate the entire tldrsCreated array which can lead to even poorer perf
+    , function (cb) {
+      User.findOne({ usernameLowerCased: usernameLowerCased })
+          .exec(function (err, user) {
+            if (! err && user) {
+              values.user.numberTldrsCreated = user.tldrsCreated.length ;
+            } else {
+              values.userNotFound = true;
+            }
+
+            cb(null);
           });
     }
   ], function (err) {   // Render the page
