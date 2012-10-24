@@ -149,6 +149,10 @@ app.get('/resetPassword', routes.website_resetPassword);
 app.get('/account', middleware.loggedInOnly, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
 
+// Forum
+app.get('/forum', routes.website_forum);
+app.post('/forum/newPost', routes.website_forumNewPost);
+
 // User profiles, leaderboard ...
 app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 

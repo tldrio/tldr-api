@@ -1,0 +1,21 @@
+<p>Topic list:</p>
+
+<ul>
+{{#topics}}
+<li>{{title}}</li>
+{{/topics}}
+</ul>
+
+<hr class="soften">
+
+{{#loggedUser}}
+<strong>Create a new topic:</strong><br><br>
+
+<form method="post" action="/forum/newPost">
+  <input type="text" placeholder="Subject" name="title" class="input-xxlarge"><br>
+  <textarea rows="5" cols="60" name="firstPostText" class="input-xxlarge" style="resize:none;" placeholder="Say something"></textarea><br>
+  <input type="submit" value="Start talking!" class="btn btn-primary">
+</form>
+
+
+{{/loggedUser}}

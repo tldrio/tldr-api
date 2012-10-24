@@ -43,6 +43,7 @@ reservedUsernames = {
   , 'resetpassword': true
   , 'account': true
   , 'tldrscreated': true
+  , 'forum': true
 };
 
 
