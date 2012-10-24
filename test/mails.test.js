@@ -53,7 +53,7 @@ if (config.env === 'testMail') {
             Tldr.createAndSaveInstance(tldrData, user, function(err, _tldr) {
               tldr = _tldr;
               done();
-            })
+            });
           });
         });
       });

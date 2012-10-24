@@ -6,8 +6,7 @@ module.exports = function(grunt) {
     // JSHint configuration
     // see here for explanation: http://www.jshint.com/options/
     jshint: {
-      options: { browser: true
-               , curly: true
+      options: { curly: true
                , devel: true
                , debug: true
                , eqeqeq: true
