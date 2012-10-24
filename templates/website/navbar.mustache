@@ -55,13 +55,15 @@
           {{#loggedUser}}
             <li  class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <img style="height:18px;" src="{{gravatar.url}}&s=18" alt="a">
+                <img class="small-avatar" height="20" width="20" src="{{gravatar.url}}&s=20" alt="{{loggedUser.username}}">
                 <span id="logged-user-username">{{loggedUser.username}}</span>
               <b class="caret"></b>
             </a>
 
             <ul class="dropdown-menu dropdown-form">
                 <li><a href="/account">My account</a></li>
+                <li class="divider"></li>
+                <li><a href="/{{loggedUser.username}}">My profile</a></li>
                 <li class="divider"></li>
                 <li><a href="/tldrscreated">My <em>tl;drs</em></a></li>
                 <li class="divider"></li>
