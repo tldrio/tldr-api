@@ -41,23 +41,36 @@ PostSchema = new Schema(
 , { strict: true });
 
 
+
+/**
+ * Used to create a Post object and prepare it, to be created (=saved) or only validated
+ * @param {Object} postData Data entered to create this posst
+ * @param {User} creator Creator of this post
+ * @return {Post}
+ */
+function preparePostForCreation (postData, creator) {
+  var newPost = new Post(postData)
+    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
+
+  newPost.creator = creatorId;
+
+  return newPost;
+}
+
+
 /*
  * Methods and static functions
  */
 
 /**
  * Create a new post and persist it to the database
- * @param {Object} userInput Data entered to create this post
+ * @param {Object} postData Data entered to create this post
  * @param {User} creator Creator of this post
  * @param {Function} cb Optional callback. Signature: err, post
  */
-PostSchema.statics.createAndSaveInstance = function (userInput, creator, cb) {
-  var newPost = new Post(userInput)
-    , callback = cb ? cb : function () {}
-    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
-    ;
-
-  newPost.creator = creatorId;
+PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
+  var callback = cb ? cb : function () {}
+    , newPost = preparePostForCreation(postData, creator);
 
   newPost.save(callback);
 }

@@ -85,8 +85,6 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
 }
 
 
-
-
 /**
  * Create a new post and add it to the topic
  * @param {Object} userInput Content of the post
