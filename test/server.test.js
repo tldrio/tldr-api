@@ -660,6 +660,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfa.com"
                              , username: "yepyep"
+                             , twitterHandle: "@fuckyeah"
                              , bio: "yipee yop" } }, function (error, response, body) {
 
           request.get({ headers: {"Accept": "application/json"}
@@ -670,6 +671,7 @@ describe('Webserver', function () {
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
+            obj.twitterHandle.should.equal("@fuckyeah");
 
             done();
            });
@@ -677,7 +679,7 @@ describe('Webserver', function () {
       });
     });
 
-    it('should dont do anything on update user info if input fields are empty', function (done) {
+    it('should not do anything on update user info if input fields are empty', function (done) {
       var obj;
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
@@ -769,11 +771,13 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfacom"
                              , password: "abad"
+                             , twitterHandle: 'BAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);
           assert.isDefined(body.username);
           assert.isDefined(body.email);
+          assert.isDefined(body.twitterHandle);
 
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'

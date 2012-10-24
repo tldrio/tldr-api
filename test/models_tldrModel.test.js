@@ -132,6 +132,28 @@ describe('Tldr', function () {
 
     });
 
+    it('should reject a title thats too long', function (done) {
+
+      var tldrData = {
+          url: 'http://needforair.com/nutcrackers',
+          title: 'Blog Blog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmuNFAmm',   // 201 characters
+          resourceAuthor: 'NFA Crew',
+          summaryBullets: ['bloup']
+          }
+        , valErr;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.title.should.not.equal(null);
+
+        done();
+      });
+
+    });
+
     it('should detect wrong type of arg for dates bitch', function (done) {
 
       var tldr = new Tldr({
@@ -262,7 +284,7 @@ describe('Tldr', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      var tldrData = { title: 'Blog NFA'
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
