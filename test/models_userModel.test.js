@@ -658,7 +658,7 @@ describe('User', function () {
           assert.isDefined(err.errors.bio);
           assert.isDefined(err.errors.twitterHandle);
 
-          newData.twitterHandle = '@waaaaaaaytoolong'
+          newData.twitterHandle = '@waaaaaaaytoolong';
           user.updateValidFields(newData, function (err, user4) {
             assert.isDefined(err.errors.twitterHandle);
 
