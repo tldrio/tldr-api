@@ -25,37 +25,39 @@
         <div>
           <dl class="dl-horizontal">
             <dt>
-              <i class="icon icon-time"></i>
-              <span>Joined on:</span>
+            <i class="icon icon-time"></i>
+            <span>Joined on:</span>
             </dt>
             <dd>
-              <span>{{user.createdAtReadable}}</span>
+            <span>{{user.createdAtReadable}}</span>
             </dd>
             <dt>
-              <i class="icon icon-gift"></i>
-              <span>tl;drs created:</span>
+            <i class="icon icon-gift"></i>
+            <span>tl;drs created:</span>
             </dt>
             <dd>
-              <span>{{user.numberTldrsCreated}}</span>
+            <span>{{user.numberTldrsCreated}}</span>
             </dd>
           </dl>
         </div>
 
         <hr>
 
+        {{#user.bio}}
         <div>
           <dl>
             <dt>
-              <i class="icon icon-user"></i>
-              <span>About</span>
+            <i class="icon icon-user"></i>
+            <span>About {{user.username}} </span>
             </dt>
             <dd>
-              <span itemprop="description">
-                {{user.bio}}
-              </span>
+            <span itemprop="description">
+              {{user.bio}}
+            </span>
             </dd>
           </dl>
         </div>
+        {{/user.bio}}
       </div>
 
       <!-- Latest created tldrs if any -->
