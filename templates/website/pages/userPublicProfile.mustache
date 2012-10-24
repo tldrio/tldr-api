@@ -68,7 +68,11 @@
           <ul class="unstyled">
             {{#user.tldrsCreated}}
             <li>
-              <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+              <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+              <p class="tldr-title-ellipsis">
+                <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+              </p>
+              <span class="tldr-hostname tldr-hostname-list">({{hostname}})</span>
             </li>
             {{/user.tldrsCreated}}
           </ul>
