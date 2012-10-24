@@ -38,7 +38,7 @@ describe('TldrHistory', function () {
   });
 
   beforeEach(function (done) {
-    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
       async.apply(theRemove, User)
@@ -70,7 +70,7 @@ describe('TldrHistory', function () {
       function createUser (userData, cb) { User.createAndSaveInstance(userData, function(err, user) { return cb(err, user); }); }
 
       // Save a version in the history
-      function saveVersion (data, user, cb) { history.saveVersion(data, user, function(err) { cb(err); }) }
+      function saveVersion (data, user, cb) { history.saveVersion(data, user, function(err) { cb(err); }); }
 
       async.series({
         // Create user1 and user2

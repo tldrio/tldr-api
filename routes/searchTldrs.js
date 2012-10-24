@@ -40,7 +40,7 @@ function searchTldrs (req, res, next) {
 
     url = normalizeUrl(url);
     Tldr.findOne({url: url})
-        .populate('creator', 'username')
+        .populate('creator', 'username twitterHandle')
         .exec( function (err, doc) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
@@ -80,7 +80,7 @@ function searchTldrs (req, res, next) {
     Tldr.find({})
      .sort('-updatedAt')
      .limit(limit)
-     .populate('creator', 'username')
+     .populate('creator', 'username twitterHandle')
      .lt('updatedAt', olderthan)
      .exec(function(err, docs) {
        if (err) {
@@ -100,7 +100,7 @@ function searchTldrs (req, res, next) {
      .sort('-updatedAt')
      .limit(limit)
      .skip(startat)
-     .populate('creator', 'username')
+     .populate('creator', 'username twitterHandle')
      .exec(function(err, docs) {
        if (err) {
          return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
