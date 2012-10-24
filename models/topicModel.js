@@ -49,26 +49,42 @@ TopicSchema = new Schema(
 , { strict: true });
 
 
+
+/**
+ * Used to create a Topic object and prepare it, to be created (=saved) or only validated
+ * @param {Object} topicData Data entered to create this topic
+ * @param {User} creator Creator of this topic
+ * @return {Topic}
+ */
+function prepareTopicForCreation (topicData, creator) {
+  var newTopic = new Topic(topicData)
+    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
+
+  newTopic.creator = creatorId;
+
+  return newTopic;
+}
+
+
+
 /*
  * Methods and statics
  */
 
 /**
  * Create a new topic and persist it to the database
- * @param {Object} userInput Data entered to create this post
- * @param {User} creator Creator of this post
- * @param {Function} cb Optional callback. Signature: err, post
+ * @param {Object} topicData Data entered to create this topic
+ * @param {User} creator Creator of this topic
+ * @param {Function} cb Optional callback. Signature: err, topic
  */
-TopicSchema.statics.createAndSaveInstance = function (userInput, creator, cb) {
-  var newTopic = new Topic(userInput)
-    , callback = cb ? cb : function () {}
-    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
-    ;
-
-  newTopic.creator = creatorId;
+TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
+  var callback = cb ? cb : function () {}
+    , newTopic = prepareTopicForCreation(topicData, creator);
 
   newTopic.save(callback);
 }
+
+
 
 
 /**
@@ -92,6 +108,18 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
   });
 }
 
+
+/**
+ * Create a new topic with a first post in it
+ * @param {Object} topicData Data used to create the topic
+ * @param {Object} postData Data used to create the post
+ * @param {User} creator Creator of this topic and post
+ * @param {Function} cb Optional callback. Signature: err, topic
+ */
+TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, creator, cb) {
+
+
+}
 
 
 
