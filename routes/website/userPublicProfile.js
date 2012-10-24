@@ -7,7 +7,6 @@
 var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
-  , _ = require('underscore')
   , async = require('async');
 
 
@@ -36,7 +35,7 @@ module.exports = function (req, res, next) {
           });
     }
   ], function (err) {   // Render the page
-       res.render('website/basicLayout', { values: _.extend({}, values, { linkify: customUtils.linkify })
+       res.render('website/basicLayout', { values: values
                                          , partials: { content: '{{>website/pages/userPublicProfile}}' }
                                          });
      });

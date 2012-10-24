@@ -11,7 +11,7 @@
   <div class="span12 well-white">
     <div class="row">
 
-      <div class="span3 vcard" itemscope="" itemtype="http://schema.org/Person">
+      <div class="span3 vcard" itemscope itemtype="http://schema.org/Person">
         <div class="avatar">
           <img width="210px" height="210px" src="{{user.gravatar.url}}&s=210"  class="img-polaroid" alt="{{user.username}}">
         </div>
@@ -45,11 +45,14 @@
 
         <div>
           <dl>
-            <dt>About</dt>
+            <dt>
+              <i class="icon icon-user"></i>
+              <span>About</span>
+            </dt>
             <dd>
-              {{#linkify}}
-              <span>{{user.bio}}</span>
-              {{/linkify}}
+              <span itemprop="description">
+                {{user.bio}}
+              </span>
             </dd>
           </dl>
         </div>
