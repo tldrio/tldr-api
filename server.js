@@ -120,6 +120,9 @@ app.put('/notifications/:id', routes.updateNotification);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
+// Private Webhooks routes
+app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
+
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 app.options('*', function (req, res, next) {
   res.send(200);
