@@ -44,7 +44,13 @@ describe('Database', function () {
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , user, userData = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"};
 
-    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
+    /**
+     * remove everything from collection
+     *
+     */
+    function theRemove(collection, cb) {
+      collection.remove({}, function(err) { cb(err); });
+    }
 
     async.waterfall([
       async.apply(theRemove, User)
@@ -52,9 +58,9 @@ describe('Database', function () {
     ], function(err) {
          User.createAndSaveInstance(userData, function (err, user) {
            async.waterfall([
-             function(cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, tldr) { cb(); }) }
-           , function(cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, tldr) { cb(); }) }
-           , function(cb) { Tldr.createAndSaveInstance(tldrData3, user, function(err, tldr) { cb(); }) }
+             function(cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, tldr) { cb(); }); }
+           , function(cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, tldr) { cb(); }); }
+           , function(cb) { Tldr.createAndSaveInstance(tldrData3, user, function(err, tldr) { cb(); }); }
            ], done);   // Finish by saving the number of tldrs
          });
        });

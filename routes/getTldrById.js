@@ -21,10 +21,10 @@ function getTldrById (req, res, next) {
     , query;
 
   query = Tldr.findOne({_id: id})
-              .populate('creator', 'username');
+              .populate('creator', 'username twitterHandle');
 
   // If a logged admin wants to access the admin-only representation of the resource
-  if (req.user && req.user.isAdmin() && req.query.admin == 'true') {
+  if (req.user && req.user.isAdmin() && req.query.admin === 'true') {
     query.populate('history');
   }
 
