@@ -384,7 +384,7 @@ describe('User', function () {
       });
     });
 
-    it('should set default createdAt, updatedAt, lastActive and history', function (done) {
+    it('should set default createdAt, updatedAt, lastActive, notifPrefs and history', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -397,6 +397,9 @@ describe('User', function () {
         assert.isDefined(user.lastActive);
         assert.isDefined(user.updatedAt);
         assert.isDefined(user.history);
+        user.notificationsSettings.read.should.be.true;
+        user.notificationsSettings.like.should.be.true;
+        user.notificationsSettings.edit.should.be.true;
 
         UserHistory.findOne({ _id: user.history }, function(err, history) {
           history.actions[0].type.should.equal("accountCreation");
@@ -600,7 +603,6 @@ describe('User', function () {
 
   });   // ==== End of '#getGravatarUrl' ==== //
 
-
   describe('should update the user updatable fields', function() {
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
@@ -610,6 +612,7 @@ describe('User', function () {
                      }
         , newData = { username: 'NFAMasterDeploy'
                     , password: 'anothergood'
+                    , notificationsSettings: { read: false, like: true, edit: false }
                     , email: 'another@valid.com'
                     , bio: 'Another bio !!'
                     , twitterHandle: '@tldrio'
@@ -619,11 +622,13 @@ describe('User', function () {
         assert.isNull(err);
         user.username.should.equal("NFADeploy");
         user.email.should.equal("valid@email.com");
+        user.notificationsSettings.read.should.be.true;
         bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("another@valid.com");
+          user2.notificationsSettings.read.should.be.false;
           user2.bio.should.equal("Another bio !!");
           user2.twitterHandle.should.equal('@tldrio');
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);

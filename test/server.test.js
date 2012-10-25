@@ -17,6 +17,7 @@ var should = require('chai').should()
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
+  , Notification = models.Notification
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
@@ -110,6 +111,7 @@ describe('Webserver', function () {
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Notification)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
            user1 = user;
@@ -1390,10 +1392,44 @@ describe('Webserver', function () {
         });
       });
     });
+  });
 
+  describe('Notifications', function() {
+    it('Only the to user should able to change the notif status', function (done) {
 
+      var notifData = { from: '507eda94cb0c70d81100000c'
+                  , to : user1._id
+                  , tldr: '507edb3fcb0c70d81100006a'
+                  , type: 'read'
+                  }
+        , notifData2 = { from: '507eda94cb0c70d81100000c'
+                  , to: '507edb3fcb0c70d81100006a'
+                  , tldr: '507edb3fcb0c70d81100006a'
+                  , type: 'read'
+                  };
 
+      logUserIn('user1@nfa.com', 'supersecret', function () {
+        Notification.createAndSaveInstance(notifData, function(err, notif) {
+          Notification.createAndSaveInstance(notifData2, function(err, notif2) {
+            notif.unseen.should.equal.true;
 
+            request.put({ headers: {"Accept": "application/json"}
+                        , json: { unseen: false }
+                        , uri: rootUrl + '/notifications/' + notif2._id }, function (error, response, body) {
+              response.statusCode.should.equal(401);
+
+              request.put({ headers: {"Accept": "application/json"}
+                          , json: { unseen: false }
+                          , uri: rootUrl + '/notifications/' + notif._id }, function (error, response, body) {
+                response.statusCode.should.equal(200);
+                body.unseen.should.equal.false;
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
   });
 
 });

@@ -78,7 +78,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
     Tldr.find({})
-     .sort('-updatedAt')
+     .sort('updatedAt', -1)
      .limit(limit)
      .populate('creator', 'username twitterHandle')
      .lt('updatedAt', olderthan)
@@ -97,7 +97,7 @@ function searchTldrs (req, res, next) {
     startat = Math.max(0, startat);
 
     Tldr.find({})
-     .sort('-updatedAt')
+     .sort('updatedAt', -1)
      .limit(limit)
      .skip(startat)
      .populate('creator', 'username twitterHandle')

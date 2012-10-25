@@ -113,6 +113,9 @@ app.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving 
 app.post('/tldrs', routes.createNewTldr);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
+// Notifications
+app.put('/notifications/:id', routes.updateNotification);
+
 // Admin only routes
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
@@ -129,11 +132,11 @@ app.options('*', function (req, res, next) {
  *
  */
 // General pages
-app.get('/about', routes.website_about);
-app.get('/index', routes.website_index);
-app.get('/signup', routes.website_signup);
-app.get('/summaries', routes.website_summaries);
-app.get('/whatisit', routes.website_whatisit);
+app.get('/about', middleware.attachRenderingValues, routes.website_about);
+app.get('/index', middleware.attachRenderingValues, routes.website_index);
+app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
+app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
+app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
@@ -141,16 +144,17 @@ app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
-app.get('/confirmEmail', routes.website_confirmEmail);
-app.get('/forgotPassword', routes.website_forgotPassword);
-app.get('/resetPassword', routes.website_resetPassword);
+app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
+app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
+app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
 
 // Private pages
-app.get('/account', middleware.loggedInOnly, routes.website_account);
-app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
+app.get('/account', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_tldrscreated);
+app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_notifications);
 
 // User profiles, leaderboard ...
-app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 
 

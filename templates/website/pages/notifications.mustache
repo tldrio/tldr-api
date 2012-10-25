@@ -1,0 +1,51 @@
+<!--Impressing title-->
+<header class="jumbotron">
+  <h1>Notifications</h1>
+</header>
+
+<section id="notifications-container">
+
+  <div class="row-fluid">
+    <div class="span6 offset3">
+
+
+      <ul id="notifications-collection">
+
+        <input type="button" class="btn btn-small offset9" id="mark-all-notif-read" value="Mark all as read">
+        <div class="notification-separator"> </div>
+        {{#notifications}}
+
+        <li class="notification-list-wrapper">
+          <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
+            {{#from.username}}
+            <strong><a href="{{websiteUrl}}/{{from.username}}">{{from.username}}</a></strong>
+            {{/from.username}}
+            {{^from.username}}
+            <strong>An anonymous user</strong>
+            {{/from.username}}
+
+            just {{type}} your tl;dr <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{tldr.title}}</a></strong>. 
+            {{#unseen}}
+            <i class="icon-ok-sign mark-notif-read"></i>
+            {{/unseen}}
+            <div class="notification-date">
+              {{displayDate}}
+            </div>
+          </div>
+          <div class="notification-separator"> </div>
+        </li>
+
+        {{/notifications}}
+
+      </ul>
+    </div>
+  </div>
+
+</section>
+
+
+
+
+
+
+
