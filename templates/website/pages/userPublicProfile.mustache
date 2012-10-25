@@ -38,6 +38,7 @@
             <dd>
               <span>{{user.numberTldrsCreated}}</span>
             </dd>
+            {{#user.twitterHandle}}
             <dt>
               <i class="icon icon-retweet"></i>
               <span>See on Twitter:</span>
@@ -47,6 +48,7 @@
                 <a href="http://twitter.com/{{user.twitterHandle}}" target="_blank">@{{user.twitterHandle}}</a>
               </span>
             </dd>
+            {{/user.twitterHandle}}
           </dl>
         </div>
 
