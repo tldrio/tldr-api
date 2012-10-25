@@ -1,0 +1,32 @@
+{{#notFound}}
+  <div class="alert alert-error">
+    Oh noes! The topic you looked for could not be found. If you think this is a bug, please <a href="mailto:hello@tldr.io?subject=I%20looked%20for%20a%20topic%20that%20is%20missing">tell us</a>.<br>
+    You can also <a href ="/forum">go back on the forum homepage.</a>
+  </div>
+{{/notFound}}
+
+{{^notFound}}
+  <a href="/forum">Back to the forum</a>
+  <h2>{{topic.title}}</h2>
+
+  <ul>
+    {{#topic.posts}}
+      <li>{{text}}</li>
+    {{/topic.posts}}
+  </ul>
+
+  <hr class="soften">
+
+  {{^loggedUser}}
+  You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic._id}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
+  {{/loggedUser}}
+
+  {{#loggedUser}}
+  <form method="post" action="/forum/topics/{{topic._id}}">
+    <textarea rows="5" cols="60" name="text" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.text}}</textarea><br>
+    <input type="submit" value="Express yourself!" class="btn btn-primary">
+  </form>
+  {{/loggedUser}}
+
+
+{{/notFound}}

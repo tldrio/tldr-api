@@ -1,11 +1,9 @@
-<h2>Topic list:</h2>
-<a href="/forum/newTopic">Start a new one</a><br><br>
+<h2>Topic list</h2>
+<a href="/forum/newTopic">Start a new topic</a><br><br>
 
 <ul>
 {{#topics}}
-<li>{{title}}</li>
+<li><a href="/forum/topics/{{_id}}">{{title}}</a></li>
 {{/topics}}
 </ul>
-
-<hr class="soften">
 
