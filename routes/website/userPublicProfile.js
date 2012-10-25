@@ -11,10 +11,8 @@ var models = require('../../lib/models')
 
 
 module.exports = function (req, res, next) {
-  var values = {}
+  var values = req.renderingValues
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
-
-  values.loggedUser = req.user;
 
   async.waterfall([
       function (cb) {   // Only populate the latest tldrs the user created, in a specific object
