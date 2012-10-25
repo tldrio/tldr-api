@@ -46,12 +46,12 @@ describe('Notification', function () {
 
     it('should update only the unseen fields', function (done) {
       var notifData = { from: '507eda94cb0c70d81100000c'
-		              , to : '5047602871993defaa000001'
+                  , to : '5047602871993defaa000001'
                   , tldr: '507edb3fcb0c70d81100006a'
                   , type: 'read'
                   }
         , updateData = { from: '507eda94cb0c70d81100000d'
-		              , to : '5047602871993defaa00000a'
+                  , to : '5047602871993defaa00000a'
                   , tldr: '507edb3fcb0c70d81100006b'
                   , type: 'like'
                   , unseen: false
