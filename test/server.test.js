@@ -771,7 +771,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfacom"
                              , password: "abad"
-                             , twitterHandle: 'BAD'
+                             , twitterHandle: 'BjashkgfshdfgjhasgfdadhgfAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);

@@ -612,7 +612,7 @@ describe('User', function () {
                     , password: 'anothergood'
                     , email: 'another@valid.com'
                     , bio: 'Another bio !!'
-                    , twitterHandle: '@tldrio'
+                    , twitterHandle: 'tldrio'
                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
@@ -625,7 +625,7 @@ describe('User', function () {
           user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("another@valid.com");
           user2.bio.should.equal("Another bio !!");
-          user2.twitterHandle.should.equal('@tldrio');
+          user2.twitterHandle.should.equal('tldrio');
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
@@ -656,9 +656,8 @@ describe('User', function () {
           assert.isDefined(err.errors.username);
           assert.isDefined(err.errors.email);
           assert.isDefined(err.errors.bio);
-          assert.isDefined(err.errors.twitterHandle);
 
-          newData.twitterHandle = '@waaaaaaaytoolong';
+          newData.twitterHandle = 'dlskgjlsdkfgjlwaaaaaaaytoolong';
           user.updateValidFields(newData, function (err, user4) {
             assert.isDefined(err.errors.twitterHandle);
 

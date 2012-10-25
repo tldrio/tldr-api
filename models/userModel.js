@@ -104,9 +104,9 @@ function validateBio (value) {
 }
 
 
-// Twitter handle should be null or a string beginning with '@' and less than 16 characters
+// Twitter handle should be null or less than 15 characters
 function validateTwitterHandle (value) {
-  if (! value || (value.length <= 16 && value[0] === '@')) {
+  if (! value || value.length <= 15) {
     return true;
   } else {
     return false;
