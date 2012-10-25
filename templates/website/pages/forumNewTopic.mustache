@@ -1,0 +1,21 @@
+<header class="jumbotron"><h1>Create a new topic</h1></header>
+
+
+{{#displayValidationErrors}}
+<div class="alert alert-error">
+  <button class="close" data-dismiss="alert">×</button>
+  <ul>
+    {{#validationErrors}}
+    <li>{{.}}</li>
+    {{/validationErrors}}
+  </ul>
+</div>
+{{/displayValidationErrors}}
+
+
+<form method="post" action="/forum/newTopic">
+  <input type="text" placeholder="Subject" name="title" class="input-xxlarge" value="{{userInput.title}}"><br>
+  <textarea rows="5" cols="60" name="firstPostText" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.firstPostText}}</textarea><br>
+  <input type="submit" value="Start talking!" class="btn btn-primary">
+</form>
+

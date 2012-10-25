@@ -151,7 +151,8 @@ app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
 
 // Forum
 app.get('/forum', routes.website_forum);
-app.post('/forum/newPost', middleware.loggedInOnly, routes.website_forumNewPost);
+app.get('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic);    // Display the newTopic form
+app.post('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 
 // User profiles, leaderboard ...
 app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
