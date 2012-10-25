@@ -25,18 +25,27 @@
         <div>
           <dl class="dl-horizontal">
             <dt>
-            <i class="icon icon-time"></i>
-            <span>Joined on:</span>
+              <i class="icon icon-time"></i>
+              <span>Joined on:</span>
             </dt>
             <dd>
-            <span>{{user.createdAtReadable}}</span>
+              <span>{{user.createdAtReadable}}</span>
             </dd>
             <dt>
-            <i class="icon icon-gift"></i>
-            <span>tl;drs created:</span>
+              <i class="icon icon-gift"></i>
+              <span>tl;drs created:</span>
             </dt>
             <dd>
-            <span>{{user.numberTldrsCreated}}</span>
+              <span>{{user.numberTldrsCreated}}</span>
+            </dd>
+            <dt>
+              <i class="icon icon-retweet"></i>
+              <span>See on Twitter:</span>
+            </dt>
+            <dd>
+              <span>
+                <a href="http://twitter.com/{{user.twitterHandle}}" target="_blank">@{{user.twitterHandle}}</a>
+              </span>
             </dd>
           </dl>
         </div>
@@ -47,13 +56,13 @@
         <div>
           <dl>
             <dt>
-            <i class="icon icon-user"></i>
-            <span>tl;dr of {{user.username}} </span>
+              <i class="icon icon-user"></i>
+              <span>tl;dr of {{user.username}} </span>
             </dt>
             <dd>
-            <span itemprop="description">
-              {{user.bio}}
-            </span>
+              <span itemprop="description">
+                {{user.bio}}
+              </span>
             </dd>
           </dl>
         </div>
