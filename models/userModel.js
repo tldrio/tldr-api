@@ -114,6 +114,20 @@ function validateTwitterHandle (value) {
 }
 
 
+/*
+ * Specific setters
+ */
+function setTwitterHandle (value) {
+  var handle = customUtils.sanitizeInput(value);
+
+  if (handle[0] === '@') {
+    handle = handle.substring(1);
+  }
+
+  return handle;
+}
+
+
 
 /**
  * Statics and Methods
@@ -451,7 +465,7 @@ UserSchema = new Schema(
          , set: customUtils.sanitizeInput}
   , twitterHandle: { type: String
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
-                   , set: customUtils.sanitizeInput }
+                   , set: setTwitterHandle }
   }
 , { strict: true });
 

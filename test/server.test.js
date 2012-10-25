@@ -671,7 +671,7 @@ describe('Webserver', function () {
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
-            obj.twitterHandle.should.equal("@fuckyeah");
+            obj.twitterHandle.should.equal("fuckyeah");   // Leading @ was automatically removed
 
             done();
            });

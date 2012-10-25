@@ -633,6 +633,28 @@ describe('User', function () {
       });
     });
 
+    it('should remove the leading @ of a twitter handle if there is one', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     , bio: 'first bio'
+                     }
+        , newData = { username: 'NFAMasterDeploy'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    , twitterHandle: '@tldrio'
+                    };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.updateValidFields(newData, function(err, user2) {
+          user2.twitterHandle.should.equal('tldrio');
+
+          done();
+        });
+      });
+    });
+
     it('should NOT update the fields if they DON\'T pass validation', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
@@ -879,7 +901,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something'   // No possible XSS problem on creation
-                               , twitterHandle: '@another'  // No possible XSS problem on creation
+                               , twitterHandle: 'another'  // No possible XSS problem on creation
                                , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
@@ -905,7 +927,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something not cool like a document.write is here'
-                               , twitterHandle: '@rohdocument.writebad'
+                               , twitterHandle: 'rohdocument.writebad'
                                };
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
@@ -914,7 +936,7 @@ describe('User', function () {
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');
-          theUser.twitterHandle.should.equal('@rohbad');
+          theUser.twitterHandle.should.equal('rohbad');
 
           done();
         });
