@@ -51,11 +51,11 @@ describe('Notification', function () {
                       , type: 'read'
                       }
         , updateData = { from: '507eda94cb0c70d81100000d'
-                        , to : '5047602871993defaa00000a'
-                        , tldr: '507edb3fcb0c70d81100006b'
-                        , type: 'like'
-                        , unseen: false
-                        };
+                       , to : '5047602871993defaa00000a'
+                       , tldr: '507edb3fcb0c70d81100006b'
+                       , type: 'like'
+                       , unseen: false
+                       };
 
       Notification.createAndSaveInstance(notifData, function(err, notif) {
         assert.isNull(err);

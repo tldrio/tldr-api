@@ -398,8 +398,6 @@ describe('User', function () {
         assert.isDefined(user.updatedAt);
         assert.isDefined(user.history);
         user.notificationsSettings.read.should.be.true;
-        user.notificationsSettings.like.should.be.true;
-        user.notificationsSettings.edit.should.be.true;
 
         UserHistory.findOne({ _id: user.history }, function(err, history) {
           history.actions[0].type.should.equal("accountCreation");
