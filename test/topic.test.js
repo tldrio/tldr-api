@@ -187,15 +187,65 @@ describe('Topic', function () {
 
   describe.only('#createTopicAndFirstPost', function () {
 
-    it('Description', function (done) {
-      Topic.createTopicAndFirstPost({}, {}, null, function () {
-      
-      
-        done();
+    it('Should not be able to create a topic with first post if there are validation errors', function (done) {
+      var topicData = { title: "Onnnnne title" }
+        , postData = { text: "And aaaa text" }
+        , valErr;
+
+      // Test with a null user
+      Topic.createTopicAndFirstPost(topicData, postData, null, function (err) {
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        _.keys(valErr).length.should.equal(1);
+        assert.isDefined(valErr.creator);
+
+        // Test with no post data
+        Topic.createTopicAndFirstPost(topicData, {}, user, function (err) {
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          _.keys(valErr).length.should.equal(1);
+          assert.isDefined(valErr.text);
+
+          // Test with no topic data
+          Topic.createTopicAndFirstPost({}, postData, user, function (err) {
+            valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+            _.keys(valErr).length.should.equal(1);
+            assert.isDefined(valErr.title);
+
+            // Test with no data at all!
+            Topic.createTopicAndFirstPost({}, {}, undefined, function (err) {
+              valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+              _.keys(valErr).length.should.equal(3);
+              assert.isDefined(valErr.title);
+              assert.isDefined(valErr.text);
+              assert.isDefined(valErr.creator);
+
+              done();
+            });
+          });
+        });
       });
 
     });
 
+    it('Should able to create a topic with first post if everything is OK', function (done) {
+      var topicData = { title: "Onnnnne title" }
+        , postData = { text: "And aaaa text" }
+        , valErr;
+
+      Topic.createTopicAndFirstPost(topicData, postData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.title.should.equal("Onnnnne title");
+        topic.posts.length.should.equal(1);
+        topic.creator.toString().should.equal(user._id.toString());
+
+        Post.findOne({ _id: topic.posts[0] }, function (err, post) {
+          post.text.should.equal("And aaaa text");
+          post.creator.toString().should.equal(user._id.toString());
+
+          done();
+        });
+      });
+
+    });
 
   });   // ==== End of '#createTopicAndFirstPost' ==== //
 

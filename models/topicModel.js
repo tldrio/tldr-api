@@ -124,21 +124,27 @@ TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, cre
 
   newTopic.validate(function (terr) {
     firstPost.validate(function (perr) {
-      // This is a bit more verbose but we want to respec the usual errors signature
+      // This is a bit verbose but needed to respect the usual errors signature
       if ((terr && terr.errors) || (perr && perr.errors)) {
         errors = { name: 'ValidationError'
                  , message: 'Validation failed'
                  , errors: _.extend( terr && terr.errors ? terr.errors : {}
                                    , perr && perr.errors ? perr.errors : {} ) };
 
-        callback(errors);
+        return callback(errors);
       }
 
       Topic.createAndSaveInstance(topicData, creator, function (err, topic) {
-        if (err) { return bunyan.error("What the heck ? Saving topic failed but validation was OK!"); }
+        if (err) {   // Shouldn't happen, really
+          bunyan.error("What the heck ? Saving topic failed but validation was OK!");
+          return callback (err);
+        }
 
         topic.addPost(postData, creator, function (err, post) {
-          if (err) { return bunyan.error("What the heck ? Saving post failed but validation was OK!"); }
+          if (err) {   // Shouldn't happen, really
+            bunyan.error("What the heck ? Saving post failed but validation was OK!");
+            return callback (err);
+          }
 
           callback(null, topic);
         });
