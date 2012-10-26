@@ -1,5 +1,11 @@
 <h2>Topic list</h2>
+{{#loggedUser}}
 <a href="/forum/newTopic">Start a new topic</a><br><br>
+{{/loggedUser}}
+{{^loggedUser}}
+<a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a><br><br>
+{{/loggedUser}}
+
 
 <ul>
 {{#topics}}
