@@ -22,10 +22,21 @@
   {{/loggedUser}}
 
   {{#loggedUser}}
-  <form method="post" action="/forum/topics/{{topic._id}}">
-    <textarea rows="5" cols="60" name="text" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.text}}</textarea><br>
-    <input type="submit" value="Express yourself!" class="btn btn-primary">
-  </form>
+    {{#displayValidationErrors}}
+    <div class="alert alert-error">
+      <button class="close" data-dismiss="alert">×</button>
+      <ul>
+        {{#validationErrors}}
+        <li>{{.}}</li>
+        {{/validationErrors}}
+      </ul>
+    </div>
+    {{/displayValidationErrors}}
+
+    <form method="post" action="/forum/topics/{{topic._id}}">
+      <textarea rows="5" cols="60" name="text" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.text}}</textarea><br>
+      <input type="submit" value="Express yourself!" class="btn btn-primary">
+    </form>
   {{/loggedUser}}
 
 

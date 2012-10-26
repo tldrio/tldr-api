@@ -1,5 +1,6 @@
 var models = require('../../lib/models')
   , Topic = models.Topic
+  , _ = require('underscore')
   ;
 
 module.exports = function (req, res, next) {
@@ -28,6 +29,11 @@ module.exports = function (req, res, next) {
 
     if (req.route.method === "post" && req.user) {
       topic.addPost({ text: req.body.text }, req.user, function(err, post) {
+        if (err) {
+          values.displayValidationErrors = true;
+          values.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
+          values.userInput = req.body;
+        }
         renderTopic();
       });
     } else {
