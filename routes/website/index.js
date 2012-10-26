@@ -13,6 +13,8 @@ module.exports = function (req, res, next) {
   values.index = true;
 
   res.render('website/basicLayout', { values: values
-                                    , partials: { content: '{{>website/pages/index}}' }
+                                    , partials: { metatags: '{{>website/metatagsDefault}}'
+                                                , content: '{{>website/pages/index}}'
+                                                }
                                     });
 }
