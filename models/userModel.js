@@ -28,22 +28,23 @@ var mongoose = require('mongoose')
 // routes for the API and the website
 // All names sould be lowercased here
 reservedUsernames = {
-    'confirm': true
-  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
-  , 'users': true
-  , 'tldrs': true
-  , 'about': true
-  , 'index': true
-  , 'signup': true
-  , 'summaries': true
-  , 'whatisit': true
-  , 'logout': true
-  , 'login': true
+    'about': true
+  , 'account': true
+  , 'confirm': true
   , 'confirmemail': true
   , 'forgotpassword': true
+  , 'index': true
+  , 'login': true
+  , 'logout': true
+  , 'notifications': true
+  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
-  , 'account': true
+  , 'signup': true
+  , 'summaries': true
+  , 'tldrs': true
   , 'tldrscreated': true
+  , 'users': true
+  , 'whatisit': true
 };
 
 
