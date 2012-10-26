@@ -24,17 +24,13 @@ function searchTldrsByBatch (req, res, next) {
   // We normalize the urls
   batch = _.map(req.body.batch, normalizeUrl);
 
-  console.log('BATCH',batch);
 
   //Search by batch
   Tldr.find({url: { $in: batch }})
   .exec( function (err, docs) {
-
-    console.log('DOCS', docs.length);
-    docs.forEach(function (doc, i) {
-
-      console.log('DOC', doc.url);
-    });
+    if (err) {
+      return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
+    }
 
     return res.json(200, { docs: docs} );
   });
