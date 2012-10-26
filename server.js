@@ -154,7 +154,7 @@ app.get('/forum/topics', routes.website_forum);
 app.get('/forum/topics/:id', routes.website_forumShowTopic);   // Show a whole topic
 app.post('/forum/topics/:id', routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic);    // Display the newTopic form
-app.post('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
+app.post('/forum/newTopic', middleware.loggedInOnly, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 
 // User profiles, leaderboard ...
 app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
