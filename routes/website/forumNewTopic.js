@@ -27,7 +27,7 @@ module.exports = function (req, res, next) {
         values.userInput = req.body;
         renderNewTopicForm();
       } else {
-        return res.redirect(config.websiteUrl + '/forum');
+        return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);
       }
     });
   } else {

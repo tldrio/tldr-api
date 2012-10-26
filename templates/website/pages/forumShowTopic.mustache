@@ -1,12 +1,12 @@
 {{#notFound}}
   <div class="alert alert-error">
     Oh noes! The topic you looked for could not be found. If you think this is a bug, please <a href="mailto:hello@tldr.io?subject=I%20looked%20for%20a%20topic%20that%20is%20missing">tell us</a>.<br>
-    You can also <a href ="/forum">go back on the forum homepage.</a>
+    You can also <a href ="/forum/topics">go back on the forum homepage.</a>
   </div>
 {{/notFound}}
 
 {{^notFound}}
-  <a href="/forum">Back to the forum</a>
+  <a href="/forum/topics">Back to the forum</a>
   <h2>{{topic.title}}</h2>
 
   <ul>
@@ -22,16 +22,7 @@
   {{/loggedUser}}
 
   {{#loggedUser}}
-    {{#displayValidationErrors}}
-    <div class="alert alert-error">
-      <button class="close" data-dismiss="alert">×</button>
-      <ul>
-        {{#validationErrors}}
-        <li>{{.}}</li>
-        {{/validationErrors}}
-      </ul>
-    </div>
-    {{/displayValidationErrors}}
+    {{>website/validationErrors}}
 
     <form method="post" action="/forum/topics/{{topic._id}}">
       <textarea rows="5" cols="60" name="text" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.text}}</textarea><br>

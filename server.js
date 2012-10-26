@@ -150,7 +150,7 @@ app.get('/account', middleware.loggedInOnly, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
 
 // Forum
-app.get('/forum', routes.website_forum);
+app.get('/forum/topics', routes.website_forum);
 app.get('/forum/topics/:id', routes.website_forumShowTopic);   // Show a whole topic
 app.post('/forum/topics/:id', routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic);    // Display the newTopic form

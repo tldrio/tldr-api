@@ -1,6 +1,7 @@
 var models = require('../../lib/models')
   , Topic = models.Topic
   , _ = require('underscore')
+  , config = require('../../lib/config')
   ;
 
 module.exports = function (req, res, next) {
@@ -33,8 +34,11 @@ module.exports = function (req, res, next) {
           values.displayValidationErrors = true;
           values.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
           values.userInput = req.body;
+          renderTopic();
+        } else {
+          // Redirect instead of render so that user can reload the topic without the "POST" error message
+          return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);
         }
-        renderTopic();
       });
     } else {
       renderTopic();
