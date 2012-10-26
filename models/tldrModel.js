@@ -99,6 +99,7 @@ TldrSchema = new Schema(
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
            , set: customUtils.sanitizeInput
+           , required: true
            }
   , summaryBullets: { type: Array
                     , required: true

@@ -76,6 +76,24 @@ describe('Tldr', function () {
       });
     });
 
+    it('should detect missing required title arg', function (done) {
+      var tldrData = {
+        url: 'http://bloup.com/',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        console.log(err);
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.title.should.not.equal(undefined);
+
+        done();
+      });
+    });
+
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
