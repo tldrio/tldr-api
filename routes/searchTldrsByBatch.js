@@ -27,13 +27,14 @@ function searchTldrsByBatch (req, res, next) {
 
   //Search by batch
   Tldr.find({url: { $in: batch }})
-  .exec( function (err, docs) {
-    if (err) {
-      return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
-    }
+    .populate('creator', 'username twitterHandle')
+    .exec( function (err, docs) {
+      if (err) {
+        return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
+      }
 
-    return res.json(200, { docs: docs} );
-  });
+      return res.json(200, { docs: docs} );
+    });
 
 }
 
