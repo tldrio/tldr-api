@@ -29,7 +29,7 @@ function updateNotification(req, res, next) {
         return res.json(401, { message: i18n.unauthorized} );
       }
 
-      notif.updateStatus(req.body, function (err, notif) {
+      notif.markAsSeen( function (err, notif) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif} } );
         }

@@ -44,7 +44,7 @@ describe('Notification', function () {
 
   describe('should update the updatable fields ', function() {
 
-    it('should update only the unseen fields', function (done) {
+    it('should mark as seen notifs with corresponding method', function (done) {
       var notifData = { from: '507eda94cb0c70d81100000c'
                       , to : '5047602871993defaa000001'
                       , tldr: '507edb3fcb0c70d81100006a'
@@ -61,7 +61,7 @@ describe('Notification', function () {
         assert.isNull(err);
         notif.unseen.should.be.true;
 
-        notif.updateStatus(updateData, function(err, notif) {
+        notif.markAsSeen(function(err, notif) {
           notif.from.toString().should.equal('507eda94cb0c70d81100000c');
           notif.to.toString().should.equal('5047602871993defaa000001');
           notif.tldr.toString().should.equal('507edb3fcb0c70d81100006a');

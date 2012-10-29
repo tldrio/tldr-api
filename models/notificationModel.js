@@ -53,16 +53,9 @@ function createAndSaveInstance (options, cb) {
   notification.save(cb);
 }
 
-function updateStatus (data, cb) {
-
-  var validUpdateFields = _.intersection(_.keys(data), updatableFields)
-    , self = this;
-
-  _.each(validUpdateFields, function(field) {
-    self[field] = data[field];
-  });
-
-  self.save(cb);
+function markAsSeen (cb) {
+  this.unseen = false;
+  this.save(cb);
 }
 
 /**
@@ -70,7 +63,7 @@ function updateStatus (data, cb) {
  */
 
 NotificationSchema.statics.createAndSaveInstance = createAndSaveInstance;
-NotificationSchema.methods.updateStatus = updateStatus;
+NotificationSchema.methods.markAsSeen = markAsSeen;
 
 // Define tldr model
 Notification = mongoose.model('notification', NotificationSchema);
