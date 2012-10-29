@@ -7,13 +7,21 @@
 
 {{^notFound}}
   <a href="/forum/topics">Back to the forum</a>
-  <h2>{{topic.title}}</h2>
+  <h2>{{topic.title}}</h2><br><br>
 
-  <ul>
-    {{#topic.posts}}
-      <li>{{text}}</li>
-    {{/topic.posts}}
-  </ul>
+  {{#posts}}
+    <div class="row">
+      <div class="span2">
+        <a href="/{{creator.username}}">
+        <img src="{{creator.gravatar.url}}&s=60" alt="a" style="width: 60px; height: 60px;"><br>
+        {{creator.username}}
+        </a>
+      </div>
+      <div class="span10">
+        {{text}}
+      </div>
+    </div><br><br>
+  {{/posts}}
 
   <hr class="soften">
 
