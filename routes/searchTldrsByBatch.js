@@ -15,7 +15,7 @@ var bunyan = require('../lib/logger').bunyan
 /**
  * Search tldrs by batch
  * Search and return existing tldrs contained in the batch array provided in the body
- * Result in contained in an object with the `docs` key
+ * Result in contained in an object with the `tldrs` key
  */
 function searchTldrsByBatch (req, res, next) {
   var query = req.query
@@ -36,7 +36,7 @@ function searchTldrsByBatch (req, res, next) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
       }
 
-      return res.json(200, { docs: docs} );
+      return res.json(200, { tldrs: docs} );
     });
 
 }

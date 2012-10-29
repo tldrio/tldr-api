@@ -394,20 +394,20 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/tldrs/searchBatch'
                      , json: { badObject: batch } } , function (err, res, body) {
 
-          body.docs.length.should.be.equal(0);
+          body.tldrs.length.should.be.equal(0);
 
           // Request should return existing tldrs in the batch array
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/tldrs/searchBatch'
                        , json: { batch: batch } } , function (err, res, body) {
 
-            var docs = body.docs
-              , tldrizedUrls = _.pluck(docs, 'url');
+            var tldrs = body.tldrs
+              , tldrizedUrls = _.pluck(tldrs, 'url');
             tldrizedUrls.length.should.equal(3);
             tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
             tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
-            docs[0].creator.username.should.equal('UserOne');
-            assert.isUndefined(docs[0].creator.password);
+            tldrs[0].creator.username.should.equal('UserOne');
+            assert.isUndefined(tldrs[0].creator.password);
             done();
           });
         });
