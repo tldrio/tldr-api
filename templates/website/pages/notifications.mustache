@@ -17,17 +17,15 @@
 
         <li class="notification-list-wrapper">
           <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
-            {{#from.username}}
-            <strong><a href="{{websiteUrl}}/{{from.username}}">{{from.username}}</a></strong>
-            {{/from.username}}
-            {{^from.username}}
-            <strong>An anonymous user</strong>
-            {{/from.username}}
+            You have a <strong>new reader</strong>
+            for your aweome tl;dr 
+            <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{tldr.title}}</a></strong>. 
+            In total it has been viewed {{tldr.readCount}} times.
 
-            just {{type}} your tl;dr <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{tldr.title}}</a></strong>. 
             {{#unseen}}
             <i class="icon-ok-sign mark-notif-read"></i>
             {{/unseen}}
+
             <div class="notification-date">
               {{displayDate}}
             </div>
