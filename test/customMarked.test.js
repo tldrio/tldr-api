@@ -12,7 +12,7 @@ var should = require('chai').should()
   , marked = require('../lib/customMarked')
   ;
 
-describe.only('Custom Marked', function () {
+describe('Custom Marked', function () {
 
   // Prevent users from giving us custom markup. Very important to prevent people from breaking the page layout.
   it('Should satinize markup inputed by users', function (done) {
