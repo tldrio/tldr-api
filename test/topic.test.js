@@ -185,7 +185,7 @@ describe('Topic', function () {
   });   // ==== End of '#addPost' ==== //
 
 
-  describe.only('#createTopicAndFirstPost', function () {
+  describe('#createTopicAndFirstPost', function () {
 
     it('Should not be able to create a topic with first post if there are validation errors', function (done) {
       var topicData = { title: "Onnnnne title" }

@@ -18,6 +18,7 @@ module.exports = function (req, res, next) {
         .populate('creator', 'username gravatar')
         .exec(function (err, posts) {
 
+
       values.posts = posts;
       values.topic = topic;
 
