@@ -1,17 +1,15 @@
-var config = require('../lib/config')
+var _ = require('underscore')
+  , async = require('async')
   , bunyan = require('../lib/logger').bunyan
+  , config = require('../lib/config')
+  , DbObject = require('../lib/db')
+  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
+  , i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
-  , i18n = require('../lib/i18n')
-  , DbObject = require('../lib/db')
-  , _ = require('underscore')
-  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , Notification = models.Notification
-  , User = models.User
   , Tldr = models.Tldr
-  , now
-  , previousFlush
-  , dDate = { hours: 16, minutes: 11 , seconds: 0};
+  , User = models.User;
 
 
 function sendReadReport (previousFlush) {
@@ -32,7 +30,7 @@ function sendReadReport (previousFlush) {
 
      // Retrieve the users conerned by notifications
      User.find({ _id: { $in: userIds } }, function (err, users) {
-       users.forEach(function (user, i) {
+       async.forEach(users, function (user, callback) {
          var tldrsRead
            , tldrsForReport = [];
          if (user.notificationsSettings.read) {
@@ -53,10 +51,18 @@ function sendReadReport (previousFlush) {
                               , to: 'hello+test@tldr.io'
                               //, to: user.email
                               , values: { tldrsForReport: tldrsForReport, user: user }
-                              });
+                              }, function () { callback(null); } );
            });
           }
-       });
+       }, function (err) {
+				 if (err) {
+					 bunyan.err('Error executing ReadReport');
+					 process.exit(1);
+				 }
+
+				 bunyan.info('ReadReport successfully executed');
+				 process.exit(0);
+			 });
 
      });
    });
@@ -64,23 +70,8 @@ function sendReadReport (previousFlush) {
 
 db.connectToDatabase(function() {
   previousFlush = new Date();
+	// We send the report for the notifs of the past day
   previousFlush.setDate( previousFlush.getDate() - 1 );
-  //previousFlush.setHours(previousFlush.getHours() - 1);
-
   sendReadReport(previousFlush);
-
 });
 
-//while(true) {
-
-  //now = new Date ();
-  //if ( now.getHours() === dDate.hours
-    //&& now.getMinutes() === dDate.minutes
-    //&& now.getSeconds() === dDate.seconds) {
-    //bunyan.info('Launching crownjob read Report');
-
-
-
-  //}
-  //console.log('current', now);
-//}
