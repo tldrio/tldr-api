@@ -4,10 +4,12 @@ var models = require('../../lib/models')
   , _ = require('underscore')
   , customUtils = require('../../lib/customUtils')
   , config = require('../../lib/config')
+  , marked = require('../../lib/customMarked')
   ;
 
 module.exports = function (req, res, next) {
   var values = req.renderValues ? req.renderValues : {};
+
 
   values.loggedUser = req.user;
 
@@ -21,6 +23,7 @@ module.exports = function (req, res, next) {
 
      _.each(posts, function (post) {
        post.timeago = customUtils.timeago(post.createdAt);
+       post.markedText = marked(post.text);
      });
 
       values.posts = posts;
