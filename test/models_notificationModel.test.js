@@ -106,7 +106,7 @@ describe.only('Notification', function () {
       });
     });
 
-    it('should dont dont anything when publishing a notif with same from and to', function (done) {
+    it('should not do anything when publishing a notif with same from and to', function (done) {
 
       notificator.publish({ type: 'read'
                           , from: user

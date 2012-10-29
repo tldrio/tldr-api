@@ -21,7 +21,7 @@ function sendReadReport (previousFlush) {
    .where('type').equals('read')
    .exec(function(err, docs) {
      if (err) {
-       console.log('Error Fatal');
+       console.log('Fatal error, couldnt retrieve the docs');
        process.exit(1);
      }
      // Group Notifs by Tldr
