@@ -107,7 +107,7 @@ app.get('/users/logout', routes.logout);
 
 // tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.post('/tldrs/search', routes.searchTldrsByBatch);
+app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.get('/tldrs', routes.searchTldrs); // Convenience route
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
