@@ -47,6 +47,9 @@ TopicSchema = new Schema(
   , lastPostAt: { type: Date
                 , default: Date.now
                 }
+  , createdAt: { type: Date
+               , default: Date.now
+               }
   }
 , { strict: true });
 
