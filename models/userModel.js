@@ -18,8 +18,8 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
-  , userUpdatableFields = ['username', 'email', 'bio']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio']         // Fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -102,6 +102,30 @@ function validateBio (value) {
   } else {
     return false;
   }
+}
+
+
+// Twitter handle should be null or less than 15 characters
+function validateTwitterHandle (value) {
+  if (! value || value.length <= 15) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+/*
+ * Specific setters
+ */
+function setTwitterHandle (value) {
+  var handle = customUtils.sanitizeInput(value);
+
+  if (handle[0] === '@') {
+    handle = handle.substring(1);
+  }
+
+  return handle;
 }
 
 
@@ -233,6 +257,20 @@ function updateValidFields (data, callback) {
 }
 
 
+/**
+ * given email, compute md5 hash and assemble gravatar url
+ *
+ */
+function getGravatarUrlFromEmail (email) {
+  var hash = email ? email.trim().toLowerCase() : ''
+    , md5 = crypto.createHash('md5');
+
+  md5.update(hash, 'utf8');
+
+  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
+  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
+}
+
 /*
  * Create a User instance and save it to the database
  * All defaults are located here instead of in the schema or in setters
@@ -357,7 +395,6 @@ function isAdmin() {
   return adminEmails[this.email] ? true : false;
 }
 
-
 /**
  * Sets the URL to this user's gravatar
  * @param {String} gravatarEmail Email to be linked to the Gravatar account
@@ -371,16 +408,6 @@ function updateGravatarEmail(gravatarEmail, callback) {
   this.save(callback);
 }
 
-// Separated from the function above to be able to use it without having to save
-function getGravatarUrlFromEmail (email) {
-  var hash = email ? email.trim().toLowerCase() : ''
-    , md5 = crypto.createHash('md5');
-
-  md5.update(hash, 'utf8');
-
-  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
-}
 
 
 
@@ -437,6 +464,9 @@ UserSchema = new Schema(
   , bio: { type: String
          , validate: [validateBio, i18n.validateUserBio]
          , set: customUtils.sanitizeInput}
+  , twitterHandle: { type: String
+                   , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
+                   , set: setTwitterHandle }
   }
 , { strict: true });
 

@@ -37,7 +37,7 @@ describe('UserHistory', function () {
   });
 
   beforeEach(function (done) {
-    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }) }   // Remove everything from collection
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
       async.apply(theRemove, User)

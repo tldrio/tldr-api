@@ -71,7 +71,7 @@ function createNewTldr (req, res, next) {
 
         // Populate creator username
         Tldr.findOne({_id: tldr.id})
-          .populate('creator', 'username')
+          .populate('creator', 'username twitterHandle')
           .exec( function (err, tldr) {
             return res.json(201, tldr);
         });

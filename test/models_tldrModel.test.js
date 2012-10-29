@@ -76,6 +76,24 @@ describe('Tldr', function () {
       });
     });
 
+    it('should detect missing required title arg', function (done) {
+      var tldrData = {
+        url: 'http://bloup.com/',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        console.log(err);
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.title.should.not.equal(undefined);
+
+        done();
+      });
+    });
+
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
@@ -126,6 +144,28 @@ describe('Tldr', function () {
         _.keys(err.errors).length.should.equal(1);
 				valErr = models.getAllValidationErrorsWithExplanations(err.errors);
 				valErr.summaryBullets.should.not.equal(null);
+
+        done();
+      });
+
+    });
+
+    it('should reject a title thats too long', function (done) {
+
+      var tldrData = {
+          url: 'http://needforair.com/nutcrackers',
+          title: 'Blog Blog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmuNFAmm',   // 201 characters
+          resourceAuthor: 'NFA Crew',
+          summaryBullets: ['bloup']
+          }
+        , valErr;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        err.name.should.equal('ValidationError');
+
+        _.keys(err.errors).length.should.equal(1);
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.title.should.not.equal(null);
 
         done();
       });
@@ -262,7 +302,7 @@ describe('Tldr', function () {
   describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
-      var tldrData = { title: 'Blog NFA'
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
@@ -527,10 +567,10 @@ describe('Tldr', function () {
       var theUrl = "http://www.youtube.com/?aRg=valuEEe";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe");
 
-      var theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
+      theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
 
-      var theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
+      theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
 
       done();
@@ -697,7 +737,7 @@ describe('Tldr', function () {
           summaryBullets: ['AwBlog', 'Bzzzup'],
           resourceAuthor: 'Someone',
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
-          }
+          };
 
        Tldr.createAndSaveInstance(userInput, user, function(err) {
          err.name.should.equal('CastError');   // Cant cast normal strings to date
@@ -716,9 +756,8 @@ describe('Tldr', function () {
         , valErr;
 
       Tldr.createAndSaveInstance(tldrData, user, function (err, doc) {
-        // We can test against the regular '<' character or its unicode escape equivalent
+        // We can test against the regular '<' character
         doc.summaryBullets[1].should.equal( 'tit<i');
-        doc.summaryBullets[1].should.equal( 'tit\u003ci');
 
         // We need to use the unicode escape here because this is not a regular space but a non breakable space
         doc.title.should.equal('toto\u00a0titi');
@@ -962,7 +1001,7 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup' }
+                     , resourceAuthor: 'bloup' };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
         tldr.readCount.should.equal(0);

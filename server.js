@@ -189,7 +189,7 @@ app.launchServer = function (cb) {
       });
     });
   });
-}
+};
 
 
 /*
@@ -206,7 +206,7 @@ app.stopServer = function (cb) {
       callback();
     });
   });
-}
+};
 
 
 /*

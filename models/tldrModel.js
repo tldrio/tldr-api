@@ -21,7 +21,7 @@ var _ = require('underscore')
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
-  , async = require('async');
+  , async = require('async')
   ;
 
 
@@ -63,7 +63,7 @@ function validateBullets (value) {
 //Titles should be defined, non empty and not be too long
 function validateTitle (value) {
   try {
-    check(value).len(1, 70);
+    check(value).len(1, 200);
     return true;
   } catch(e) {
     return false;
@@ -99,6 +99,7 @@ TldrSchema = new Schema(
   , title: { type: String
            , validate: [validateTitle, i18n.validateTldrTitle]
            , set: customUtils.sanitizeInput
+           , required: true
            }
   , summaryBullets: { type: Array
                     , required: true
@@ -216,7 +217,7 @@ TldrSchema.methods.serialize = function () {
   });
 
   return JSON.stringify(jsonVersion);
-}
+};
 
 
 /**
@@ -267,7 +268,7 @@ TldrSchema.methods.incrementReadCount = function (cb) {
 
   this.readCount += 1;
   this.save(callback);
-}
+};
 
 
 

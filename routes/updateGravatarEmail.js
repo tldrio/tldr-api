@@ -19,4 +19,4 @@ module.exports = function (req, res, next) {
     res.setHeader('WWW-Authenticate', i18n.unknownUser);
     return res.json(401, { message: i18n.unauthorized} );
   }
-}
+};

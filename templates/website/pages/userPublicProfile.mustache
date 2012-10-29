@@ -7,41 +7,93 @@
 
 {{^userNotFound}}
 
-<div class="row-fluid">
-<div class="span8 offset2 well-white">
+<div class="row">
+  <div class="span12 well-white">
+    <div class="row">
 
-  <!-- Username, reputation, basic info and avatar -->
-  <div class="row-fluid">
-    <div class="span6">
-    <h1>{{user.username}}</h1><br>
-    Joined on {{user.createdAtReadable}}
-    </div>
+      <div class="span3 vcard" itemscope itemtype="http://schema.org/Person">
+        <div class="avatar">
+          <img width="210px" height="210px" src="{{user.gravatar.url}}&s=210"  class="img-polaroid" alt="{{user.username}}">
+        </div>
 
-    <div class="offset3 span3">
-      <img src="{{user.gravatar.url}}&s=180" style="height: 180px; width:180px" class="img-polaroid" alt="avatar">
+        <div>
+          <h1 itemprop="name">{{user.username}}</h1>
+        </div>
+
+        <hr>
+
+        <div>
+          <dl class="dl-horizontal">
+            <dt>
+              <i class="icon icon-time"></i>
+              <span>Joined on:</span>
+            </dt>
+            <dd>
+              <span>{{user.createdAtReadable}}</span>
+            </dd>
+            <dt>
+              <i class="icon icon-gift"></i>
+              <span>tl;drs created:</span>
+            </dt>
+            <dd>
+              <span>{{user.numberTldrsCreated}}</span>
+            </dd>
+            {{#user.twitterHandle}}
+            <dt>
+              <i class="icon icon-retweet"></i>
+              <span>See on Twitter:</span>
+            </dt>
+            <dd>
+              <span>
+                <a href="http://twitter.com/{{user.twitterHandle}}" target="_blank">@{{user.twitterHandle}}</a>
+              </span>
+            </dd>
+            {{/user.twitterHandle}}
+          </dl>
+        </div>
+
+        <hr>
+
+        {{#user.bio}}
+        <div>
+          <dl>
+            <dt>
+              <i class="icon icon-user"></i>
+              <span>tl;dr of {{user.username}} </span>
+            </dt>
+            <dd>
+              <span itemprop="description">
+                {{user.bio}}
+              </span>
+            </dd>
+          </dl>
+        </div>
+        {{/user.bio}}
+      </div>
+
+      <!-- Latest created tldrs if any -->
+      {{#user.numberTldrsCreated}}
+      <div class="offset1 span8">
+        <div class="latest-tldrs-created">
+          <h3>Latest webpages tamed:</h3>
+          <ul class="unstyled">
+            {{#user.tldrsCreated}}
+            <li>
+              <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+              <p class="tldr-title-ellipsis">
+                <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+              </p>
+              <span class="tldr-hostname tldr-hostname-list">({{hostname}})</span>
+            </li>
+            {{/user.tldrsCreated}}
+          </ul>
+        </div>
+      </div>
+      {{/user.numberTldrsCreated}}
+
     </div>
   </div>
-
-  <!-- User bio -->
-  <hr>
-  <strong>About me:</strong> {{user.bio}}
-
-
-
-  <!-- Latest created tldrs if any -->
-  {{#user.createdMoreThanOneTldr}}
-  <hr>
-    <strong>Latest tldrs created by {{user.username}}:</strong>
-    <ul>
-    {{#user.tldrsCreated}}
-      <li> <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
-      </li>
-    {{/user.tldrsCreated}}
-    </ul>
-  {{/user.createdMoreThanOneTldr}}
-
-
 </div>
-</div>
+
 
 {{/userNotFound}}

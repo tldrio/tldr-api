@@ -560,7 +560,7 @@ describe('User', function () {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
                      , email: 'validzzzzz@gmail.com'
-                     }
+                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
         user.updateGravatarEmail("louis.chatriot@gmail.com", function (err, user) {
@@ -589,7 +589,7 @@ describe('User', function () {
       var userData = { username: 'Louis'
                      , password: 'notTOOshort'
                      , email: 'louis.chatriot@gmail.com'
-                     }
+                     };
       User.createAndSaveInstance(userData, function(err, user) {
         user.gravatar.url.should.equal('https://secure.gravatar.com/avatar/e47076995bbe79cfdf507d7bbddbe106?d=wavatar');
         user.gravatar.email.should.equal('louis.chatriot@gmail.com');
@@ -613,6 +613,7 @@ describe('User', function () {
                     , password: 'anothergood'
                     , email: 'another@valid.com'
                     , bio: 'Another bio !!'
+                    , twitterHandle: 'tldrio'
                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
@@ -625,7 +626,30 @@ describe('User', function () {
           user2.username.should.equal("NFAMasterDeploy");
           user2.email.should.equal("another@valid.com");
           user2.bio.should.equal("Another bio !!");
+          user2.twitterHandle.should.equal('tldrio');
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
+
+          done();
+        });
+      });
+    });
+
+    it('should remove the leading @ of a twitter handle if there is one', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     , bio: 'first bio'
+                     }
+        , newData = { username: 'NFAMasterDeploy'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    , twitterHandle: '@tldrio'
+                    };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.updateValidFields(newData, function(err, user2) {
+          user2.twitterHandle.should.equal('tldrio');
 
           done();
         });
@@ -641,6 +665,7 @@ describe('User', function () {
           , password: 'anothergood'
           , email: 'anothervalid'
           , bio: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+          , twitterHandle: 'nopenope'
           };
 
       User.createAndSaveInstance(userData, function(err, user) {
@@ -655,7 +680,12 @@ describe('User', function () {
           assert.isDefined(err.errors.email);
           assert.isDefined(err.errors.bio);
 
-          done();
+          newData.twitterHandle = 'dlskgjlsdkfgjlwaaaaaaaytoolong';
+          user.updateValidFields(newData, function (err, user4) {
+            assert.isDefined(err.errors.twitterHandle);
+
+            done();
+          });
         });
       });
     });
@@ -750,7 +780,7 @@ describe('User', function () {
           assert.isNull(err);
 
           assert.isDefined(user.resetPasswordToken);
-          token = user.resetPasswordToken
+          token = user.resetPasswordToken;
 
           user.createResetPasswordToken(function(err) {
             assert.isNull(err);
@@ -871,7 +901,8 @@ describe('User', function () {
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
-                               , bio: 'something'
+                               , bio: 'something'   // No possible XSS problem on creation
+                               , twitterHandle: 'another'  // No possible XSS problem on creation
                                , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
@@ -880,6 +911,7 @@ describe('User', function () {
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
         assert.isUndefined(theUser.bio);
+        assert.isUndefined(theUser.twitterHandle);
         theUser.gravatar.email.should.equal('email@email.com');
 
         done();
@@ -890,12 +922,13 @@ describe('User', function () {
       var goodUserInput = { email: 'blip@email.com'
                                , password: 'supersecret!'
                                , username: 'quelquun'
-                               };
-      var userInput = { email: 'ema-moz-bindingil@email.com'
+                               }
+        , userInput = { email: 'ema-moz-bindingil@email.com'
                                , username: 'Stevie_sTar-moz-bindingAc1'
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something not cool like a document.write is here'
+                               , twitterHandle: 'rohdocument.writebad'
                                };
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
@@ -904,6 +937,7 @@ describe('User', function () {
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');
+          theUser.twitterHandle.should.equal('rohbad');
 
           done();
         });
