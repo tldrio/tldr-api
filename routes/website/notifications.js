@@ -5,6 +5,7 @@
 */
 
 var _ = require('underscore')
+  , customUtils = require('../../lib/customUtils')
   , Notification = require('../../lib/models').Notification;
 
 function notificationsRoute (req, res, next) {
@@ -14,15 +15,14 @@ function notificationsRoute (req, res, next) {
 
     // We populate the fields we need for display
   Notification.find({ _id: { $in: _.pluck(notifications, '_id')} })
-  .populate('tldr', 'title')
-  .populate('from', 'username')
+  .populate('tldr', 'title readCount')
   .sort('-createdAt')
   .exec(function(err, populatedNotifs) {
     values.notifications = populatedNotifs;
-    
+
     // Nice date Display
     _.each(values.notifications, function (notif, i) {
-      values.notifications[i].displayDate = (new Date(notif.createdAt)).toDateString();
+      values.notifications[i].displayDate = customUtils.dateForDisplay(new Date(notif.createdAt));
     });
 
     res.render('website/basicLayout', { values: values
