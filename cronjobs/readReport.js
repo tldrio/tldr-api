@@ -3,7 +3,6 @@ var config = require('../lib/config')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
   , i18n = require('../lib/i18n')
-  , sleep = require('../lib/customUtils').sleep
   , DbObject = require('../lib/db')
   , _ = require('underscore')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
@@ -84,5 +83,4 @@ db.connectToDatabase(function() {
 
   //}
   //console.log('current', now);
-  //sleep(1000);
 //}
