@@ -2,6 +2,7 @@ var models = require('../../lib/models')
   , Topic = models.Topic
   , Post = models.Post
   , _ = require('underscore')
+  , customUtils = require('../../lib/customUtils')
   , config = require('../../lib/config')
   ;
 
@@ -18,6 +19,9 @@ module.exports = function (req, res, next) {
         .populate('creator', 'username gravatar')
         .exec(function (err, posts) {
 
+     _.each(posts, function (post) {
+       post.timeago = customUtils.timeago(post.createdAt);
+     });
 
       values.posts = posts;
       values.topic = topic;
