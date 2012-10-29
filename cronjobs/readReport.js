@@ -32,7 +32,10 @@ function sendReadReport (previousFlush) {
      User.find({ _id: { $in: userIds } }, function (err, users) {
        async.forEach(users, function (user, callback) {
          var tldrsRead
-           , tldrsForReport = [];
+           , tldrsForReport = []
+					 , newViews
+					 , newViewsText;
+
          if (user.notificationsSettings.read) {
 
            // Group by tldr read
@@ -43,7 +46,14 @@ function sendReadReport (previousFlush) {
 
              // Iterate on the tldr for a given user
              tldrs.forEach(function (tldr, j) {
-               tldrsForReport.push({ readCount: tldrsRead[tldr._id].length, tldrTitle: tldr.title, tldrId: tldr._id });
+							 newViews = tldrsRead[tldr._id].length;
+							 if (newViews === 1) {
+							   newViewsText = newViews + ' more time';
+							 } else {
+							   newViewsText = newViews + ' more times';
+							 }
+               tldrsForReport.push({ newViewsText: newViewsText
+																	 , tldr: tldr });
              });
 
              mailer.sendEmail({ type: 'readReport'
