@@ -50,12 +50,31 @@
         </li>
 
         {{/notifications}}
+        {{^notifications}}
+        <li class="notification-list-wrapper">
 
-      </ul>
+          <div class="row">
+            <div class="span7">
+              <div class="notification-list-el unseen-notif" >
+
+                <div class="row">
+                  <div class="span5">
+                    You don't have any notification yet. <strong>Contribute</strong> some tl;drs to <strong>get notified</strong> when somebody reads one.
+                  </div>
+                  <div class="span1">
+                    <i class="icon-ok-sign mark-notif-read"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{/notifications}}
+
+        </ul>
+      </div>
     </div>
-  </div>
 
-</section>
+  </section>
 
 
 
