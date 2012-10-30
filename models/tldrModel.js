@@ -165,6 +165,22 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
 
 /**
+ * Update tldr by batch
+ * @param {Object} batch Array of urls concerned by the update
+ * @param {Object} updateQuery Mongo update object
+ * @param {Function} cb Optional - Pass a callback if you want to resume flow after increment
+ * @return {void}
+ */
+TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
+
+  if (!cb) {
+    return this.update({ url: { $in: batch } }, updateQuery, { multi: true }).exec() ;
+  } else {
+    return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, cb);
+  }
+};
+
+/**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value
@@ -268,7 +284,6 @@ TldrSchema.methods.incrementReadCount = function (cb) {
   this.readCount += 1;
   this.save(callback);
 };
-
 
 
 // Define tldr model

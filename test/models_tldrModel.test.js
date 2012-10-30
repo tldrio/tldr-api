@@ -659,6 +659,38 @@ describe('Tldr', function () {
 
   });   // ==== End of '#normalizeUrl' ==== //
 
+  describe('#updateBatch', function () {
+
+    it('should proceed to a batch update giving an array of url', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , tldrData2 = { title: 'Blog NFA - Totot'
+                     , url: 'http://anotherdomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , tldrData3 = { title: 'Blog NFA - tata'
+                     , url: 'http://athirddomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , batch = [tldrData1.url, tldrData2.url, 'http://nonexistingdomain.com/'];
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr) {
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr) {
+          Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr) {
+            Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
+              if (err) { return done(err); }
+              num.should.equal(2);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+  });
+
 
   describe('XSS prevention and user input cleaning and decoding', function () {
 
