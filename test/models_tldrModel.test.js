@@ -674,15 +674,25 @@ describe('Tldr', function () {
                      , url: 'http://athirddomain.com/'
                      , summaryBullets: ['coin']
                      , resourceAuthor: 'bloup'}
-        , batch = [tldrData1.url, tldrData2.url, 'http://nonexistingdomain.com/'];
+        , batch = [tldrData1.url, tldrData2.url, 'http://nonexistingdomain.com/']
+        , prevReadCount1
+        , prevReadCount2;
 
       Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr) {
+        prevReadCount1 = tldr.readCount;
         Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr) {
+          prevReadCount2 = tldr.readCount;
           Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr) {
             Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
               if (err) { return done(err); }
               num.should.equal(2);
-              done();
+              Tldr.find({ url: tldrData1.url }, function (err, tldr) {
+                tldr[0].readCount.should.equal(prevReadCount1 + 1);
+                Tldr.find({ url: tldrData2.url }, function (err, tldr) {
+                  tldr[0].readCount.should.equal(prevReadCount2 + 1);
+                  done();
+                });
+              });
             });
           });
         });

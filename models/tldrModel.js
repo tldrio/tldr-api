@@ -172,12 +172,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
  * @return {void}
  */
 TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
-
-  if (!cb) {
-    return this.update({ url: { $in: batch } }, updateQuery, { multi: true }).exec() ;
-  } else {
-    return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, cb);
-  }
+  var callback = cb || function () {};
+  return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
 
 /**
