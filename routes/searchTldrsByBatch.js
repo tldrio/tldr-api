@@ -29,12 +29,14 @@ function searchTldrsByBatch (req, res, next) {
 
 
   //Search by batch
-  Tldr.find({url: { $in: batch }})
+  Tldr.find({ url: { $in: batch } })
     .populate('creator', 'username twitterHandle')
     .exec( function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
       }
+      // update read count - We dont wait for the operation to be executed
+      Tldr.update({ url: { $in: batch } }, { $inc: { readCount: 1 } }, { multi: true }).exec() ;
 
       return res.json(200, { tldrs: docs} );
     });
