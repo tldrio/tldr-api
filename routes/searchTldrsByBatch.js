@@ -14,6 +14,8 @@ var bunyan = require('../lib/logger').bunyan
 
 /**
  * Search tldrs by batch
+ * Search and return existing tldrs contained in the batch array provided in the body
+ * Result in contained in an object with the `tldrs` key
  */
 function searchTldrsByBatch (req, res, next) {
   var query = req.query
@@ -22,18 +24,21 @@ function searchTldrsByBatch (req, res, next) {
   bunyan.incrementMetric('tldrs.search.routeCalled');
 
   // We normalize the urls
+  // Creates an empty array if req.body.batch doest exist
   batch = _.map(req.body.batch, normalizeUrl);
 
 
   //Search by batch
-  Tldr.find({url: { $in: batch }})
+  Tldr.find({ url: { $in: batch } })
     .populate('creator', 'username twitterHandle')
     .exec( function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
       }
+      // update read count - We dont wait for the operation to be executed
+      Tldr.update({ url: { $in: batch } }, { $inc: { readCount: 1 } }, { multi: true }).exec() ;
 
-      return res.json(200, { docs: docs} );
+      return res.json(200, { tldrs: docs} );
     });
 
 }
