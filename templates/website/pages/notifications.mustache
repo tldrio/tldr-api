@@ -5,30 +5,47 @@
 
 <section id="notifications-container">
 
-  <div class="row-fluid">
-    <div class="span6 offset3">
+  <div class="row">
+    <div class="span7 offset3">
 
+      <input type="button" class="btn btn-small offset5" id="mark-all-notif-read" value="Mark all as read">
 
       <ul id="notifications-collection">
 
-        <input type="button" class="btn btn-small offset9" id="mark-all-notif-read" value="Mark all as read">
         <div class="notification-separator"> </div>
         {{#notifications}}
-
         <li class="notification-list-wrapper">
-          <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
-            You have a <strong>new reader</strong>
-            for your aweome tl;dr 
-            <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{tldr.title}}</a></strong>. 
 
-            {{#unseen}}
-            <i class="icon-ok-sign mark-notif-read"></i>
-            {{/unseen}}
+          <div class="row">
+            <div class="span7">
+              <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
 
-            <div class="notification-date">
-              {{displayDate}}
+                <div class="row">
+                  <div class="span5">
+                    Someone read your awesome <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">tl;dr</a></strong> of 
+                    <strong><a href="{{tldr.url}}">{{tldr.title}}</a></strong>. 
+                  </div>
+
+                  {{#unseen}}
+                  <div class="span1">
+                    <i class="icon-ok-sign mark-notif-read"></i>
+                  </div>
+                  {{/unseen}}
+                </div>
+
+                <div class="row">
+                  <div class="span6">
+                    <div class="notification-date">
+                      {{displayDate}}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
             </div>
           </div>
+
           <div class="notification-separator"> </div>
         </li>
 
