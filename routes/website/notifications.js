@@ -11,7 +11,11 @@ var _ = require('underscore')
 function notificationsRoute (req, res, next) {
 
   var values = req.renderingValues
-    , notifications = values.notifications;
+    , notifications = values.notifications
+    , prefixes = [ 'Cool beans! Someone read your awesome '
+                   , 'Good news! Your saved the day for someone with your '
+                   , 'Way to go! You helped someone today with your '];
+
 
     // We populate the fields we need for display
   Notification.find({ _id: { $in: _.pluck(notifications, '_id')} })
@@ -23,6 +27,7 @@ function notificationsRoute (req, res, next) {
     // Nice date Display
     _.each(values.notifications, function (notif, i) {
       values.notifications[i].displayDate = customUtils.dateForDisplay(new Date(notif.createdAt));
+      values.notifications[i].prefix = prefixes[ Math.floor( Math.random() * prefixes.length) ];
     });
 
     res.render('website/basicLayout', { values: values
