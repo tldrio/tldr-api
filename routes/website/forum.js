@@ -10,15 +10,15 @@ module.exports = function (req, res, next) {
   values.loggedUser = req.user;
 
   Topic.find({})
-       .sort('-lastPostAt')
-       .populate('creator', 'username')
+       .sort('-lastPost.at')
+       .populate('lastPost.by', 'username')
        .exec(function(err, topics) {
     if (err) { return next({ statusCode: 500, body: { message: "An internal error occured" }}); }
 
     values.topics = topics;
 
     _.each(topics, function (topic) {
-       topic.lastPostTimeago = customUtils.timeago(topic.lastPostAt);
+       topic.lastPostTimeago = customUtils.timeago(topic.lastPost.at);
        topic.moreThanOnePost = (topic.posts.length > 1);
      });
 

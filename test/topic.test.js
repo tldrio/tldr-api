@@ -21,7 +21,7 @@ var should = require('chai').should()
 
 
 describe('Topic', function () {
-  var user;
+  var user, userbis;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -37,7 +37,12 @@ describe('Topic', function () {
         Topic.remove({}, function (err) {
           User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
             user = _user;
-            done();
+
+            User.createAndSaveInstance({ username: "ffff", password: "eeeeeeee", email: "validanother@email.com" }, function(err, _user) {
+              userbis = _user;
+
+              done();
+            });
           });
         });
       });
@@ -156,24 +161,45 @@ describe('Topic', function () {
       });
     });
 
-    it('Should update lastPostAt iif someone posts succesfully to a topic', function (done) {
+    it('Should update lastPost.at iif someone posts succesfully to a topic', function (done) {
       var topicData = { title: "A title" }
         , postData1 = { text: "first post yeaaah" }
         , postData2 = { text: "oh noes im only second" }
         , date0, date1, date2, date3;
 
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
-        date0 = topic.lastPostAt;
+        date0 = topic.lastPost.at;
         topic.addPost(postData1, user, function (err, post) {
-          date1 = topic.lastPostAt;
+          date1 = topic.lastPost.at;
           topic.addPost(postData2, user, function (err, post) {
-            date2 = topic.lastPostAt;
+            date2 = topic.lastPost.at;
             assert.isTrue(date1 - date0 > 0);
             assert.isTrue(date2 - date1 > 0);
 
             topic.addPost({}, user, function (err, post) {
-              date3 = topic.lastPostAt;
+              date3 = topic.lastPost.at;
               date3.should.equal(date2);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update lastPost.by iif someone posts succesfully to a topic', function (done) {
+      var topicData = { title: "A title" }
+        , postData1 = { text: "first post yeaaah" }
+        , postData2 = { text: "oh noes im only second" };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        topic.addPost(postData1, user, function (err, post) {
+          topic.lastPost.by.toString().should.equal(user._id.toString());
+          topic.addPost(postData2, userbis, function (err, post) {
+            topic.lastPost.by.toString().should.equal(userbis._id.toString());
+            topic.addPost({}, user, function (err, post) {
+              assert.isDefined(err);
+              topic.lastPost.by.toString().should.equal(userbis._id.toString());
 
               done();
             });
