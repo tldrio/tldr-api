@@ -80,8 +80,8 @@ function sendReadReport (previousFlush) {
 
 db.connectToDatabase(function() {
   previousFlush = new Date();
-	// We send the report for the notifs of the past day
-  previousFlush.setDate( previousFlush.getDate() - 1 );
+	// We send the report for the notifs of the past 7 days
+  previousFlush.setDate( previousFlush.getDate() - 7 );
   sendReadReport(previousFlush);
 });
 
