@@ -106,13 +106,27 @@ function validateBio (value) {
 }
 
 
-// Twitter handle should be null or a string beginning with '@' and less than 16 characters
+// Twitter handle should be null or less than 15 characters
 function validateTwitterHandle (value) {
-  if (! value || (value.length <= 16 && value[0] === '@')) {
+  if (! value || value.length <= 15) {
     return true;
   } else {
     return false;
   }
+}
+
+
+/*
+ * Specific setters
+ */
+function setTwitterHandle (value) {
+  var handle = customUtils.sanitizeInput(value);
+
+  if (handle[0] === '@') {
+    handle = handle.substring(1);
+  }
+
+  return handle;
 }
 
 
@@ -475,7 +489,7 @@ UserSchema = new Schema(
          , set: customUtils.sanitizeInput}
   , twitterHandle: { type: String
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
-                   , set: customUtils.sanitizeInput }
+                   , set: setTwitterHandle }
   }
 , { strict: true });
 

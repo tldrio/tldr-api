@@ -365,6 +365,57 @@ describe('Webserver', function () {
 
     });
 
+    it('Should be able to Search tldrs by batch and return the docs with the necessary info populated', function (done) {
+      var someTldrs = []
+        , i
+        , temp
+        , batch
+        , now = new Date();
+
+      // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
+      for (i = 0; i <= 25; i += 1) {
+        temp = new Date(now - 10000 * (i + 1));
+        someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , hostname: 'needforair.com'
+                                , title: 'sopa'
+                                , summaryBullets: ['Great article']
+                                , resourceAuthor: 'Louis'
+                                , resourceDate: new Date()
+                                , creator: user1._id
+                                , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
+                                , createdAt: new Date()
+                                , updatedAt: temp  }));
+      }
+
+      batch = ['http://needforair.com/sopa/number0', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist' ];
+
+      saveSync(someTldrs, 0, done, function() {
+
+        // Should return empty array if request is not well formed
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/tldrs/searchBatch'
+                     , json: { badObject: batch } } , function (err, res, body) {
+
+          body.tldrs.length.should.be.equal(0);
+
+          // Request should return existing tldrs in the batch array
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/tldrs/searchBatch'
+                       , json: { batch: batch } } , function (err, res, body) {
+
+            var tldrs = body.tldrs
+              , tldrizedUrls = _.pluck(tldrs, 'url');
+            tldrizedUrls.length.should.equal(3);
+            tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
+            tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
+            tldrs[0].creator.username.should.equal('UserOne');
+            assert.isUndefined(tldrs[0].creator.password);
+            done();
+          });
+        });
+      });
+    });
+
 
     it('Should serve tldr-page if accept header is text/html', function (done) {
       request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, body) {
@@ -673,7 +724,7 @@ describe('Webserver', function () {
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
-            obj.twitterHandle.should.equal("@fuckyeah");
+            obj.twitterHandle.should.equal("fuckyeah");   // Leading @ was automatically removed
 
             done();
            });
@@ -773,7 +824,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfacom"
                              , password: "abad"
-                             , twitterHandle: 'BAD'
+                             , twitterHandle: 'BjashkgfshdfgjhasgfdadhgfAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);

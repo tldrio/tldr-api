@@ -76,6 +76,24 @@ describe('Tldr', function () {
       });
     });
 
+    it('should detect missing required title arg', function (done) {
+      var tldrData = {
+        url: 'http://bloup.com/',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        console.log(err);
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.title.should.not.equal(undefined);
+
+        done();
+      });
+    });
+
     it('should accept only valid urls ', function (done) {
 
       var tldrData = {
@@ -658,6 +676,48 @@ describe('Tldr', function () {
     //});
 
   });   // ==== End of '#normalizeUrl' ==== //
+
+  describe('#updateBatch', function () {
+
+    it('should proceed to a batch update giving an array of url', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , tldrData2 = { title: 'Blog NFA - Totot'
+                     , url: 'http://anotherdomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , tldrData3 = { title: 'Blog NFA - tata'
+                     , url: 'http://athirddomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'}
+        , batch = [tldrData1.url, tldrData2.url, 'http://nonexistingdomain.com/']
+        , prevReadCount1
+        , prevReadCount2;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr) {
+        prevReadCount1 = tldr.readCount;
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr) {
+          prevReadCount2 = tldr.readCount;
+          Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr) {
+            Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
+              if (err) { return done(err); }
+              num.should.equal(2);
+              Tldr.find({ url: tldrData1.url }, function (err, tldr) {
+                tldr[0].readCount.should.equal(prevReadCount1 + 1);
+                Tldr.find({ url: tldrData2.url }, function (err, tldr) {
+                  tldr[0].readCount.should.equal(prevReadCount2 + 1);
+                  done();
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });
 
 
   describe('XSS prevention and user input cleaning and decoding', function () {
