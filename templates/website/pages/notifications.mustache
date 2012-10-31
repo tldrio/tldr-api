@@ -5,80 +5,42 @@
 
 <section id="notifications-container">
 
-  <div class="row">
-    <div class="span7 offset3">
 
-      <input type="button" class="btn btn-small offset5" id="mark-all-notif-read" value="Mark all as read">
+  <input type="button" class="btn btn-small" id="mark-all-notifications-read" value="Mark all as read">
 
-      <ul id="notifications-collection">
+  <ul id="notifications-collection">
 
-        <div class="notification-separator"> </div>
-        {{#notifications}}
-        <li class="notification-list-wrapper">
+    <div class="notification-separator"> </div>
+    {{#notifications}}
+    <li class="notification-list-el {{#unseen}}unseen-notification{{/unseen}}" data-id="{{_id}}">
 
-          <div class="row">
-            <div class="span7">
-              <div class="notification-list-el {{#unseen}}unseen-notif{{/unseen}}" data-id="{{_id}}">
 
-                <div class="row">
-                  <div class="span5">
-                    {{prefix}} <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">tl;dr</a></strong> of 
-                    <strong><a href="{{tldr.url}}">{{tldr.title}}</a></strong>. 
-                  </div>
-
-                  {{#unseen}}
-                  <div class="span1">
-                    <i class="icon-ok-sign mark-notif-read"></i>
-                  </div>
-                  {{/unseen}}
-                </div>
-
-                <div class="row">
-                  <div class="span6">
-                    <div class="notification-date">
-                      {{displayDate}}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-
-          <div class="notification-separator"> </div>
-        </li>
-
-        {{/notifications}}
-        {{^notifications}}
-        <li class="notification-list-wrapper">
-
-          <div class="row">
-            <div class="span7">
-              <div class="notification-list-el unseen-notif" >
-
-                <div class="row">
-                  <div class="span5">
-                    You don't have any notification yet. <strong>Contribute</strong> some tl;drs to <strong>get notified</strong> when somebody reads one.
-                  </div>
-                  <div class="span1">
-                    <i class="icon-ok-sign mark-notif-read"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {{/notifications}}
-
-        </ul>
+      <div class="notification-text">
+        {{prefix}} <strong><a href="{{websiteUrl}}/tldrs/{{tldr._id}}">tl;dr</a></strong> of 
+        <strong><a href="{{tldr.url}}">{{tldr.title}}</a></strong>. 
       </div>
-    </div>
 
-  </section>
-
+      {{#unseen}} <i class="icon-ok-sign mark-notification-read"></i> {{/unseen}}
 
 
+      <div class="notification-date"> {{displayDate}} </div>
 
+    </li>
 
+    <div class="notification-separator"> </div>
+    {{/notifications}}
+    {{^notifications}}
+    <li class="notification-list-wrapper">
 
+      <div class="notification-list-el unseen-notif" >
 
+        You don't have any notification yet. <strong>Contribute</strong> some tl;drs to <strong>get notified</strong> when somebody reads one.
+        <i class="icon-ok-sign mark-notification-read"></i>
+      </div>
+    </li>
+
+    {{/notifications}}
+
+  </ul>
+
+</section>
