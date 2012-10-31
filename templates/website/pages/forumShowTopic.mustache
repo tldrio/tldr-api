@@ -6,8 +6,9 @@
 {{/notFound}}
 
 {{^notFound}}
-  <a href="/forum/topics">Back to the forum</a>
-  <h2>{{topic.title}}</h2><br>
+  <a href="/forum/topics">Back to the forum</a><br><br>
+  <span class="topic-title">{{topic.title}}</span><span id="topic-specific-votes">{{#topic}}{{>website/vote}}{{/topic}}</span>
+  <br><br>
 
   {{#posts}}
     <div class="row">
