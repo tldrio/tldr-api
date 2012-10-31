@@ -21,7 +21,6 @@
 
       {{#unseen}} <i class="icon-ok-sign mark-notification-read"></i> {{/unseen}}
 
-
       <div class="notification-date"> {{displayDate}} </div>
 
     </li>
@@ -29,13 +28,14 @@
     <div class="notification-separator"> </div>
     {{/notifications}}
     {{^notifications}}
-    <li class="notification-list-wrapper">
 
-      <div class="notification-list-el unseen-notif" >
+    <li class="notification-list-el unseen-notification" >
 
+      <div class="notification-text">
         You don't have any notification yet. <strong>Contribute</strong> some tl;drs to <strong>get notified</strong> when somebody reads one.
-        <i class="icon-ok-sign mark-notification-read"></i>
       </div>
+      <i class="icon-ok-sign mark-notification-read"></i>
+      <div class="notification-date"> Today </div>
     </li>
 
     {{/notifications}}
