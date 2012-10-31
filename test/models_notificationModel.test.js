@@ -29,7 +29,7 @@ var should = require('chai').should()
  */
 
 
-describe.only('Notification', function () {
+describe('Notification', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -111,7 +111,6 @@ describe.only('Notification', function () {
       notificator.publish({ type: 'read'
                           , from: user
                           , tldr: tldr
-                          // all contributors instead of creator only ?? we keep creator for now as there a very few edits
                           , to: tldr.creator
                           });
        Notification.find({}, function (err, notifs) {
