@@ -20,7 +20,7 @@ var should = require('chai').should()
   , async = require('async');
 
 
-describe('Topic', function () {
+describe.only('Topic', function () {
   var user, userbis;
 
   before(function (done) {
@@ -106,6 +106,8 @@ describe('Topic', function () {
         topic.title.should.equal("youpla");
         topic.creator.toString().should.equal(user._id.toString());
         topic.posts.length.should.equal(0);
+        topic.votes.should.equal(0);
+        topic.alreadyVoted.length.should.equal(0);
         assert.isUndefined(topic.unusedField);
 
         done();
@@ -274,6 +276,83 @@ describe('Topic', function () {
     });
 
   });   // ==== End of '#createTopicAndFirstPost' ==== //
+
+
+  describe('#vote', function () {
+
+    it('Should not be able to vote with no voter', function (done) {
+      var topicData = { title: "youpla"
+                     , unusedField: "test"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.votes.should.equal(0);
+        topic.alreadyVoted.length.should.equal(0);
+
+        topic.vote(1, null, function (err, topic) {
+          assert.isDefined(err.voter);
+
+          done();
+        });
+      });
+    });
+
+    it('Should be able to vote but only once', function (done) {
+      var topicData = { title: "youpla"
+                     , unusedField: "test"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.votes.should.equal(0);
+        topic.alreadyVoted.length.should.equal(0);
+
+        topic.vote(1, user, function (err, topic) {
+          assert.isNull(err);
+          topic.votes.should.equal(1);
+          topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+
+          topic.vote(1, user, function (err, topic) {
+            assert.isNull(err);
+            topic.votes.should.equal(1);
+            topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should be able to downvote too', function (done) {
+      var topicData = { title: "youpla"
+                     , unusedField: "test"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.votes.should.equal(0);
+        topic.alreadyVoted.length.should.equal(0);
+
+        topic.vote(1, user, function (err, topic) {
+          assert.isNull(err);
+          topic.votes.should.equal(1);
+          topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+
+          topic.vote(-1, userbis, function (err, topic) {
+            assert.isNull(err);
+            topic.votes.should.equal(0);
+            topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
+
+            done();
+          });
+        });
+      });
+    });
+
+
+
+  });   // ==== End of '#vote' ==== //
 
 
   describe('XSS prevention', function () {

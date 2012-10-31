@@ -51,6 +51,10 @@ TopicSchema = new Schema(
   , createdAt: { type: Date
                , default: Date.now
                }
+  , votes: { type: Number
+           , default: 0
+           }
+  , alreadyVoted: [{ type: ObjectId }]   // Array of users who already voted for/against this topic
   }
 , { strict: true });
 
@@ -88,7 +92,7 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
     , newTopic = prepareTopicForCreation(topicData, creator);
 
   newTopic.save(callback);
-}
+};
 
 
 /**
@@ -112,7 +116,7 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
       callback(null, post);
     });
   });
-}
+};
 
 
 /**
@@ -157,7 +161,31 @@ TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, cre
       });
     });
   });
-}
+};
+
+
+/**
+ * Vote for/against a topic
+ * @param {Number} direction If positive, vote for. If negative, vote against
+ * @param {User} voter User who voted (he can't vote again)
+ * @param {Function} cb Optional callback. Signature: err, topic
+ */
+TopicSchema.methods.vote = function (direction, voter, cb) {
+  var callback = cb ? cb : function () {};
+
+  if (! voter || ! voter._id) {
+    return callback({ voter: "required" });
+  }
+
+  if (this.alreadyVoted.indexOf(voter._id) !== -1) {
+    return callback(null, this);   // Not an error, but nothing is done
+  }
+
+  this.votes = this.votes + (direction > 0 ? 1 : -1);
+  this.alreadyVoted.push(voter._id);
+
+  this.save(callback);
+};
 
 
 // Expose prepareTopicForCreation

@@ -76,7 +76,7 @@ PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
     , newPost = preparePostForCreation(postData, creator);
 
   newPost.save(callback);
-}
+};
 
 
 // Expose preparePostForCreation
