@@ -20,7 +20,7 @@ var should = require('chai').should()
   , async = require('async');
 
 
-describe.only('Topic', function () {
+describe('Topic', function () {
   var user, userbis;
 
   before(function (done) {
@@ -342,6 +342,34 @@ describe.only('Topic', function () {
           topic.vote(-1, userbis, function (err, topic) {
             assert.isNull(err);
             topic.votes.should.equal(0);
+            topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('By default, the vote is an unpvote', function (done) {
+      var topicData = { title: "youpla"
+                     , unusedField: "test"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.votes.should.equal(0);
+        topic.alreadyVoted.length.should.equal(0);
+
+        // null instead of a number
+        topic.vote(null, user, function (err, topic) {
+          assert.isNull(err);
+          topic.votes.should.equal(1);
+          topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+
+          // A string instead of a number
+          topic.vote("bloup", userbis, function (err, topic) {
+            assert.isNull(err);
+            topic.votes.should.equal(2);
             topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
 
             done();

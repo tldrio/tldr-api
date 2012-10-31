@@ -117,6 +117,9 @@ app.put('/tldrs/:id', routes.updateTldrWithId);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
+// Vote for/against a topic
+app.put('/forum/topics/:id', routes.voteOnTopic);
+
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 app.options('*', function (req, res, next) {
   res.send(200);

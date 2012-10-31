@@ -181,7 +181,7 @@ TopicSchema.methods.vote = function (direction, voter, cb) {
     return callback(null, this);   // Not an error, but nothing is done
   }
 
-  this.votes = this.votes + (direction > 0 ? 1 : -1);
+  this.votes = this.votes + (direction < 0 ? -1 : 1);
   this.alreadyVoted.push(voter._id);
 
   this.save(callback);
