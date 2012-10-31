@@ -12,6 +12,7 @@ module.exports = function (req, res, next) {
 
 
   values.loggedUser = req.user;
+  values.forum = true;
 
   Topic.findOne({ _id: req.params.id })
        .exec(function (err, topic) {

@@ -8,6 +8,7 @@ module.exports = function (req, res, next) {
   var values = {};
 
   values.loggedUser = req.user;
+  values.forum = true;
 
   Topic.find({})
        .sort('-lastPost.at')

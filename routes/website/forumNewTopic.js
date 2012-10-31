@@ -10,6 +10,8 @@ module.exports = function (req, res, next) {
     , postData = { text: req.body.firstPostText }
     ;
 
+  values.forum = true;
+
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/forumNewTopic}}' }
                                     });
