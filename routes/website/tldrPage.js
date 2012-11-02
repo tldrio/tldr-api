@@ -5,10 +5,13 @@
 */
 
 var _ = require('underscore')
-  , Tldr = require('../../lib/models').Tldr;
+  , Tldr = require('../../lib/models').Tldr
+  , bunyan = require('../../lib/logger').bunyan;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {};
+
+  bunyan.incrementMetric('tldrs.get.html');
 
   Tldr.findOne({ _id: req.params.id })
       .populate('creator', 'username')

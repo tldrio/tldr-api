@@ -105,7 +105,8 @@ app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 app.get('/users/logout', routes.logout);
 
-// tldrs
+// Tldrs
+app.get('/tldrs/:id/admin',routes.getTldrById);   // Admin route to see a tldr with all its history
 app.get('/tldrs/search', routes.searchTldrs);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.get('/tldrs', routes.searchTldrs); // Convenience route
