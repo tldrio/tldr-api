@@ -5,19 +5,19 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  req.renderValues = {};   // Will be passed to the next middleware's values
+  req.renderingValues = req.renderingValues || {};
 
   Topic.findOne({ _id: req.params.id }, function (err, topic) {
     if (err || ! topic) {
-      req.renderValues.notFound = true;
+      req.renderingValues.notFound = true;
       return next();
     }
 
     topic.addPost({ text: req.body.text }, req.user, function(err, post) {
       if (err) {
-        req.renderValues.displayValidationErrors = true;
-        req.renderValues.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
-        req.renderValues.userInput = req.body;
+        req.renderingValues.displayValidationErrors = true;
+        req.renderingValues.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
+        req.renderingValues.userInput = req.body;
         return next();
       } else {
         // Redirect instead of render so that user can reload the topic without the "POST" error message

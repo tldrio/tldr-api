@@ -5,17 +5,17 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values = {}
-    , topicData = { title: req.body.title }
+  var topicData = { title: req.body.title }
     , postData = { text: req.body.firstPostText }
     ;
 
+  req.renderingValues = req.renderingValues || {};
+
   Topic.createTopicAndFirstPost(topicData, postData, req.user, function (err, topic) {
     if (err) {
-      values.displayValidationErrors = true;
-      values.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
-      values.userInput = req.body;
-      req.renderValues = values;
+      req.renderingValues.displayValidationErrors = true;
+      req.renderingValues.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
+      req.renderingValues.userInput = req.body;
       return next();
     } else {
       return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);

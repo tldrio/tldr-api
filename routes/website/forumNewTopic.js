@@ -5,7 +5,7 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values =  req.renderValues ? req.renderValues : {}
+  var values =  req.renderingValues ? req.renderingValues : {}
     , topicData = { title: req.body.title }
     , postData = { text: req.body.firstPostText }
     ;

@@ -8,10 +8,7 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values = req.renderValues ? req.renderValues : {};
-
-
-  values.loggedUser = req.user;
+  var values = req.renderingValues ? req.renderingValues : {};
   values.forum = true;
 
   Topic.findOne({ _id: req.params.id })

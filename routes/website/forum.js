@@ -5,9 +5,7 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values = {};
-
-  values.loggedUser = req.user;
+  var values = req.renderingValues || {};
   values.forum = true;
 
   Topic.find({})
