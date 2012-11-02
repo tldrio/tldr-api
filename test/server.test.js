@@ -187,7 +187,7 @@ describe('Webserver', function () {
       ], done);
     });
 
-    it('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
+    it.only('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
       async.waterfall([
         async.apply(logUserOut)
       , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
