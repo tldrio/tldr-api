@@ -66,6 +66,7 @@ function searchTldrs (req, res, next) {
     return;
   }
 
+
   bunyan.incrementMetric('tldrs.search.latest');
 
   // Check that limit is an integer and clip it between 1 and defaultLimit

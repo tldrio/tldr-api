@@ -7,9 +7,8 @@
 var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
-  var values = {};
+  var values = req.renderingValues;
 
-  values.loggedUser = req.user;
   values.loggedUser.getCreatedTldrs(function(tldrs) {
     values.tldrsCreated = tldrs;
 

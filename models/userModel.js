@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
   , ObjectId = Schema.ObjectId
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
+  , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
   , bcrypt = require('bcrypt')
@@ -18,8 +19,8 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
-  , userUpdatableFields = ['username', 'email', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
+  , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -27,23 +28,24 @@ var mongoose = require('mongoose')
 // routes for the API and the website
 // All names sould be lowercased here
 reservedUsernames = {
-    'confirm': true
-  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
-  , 'users': true
-  , 'tldrs': true
-  , 'about': true
-  , 'index': true
-  , 'signup': true
-  , 'summaries': true
-  , 'whatisit': true
-  , 'logout': true
-  , 'login': true
+    'about': true
+  , 'account': true
+  , 'confirm': true
   , 'confirmemail': true
   , 'forgotpassword': true
+  , 'index': true
+  , 'login': true
+  , 'logout': true
+  , 'notifications': true
+  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
-  , 'account': true
+  , 'signup': true
+  , 'summaries': true
+  , 'tldrs': true
   , 'tldrscreated': true
   , 'forum': true
+  , 'users': true
+  , 'whatisit': true
 };
 
 
@@ -218,6 +220,19 @@ function getCreatedTldrs (callback) {
     });
 }
 
+/*
+ * Get the notifications of the user
+ *
+ * @param {Function} callback function to be called with the results after having fetched the notifs
+ */
+function getNotifications (callback) {
+  User.findOne({_id: this._id})
+    .populate('notifications')
+    .exec(function(err, doc) {
+      if (err) {throw err;}
+      callback(doc);
+    });
+}
 
 /*
  * Update lastActive field
@@ -228,6 +243,7 @@ function updateLastActive (callback) {
     callback();
   });
 }
+
 
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
@@ -247,6 +263,9 @@ function updateValidFields (data, callback) {
   if (self.username !== data.username) {
     self.usernameLowerCased = data.username.toLowerCase();
   }
+
+  // Update profile info on Mailchimp
+  mailchimpSync.syncSettings(self, data);
 
   _.each(validUpdateFields, function(field) {
     self[field] = data[field];
@@ -434,6 +453,11 @@ UserSchema = new Schema(
   , lastActive: { type: Date
                 , default: Date.now
                 }
+  , notificationsSettings: { read: { type: Boolean, default: true}
+                           , newsletter: { type: Boolean, default: true}
+                           , serviceUpdates: { type: Boolean, default: true}
+                           }
+  , notifications: [{ type: ObjectId, ref: 'notification' }]
   // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
   // No need to store the salt, bcrypt already stores it in the hash
   , password: { type: String
@@ -483,6 +507,7 @@ UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameN
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
+UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.resetPassword = resetPassword;

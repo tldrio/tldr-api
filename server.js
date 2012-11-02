@@ -107,11 +107,15 @@ app.get('/users/logout', routes.logout);
 
 // tldrs
 app.get('/tldrs/search', routes.searchTldrs);
+app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.get('/tldrs', routes.searchTldrs); // Convenience route
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
 app.post('/tldrs', routes.createNewTldr);
 app.put('/tldrs/:id', routes.updateTldrWithId);
+
+// Notifications
+app.put('/notifications/:id', routes.updateNotification);
 
 // Admin only routes
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
@@ -119,6 +123,9 @@ app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
+
+// Private Webhooks routes
+app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 app.options('*', function (req, res, next) {
@@ -132,11 +139,11 @@ app.options('*', function (req, res, next) {
  *
  */
 // General pages
-app.get('/about', routes.website_about);
-app.get('/index', routes.website_index);
-app.get('/signup', routes.website_signup);
-app.get('/summaries', routes.website_summaries);
-app.get('/whatisit', routes.website_whatisit);
+app.get('/about', middleware.attachRenderingValues, routes.website_about);
+app.get('/index', middleware.attachRenderingValues, routes.website_index);
+app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
+app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
+app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
@@ -144,13 +151,14 @@ app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
-app.get('/confirmEmail', routes.website_confirmEmail);
-app.get('/forgotPassword', routes.website_forgotPassword);
-app.get('/resetPassword', routes.website_resetPassword);
+app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
+app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
+app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
 
 // Private pages
-app.get('/account', middleware.loggedInOnly, routes.website_account);
-app.get('/tldrscreated', middleware.loggedInOnly, routes.website_tldrscreated);
+app.get('/account', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_tldrscreated);
+app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_notifications);
 
 // Forum
 app.get('/forum/topics', routes.website_forum);
@@ -160,7 +168,7 @@ app.get('/forum/newTopic', middleware.loggedInOnly, routes.website_forumNewTopic
 app.post('/forum/newTopic', middleware.loggedInOnly, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 
 // User profiles, leaderboard ...
-app.get('/:username', routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 
 
