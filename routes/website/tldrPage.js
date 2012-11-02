@@ -20,6 +20,4 @@ module.exports = function (req, res, next) {
                                       , partials: { content: '{{>website/pages/tldrPage}}' }
                                       });
   });
-
 }
-
