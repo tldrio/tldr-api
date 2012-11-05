@@ -72,24 +72,30 @@
       </div>
 
       <!-- Latest created tldrs if any -->
-      {{#user.numberTldrsCreated}}
       <div class="offset1 span8">
         <div class="latest-tldrs-created">
-          <h3>Latest webpages tamed:</h3>
-          <ul class="unstyled">
-            {{#user.tldrsCreated}}
-            <li>
-              <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
-              <p class="tldr-title-ellipsis">
-                <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
-              </p>
-              <span class="tldr-hostname tldr-hostname-list">({{hostname}})</span>
-            </li>
-            {{/user.tldrsCreated}}
-          </ul>
+          {{#user.numberTldrsCreated}}
+            <h3>Latest webpages tamed:</h3>
+            <ul class="unstyled">
+              {{#user.tldrsCreated}}
+              <li>
+                <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+                <p class="tldr-title-ellipsis">
+                  <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+                </p>
+                <span class="tldr-hostname tldr-hostname-list">({{hostname}})</span>
+              </li>
+              {{/user.tldrsCreated}}
+            </ul>
+          {{/user.numberTldrsCreated}}
+
+          <!-- If no created tldr, a small humorous message -->
+          {{^user.numberTldrsCreated}}
+            <br><em>It looks like this user hasn't created any tldr. We think he should do it with his favourite blogpost. And if you are in the situation, you should, too :)</em>
+          {{/user.numberTldrsCreated}}
         </div>
       </div>
-      {{/user.numberTldrsCreated}}
+
 
     </div>
   </div>
