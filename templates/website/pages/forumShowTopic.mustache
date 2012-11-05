@@ -7,7 +7,14 @@
 
 {{^notFound}}
   <a href="/forum/topics">Back to the forum</a><br><br>
-  <span class="topic-title">{{topic.title}}</span><span id="topic-specific-votes">{{#topic}}{{>website/vote}}{{/topic}}</span>
+
+  <div id="title-and-vote">
+    {{#topic}}{{>website/voting}}{{/topic}}
+  <div{{#topic.userHasntVoted}} class="right-of-voting"{{/topic.userHasntVoted}}>
+    <span class="topic-title">{{topic.title}}</span><span id="topic-specific-votes">{{#topic}}{{>website/vote}}{{/topic}}</span>
+  </div>
+  </div>
+
   <br><br>
 
   {{#posts}}

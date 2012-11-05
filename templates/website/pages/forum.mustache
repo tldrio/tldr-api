@@ -10,8 +10,11 @@
 <div id="topicList">
   {{#topics}}
   <div>
-    <a href="/forum/topics/{{_id}}"><span class="topic-in-list">{{title}}</span></a>{{>website/vote}}<br>
-    <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+    {{>website/voting}}
+    <div{{#userHasntVoted}} class="right-of-voting"{{/userHasntVoted}}>
+      <a href="/forum/topics/{{_id}}"><span class="topic-in-list">{{title}}</span></a>{{>website/vote}}<br>
+      <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+    </div>
   </div>
   <br>
   {{/topics}}
