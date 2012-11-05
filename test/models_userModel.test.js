@@ -613,7 +613,7 @@ describe('User', function () {
                     , notificationsSettings: { read: false, like: true, edit: false }
                     , email: 'another@valid.com'
                     , bio: 'Another bio !!'
-                    , twitterHandle: '@tldrio'
+                    , twitterHandle: 'tldrio'
                     };
 
       User.createAndSaveInstance(userData, function(err, user) {
@@ -628,8 +628,30 @@ describe('User', function () {
           user2.email.should.equal("another@valid.com");
           user2.notificationsSettings.read.should.be.false;
           user2.bio.should.equal("Another bio !!");
-          user2.twitterHandle.should.equal('@tldrio');
+          user2.twitterHandle.should.equal('tldrio');
           bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
+
+          done();
+        });
+      });
+    });
+
+    it('should remove the leading @ of a twitter handle if there is one', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     , bio: 'first bio'
+                     }
+        , newData = { username: 'NFAMasterDeploy'
+                    , password: 'anothergood'
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    , twitterHandle: '@tldrio'
+                    };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.updateValidFields(newData, function(err, user2) {
+          user2.twitterHandle.should.equal('tldrio');
 
           done();
         });
@@ -659,9 +681,8 @@ describe('User', function () {
           assert.isDefined(err.errors.username);
           assert.isDefined(err.errors.email);
           assert.isDefined(err.errors.bio);
-          assert.isDefined(err.errors.twitterHandle);
 
-          newData.twitterHandle = '@waaaaaaaytoolong';
+          newData.twitterHandle = 'dlskgjlsdkfgjlwaaaaaaaytoolong';
           user.updateValidFields(newData, function (err, user4) {
             assert.isDefined(err.errors.twitterHandle);
 
@@ -883,7 +904,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something'   // No possible XSS problem on creation
-                               , twitterHandle: '@another'  // No possible XSS problem on creation
+                               , twitterHandle: 'another'  // No possible XSS problem on creation
                                , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
@@ -909,7 +930,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something not cool like a document.write is here'
-                               , twitterHandle: '@rohdocument.writebad'
+                               , twitterHandle: 'rohdocument.writebad'
                                };
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
@@ -918,7 +939,7 @@ describe('User', function () {
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');
-          theUser.twitterHandle.should.equal('@rohbad');
+          theUser.twitterHandle.should.equal('rohbad');
 
           done();
         });

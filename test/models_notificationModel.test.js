@@ -10,11 +10,17 @@ var should = require('chai').should()
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose') // ODM for Mongo
-  , Notification = require('../lib/models').Notification
+  , models = require('../lib/models')
+  , User = models.User
+  , Notification = models.Notification
+  , Tldr = models.Tldr
   , config = require('../lib/config')
+  , notificator = require('../lib/notificator')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
-  , async = require('async');
+  , async = require('async')
+  , user
+  , tldr;
 
 
 
@@ -36,32 +42,38 @@ describe('Notification', function () {
   beforeEach(function (done) {
     Notification.remove( function (err) {
       if (err) {throw done(err);}
-        done();
+      User.remove( function (err) {
+        if (err) {throw done(err);}
+        Tldr.remove( function(err) {
+          if (err) {throw done(err);}
+          User.createAndSaveInstance({ username: "tldrio", password: "password", email: "valid@email.com" }, function(err, _user) {
+            user = _user;
+            Tldr.createAndSaveInstance( { url: 'http://needforair.com/nutcrackers', title: 'Blog', summaryBullets: ['bullet1','bullet2'], } , user, function (err, _tldr) {
+              tldr = _tldr;
+              done();
+            });
+          });
+        });
+      });
     });
   });
 
 
 
-  describe('should update the updatable fields ', function() {
+  describe('Notifs updates', function() {
 
-    it('should update only the unseen fields', function (done) {
+    it('should mark as seen notifs with corresponding method', function (done) {
       var notifData = { from: '507eda94cb0c70d81100000c'
                       , to : '5047602871993defaa000001'
                       , tldr: '507edb3fcb0c70d81100006a'
                       , type: 'read'
-                      }
-        , updateData = { from: '507eda94cb0c70d81100000d'
-                       , to : '5047602871993defaa00000a'
-                       , tldr: '507edb3fcb0c70d81100006b'
-                       , type: 'like'
-                       , unseen: false
-                       };
+                      };
 
       Notification.createAndSaveInstance(notifData, function(err, notif) {
         assert.isNull(err);
         notif.unseen.should.be.true;
 
-        notif.updateStatus(updateData, function(err, notif) {
+        notif.markAsSeen(function(err, notif) {
           notif.from.toString().should.equal('507eda94cb0c70d81100000c');
           notif.to.toString().should.equal('5047602871993defaa000001');
           notif.tldr.toString().should.equal('507edb3fcb0c70d81100006a');
@@ -73,5 +85,57 @@ describe('Notification', function () {
     });
 
   });
+
+
+  describe('Notifs creation', function () {
+
+    it('should respect the unicity constraint type-tldr-from when from is identified', function (done) {
+      var notifData = { from: '507eda94cb0c70d81100000c'
+                      , to : '5047602871993defaa000001'
+                      , tldr: '507edb3fcb0c70d81100006a'
+                      , type: 'read'
+                      };
+
+      Notification.createAndSaveInstance(notifData, function(err, notif) {
+        assert.isNull(err);
+        Notification.createAndSaveInstance(notifData, function(err, notif) {
+          err.code.should.equal(11000); // Mongo error code for duplicated key
+          done();
+        });
+
+      });
+    });
+
+    it('should not do anything when publishing a notif with same from and to', function (done) {
+
+      notificator.publish({ type: 'read'
+                          , from: user
+                          , tldr: tldr
+                          , to: tldr.creator
+                          });
+       Notification.find({}, function (err, notifs) {
+
+         notifs.should.be.empty;
+         done();
+
+       });
+
+    });
+
+    it('should assign a notif to the right person when publishing an event', function (done) {
+      notificator.publish({ type: 'read'
+                          , from: undefined
+                          , tldr: tldr
+                          // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                          , to: tldr.creator
+                          }, function ( err, _user) {
+        _user.notifications.length.should.be.equal(1);
+        done();
+      });
+    });
+
+
+  });
+
 
 });

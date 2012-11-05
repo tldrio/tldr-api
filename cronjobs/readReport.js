@@ -1,18 +1,15 @@
-var config = require('../lib/config')
+var _ = require('underscore')
+  , async = require('async')
   , bunyan = require('../lib/logger').bunyan
+  , config = require('../lib/config')
+  , DbObject = require('../lib/db')
+  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
+  , i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
-  , i18n = require('../lib/i18n')
-  , sleep = require('../lib/customUtils').sleep
-  , DbObject = require('../lib/db')
-  , _ = require('underscore')
-  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , Notification = models.Notification
-  , User = models.User
   , Tldr = models.Tldr
-  , now
-  , previousFlush
-  , dDate = { hours: 16, minutes: 11 , seconds: 0};
+  , User = models.User;
 
 
 function sendReadReport (previousFlush) {
@@ -24,7 +21,7 @@ function sendReadReport (previousFlush) {
    .where('type').equals('read')
    .exec(function(err, docs) {
      if (err) {
-       console.log('Error Fatal');
+       console.log('Fatal error, couldnt retrieve the docs');
        process.exit(1);
      }
      // Group Notifs by Tldr
@@ -33,9 +30,12 @@ function sendReadReport (previousFlush) {
 
      // Retrieve the users conerned by notifications
      User.find({ _id: { $in: userIds } }, function (err, users) {
-       users.forEach(function (user, i) {
+       async.forEach(users, function (user, callback) {
          var tldrsRead
-           , tldrsForReport = [];
+           , tldrsForReport = []
+					 , newViews
+					 , newViewsText;
+
          if (user.notificationsSettings.read) {
 
            // Group by tldr read
@@ -46,7 +46,14 @@ function sendReadReport (previousFlush) {
 
              // Iterate on the tldr for a given user
              tldrs.forEach(function (tldr, j) {
-               tldrsForReport.push({ readCount: tldrsRead[tldr._id].length, tldrTitle: tldr.title, tldrId: tldr._id });
+							 newViews = tldrsRead[tldr._id].length;
+							 if (newViews === 1) {
+							   newViewsText = newViews + ' more time';
+							 } else {
+							   newViewsText = newViews + ' more times';
+							 }
+               tldrsForReport.push({ newViewsText: newViewsText
+																	 , tldr: tldr });
              });
 
              mailer.sendEmail({ type: 'readReport'
@@ -54,10 +61,18 @@ function sendReadReport (previousFlush) {
                               , to: 'hello+test@tldr.io'
                               //, to: user.email
                               , values: { tldrsForReport: tldrsForReport, user: user }
-                              });
+                              }, function () { callback(null); } );
            });
           }
-       });
+       }, function (err) {
+				 if (err) {
+					 bunyan.err('Error executing ReadReport');
+					 process.exit(1);
+				 }
+
+				 bunyan.info('ReadReport successfully executed');
+				 process.exit(0);
+			 });
 
      });
    });
@@ -65,24 +80,8 @@ function sendReadReport (previousFlush) {
 
 db.connectToDatabase(function() {
   previousFlush = new Date();
-  previousFlush.setDate( previousFlush.getDate() - 1 );
-  //previousFlush.setHours(previousFlush.getHours() - 1);
-
+	// We send the report for the notifs of the past 7 days
+  previousFlush.setDate( previousFlush.getDate() - 7 );
   sendReadReport(previousFlush);
-
 });
 
-//while(true) {
-
-  //now = new Date ();
-  //if ( now.getHours() === dDate.hours
-    //&& now.getMinutes() === dDate.minutes
-    //&& now.getSeconds() === dDate.seconds) {
-    //bunyan.info('Launching crownjob read Report');
-
-
-
-  //}
-  //console.log('current', now);
-  //sleep(1000);
-//}

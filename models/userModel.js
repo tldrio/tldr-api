@@ -28,22 +28,23 @@ var mongoose = require('mongoose')
 // routes for the API and the website
 // All names sould be lowercased here
 reservedUsernames = {
-    'confirm': true
-  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
-  , 'users': true
-  , 'tldrs': true
-  , 'about': true
-  , 'index': true
-  , 'signup': true
-  , 'summaries': true
-  , 'whatisit': true
-  , 'logout': true
-  , 'login': true
+    'about': true
+  , 'account': true
+  , 'confirm': true
   , 'confirmemail': true
   , 'forgotpassword': true
+  , 'index': true
+  , 'login': true
+  , 'logout': true
+  , 'notifications': true
+  , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
-  , 'account': true
+  , 'signup': true
+  , 'summaries': true
+  , 'tldrs': true
   , 'tldrscreated': true
+  , 'users': true
+  , 'whatisit': true
 };
 
 
@@ -105,13 +106,27 @@ function validateBio (value) {
 }
 
 
-// Twitter handle should be null or a string beginning with '@' and less than 16 characters
+// Twitter handle should be null or less than 15 characters
 function validateTwitterHandle (value) {
-  if (! value || (value.length <= 16 && value[0] === '@')) {
+  if (! value || value.length <= 15) {
     return true;
   } else {
     return false;
   }
+}
+
+
+/*
+ * Specific setters
+ */
+function setTwitterHandle (value) {
+  var handle = customUtils.sanitizeInput(value);
+
+  if (handle[0] === '@') {
+    handle = handle.substring(1);
+  }
+
+  return handle;
 }
 
 
@@ -474,7 +489,7 @@ UserSchema = new Schema(
          , set: customUtils.sanitizeInput}
   , twitterHandle: { type: String
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
-                   , set: customUtils.sanitizeInput }
+                   , set: setTwitterHandle }
   }
 , { strict: true });
 

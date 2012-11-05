@@ -36,7 +36,7 @@ function searchTldrsByBatch (req, res, next) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
       }
       // update read count - We dont wait for the operation to be executed
-      Tldr.update({ url: { $in: batch } }, { $inc: { readCount: 1 } }, { multi: true }).exec() ;
+      Tldr.updateBatch(batch , { $inc: { readCount: 1 } }) ;
 
       return res.json(200, { tldrs: docs} );
     });

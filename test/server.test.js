@@ -724,7 +724,7 @@ describe('Webserver', function () {
             obj.email.should.equal("bloup@nfa.com");
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
-            obj.twitterHandle.should.equal("@fuckyeah");
+            obj.twitterHandle.should.equal("fuckyeah");   // Leading @ was automatically removed
 
             done();
            });
@@ -824,7 +824,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfacom"
                              , password: "abad"
-                             , twitterHandle: 'BAD'
+                             , twitterHandle: 'BjashkgfshdfgjhasgfdadhgfAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);
