@@ -123,6 +123,7 @@ app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
+app.get('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 app.options('*', function (req, res, next) {

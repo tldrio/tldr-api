@@ -17,7 +17,6 @@ function mailchimpWebhookSync (req, res, next) {
       });
     }
   } else {
-
     return res.send(404);
   }
 }
