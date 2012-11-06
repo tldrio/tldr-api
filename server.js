@@ -100,6 +100,7 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
+app.put('/users/you/notifications/markAllAsSeen', routes.markAllNotificationsAsSeen);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
