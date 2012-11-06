@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
   req.user.markAllNotificationsAsSeen(function (err, numAffected) {
     if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateNotif } }); }
 
-    return res.json(200, { message: util.format(i18n.markAllNotificationsAsSeen, numAffected) });
+    return res.json(200, { message: util.format(i18n.markedAllNotificationsAsSeen, numAffected) });
   });
 
 }
