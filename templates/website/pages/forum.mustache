@@ -1,21 +1,26 @@
-<h2>Topic list</h2>
-{{#loggedUser}}
-<a href="/forum/newTopic">Start a new topic</a><br><br>
-{{/loggedUser}}
-{{^loggedUser}}
-<a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a><br><br>
-{{/loggedUser}}
+<header class="jumbotron"><h1>Forum</h1></header>
+
+<div class="centered-block">
+  {{#loggedUser}}
+  <em><a href="/forum/newTopic">Start a new topic</a></em><br><br>
+  {{/loggedUser}}
+  {{^loggedUser}}
+  <em><a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a></em><br><br>
+  {{/loggedUser}}
 
 
-<div id="topicList">
-  {{#topics}}
-  <div>
-    {{>website/voting}}
-    <div{{#userHasntVoted}} class="right-of-voting"{{/userHasntVoted}}>
-      <a href="/forum/topics/{{_id}}"><span class="topic-in-list">{{title}}</span></a>{{>website/vote}}<br>
-      <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
-    </div>
+  <div id="topic-list">
+    {{#topics}}
+      <div>
+        {{>website/voting}}
+        <div class="right-of-voting">
+          <a href="/forum/topics/{{_id}}"><span class="topic-in-list">{{title}}</span></a><br>
+          <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+        </div>
+      </div>
+      <br>
+      <div class="topic-separator"></div>
+    {{/topics}}
   </div>
-  <br>
-  {{/topics}}
+
 </div>
