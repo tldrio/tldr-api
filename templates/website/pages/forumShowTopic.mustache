@@ -10,7 +10,8 @@
     <div id="title-and-vote">
       {{#topic}}{{>website/voting}}{{/topic}}
       <div class="right-of-voting">
-        <span class="topic-title">{{topic.title}}</span><span id="topic-specific-votes">{{#topic}}{{/topic}}</span>
+        <span class="topic-title">{{topic.title}}</span><br>
+        <span class="post-topic-metadata">{{topic.posts.length}} post{{#topic.moreThanOnePost}}s{{/topic.moreThanOnePost}}</span>
       </div>
     </div>
     <br><br><br>
