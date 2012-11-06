@@ -11,16 +11,20 @@ var should = require('chai').should()
   , i18n = require('../lib/i18n')
   , sinon = require('sinon')
   , mongoose = require('mongoose') // ODM for Mongo
+  , ObjectId = mongoose.Schema.ObjectId
   , models = require('../lib/models')
   , User = models.User
   , UserHistory = models.UserHistory
+  , Notification = models.Notification
+  , notificator = require('../lib/notificator')
   , Tldr = models.Tldr
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , url = require('url')
   , bcrypt = require('bcrypt')
-  , async = require('async');
+  , async = require('async')
+  , user1, user2, tldr1, tldr2, tldr3;
 
 
 
@@ -40,13 +44,32 @@ describe('User', function () {
   });
 
   beforeEach(function (done) {
-    User.remove( function (err) {
-      if (err) {throw done(err);}
-      Tldr.remove( function(err) {
-        if (err) {throw done(err);}
-        done();
-      });
-    });
+    var userData1 = { email: "test1@email.com"
+                    , password: "supersecret"
+                    , username: "usertest1"
+                    }
+      , userData2 = { email: "test2@email.com"
+                    , password: "supersecret"
+                    , username: "usertest2"
+                    }
+      , tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      ;
+
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
+
+    async.waterfall([
+      async.apply(theRemove, User)
+    , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Notification)
+    , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
+    , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData1, user1, function (err, t1) { tldr1 = t1; cb(); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData2, user1, function (err, t2) { tldr2 = t2; cb(); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData3, user1, function (err, t3) { tldr3 = t3; cb(); }); }
+    ], done);
+
   });
 
 
@@ -434,7 +457,7 @@ describe('User', function () {
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
-        user.getCreatedTldrs(function(tldrs) {
+        user.getCreatedTldrs(function(err, tldrs) {
           _.isArray(tldrs).should.equal(true);
           tldrs.length.should.equal(0);
 
@@ -443,7 +466,7 @@ describe('User', function () {
               // user doesn't contain the data in his created tldrs
               assert.isUndefined(user.tldrsCreated[0].url);
 
-              user.getCreatedTldrs(function(tldrs) {
+              user.getCreatedTldrs(function(err, tldrs) {
                 tldrs[1].url.should.equal('http://myfile.com/movie');
                 tldrs[0].url.should.equal('http://another.com/movie');
                 tldrs[0].creator.username.should.equal('NFADeploy');
@@ -1061,6 +1084,79 @@ describe('User', function () {
 
 
   });   // ==== End of 'Admin role' ==== //
+
+
+  describe('Notifications', function () {
+
+    it('Should be able to get a users notifs', function (done) {
+      function publish (options, cb) {
+        notificator.publish(options, function () { cb(); });
+      }
+
+      async.waterfall([
+        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
+      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
+      , function (cb) {
+          user1.getNotifications(function (err, notifs) {
+            notifs.length.should.equal(3);
+            notifs[0].unseen.should.equal(true);
+            notifs[1].unseen.should.equal(true);
+            notifs[2].unseen.should.equal(true);
+            user2.getNotifications(function (err, notifs) {
+              notifs.length.should.equal(1);
+              notifs[0].unseen.should.equal(true);
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
+
+    it('Should be able to mark all unseen notifs as seen', function (done) {
+      function publish (options, cb) {
+        notificator.publish(options, function () { cb(); });
+      }
+
+      async.waterfall([
+        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
+      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
+      , function (cb) {
+          user2.markAllNotificationsAsSeen(function (err, numAffected) {
+            numAffected.should.equal(1);
+            user2.getNotifications(function(err, notifs) {
+              notifs[0].unseen.should.equal(false);
+              cb();
+            });
+          });
+        }
+      , function (cb) {
+          user1.getNotifications(function (err, notifs) {
+            notifs[1].markAsSeen(function (err, notif) {
+              notif.unseen.should.equal(false);
+
+              user1.markAllNotificationsAsSeen(function (err, numAffected) {
+                numAffected.should.equal(2);
+
+                user1.getNotifications(function (err, notifs) {
+                  notifs[0].unseen.should.equal(false);
+                  notifs[1].unseen.should.equal(false);
+                  notifs[2].unseen.should.equal(false);
+
+                  cb();
+                });
+              });
+            });
+          });
+        }
+      ], done);
+    });
+
+
+  });   // ==== End of 'Notifications' ==== //
 
 
 
