@@ -123,6 +123,7 @@ app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
+app.get('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
 app.options('*', function (req, res, next) {
@@ -141,6 +142,7 @@ app.get('/index', middleware.attachRenderingValues, routes.website_index);
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
+app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
