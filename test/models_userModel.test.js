@@ -457,7 +457,7 @@ describe('User', function () {
                      };
 
       User.createAndSaveInstance(userData, function(err, user) {
-        user.getCreatedTldrs(function(tldrs) {
+        user.getCreatedTldrs(function(err, tldrs) {
           _.isArray(tldrs).should.equal(true);
           tldrs.length.should.equal(0);
 
@@ -466,7 +466,7 @@ describe('User', function () {
               // user doesn't contain the data in his created tldrs
               assert.isUndefined(user.tldrsCreated[0].url);
 
-              user.getCreatedTldrs(function(tldrs) {
+              user.getCreatedTldrs(function(err, tldrs) {
                 tldrs[1].url.should.equal('http://myfile.com/movie');
                 tldrs[0].url.should.equal('http://another.com/movie');
                 tldrs[0].creator.username.should.equal('NFADeploy');

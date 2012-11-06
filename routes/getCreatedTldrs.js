@@ -16,7 +16,7 @@ function getCreatedTldrs(req, res, next) {
   bunyan.incrementMetric('users.getCreatedTldrs.routeCalled');
 
   if (req.user) {
-    req.user.getCreatedTldrs(function(tldrs) {
+    req.user.getCreatedTldrs(function(err, tldrs) {
       return res.json(200, tldrs);
     });
   } else {

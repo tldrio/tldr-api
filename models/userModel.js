@@ -205,18 +205,17 @@ function getAuthorizedFields() {
 }
 
 
-/*
+/**
  * Get all tldrs created by the user
- *
- * @param {Function} callback function to be called with the results after having fetched the tldrs
+ * @param {Function} callback Signature: err, [tldrs]
  */
 function getCreatedTldrs (callback) {
   Tldr.find({'creator': this._id})
     .sort('url')
     .populate('creator', 'username')
-    .exec(function(err, docs) {
-      if (err) {throw err;}
-      callback(docs);
+    .exec(function(err, tldrs) {
+      if (err) { return callback(err); }
+      callback(null, tldrs);
     });
 }
 
