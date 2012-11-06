@@ -15,4 +15,4 @@ module.exports = function (req, res, next) {
     return res.json(200, { message: util.format(i18n.markedAllNotificationsAsSeen, numAffected) });
   });
 
-}
+};
