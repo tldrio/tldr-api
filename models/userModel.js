@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
   , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
+  , Notification = require('./notificationModel')
   , bcrypt = require('bcrypt')
   , crypto = require('crypto')
   , config = require('../lib/config')
@@ -219,19 +220,29 @@ function getCreatedTldrs (callback) {
     });
 }
 
-/*
+/**
  * Get the notifications of the user
- *
- * @param {Function} callback function to be called with the results after having fetched the notifs
+ * @param {Function} callback Signature: err, [notifications]
  */
 function getNotifications (callback) {
-  User.findOne({_id: this._id})
+  User.findOne({ _id: this._id })
     .populate('notifications')
-    .exec(function(err, doc) {
-      if (err) {throw err;}
-      callback(doc);
+    .exec(function(err, user) {
+      if (err) { return callback(err); }
+      callback(null, user.notifications);
     });
 }
+
+/**
+ * Mark this user's notification as seen
+ * @param {Function} cb Optional callback
+ */
+function markAllNotificationsAsSeen (cb) {
+  var callback = cb ? cb : function () {};
+
+  Notification.update({ to: this._id, unseen: true }, { unseen: false }, { multi: true }, callback);
+}
+
 
 /*
  * Update lastActive field
@@ -509,6 +520,7 @@ UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
 UserSchema.methods.isAdmin = isAdmin;
+UserSchema.methods.markAllNotificationsAsSeen = markAllNotificationsAsSeen;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
