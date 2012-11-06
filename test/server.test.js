@@ -1532,7 +1532,7 @@ describe('Webserver', function () {
                       , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
             res.statusCode.should.equal(200);
             Topic.findOne({ _id: topic1._id }, function (err, topic) {
-              topic.votes.should.equal(1);
+              topic.votes.should.equal(2);
 
               cb();
             });
@@ -1545,7 +1545,7 @@ describe('Webserver', function () {
                       , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
             res.statusCode.should.equal(200);
             Topic.findOne({ _id: topic1._id }, function (err, topic) {
-              topic.votes.should.equal(0);
+              topic.votes.should.equal(1);
 
               cb();
             });

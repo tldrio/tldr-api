@@ -52,7 +52,7 @@ TopicSchema = new Schema(
                , default: Date.now
                }
   , votes: { type: Number
-           , default: 0
+           , default: 1
            }
   , alreadyVoted: [{ type: ObjectId }]   // Array of users who already voted for/against this topic
   }

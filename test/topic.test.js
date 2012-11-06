@@ -106,7 +106,7 @@ describe('Topic', function () {
         topic.title.should.equal("youpla");
         topic.creator.toString().should.equal(user._id.toString());
         topic.posts.length.should.equal(0);
-        topic.votes.should.equal(0);
+        topic.votes.should.equal(1);
         topic.alreadyVoted.length.should.equal(0);
         assert.isUndefined(topic.unusedField);
 
@@ -287,7 +287,7 @@ describe('Topic', function () {
 
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
-        topic.votes.should.equal(0);
+        topic.votes.should.equal(1);
         topic.alreadyVoted.length.should.equal(0);
 
         topic.vote(1, null, function (err, topic) {
@@ -305,17 +305,17 @@ describe('Topic', function () {
 
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
-        topic.votes.should.equal(0);
+        topic.votes.should.equal(1);
         topic.alreadyVoted.length.should.equal(0);
 
         topic.vote(1, user, function (err, topic) {
           assert.isNull(err);
-          topic.votes.should.equal(1);
+          topic.votes.should.equal(2);
           topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
 
           topic.vote(1, user, function (err, topic) {
             assert.isNull(err);
-            topic.votes.should.equal(1);
+            topic.votes.should.equal(2);
             topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
 
             done();
@@ -331,17 +331,17 @@ describe('Topic', function () {
 
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
-        topic.votes.should.equal(0);
+        topic.votes.should.equal(1);
         topic.alreadyVoted.length.should.equal(0);
 
         topic.vote(1, user, function (err, topic) {
           assert.isNull(err);
-          topic.votes.should.equal(1);
+          topic.votes.should.equal(2);
           topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
 
           topic.vote(-1, userbis, function (err, topic) {
             assert.isNull(err);
-            topic.votes.should.equal(0);
+            topic.votes.should.equal(1);
             topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
 
             done();
@@ -357,19 +357,19 @@ describe('Topic', function () {
 
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
-        topic.votes.should.equal(0);
+        topic.votes.should.equal(1);
         topic.alreadyVoted.length.should.equal(0);
 
         // null instead of a number
         topic.vote(null, user, function (err, topic) {
           assert.isNull(err);
-          topic.votes.should.equal(1);
+          topic.votes.should.equal(2);
           topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
 
           // A string instead of a number
           topic.vote("bloup", userbis, function (err, topic) {
             assert.isNull(err);
-            topic.votes.should.equal(2);
+            topic.votes.should.equal(3);
             topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
 
             done();

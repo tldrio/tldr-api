@@ -1,7 +1,20 @@
 <div class="voting" id="{{_id}}">
-  <a href="#" class="upvote" {{^userHasntVoted}}style="visibility: hidden;"{{/userHasntVoted}}><i class="icon-thumbs-up"></i></a><br>
+  {{#userHasntVoted}}
+    <a href="#" class="upvote">
+  {{/userHasntVoted}}
+    <i class="icon-thumbs-up"{{^userHasntVoted}} style="opacity: 0.15;"{{/userHasntVoted}}></i>
+  {{#userHasntVoted}}
+    </a>
+  {{/userHasntVoted}}
+  <br>
 
   <span class="votes-count">{{votes}}</span><br>
 
-  <a href="#" class="downvote" {{^userHasntVoted}}style="visibility: hidden;"{{/userHasntVoted}}><i class="icon-thumbs-down"></i></a>
+  {{#userHasntVoted}}
+    <a href="#" class="downvote">
+  {{/userHasntVoted}}
+    <i class="icon-thumbs-down"{{^userHasntVoted}} style="opacity: 0.15;"{{/userHasntVoted}}></i>
+  {{#userHasntVoted}}
+    </a>
+  {{/userHasntVoted}}
 </div>
