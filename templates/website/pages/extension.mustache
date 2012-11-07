@@ -137,54 +137,64 @@
                     </tr>
                   </tbody>
                 </table>
-  
-  
-  
+
+
+
               </center>
             </td>
           </tr>
         </tbody>
       </table>
     </center>
-  
-  
-    </div>
+
+
+  </div>
   <p>
-    <div id="signup-install-browser-extension">
-    {{^loggedUser}}
-      <button class="btn btn-primary btn-large" data-toggle="collapse" data-target=".signup-container">Signup to get our Chrome Extension</button>
-      <div id="login-install-browser-extension"><em>or <a  data-toggle="collapse" data-target=".login-widget">Log in</a></em></div>
-    {{/loggedUser}}
-    {{#loggedUser}}
+    <div id="install-browser-extension-wrapper">
+      {{^loggedUser}}
+      <button class="btn btn-primary btn-large pre-install-extension" data-target="signup">Signup to get our Chrome Extension</button>
+      <div id="login-install-browser-extension" class="pre-install-extension" data-target="login"><em>or <a href="#" >Log in</a></em></div>
+      {{/loggedUser}}
+      {{#loggedUser}}
       <button class="btn btn-success btn-large install-browser-extension" >Install our awesome extension</button>
-    {{/loggedUser}}
-    </div>
-
-    <div class="row">
-      <div class="span6 offset3">
-        <div class="signup-container collapse"></div>
-      </div>
+      {{/loggedUser}}
     </div>
 
 
-    <div class="row">
-      <div class="span4 offset4 ">
-
-        <div class="collapse login-widget">
-          <span >
-            <div class="alert login-invalid-input" style="display: none;">
-              <button type="button" class="close" data-dismiss="alert">×</button>
-              <small class='login-error-message'></small>
+    <div id="onboarding">
+      <div id="onboarding-overlay">
+        <div id="onboarding-wrapper">
+          <div id="onboarding-content">
+            <div class="row-fluid">
+              <div class="span12">
+                <div class="signup-container"></div>
+                <div class="login-widget">
+                  <div class="row">
+                    <div class="span4 offset4 ">
+                      <h1>Login</h1>
+                      <span>
+                        <div class="alert login-invalid-input" style="display: none;">
+                          <button type="button" class="close" data-dismiss="alert">×</button>
+                          <small class='login-error-message'></small>
+                        </div>
+                        <form>
+                          <fieldset>
+                            <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email"><br><br>
+                            <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password"><br><br>
+                            <button type="submit" class="btn btn-primary login-status-submit">Log in</button><br><br>
+                            <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a><br><br>
+                          </fieldset>
+                        </form>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <form>
-              <fieldset>
-                <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email"><br><br>
-                <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password"><br><br>
-                <button type="submit" class="btn btn-primary login-status-submit">Log in</button><br><br>
-                <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a><br><br>
-              </fieldset>
-            </form>
-          </span>
+          </div>
+          <div id="onboarding-close">
+            <button id="onboarding-close-btn"></button>
+          </div>
         </div>
       </div>
     </div>
