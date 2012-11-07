@@ -15,7 +15,7 @@ module.exports = function (req, res, next) {
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
 
   async.waterfall([
-      function (cb) {   // Only populate the latest tldrs the user created, in a specific object
+    function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
           .populate('tldrsCreated', '_id title hostname', {}, { limit: 20, sort: [['createdAt', -1]] })
           .populate('history')
