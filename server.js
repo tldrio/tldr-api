@@ -122,6 +122,9 @@ app.put('/notifications/:id', routes.updateNotification);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
+// Vote for/against a topic
+app.put('/forum/topics/:id', routes.voteOnTopic);
+
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
 app.get('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
@@ -158,6 +161,13 @@ app.get('/resetPassword', middleware.attachRenderingValues, routes.website_reset
 app.get('/account', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_notifications);
+
+// Forum
+app.get('/forum/topics', middleware.attachRenderingValues, routes.website_forum);
+app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumShowTopic);   // Show a whole topic
+app.post('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
+app.get('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumNewTopic);    // Display the newTopic form
+app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
