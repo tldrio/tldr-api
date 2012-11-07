@@ -9,21 +9,19 @@
           <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
           <p class="tldr-title-ellipsis">
             <a href="{{url}}" target="_blank">{{title}}</a>
-            <span class="label tldr-label" data-powertip-id="tldr-powertip-{{_id}}">
-              <a href="{{url}}">tl;dr</a>
-            </span>
           </p>
           <span class="tldr-hostname tldr-hostname-list">({{hostname}})
-                  {{#creator}}
                   <span>
-                    &middot; tl;dr by
+                    <span class="label tldr-label" data-powertip-id="tldr-powertip-{{_id}}">
+                      <a href="{{url}}">tl;dr</a>
+                    </span>
+                    by
                     <span>
                       <a href="/{{creator.username}}" target="_blank">
                         <em>{{creator.username}}</em>
                       </a>
                     </span>
                   </span>
-                  {{/creator}}
                 </span>
           <!-- for powertip -->
           <div id="tldr-powertip-{{_id}}" style="display: none;">
