@@ -9,18 +9,22 @@ var _ = require('underscore')
   , bunyan = require('../../lib/logger').bunyan;
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues || {};
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {};
+
+  partials.content = '{{>website/pages/tldrPage}}';
+  partials.fbmetatags = '{{>website/metatags/metatagsPage}}'
 
   bunyan.incrementMetric('tldrs.get.html');
 
   Tldr.findOne({ _id: req.params.id })
-      .populate('creator', 'username')
+      .populate('creator', 'username twitterHandle')
       .exec(function (err, tldr) {
 
     values = _.extend(values, tldr);
 
     res.render('website/basicLayout', { values: values
-                                      , partials: { content: '{{>website/pages/tldrPage}}' }
+                                      , partials: partials
                                       });
   });
 }
