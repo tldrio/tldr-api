@@ -6,11 +6,14 @@
 
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues;
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {};
+
   values.whatisit = true;
+  partials.content = '{{>website/pages/whatisit}}';
 
   res.render('website/basicLayout', { values: values
-                                    , partials: { content: '{{>website/pages/whatisit}}' }
+                                    , partials: partials
                                     });
 }
 
