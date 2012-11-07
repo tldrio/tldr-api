@@ -1,0 +1,26 @@
+<header class="jumbotron"><h1>Forum</h1></header>
+
+<div class="centered-block">
+  {{#loggedUser}}
+  <em><a href="/forum/newTopic">Start a new topic</a></em><br><br>
+  {{/loggedUser}}
+  {{^loggedUser}}
+  <em><a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a></em><br><br>
+  {{/loggedUser}}
+
+
+  <div id="topic-list" class="list-box">
+    {{#topics}}
+      <div>
+        {{>website/voting}}
+        <div class="right-of-voting">
+          <a href="/forum/topics/{{_id}}"><span class="topic-in-list">{{title}}</span></a><br>
+          <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+        </div>
+      </div>
+      <br>
+      <div class="topic-separator"></div>
+    {{/topics}}
+  </div>
+
+</div>

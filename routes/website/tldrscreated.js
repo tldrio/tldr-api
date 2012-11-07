@@ -9,7 +9,7 @@ var config = require('../../lib/config');
 module.exports = function (req, res, next) {
   var values = req.renderingValues;
 
-  values.loggedUser.getCreatedTldrs(function(tldrs) {
+  values.loggedUser.getCreatedTldrs(function(err, tldrs) {
     values.tldrsCreated = tldrs;
 
     res.render('website/basicLayout', { values: values
