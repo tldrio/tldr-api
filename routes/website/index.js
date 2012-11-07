@@ -6,10 +6,7 @@
 
 
 module.exports = function (req, res, next) {
-  var values = {};
-
-  debugger;
-  values.loggedUser = req.user;
+  var values = req.renderingValues || {};
   values.index = true;
 
   res.render('website/basicLayout', { values: values

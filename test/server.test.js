@@ -17,13 +17,16 @@ var should = require('chai').should()
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
+  , Notification = models.Notification
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , Topic = models.Topic
 
   // Global variables used throughout the tests
   , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
   , user1
+  , topic1
   , client;
 
 
@@ -97,12 +100,12 @@ describe('Webserver', function () {
 
     // dummy models
     var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-    //We need an object ID for this one for PUT test
       , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
+      , topicData1 = { title: 'et voila un topic' }
       ;
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
@@ -110,6 +113,8 @@ describe('Webserver', function () {
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Topic)
+    , async.apply(theRemove, Notification)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
            user1 = user;
@@ -121,6 +126,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }); }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }); }
            , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
+           , function(cb) { Topic.createAndSaveInstance(topicData1, user1, function(err, _topic) { topic1 = _topic; cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -361,6 +367,57 @@ describe('Webserver', function () {
         });
       });
 
+    });
+
+    it('Should be able to Search tldrs by batch and return the docs with the necessary info populated', function (done) {
+      var someTldrs = []
+        , i
+        , temp
+        , batch
+        , now = new Date();
+
+      // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
+      for (i = 0; i <= 25; i += 1) {
+        temp = new Date(now - 10000 * (i + 1));
+        someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , hostname: 'needforair.com'
+                                , title: 'sopa'
+                                , summaryBullets: ['Great article']
+                                , resourceAuthor: 'Louis'
+                                , resourceDate: new Date()
+                                , creator: user1._id
+                                , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
+                                , createdAt: new Date()
+                                , updatedAt: temp  }));
+      }
+
+      batch = ['http://needforair.com/sopa/number0', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist' ];
+
+      saveSync(someTldrs, 0, done, function() {
+
+        // Should return empty array if request is not well formed
+        request.post({ headers: {"Accept": "application/json"}
+                     , uri: rootUrl + '/tldrs/searchBatch'
+                     , json: { badObject: batch } } , function (err, res, body) {
+
+          body.tldrs.length.should.be.equal(0);
+
+          // Request should return existing tldrs in the batch array
+          request.post({ headers: {"Accept": "application/json"}
+                       , uri: rootUrl + '/tldrs/searchBatch'
+                       , json: { batch: batch } } , function (err, res, body) {
+
+            var tldrs = body.tldrs
+              , tldrizedUrls = _.pluck(tldrs, 'url');
+            tldrizedUrls.length.should.equal(3);
+            tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
+            tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
+            tldrs[0].creator.username.should.equal('UserOne');
+            assert.isUndefined(tldrs[0].creator.password);
+            done();
+          });
+        });
+      });
     });
 
 
@@ -1390,11 +1447,100 @@ describe('Webserver', function () {
         });
       });
     });
+  });   // ==== End of 'Password reset' ==== //
 
 
+  describe('Notifications', function() {
+    it('Only the to user should able to change the notif status', function (done) {
+
+      var notifData = { from: '507eda94cb0c70d81100000c'
+                  , to : user1._id
+                  , tldr: '507edb3fcb0c70d81100006a'
+                  , type: 'read'
+                  }
+        , notifData2 = { from: '507eda94cb0c70d81100000c'
+                  , to: '507edb3fcb0c70d81100006a'
+                  , tldr: '507edb3fcb0c70d81100006a'
+                  , type: 'read'
+                  };
+
+      logUserIn('user1@nfa.com', 'supersecret', function () {
+        Notification.createAndSaveInstance(notifData, function(err, notif) {
+          Notification.createAndSaveInstance(notifData2, function(err, notif2) {
+            notif.unseen.should.equal.true;
+
+            request.put({ headers: {"Accept": "application/json"}
+                        , json: { unseen: false }
+                        , uri: rootUrl + '/notifications/' + notif2._id }, function (error, response, body) {
+              response.statusCode.should.equal(401);
+
+              request.put({ headers: {"Accept": "application/json"}
+                          , json: { unseen: false }
+                          , uri: rootUrl + '/notifications/' + notif._id }, function (error, response, body) {
+                response.statusCode.should.equal(200);
+                body.unseen.should.equal.false;
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'Notifications' ==== //
 
 
-  });
+  describe('PUT topic', function () {
+
+    it('Should not do anything if called by a non logged user', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id}, function (err, res, obj) {
+            res.statusCode.should.equal(401);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should send a 404 if topic is not found', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "user1@nfa.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/123456789009876543211234' }, function (err, res, obj) {
+            res.statusCode.should.equal(404);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should be able to vote for and against a topic', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
+            res.statusCode.should.equal(200);
+            Topic.findOne({ _id: topic1._id }, function (err, topic) {
+              topic.votes.should.equal(2);
+
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'PUT topic' ==== //
 
 });
 
