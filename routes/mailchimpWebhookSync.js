@@ -15,9 +15,10 @@ function mailchimpWebhookSync (req, res, next) {
         user.save();
         return res.send(200);
       });
+    } else {
+      return res.send(200);
     }
   } else {
-
     return res.send(404);
   }
 }

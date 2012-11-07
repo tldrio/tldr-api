@@ -21,10 +21,12 @@ var should = require('chai').should()
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , Topic = models.Topic
 
   // Global variables used throughout the tests
   , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
   , user1
+  , topic1
   , client;
 
 
@@ -98,12 +100,12 @@ describe('Webserver', function () {
 
     // dummy models
     var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-    //We need an object ID for this one for PUT test
       , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
+      , topicData1 = { title: 'et voila un topic' }
       ;
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
@@ -111,6 +113,7 @@ describe('Webserver', function () {
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Topic)
     , async.apply(theRemove, Notification)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
@@ -123,6 +126,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }); }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }); }
            , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
+           , function(cb) { Topic.createAndSaveInstance(topicData1, user1, function(err, _topic) { topic1 = _topic; cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -1443,7 +1447,8 @@ describe('Webserver', function () {
         });
       });
     });
-  });
+  });   // ==== End of 'Password reset' ==== //
+
 
   describe('Notifications', function() {
     it('Only the to user should able to change the notif status', function (done) {
@@ -1481,7 +1486,61 @@ describe('Webserver', function () {
         });
       });
     });
-  });
+
+  });   // ==== End of 'Notifications' ==== //
+
+
+  describe('PUT topic', function () {
+
+    it('Should not do anything if called by a non logged user', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id}, function (err, res, obj) {
+            res.statusCode.should.equal(401);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should send a 404 if topic is not found', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "user1@nfa.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/123456789009876543211234' }, function (err, res, obj) {
+            res.statusCode.should.equal(404);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should be able to vote for and against a topic', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
+            res.statusCode.should.equal(200);
+            Topic.findOne({ _id: topic1._id }, function (err, topic) {
+              topic.votes.should.equal(2);
+
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'PUT topic' ==== //
 
 });
 
