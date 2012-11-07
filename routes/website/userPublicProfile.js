@@ -48,7 +48,7 @@ module.exports = function (req, res, next) {
     }
   ], function (err) {   // Render the page
        res.render('website/basicLayout', { values: values
-                                         , partials: { metatags: '{{>website/metatagsUserProfile}}'
+                                         , partials: { metatags: '{{>website/metatags/metatagsUserProfile}}'
                                                      , content: '{{>website/pages/userPublicProfile}}' }
                                                      });
                                          });

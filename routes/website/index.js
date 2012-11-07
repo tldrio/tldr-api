@@ -10,7 +10,7 @@ module.exports = function (req, res, next) {
   values.index = true;
 
   res.render('website/basicLayout', { values: values
-                                    , partials: { metatags: '{{>website/metatagsDefault}}'
+                                    , partials: { metatags: '{{>website/metatags/metatagsDefault}}'
                                                 , content: '{{>website/pages/index}}'
                                                 }
                                     });
