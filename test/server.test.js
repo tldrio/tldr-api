@@ -1525,7 +1525,7 @@ describe('Webserver', function () {
 
     it('Should be able to vote for and against a topic', function (done) {
       async.waterfall([
-        async.apply(logUserIn, "user1@nfa.com", "supersecret")
+        async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
@@ -1533,19 +1533,6 @@ describe('Webserver', function () {
             res.statusCode.should.equal(200);
             Topic.findOne({ _id: topic1._id }, function (err, topic) {
               topic.votes.should.equal(2);
-
-              cb();
-            });
-          });
-        }
-      , async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
-      , function (cb) {
-          request.put({ headers: {"Accept": "application/json"}
-                      , json: { direction: -1 }
-                      , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
-            res.statusCode.should.equal(200);
-            Topic.findOne({ _id: topic1._id }, function (err, topic) {
-              topic.votes.should.equal(1);
 
               cb();
             });

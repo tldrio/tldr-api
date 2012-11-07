@@ -71,6 +71,7 @@ function prepareTopicForCreation (topicData, creator) {
     , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
 
   newTopic.creator = creatorId;
+  newTopic.alreadyVoted.push(creatorId);
 
   return newTopic;
 }

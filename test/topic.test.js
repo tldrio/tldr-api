@@ -107,7 +107,8 @@ describe('Topic', function () {
         topic.creator.toString().should.equal(user._id.toString());
         topic.posts.length.should.equal(0);
         topic.votes.should.equal(1);
-        topic.alreadyVoted.length.should.equal(0);
+        topic.alreadyVoted.length.should.equal(1);
+        topic.alreadyVoted[0].toString().should.equal(user._id.toString());
         assert.isUndefined(topic.unusedField);
 
         done();
@@ -288,7 +289,7 @@ describe('Topic', function () {
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
         topic.votes.should.equal(1);
-        topic.alreadyVoted.length.should.equal(0);
+        topic.alreadyVoted.length.should.equal(1);
 
         topic.vote(1, null, function (err, topic) {
           assert.isDefined(err.voter);
@@ -306,14 +307,14 @@ describe('Topic', function () {
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
         topic.votes.should.equal(1);
-        topic.alreadyVoted.length.should.equal(0);
+        topic.alreadyVoted.length.should.equal(1);
 
-        topic.vote(1, user, function (err, topic) {
+        topic.vote(1, userbis, function (err, topic) {
           assert.isNull(err);
           topic.votes.should.equal(2);
           topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
 
-          topic.vote(1, user, function (err, topic) {
+          topic.vote(1, userbis, function (err, topic) {
             assert.isNull(err);
             topic.votes.should.equal(2);
             topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
@@ -332,25 +333,19 @@ describe('Topic', function () {
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
         topic.votes.should.equal(1);
-        topic.alreadyVoted.length.should.equal(0);
+        topic.alreadyVoted.length.should.equal(1);
 
-        topic.vote(1, user, function (err, topic) {
+        topic.vote(-1, userbis, function (err, topic) {
           assert.isNull(err);
-          topic.votes.should.equal(2);
-          topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+          topic.votes.should.equal(0);
+          topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
 
-          topic.vote(-1, userbis, function (err, topic) {
-            assert.isNull(err);
-            topic.votes.should.equal(1);
-            topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
-
-            done();
-          });
+          done();
         });
       });
     });
 
-    it('By default, the vote is an unpvote', function (done) {
+    it('By default, the vote is an upvote (string version)', function (done) {
       var topicData = { title: "youpla"
                      , unusedField: "test"
                      };
@@ -358,26 +353,39 @@ describe('Topic', function () {
       Topic.createAndSaveInstance(topicData, user, function (err, topic) {
         assert.isNull(err);
         topic.votes.should.equal(1);
-        topic.alreadyVoted.length.should.equal(0);
+        topic.alreadyVoted.length.should.equal(1);
 
-        // null instead of a number
-        topic.vote(null, user, function (err, topic) {
+        // A string instead of a number
+        topic.vote("bloup", userbis, function (err, topic) {
           assert.isNull(err);
           topic.votes.should.equal(2);
-          topic.alreadyVoted.indexOf(user._id).should.not.equal(-1);
+          topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
 
-          // A string instead of a number
-          topic.vote("bloup", userbis, function (err, topic) {
-            assert.isNull(err);
-            topic.votes.should.equal(3);
-            topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
-
-            done();
-          });
+          done();
         });
       });
     });
 
+    it('By default, the vote is an upvote (undefined version)', function (done) {
+      var topicData = { title: "youpla"
+                     , unusedField: "test"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.votes.should.equal(1);
+        topic.alreadyVoted.length.should.equal(1);
+
+        // undefined instead of a number
+        topic.vote(undefined, userbis, function (err, topic) {
+          assert.isNull(err);
+          topic.votes.should.equal(2);
+          topic.alreadyVoted.indexOf(userbis._id).should.not.equal(-1);
+
+          done();
+        });
+      });
+    });
 
 
   });   // ==== End of '#vote' ==== //
