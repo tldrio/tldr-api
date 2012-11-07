@@ -1,0 +1,57 @@
+{{#notFound}}
+  <div class="alert alert-error">
+    Oh noes! The topic you looked for could not be found. If you think this is a bug, please <a href="mailto:hello@tldr.io?subject=I%20looked%20for%20a%20topic%20that%20is%20missing">tell us</a>.<br>
+    You can also <a href ="/forum/topics">go back on the forum homepage.</a>
+  </div>
+{{/notFound}}
+
+<div class="centered-block">
+  {{^notFound}}
+    <div id="title-and-vote">
+      {{#topic}}{{>website/voting}}{{/topic}}
+      <div class="right-of-voting">
+        <span class="topic-title">{{topic.title}}</span><br>
+        <span class="post-topic-metadata">{{topic.posts.length}} post{{#topic.moreThanOnePost}}s{{/topic.moreThanOnePost}}</span>
+      </div>
+    </div>
+    <br><br><br>
+
+    <em><a href="/forum/topics">Back to the forum</a></em>
+
+
+    <div class="list-box">
+      {{#posts}}
+        <div class="media">
+          <img class="pull-left" src="{{creator.gravatar.url}}&s=48" alt="a" style="width: 48px; height: 48px;">
+          <div class="media-body">
+              <a href="/{{creator.username}}">
+                {{creator.username}}
+              </a> - <span class="post-topic-metadata">{{timeago}}</span> <br>
+              {{{markedText}}}
+          </div>
+        </div>
+        <br>
+      {{/posts}}
+    </div>
+
+    <br>
+
+    {{^loggedUser}}
+    You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic._id}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
+    {{/loggedUser}}
+
+    {{#loggedUser}}
+      {{>website/validationErrors}}
+
+      <form method="post" action="/forum/topics/{{topic._id}}">
+        <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{userInput.text}}</textarea><br>
+        <input type="submit" value="Express yourself" class="btn btn-primary">
+      </form>
+    {{/loggedUser}}
+
+    <br><br><br>
+
+
+
+  {{/notFound}}
+</div>

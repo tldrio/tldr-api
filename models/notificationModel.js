@@ -53,6 +53,9 @@ function createAndSaveInstance (options, cb) {
   notification.save(cb);
 }
 
+/*
+ * Mark a notification as seen
+ */
 function markAsSeen (cb) {
   this.unseen = false;
   this.save(cb);

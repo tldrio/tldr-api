@@ -85,7 +85,6 @@ describe('Tldr', function () {
       , valErr;
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        console.log(err);
         err.name.should.equal('ValidationError');
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.title.should.not.equal(undefined);

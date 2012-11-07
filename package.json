@@ -25,6 +25,7 @@
                   , "passport-local": "0.1.3"
                   , "underscore": "1.4.x"
                   , "validator": "0.4.x"
+                  , "marked": "0.2.5"
                   }
 , "devDependencies": { "chai": "1.0.x"
                      , "mocha": "1.4.x"
