@@ -44,7 +44,7 @@ function createNewUser(req, res, next) {
 
       // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
-                       , development: false
+                       , development: true
                        , to: user.email
                        , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
                        });
