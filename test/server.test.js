@@ -395,7 +395,7 @@ describe('Webserver', function () {
                                 , updatedAt: temp  }));
       }
 
-      batch = ['http://needforair.com/sopa/number0', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist' ];
+      batch = ['http://needforair.com/sopa/number0?toto=ata', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist#test' ];
 
       saveSync(someTldrs, 0, done, function() {
 
@@ -412,12 +412,16 @@ describe('Webserver', function () {
                        , json: { batch: batch } } , function (err, res, body) {
 
             var tldrs = body.tldrs
+              , urls = body.urls
               , tldrizedUrls = _.pluck(tldrs, 'url');
+
             tldrizedUrls.length.should.equal(3);
             tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
             tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
             tldrs[0].creator.username.should.equal('UserOne');
             assert.isUndefined(tldrs[0].creator.password);
+
+            urls['http://needforair.com/sopa/number0?toto=ata'].should.equal('http://needforair.com/sopa/number0');
             done();
           });
         });
@@ -484,7 +488,7 @@ describe('Webserver', function () {
 
 
   //Test POST Requests
-  describe.only('POST tldrs ', function () {
+  describe('POST tldrs ', function () {
 
     describe('If no user is logged', function () {
       it('Should not be able to create an existing tldr with POST', function (done) {
@@ -604,7 +608,7 @@ describe('Webserver', function () {
         });
       });
 
-      it.only('Should  be able to increment the read count with /tldrs/:id', function (done) {
+      it('Should  be able to increment the read count with /tldrs/:id', function (done) {
         var tldrData = { readCount: 1 };
 
         request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {

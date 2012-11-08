@@ -19,13 +19,17 @@ var bunyan = require('../lib/logger').bunyan
  */
 function searchTldrsByBatch (req, res, next) {
   var query = req.query
-  , batch;
+    , batch = []
+    , urls = {};
 
   bunyan.incrementMetric('tldrs.search.routeCalled');
 
   // We normalize the urls
-  // Creates an empty array if req.body.batch doest exist
-  batch = _.map(req.body.batch, normalizeUrl);
+  _.each(req.body.batch, function (url) {
+    var normalizedUrl = normalizeUrl(url);
+    batch.push(normalizedUrl);
+    urls[url] = normalizedUrl;
+  });
 
 
   //Search by batch
@@ -37,7 +41,7 @@ function searchTldrsByBatch (req, res, next) {
       }
       // We dont update the read count here it's done when hovering on the tldr labels
 
-      return res.json(200, { tldrs: docs} );
+      return res.json(200, { tldrs: docs, urls: urls} );
     });
 
 }
