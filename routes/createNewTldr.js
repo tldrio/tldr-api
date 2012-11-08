@@ -31,6 +31,10 @@ function createNewTldr (req, res, next) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired } } );
   }
 
+  if (!req.user) {
+    return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
+  }
+
   Tldr.createAndSaveInstance(req.body, req.user, function (err, tldr) {
     if (err) {
       bunyan.incrementMetric('tldrs.creation.creationError');

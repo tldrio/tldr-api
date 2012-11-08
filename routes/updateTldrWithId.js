@@ -27,6 +27,10 @@ function updateTldrWithId (req, res, next) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired} } );
   }
 
+  if (!req.user) {
+    return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
+  }
+
   // We find by id here
   Tldr.find({ _id: id }, function (err, docs) {
     helpers.updateCallback(err, docs, req, res, next);
