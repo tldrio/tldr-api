@@ -27,6 +27,17 @@ function updateTldrWithId (req, res, next) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired} } );
   }
 
+  // Increment readcount if body contains the key `readCount`
+  if (req.body.readCount) {
+    Tldr.findOneAndUpdate({ _id: id }, { $inc: { readCount: 1 } }, function (err, tldr) {
+      if (err) {
+        return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
+      }
+      return res.json(200, tldr);
+    }) ;
+    return;
+  }
+
   if (!req.user) {
     return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
   }
