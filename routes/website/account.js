@@ -6,9 +6,12 @@
 
 
 module.exports = function (req, res, next) {
+  var partials = req.renderingPartials || {};
+
+  partials.content = '{{>website/pages/account}}';
 
   res.render('website/basicLayout', { values: req.renderingValues
-                                    , partials: { content: '{{>website/pages/account}}' }
+                                    , partials: partials
                                     });
 }
 

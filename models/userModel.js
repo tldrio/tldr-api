@@ -44,6 +44,7 @@ reservedUsernames = {
   , 'summaries': true
   , 'tldrs': true
   , 'tldrscreated': true
+  , 'forum': true
   , 'users': true
   , 'whatisit': true
 };

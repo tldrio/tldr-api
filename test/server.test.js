@@ -21,10 +21,12 @@ var should = require('chai').should()
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , Topic = models.Topic
 
   // Global variables used throughout the tests
   , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
   , user1
+  , topic1
   , client;
 
 
@@ -49,15 +51,20 @@ function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { 
 function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? null : {}); }); }
 
 // Check for population of a tldr's history (here the tldr #2)
-function tldrHistoryCheck (options, cb) {
-  var uri = rootUrl + '/tldrs/' + tldr2._id + (options.tryToBeAdmin ? '?admin=true' : '')
-    , test = options.historyShouldBePopulated ? assert.isDefined : assert.isUndefined;
+function tldrHistoryCheck (shouldWork, cb) {
+  var uri = rootUrl + '/tldrs/' + tldr2._id.toString() + '/admin';
 
   request.get({ headers: {"Accept": "application/json"}, uri: uri }, function (err, res, body) {
     var obj = JSON.parse(res.body);
-    res.statusCode.should.equal(200);
-    obj.url.should.equal('http://avc.com/mba-monday');
-    test(obj.history.versions);
+
+    if (shouldWork) {
+      res.statusCode.should.equal(200);
+      obj.url.should.equal('http://avc.com/mba-monday');
+      assert.isDefined(obj.history.versions);
+    } else {
+      res.statusCode.should.equal(401);
+      assert.isUndefined(obj.url);   // obj is not a tldr here
+    }
     cb();
   });
 }
@@ -103,6 +110,7 @@ describe('Webserver', function () {
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
+      , topicData1 = { title: 'et voila un topic' }
       ;
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
@@ -110,6 +118,7 @@ describe('Webserver', function () {
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Topic)
     , async.apply(theRemove, Notification)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
@@ -122,6 +131,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }); }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }); }
            , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
+           , function(cb) { Topic.createAndSaveInstance(topicData1, user1, function(err, _topic) { topic1 = _topic; cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -172,21 +182,20 @@ describe('Webserver', function () {
       });
     });
 
-    it('get a tldr by id with history not populated if nobody or a non admin is logged in', function (done) {
+    it('shouldnt return a tldrs admin version if nobody or a non admin is logged in', function (done) {
       async.waterfall([
         async.apply(logUserOut)
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, false )
       , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, false )
       ], done);
     });
 
-    it('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
+    it('should return a tldrs admin version if asked by an admin', function (done) {
       async.waterfall([
         async.apply(logUserOut)
       , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: false, historyShouldBePopulated: false })
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: true })
+      , async.apply(tldrHistoryCheck, true )
       ], done);
     });
 
@@ -1442,7 +1451,8 @@ describe('Webserver', function () {
         });
       });
     });
-  });
+  });   // ==== End of 'Password reset' ==== //
+
 
   describe('Notifications', function() {
     it('Only the to user should able to change the notif status', function (done) {
@@ -1480,7 +1490,61 @@ describe('Webserver', function () {
         });
       });
     });
-  });
+
+  });   // ==== End of 'Notifications' ==== //
+
+
+  describe('PUT topic', function () {
+
+    it('Should not do anything if called by a non logged user', function (done) {
+      async.waterfall([
+        async.apply(logUserOut)
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id}, function (err, res, obj) {
+            res.statusCode.should.equal(401);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should send a 404 if topic is not found', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "user1@nfa.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/123456789009876543211234' }, function (err, res, obj) {
+            res.statusCode.should.equal(404);
+
+            cb();
+          });
+        }
+      ], done);
+    });
+
+    it('Should be able to vote for and against a topic', function (done) {
+      async.waterfall([
+        async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
+      , function (cb) {
+          request.put({ headers: {"Accept": "application/json"}
+                      , json: { direction: 1 }
+                      , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
+            res.statusCode.should.equal(200);
+            Topic.findOne({ _id: topic1._id }, function (err, topic) {
+              topic.votes.should.equal(2);
+
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
+
+  });   // ==== End of 'PUT topic' ==== //
 
 });
 

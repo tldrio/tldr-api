@@ -15,7 +15,13 @@ var i18n = require('../lib/i18n')
   ;
 
 
-function contentNegotiationForTldr (req, res, tldr) {
+/**
+ * Common function used by all API routes that want to send a tldr to a client
+ * @param {Request} req The usual request object
+ * @param {Response} req The usual response object
+ * @param {Tldr} tldr The tldr to send. Fetching it is the job of this function's caller
+ */
+function apiSendTldr (req, res, tldr) {
   // Increment read count but don't wait for DB access to finish to return to client
   tldr.incrementReadCount();
 
@@ -28,14 +34,9 @@ function contentNegotiationForTldr (req, res, tldr) {
                       });
 
   // If this is an admin type request, simply return data as JSON
-  if (req.accepts('text/html') && req.query.admin !== 'true') {
-    bunyan.incrementMetric('tldrs.get.html');
-    return res.render('page/layout', { values: tldr
-                                     , partials: { } } ); // We serve the tldr Page
-  } else {  // Send json by default
-    bunyan.incrementMetric('tldrs.get.json');
-    return res.json(200, tldr); // We serve the raw tldr data
-  }
+  bunyan.incrementMetric('tldrs.get.json');
+
+  return res.json(200, tldr);
 }
 
 /**
@@ -84,5 +85,5 @@ function updateCallback (err, docs, req, res, next) {
 }
 
 // Module interface
-module.exports.contentNegotiationForTldr = contentNegotiationForTldr;
+module.exports.apiSendTldr = apiSendTldr;
 module.exports.updateCallback = updateCallback;
