@@ -71,6 +71,7 @@ function createNewTldr (req, res, next) {
                          });
       }
 
+      //tldr.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
       // Populate creator username
       Tldr.findOne({_id: tldr.id})
         .populate('creator', 'username twitterHandle')

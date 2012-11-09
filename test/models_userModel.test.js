@@ -371,14 +371,19 @@ describe('User', function () {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'another@email.com'
+                     , twitterHandle: 'blapblup'
                      , nonValidField: 'some value'
                      };
       // Try to save data with a non authorized field that will not be saved
       User.createAndSaveInstance(userData, function(err) {
         assert.isNull(err);
-        User.find({email: 'another@email.com'}, function(err, docs) {
-          docs.should.have.length(1);
-          assert.isUndefined(docs[0].nonValidField);
+        User.findOne({email: 'another@email.com'}, function(err, user) {
+          assert.isUndefined(user.nonValidField);
+
+          user.username.should.equal('NFADeploy');
+          user.email.should.equal('another@email.com');
+          user.twitterHandle.should.equal('blapblup');
+          assert.isDefined(user.email);
 
           done();
         });
@@ -928,7 +933,7 @@ describe('User', function () {
                                , usernameLowerCased: 'veryBAD document.write'   // XSS try should fail even though this field is not directly sanitized because
                                                                                 // it is derived from username
                                , bio: 'something'   // No possible XSS problem on creation
-                               , twitterHandle: 'another'  // No possible XSS problem on creation
+                               , twitterHandle: 'anodocument.writether'
                                , gravatarEmail: 'bloup@emdocument.writeail.com'   // Useless it is set up as user's email by when user is created
                                };
 
@@ -936,8 +941,8 @@ describe('User', function () {
         theUser.email.should.equal('email@email.com');
         theUser.username.should.equal('Stevie_sTarAc1');
         theUser.usernameLowerCased.should.equal('stevie_starac1');
+        theUser.twitterHandle.should.equal('another');
         assert.isUndefined(theUser.bio);
-        assert.isUndefined(theUser.twitterHandle);
         theUser.gravatar.email.should.equal('email@email.com');
 
         done();
