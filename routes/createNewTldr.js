@@ -41,7 +41,7 @@ function createNewTldr (req, res, next) {
 
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
 
         // POST on existing resource so we act as if it's an update
         var url = normalizeUrl(req.body.url);
