@@ -108,7 +108,7 @@ describe('Webserver', function () {
       , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
+      , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret", twitterHandle: 'blipblop'}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
       , topicData1 = { title: 'et voila un topic' }
       ;
@@ -505,7 +505,7 @@ describe('Webserver', function () {
         });
       });
     });
-    
+
 
     describe('Restricted to logged users', function () {
       beforeEach(function(done) {
@@ -528,6 +528,9 @@ describe('Webserver', function () {
           res.statusCode.should.equal(201);
           obj.title.should.equal('A title');
           obj.createdAt.should.not.be.null;
+          obj.creator.username.should.equal('UserOne');
+          obj.creator.twitterHandle.should.equal('blipblop');
+
           Tldr.find({}, function(err, docs) {
             var tldr;
             docs.length.should.equal(numberOfTldrs + 1);
@@ -619,7 +622,7 @@ describe('Webserver', function () {
       });
 
     });
-    
+ 
 
     describe('Restricted to logged users', function () {
       beforeEach(function(done) {
