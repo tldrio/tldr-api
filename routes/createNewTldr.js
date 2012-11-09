@@ -26,6 +26,8 @@ var bunyan = require('../lib/logger').bunyan
 function createNewTldr (req, res, next) {
 
   bunyan.incrementMetric('tldrs.creation.routeCalled');
+  var tldrToSend
+    , url;
 
   if (!req.body) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired } } );
@@ -44,7 +46,7 @@ function createNewTldr (req, res, next) {
       } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
 
         // POST on existing resource so we act as if it's an update
-        var url = normalizeUrl(req.body.url);
+        url = normalizeUrl(req.body.url);
         Tldr.find({url: url}, function (err, docs) {
           helpers.updateCallback(err, docs, req, res, next);
         });
@@ -73,7 +75,7 @@ function createNewTldr (req, res, next) {
 
       // Get a plain object from our model, on which we can set the creator field to what populate would do
       // And send it to the client. We avoid a useless DB call here
-      var tldrToSend = tldr.toObject();
+      tldrToSend = tldr.toObject();
       tldrToSend.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
       return res.json(201, tldrToSend);
     }
