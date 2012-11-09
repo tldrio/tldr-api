@@ -26,9 +26,15 @@ var bunyan = require('../lib/logger').bunyan
 function createNewTldr (req, res, next) {
 
   bunyan.incrementMetric('tldrs.creation.routeCalled');
+  var tldrToSend
+    , url;
 
   if (!req.body) {
     return next({ statusCode: 400, body: { message: i18n.bodyRequired } } );
+  }
+
+  if (!req.user) {
+    return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
   }
 
   Tldr.createAndSaveInstance(req.body, req.user, function (err, tldr) {
@@ -37,10 +43,10 @@ function createNewTldr (req, res, next) {
 
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
 
         // POST on existing resource so we act as if it's an update
-        var url = normalizeUrl(req.body.url);
+        url = normalizeUrl(req.body.url);
         Tldr.find({url: url}, function (err, docs) {
           helpers.updateCallback(err, docs, req, res, next);
         });
@@ -57,27 +63,21 @@ function createNewTldr (req, res, next) {
                        , values: { user: req.user, tldr: tldr }
                        });
 
-      // If a user is logged, he gets to be the tldr's creator
-      if (req.user) {
-        // If this is the creator's first tldr, send him a congratulory email
-        if (req.user.tldrsCreated.length === 1) {
-          // Send congratulory email
-          mailer.sendEmail({ type: 'congratulationsFirstTldr'
-                           , to: req.user.email
-                           , development: true
-                           , values: { url: encodeURIComponent(tldr.url) }
-                           });
-        }
-
-        // Populate creator username
-        Tldr.findOne({_id: tldr.id})
-          .populate('creator', 'username twitterHandle')
-          .exec( function (err, tldr) {
-            return res.json(201, tldr);
-        });
-      } else {
-        return res.json(201, tldr);
+      // If this is the creator's first tldr, send him a congratulory email
+      if (req.user.tldrsCreated.length === 1) {
+        // Send congratulory email
+        mailer.sendEmail({ type: 'congratulationsFirstTldr'
+                         , to: req.user.email
+                         , development: true
+                         , values: { url: encodeURIComponent(tldr.url) }
+                         });
       }
+
+      // Get a plain object from our model, on which we can set the creator field to what populate would do
+      // And send it to the client. We avoid a useless DB call here
+      tldrToSend = tldr.toObject();
+      tldrToSend.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
+      return res.json(201, tldrToSend);
     }
   });
 }
