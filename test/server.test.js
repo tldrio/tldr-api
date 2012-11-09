@@ -381,24 +381,32 @@ describe('Webserver', function () {
         , now = new Date();
 
       // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
-      for (i = 0; i <= 25; i += 1) {
+      for (i = 0; i <= 10; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
-                                , hostname: 'needforair.com'
-                                , title: 'sopa'
-                                , summaryBullets: ['Great article']
-                                , resourceAuthor: 'Louis'
-                                , resourceDate: new Date()
-                                , creator: user1._id
-                                , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
-                                , createdAt: new Date()
-                                , updatedAt: temp  }));
+        someTldrs.push({ url: 'http://needforair.com/sopa/number' + i
+                       , title: 'sopa'
+                       , summaryBullets: ['Great article']
+                       });
       }
 
-      batch = ['http://needforair.com/sopa/number0?toto=ata', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist#test' ];
-
-      saveSync(someTldrs, 0, done, function() {
-
+      function saveTldr(data, creator, cb) {
+        Tldr.createAndSaveInstance(data, creator, function () {
+          cb();
+        });
+      }
+      async.waterfall([
+         async.apply(saveTldr,someTldrs[0] ,user1)
+       , async.apply(saveTldr,someTldrs[1] ,user1)
+       , async.apply(saveTldr,someTldrs[2] ,user1)
+       , async.apply(saveTldr,someTldrs[3] ,user1)
+       , async.apply(saveTldr,someTldrs[4] ,user1)
+       , async.apply(saveTldr,someTldrs[5] ,user1)
+       , async.apply(saveTldr,someTldrs[6] ,user1)
+       , async.apply(saveTldr,someTldrs[7] ,user1)
+       , async.apply(saveTldr,someTldrs[8] ,user1)
+       , async.apply(saveTldr,someTldrs[9] ,user1)
+       , function (cb) {
+        batch = ['http://needforair.com/sopa/number0?toto=ata', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number9', 'http://toto.com/resourcedoesntexist#test' ];
         // Should return empty array if request is not well formed
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/tldrs/searchBatch'
@@ -425,7 +433,9 @@ describe('Webserver', function () {
             done();
           });
         });
-      });
+         }
+       ], done);
+
     });
 
 
@@ -612,15 +622,21 @@ describe('Webserver', function () {
       });
 
       it('Should  be able to increment the read count with /tldrs/:id', function (done) {
-        var tldrData = { incrementReadCount: 1 };
+        var tldrData = { incrementReadCount: true }
+          , prevReadCount;
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
-          res.statusCode.should.equal(200);
-          obj.readCount.should.equal(1);
-          done();
+        Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+          prevReadCount = tldr.readCount;
+          request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+            res.statusCode.should.equal(204);
+
+            Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+              tldr.readCount.should.equal(prevReadCount+ 1);
+              done();
+            });
+          });
         });
       });
-
     });
  
 
