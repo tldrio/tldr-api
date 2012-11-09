@@ -41,7 +41,7 @@ function createNewTldr (req, res, next) {
 
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
-      } else if (err.code === 11000 || err.code === 11001) {// code 1100x is for duplicate key in a mongodb index
+      } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
 
         // POST on existing resource so we act as if it's an update
         var url = normalizeUrl(req.body.url);
@@ -61,27 +61,22 @@ function createNewTldr (req, res, next) {
                        , values: { user: req.user, tldr: tldr }
                        });
 
-      // If a user is logged, he gets to be the tldr's creator
-      if (req.user) {
-        // If this is the creator's first tldr, send him a congratulory email
-        if (req.user.tldrsCreated.length === 1) {
-          // Send congratulory email
-          mailer.sendEmail({ type: 'congratulationsFirstTldr'
-                           , to: req.user.email
-                           , development: true
-                           , values: { url: encodeURIComponent(tldr.url) }
-                           });
-        }
-
-        // Populate creator username
-        Tldr.findOne({_id: tldr.id})
-          .populate('creator', 'username twitterHandle')
-          .exec( function (err, tldr) {
-            return res.json(201, tldr);
-        });
-      } else {
-        return res.json(201, tldr);
+      // If this is the creator's first tldr, send him a congratulory email
+      if (req.user.tldrsCreated.length === 1) {
+        // Send congratulory email
+        mailer.sendEmail({ type: 'congratulationsFirstTldr'
+                         , to: req.user.email
+                         , development: true
+                         , values: { url: encodeURIComponent(tldr.url) }
+                         });
       }
+
+      // Populate creator username
+      Tldr.findOne({_id: tldr.id})
+        .populate('creator', 'username twitterHandle')
+        .exec( function (err, tldr) {
+          return res.json(201, tldr);
+      });
     }
   });
 }
