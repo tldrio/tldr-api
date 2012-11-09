@@ -34,7 +34,7 @@ function updateTldrWithId (req, res, next) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
-      return res.json(200, tldr);
+      return res.send(204);
     }) ;
     return;
   }

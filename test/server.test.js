@@ -609,15 +609,21 @@ describe('Webserver', function () {
       });
 
       it('Should  be able to increment the read count with /tldrs/:id', function (done) {
-        var tldrData = { incrementReadCount: 1 };
+        var tldrData = { incrementReadCount: true }
+          , prevReadCount;
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
-          res.statusCode.should.equal(200);
-          obj.readCount.should.equal(1);
-          done();
+        Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+          prevReadCount = tldr.readCount;
+          request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+            res.statusCode.should.equal(204);
+
+            Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+              tldr.readCount.should.equal(prevReadCount+ 1);
+              done();
+            });
+          });
         });
       });
-
     });
     
 
