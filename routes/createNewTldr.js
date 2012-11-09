@@ -71,13 +71,11 @@ function createNewTldr (req, res, next) {
                          });
       }
 
-      //tldr.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
-      // Populate creator username
-      Tldr.findOne({_id: tldr.id})
-        .populate('creator', 'username twitterHandle')
-        .exec( function (err, tldr) {
-          return res.json(201, tldr);
-      });
+      // Get a plain object from our model, on which we can set the creator field to what populate would do
+      // And send it to the client. We avoid a useless DB call here
+      var tldrToSend = tldr.toObject();
+      tldrToSend.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
+      return res.json(201, tldrToSend);
     }
   });
 }
