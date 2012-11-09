@@ -28,6 +28,7 @@ function updateTldrWithId (req, res, next) {
   }
 
   // Increment readcount if body contains the key `incrementReadCount`
+  // Usefull for increment readCOunt on hover in the extension
   if (req.body.incrementReadCount) {
     Tldr.findOneAndUpdate({ _id: id }, { $inc: { readCount: 1 } }, function (err, tldr) {
       if (err) {
