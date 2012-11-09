@@ -8,8 +8,11 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues ? req.renderingValues : {};
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {};
+
   values.forum = true;
+  partials.content = '{{>website/pages/forumShowTopic}}';
 
   Topic.findOne({ _id: req.params.id })
        .exec(function (err, topic) {
@@ -35,7 +38,7 @@ module.exports = function (req, res, next) {
       values.topic = topic;
 
       res.render('website/basicLayout', { values: values
-                                        , partials: { content: '{{>website/pages/forumShowTopic}}' }
+                                        , partials: partials
                                         });
     });
   });

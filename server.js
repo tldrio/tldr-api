@@ -106,19 +106,19 @@ app.put('/users/you/notifications/markAllAsSeen', routes.markAllNotificationsAsS
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
 app.get('/users/logout', routes.logout);
 
-// tldrs
+// Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.get('/tldrs', routes.searchTldrs); // Convenience route
-app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
-app.get('/tldrs/:id', routes.getTldrById);   // ==== SPECIAL ROUTE also serving the tldr page as HTML, if text/html is requested ==== //
+app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
+app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
 app.put('/notifications/:id', routes.updateNotification);
 
 // Admin only routes
+app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
@@ -133,6 +133,14 @@ app.get('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
 app.options('*', function (req, res, next) {
   res.send(200);
 });
+
+
+
+/*
+ * Hybrid routes that can either serve HTML or JSON depending on the requested content type
+ *
+ */
+app.get('/tldrs/:id', middleware.routeIfHTML(routes.website_tldrPage, routes.getTldrById));
 
 
 

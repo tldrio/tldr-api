@@ -51,15 +51,20 @@ function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { 
 function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? null : {}); }); }
 
 // Check for population of a tldr's history (here the tldr #2)
-function tldrHistoryCheck (options, cb) {
-  var uri = rootUrl + '/tldrs/' + tldr2._id + (options.tryToBeAdmin ? '?admin=true' : '')
-    , test = options.historyShouldBePopulated ? assert.isDefined : assert.isUndefined;
+function tldrHistoryCheck (shouldWork, cb) {
+  var uri = rootUrl + '/tldrs/' + tldr2._id.toString() + '/admin';
 
   request.get({ headers: {"Accept": "application/json"}, uri: uri }, function (err, res, body) {
     var obj = JSON.parse(res.body);
-    res.statusCode.should.equal(200);
-    obj.url.should.equal('http://avc.com/mba-monday');
-    test(obj.history.versions);
+
+    if (shouldWork) {
+      res.statusCode.should.equal(200);
+      obj.url.should.equal('http://avc.com/mba-monday');
+      assert.isDefined(obj.history.versions);
+    } else {
+      res.statusCode.should.equal(401);
+      assert.isUndefined(obj.url);   // obj is not a tldr here
+    }
     cb();
   });
 }
@@ -177,21 +182,20 @@ describe('Webserver', function () {
       });
     });
 
-    it('get a tldr by id with history not populated if nobody or a non admin is logged in', function (done) {
+    it('shouldnt return a tldrs admin version if nobody or a non admin is logged in', function (done) {
       async.waterfall([
         async.apply(logUserOut)
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, false )
       , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: false })
+      , async.apply(tldrHistoryCheck, false )
       ], done);
     });
 
-    it('get a tldr by id with history only if an admin is logged and he wants to see the history', function (done) {
+    it('should return a tldrs admin version if asked by an admin', function (done) {
       async.waterfall([
         async.apply(logUserOut)
       , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: false, historyShouldBePopulated: false })
-      , async.apply(tldrHistoryCheck, { tryToBeAdmin: true, historyShouldBePopulated: true })
+      , async.apply(tldrHistoryCheck, true )
       ], done);
     });
 

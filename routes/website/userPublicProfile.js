@@ -11,8 +11,12 @@ var models = require('../../lib/models')
 
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {}
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
+
+  partials.content = '{{>website/pages/userPublicProfile}}';
+  partials.fbmetatags = '{{>website/metatags/metatagsUserProfile}}';
 
   async.waterfall([
     function (cb) {   // Only populate the latest tldrs the user created, in a specific object
@@ -48,8 +52,8 @@ module.exports = function (req, res, next) {
     }
   ], function (err) {   // Render the page
        res.render('website/basicLayout', { values: values
-                                         , partials: { content: '{{>website/pages/userPublicProfile}}' }
+                                         , partials: partials
+                                                     });
                                          });
-     });
 }
 

@@ -5,15 +5,17 @@ var models = require('../../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  var values =  req.renderingValues ? req.renderingValues : {}
+  var values =  req.renderingValues || {}
+    , partials = req.renderingPartials || {}
     , topicData = { title: req.body.title }
     , postData = { text: req.body.firstPostText }
     ;
 
   values.forum = true;
+  partials.content = '{{>website/pages/forumNewTopic}}';
 
   res.render('website/basicLayout', { values: values
-                                    , partials: { content: '{{>website/pages/forumNewTopic}}' }
+                                    , partials: partials
                                     });
 
 }
