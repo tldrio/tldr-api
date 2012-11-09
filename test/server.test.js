@@ -609,7 +609,7 @@ describe('Webserver', function () {
       });
 
       it('Should  be able to increment the read count with /tldrs/:id', function (done) {
-        var tldrData = { readCount: 1 };
+        var tldrData = { incrementReadCount: 1 };
 
         request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
           res.statusCode.should.equal(200);
