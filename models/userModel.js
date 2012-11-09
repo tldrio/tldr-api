@@ -19,7 +19,7 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
-  , userSetableFields = ['email', 'username', 'password']      // Setable fields by user at creation
+  , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
   , reservedUsernames;

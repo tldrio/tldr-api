@@ -108,7 +108,7 @@ describe('Webserver', function () {
       , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret"}
+      , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret", twitterHandle: 'blipblop'}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
       , topicData1 = { title: 'et voila un topic' }
       ;
@@ -381,24 +381,32 @@ describe('Webserver', function () {
         , now = new Date();
 
       // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
-      for (i = 0; i <= 25; i += 1) {
+      for (i = 0; i <= 10; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
-        someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
-                                , hostname: 'needforair.com'
-                                , title: 'sopa'
-                                , summaryBullets: ['Great article']
-                                , resourceAuthor: 'Louis'
-                                , resourceDate: new Date()
-                                , creator: user1._id
-                                , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
-                                , createdAt: new Date()
-                                , updatedAt: temp  }));
+        someTldrs.push({ url: 'http://needforair.com/sopa/number' + i
+                       , title: 'sopa'
+                       , summaryBullets: ['Great article']
+                       });
       }
 
-      batch = ['http://needforair.com/sopa/number0', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number10', 'http://toto.com/resourcedoesntexist' ];
-
-      saveSync(someTldrs, 0, done, function() {
-
+      function saveTldr(data, creator, cb) {
+        Tldr.createAndSaveInstance(data, creator, function () {
+          cb();
+        });
+      }
+      async.waterfall([
+         async.apply(saveTldr,someTldrs[0] ,user1)
+       , async.apply(saveTldr,someTldrs[1] ,user1)
+       , async.apply(saveTldr,someTldrs[2] ,user1)
+       , async.apply(saveTldr,someTldrs[3] ,user1)
+       , async.apply(saveTldr,someTldrs[4] ,user1)
+       , async.apply(saveTldr,someTldrs[5] ,user1)
+       , async.apply(saveTldr,someTldrs[6] ,user1)
+       , async.apply(saveTldr,someTldrs[7] ,user1)
+       , async.apply(saveTldr,someTldrs[8] ,user1)
+       , async.apply(saveTldr,someTldrs[9] ,user1)
+       , function (cb) {
+        batch = ['http://needforair.com/sopa/number0?toto=ata', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number9', 'http://toto.com/resourcedoesntexist#test' ];
         // Should return empty array if request is not well formed
         request.post({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/tldrs/searchBatch'
@@ -412,16 +420,22 @@ describe('Webserver', function () {
                        , json: { batch: batch } } , function (err, res, body) {
 
             var tldrs = body.tldrs
+              , urls = body.urls
               , tldrizedUrls = _.pluck(tldrs, 'url');
+
             tldrizedUrls.length.should.equal(3);
             tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
             tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
             tldrs[0].creator.username.should.equal('UserOne');
             assert.isUndefined(tldrs[0].creator.password);
+
+            urls['http://needforair.com/sopa/number0?toto=ata'].should.equal('http://needforair.com/sopa/number0');
             done();
           });
         });
-      });
+         }
+       ], done);
+
     });
 
 
@@ -484,181 +498,234 @@ describe('Webserver', function () {
 
 
   //Test POST Requests
-  describe('POST tldrs - There is always a logged user for these tests', function () {
-    beforeEach(function(done) {
-      logUserIn('user1@nfa.com', 'supersecret', done);
-    });
+  describe('POST tldrs ', function () {
 
-    afterEach(function(done) {
-      logUserOut(done);
-    });
+    describe('If no user is logged', function () {
+      it('Should not be able to create an existing tldr with POST', function (done) {
+        var tldrData = {
+          title: 'A title',
+          url: 'http://yetanotherunusedurl.com/somepage',
+          summaryBullets: ['A summary'],
+          resourceAuthor: 'bozo le clown',
+        };
 
-    it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
-      var tldrData = {
-        title: 'A title',
-        url: 'http://yetanotherunusedurl.com/somepage',
-        summaryBullets: ['A summary'],
-        resourceAuthor: 'bozo le clown',
-      };
-
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(201);
-        obj.title.should.equal('A title');
-        obj.createdAt.should.not.be.null;
-        Tldr.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs + 1);
-
-          Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('A summary');
-
-            done();
-          });
-        });
-      });
-    });
-
-    it('Should handle POST request as an update if tldr already exists', function (done) {
-      var tldrData = {url: 'http://needforair.com/nutcrackers'
-        , title:'Nutcrackers article'
-        , summaryBullets: ['Best Blog Ever']
-        , resourceAuthor: 'Migli'
-        , resourceDate: new Date()
-        , createdAt: new Date()
-        , updatedAt: new Date()
-      };
-
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(204);
-        Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
-          var tldr = docs[0];
-          tldr.summaryBullets.should.include('Best Blog Ever');
-          tldr.title.should.equal('Nutcrackers article');
-
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          res.statusCode.should.equal(401);
           done();
         });
       });
     });
 
-    it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
-      var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-          res.statusCode.should.equal(403);
-          obj.should.have.property('url');
+    describe('Restricted to logged users', function () {
+      beforeEach(function(done) {
+        logUserIn('user1@nfa.com', 'supersecret', done);
+      });
+
+      afterEach(function(done) {
+        logUserOut(done);
+      });
+
+      it('Should create a new tldr with POST if it doesn\'t exist yet, and return it', function (done) {
+        var tldrData = {
+          title: 'A title',
+          url: 'http://yetanotherunusedurl.com/somepage',
+          summaryBullets: ['A summary'],
+          resourceAuthor: 'bozo le clown',
+        };
+
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          res.statusCode.should.equal(201);
+          obj.title.should.equal('A title');
+          obj.createdAt.should.not.be.null;
+          obj.creator.username.should.equal('UserOne');
+          obj.creator.twitterHandle.should.equal('blipblop');
+
           Tldr.find({}, function(err, docs) {
-            docs.length.should.equal(numberOfTldrs);
+            var tldr;
+            docs.length.should.equal(numberOfTldrs + 1);
+
+            Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+              tldr = docs[0];
+              tldr.summaryBullets.should.include('A summary');
+
+              done();
+            });
+          });
+        });
+      });
+
+      it('Should handle POST request as an update if tldr already exists', function (done) {
+        var tldrData = {url: 'http://needforair.com/nutcrackers'
+          , title:'Nutcrackers article'
+          , summaryBullets: ['Best Blog Ever']
+          , resourceAuthor: 'Migli'
+          , resourceDate: new Date()
+          , createdAt: new Date()
+          , updatedAt: new Date()
+        };
+
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          res.statusCode.should.equal(204);
+          Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+            var tldr = docs[0];
+            tldr.summaryBullets.should.include('Best Blog Ever');
+            tldr.title.should.equal('Nutcrackers article');
 
             done();
           });
         });
-    });
+      });
 
-    it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
-      var tldrData = { url: 'http://nfa.com'
-        , summaryBullets: [''] };   // Summary can't be empty
+      it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
+        var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-          obj.should.have.property('summaryBullets');
-          res.statusCode.should.equal(403);
-          Tldr.find({}, function(err, docs) {
-            docs.length.should.equal(numberOfTldrs);
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+            res.statusCode.should.equal(403);
+            obj.should.have.property('url');
+            Tldr.find({}, function(err, docs) {
+              docs.length.should.equal(numberOfTldrs);
 
-            done();
+              done();
+            });
           });
-        });
+      });
+
+      it('Shouldn\'t create a new tldr with POST if there are validation errors', function (done) {
+        var tldrData = { url: 'http://nfa.com'
+          , summaryBullets: [''] };   // Summary can't be empty
+
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+            obj.should.have.property('summaryBullets');
+            res.statusCode.should.equal(403);
+            Tldr.find({}, function(err, docs) {
+              docs.length.should.equal(numberOfTldrs);
+
+              done();
+            });
+          });
+      });
     });
-
-
   });   // ==== End of 'POST tldrs' ==== //
 
 
-  describe('PUT tldrs - There is always a logged user for these tests', function () {
-    beforeEach(function(done) {
-      logUserIn('user1@nfa.com', 'supersecret', done);
-    });
+  describe('PUT tldrs ', function () {
 
-    afterEach(function(done) {
-      logUserOut(done);
-    });
+    describe('If no user is logged', function () {
+      it('Should not be able to update an existing tldr with PUT', function (done) {
+        var tldrData = { summaryBullets: ['A new summary'] };
 
-    it('Should update an existing tldr with PUT motherfucker', function (done) {
-      var tldrData = { summaryBullets: ['A new summary'] };
-
-      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
-        res.statusCode.should.equal(204);
-        Tldr.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs);
-
-          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('A new summary');
-
-            done();
-          });
-        });
-      });
-    });
-
-    it('Should handle bad PUT request', function (done) {
-      var tldrData = { summaryBullets: ['A new summary'] };
-
-      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
-        res.statusCode.should.equal(403);
-        done();
-      });
-    });
-
-    it('Should handle PUT request with non existent _id', function (done) {
-
-      var tldrData = { summaryBullets: ['A new summary'] };
-      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
-        res.statusCode.should.equal(404);
-        done();
-      });
-    });
-
-    it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
-      var tldrData = { summaryBullets: [''] };
-
-      request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
-        obj.should.have.property('summaryBullets');
-        res.statusCode.should.equal(403);
-        Tldr.find({}, function(err, docs) {
-          var tldr;
-          docs.length.should.equal(numberOfTldrs);
-
-          Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
-            tldr = docs[0];
-            tldr.summaryBullets.should.include('Fred Wilson is my God');
-
-            done();
-          });
-        });
-      });
-    });
-
-
-    it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
-      var tldrData = {
-        url: 'http://yetanotherunusedurl.com/yomama',
-        title: 'A title',
-        summaryBullets: ['A summary'],
-        resourceAuthor: 'bozo le clown',
-        resourceDate: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-
-      request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-        res.statusCode.should.equal(201);
-
-        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
-          res.statusCode.should.equal(200);
-
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+          res.statusCode.should.equal(401);
           done();
+        });
+      });
+
+      it('Should  be able to increment the read count with /tldrs/:id', function (done) {
+        var tldrData = { incrementReadCount: true }
+          , prevReadCount;
+
+        Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+          prevReadCount = tldr.readCount;
+          request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+            res.statusCode.should.equal(204);
+
+            Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+              tldr.readCount.should.equal(prevReadCount+ 1);
+              done();
+            });
+          });
+        });
+      });
+    });
+ 
+
+    describe('Restricted to logged users', function () {
+      beforeEach(function(done) {
+        logUserIn('user1@nfa.com', 'supersecret', done);
+      });
+
+      afterEach(function(done) {
+        logUserOut(done);
+      });
+
+      it('Should update an existing tldr with PUT motherfucker', function (done) {
+        var tldrData = { summaryBullets: ['A new summary'] };
+
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+          res.statusCode.should.equal(204);
+          Tldr.find({}, function(err, docs) {
+            var tldr;
+            docs.length.should.equal(numberOfTldrs);
+
+            Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+              tldr = docs[0];
+              tldr.summaryBullets.should.include('A new summary');
+
+              done();
+            });
+          });
+        });
+      });
+
+      it('Should handle bad PUT request', function (done) {
+        var tldrData = { summaryBullets: ['A new summary'] };
+
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
+          res.statusCode.should.equal(403);
+          done();
+        });
+      });
+
+      it('Should handle PUT request with non existent _id', function (done) {
+
+        var tldrData = { summaryBullets: ['A new summary'] };
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
+          res.statusCode.should.equal(404);
+          done();
+        });
+      });
+
+      it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
+        var tldrData = { summaryBullets: [''] };
+
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+          obj.should.have.property('summaryBullets');
+          res.statusCode.should.equal(403);
+          Tldr.find({}, function(err, docs) {
+            var tldr;
+            docs.length.should.equal(numberOfTldrs);
+
+            Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+              tldr = docs[0];
+              tldr.summaryBullets.should.include('Fred Wilson is my God');
+
+              done();
+            });
+          });
+        });
+      });
+
+
+      it('Should retrieve tldrs whose url have been normalized (same equivalence class)', function (done) {
+        var tldrData = {
+          url: 'http://yetanotherunusedurl.com/yomama',
+          title: 'A title',
+          summaryBullets: ['A summary'],
+          resourceAuthor: 'bozo le clown',
+          resourceDate: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+          res.statusCode.should.equal(201);
+
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
+            res.statusCode.should.equal(200);
+
+            done();
+          });
         });
       });
     });
