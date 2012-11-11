@@ -346,7 +346,7 @@
 
 
   </div>
-  <p>
+    {{#chrome}}
     <div id="install-browser-extension-wrapper">
       {{^loggedUser}}
       <button class="btn btn-primary btn-large pre-install-extension" data-target="signup">Sign up to install our Chrome Extension</button>
@@ -395,8 +395,21 @@
         </div>
       </div>
     </div>
+    {{/chrome}}
+    {{^chrome}}
+    <div class="no-chrome">
+      <p>Looks like you're not using Chrome! We're sorry that we only have an extension for Chrome right now. Please give us your email address so that we can notify you once we have an extension ready for your browser.</p>
+      <form>
+        <div class="input-append">
+        <input type="text" name="email" placeholder="No spam, we promise">
+        <button type="button" id="subscribe-email" class="btn btn-primary">Keep me posted!</button>
+      </div>
+      </form>
+    </div>
+    {{/chrome}}
 
-  </p>
+
+
 
 </section>
 
