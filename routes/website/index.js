@@ -4,8 +4,6 @@
  * Proprietary License
 */
 
-var renderLatestTldrs = require('./summaries')
-  ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}

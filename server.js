@@ -108,7 +108,6 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.get('/tldrs', routes.searchTldrs); // Convenience route
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
@@ -151,10 +150,10 @@ app.get('/tldrs/:id', middleware.routeIfHTML(routes.website_tldrPage, routes.get
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
 app.get('/index', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
-                , middleware.loggedInCheck({ ifLogged: routes.website_summaries
+                , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
-app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
+app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 
 // Login, logout
