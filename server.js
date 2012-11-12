@@ -117,6 +117,10 @@ app.put('/tldrs/:id', routes.updateTldrWithId);
 // Notifications
 app.put('/notifications/:id', routes.updateNotification);
 
+// routes for emails gathered during a product launch
+app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
+
+
 // Admin only routes
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
@@ -140,7 +144,7 @@ app.options('*', function (req, res, next) {
  * Hybrid routes that can either serve HTML or JSON depending on the requested content type
  *
  */
-app.get('/tldrs/:id', middleware.routeIfHTML(routes.website_tldrPage, routes.getTldrById));
+app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
 
@@ -154,6 +158,7 @@ app.get('/index', middleware.attachRenderingValues, routes.website_index);
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/summaries', middleware.attachRenderingValues, routes.website_summaries);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
+app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); return next(); }

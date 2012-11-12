@@ -6,6 +6,7 @@
 
 var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
+  , notificator = require('../../lib/notificator')
   , bunyan = require('../../lib/logger').bunyan;
 
 module.exports = function (req, res, next) {
@@ -17,11 +18,20 @@ module.exports = function (req, res, next) {
 
   bunyan.incrementMetric('tldrs.get.html');
 
+
   Tldr.findOne({ _id: req.params.id })
       .populate('creator', 'username twitterHandle')
       .exec(function (err, tldr) {
 
     values = _.extend(values, tldr);
+
+    // Send Notif
+    notificator.publish({ type: 'read'
+                        , from: req.user
+                        , tldr: tldr
+                        // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                        , to: tldr.creator
+                        });
 
     res.render('website/basicLayout', { values: values
                                       , partials: partials
