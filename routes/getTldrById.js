@@ -23,8 +23,8 @@ function getTldrById (req, res, next) {
   query = Tldr.findOne({_id: id})
               .populate('creator', 'username twitterHandle');
 
-  // If a logged admin wants to access the admin-only representation of the resource
-  if (req.user && req.user.isAdmin() && req.query.admin === 'true') {
+  // If the user has the admin role, populate history
+  if (req.userRoleAdmin) {
     query.populate('history');
   }
 
@@ -44,7 +44,7 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    helpers.contentNegotiationForTldr(req, res, tldr);
+    helpers.apiSendTldr(req, res, tldr);
 
   });
 }

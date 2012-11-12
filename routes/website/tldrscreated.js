@@ -7,13 +7,16 @@
 var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues;
+  var values = req.renderingValues
+    , partials = req.renderingPartials;
 
-  values.loggedUser.getCreatedTldrs(function(tldrs) {
+  partials.content = '{{>website/pages/tldrscreated}}';
+
+  values.loggedUser.getCreatedTldrs(function(err, tldrs) {
     values.tldrsCreated = tldrs;
 
     res.render('website/basicLayout', { values: values
-               , partials: { content: '{{>website/pages/tldrscreated}}' }
+               , partials: partials
     });
   });
 }
