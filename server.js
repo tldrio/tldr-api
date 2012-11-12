@@ -118,6 +118,10 @@ app.put('/tldrs/:id', routes.updateTldrWithId);
 // Notifications
 app.put('/notifications/:id', routes.updateNotification);
 
+// routes for emails gathered during a product launch
+app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
+
+
 // Admin only routes
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
