@@ -4,6 +4,8 @@
  * Proprietary License
 */
 
+var renderLatestTldrs = require('./summaries')
+  ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
@@ -12,7 +14,11 @@ module.exports = function (req, res, next) {
   values.index = true;
   partials.content = '{{>website/pages/index}}';
 
-  res.render('website/basicLayout', { values: values
-                                    , partials: partials
-                                    });
+  if (req.user) {
+    renderLatestTldrs(req, res, next);
+  } else {
+    res.render('website/basicLayout', { values: values
+                                      , partials: partials
+                                      });
+  }
 }
