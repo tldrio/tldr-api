@@ -1,3 +1,5 @@
+#! /usr/local/bin/node
+
 var _ = require('underscore')
   , async = require('async')
   , bunyan = require('../lib/logger').bunyan
