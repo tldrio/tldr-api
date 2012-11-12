@@ -8,8 +8,11 @@ var renderLatestTldrs = require('./summaries')
   ;
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues || {};
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {};
+
   values.index = true;
+  partials.content = '{{>website/pages/index}}';
 
   if (req.user) {
     renderLatestTldrs(req, res, next);

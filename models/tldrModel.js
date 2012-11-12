@@ -169,7 +169,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
  * Update tldr by batch
  * @param {Object} batch Array of urls concerned by the update
  * @param {Object} updateQuery Mongo update object
- * @param {Function} cb Optional - Pass a callback if you want to resume flow after increment
+ * @param {Function} cb Optional - Pass a callback if you want to resume flow after
  * @return {void}
  */
 TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {

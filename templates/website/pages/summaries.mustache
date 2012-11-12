@@ -1,8 +1,8 @@
 <section class="marketing">
-  <h1>Latest tl;drs</h1>
-  <p class="marketing-byline">Hover over the <em>tl;dr</em> badges to make the summaries appear!</p>
+  <h1>Freshest tl;drs From All Around The World</h1>
+  <p class="marketing-byline">Get to the point faster, Read more, Remember better</p>
   <div class="latest-tldrs-created">
-    <div class="well-white">
+    <div class="">
       <ul class="unstyled">
         {{#latestTldrs}}
         <li>
@@ -11,19 +11,22 @@
             <a href="{{url}}" target="_blank">{{title}}</a>
           </p>
           <span class="tldr-hostname tldr-hostname-list">({{hostname}})
-            <span>
-              <span class="label tldr-label" data-powertip-id="tldr-powertip-{{_id}}">
-                <a href="{{url}}">tl;dr</a>
-              </span>
-              by
-              <span>
-                <a href="/{{creator.username}}" target="_blank">
-                  <em>{{creator.username}}</em>
-                </a>
-              </span>
-            </span>
-          </span>
-          <!-- begin powertip -->
+                  <span>
+                    <span class="label tldr-label" data-powertip-id="tldr-powertip-{{_id}}">
+                      <a href="{{url}}">tl;dr</a>
+                    </span>
+                    by
+                    <span class="tldr-creator">
+                      <a href="/{{creator.username}}" target="_blank">
+                        <em>{{creator.username}}</em>
+                      </a>
+                    </span>
+                    <span class="tldr-readcount">
+                      &middot; read {{readCount}} times
+                    </span>
+                  </span>
+                </span>
+          <!-- for powertip -->
           <div id="tldr-powertip-{{_id}}" style="display: none;">
             <div class="tldr-read-container">
               <div class="tldr-tldr">
@@ -61,6 +64,18 @@
   </div>
 </section>
 <section class="marketing marketing-tip">
-  <p>Follow our Twitter account to get the newest tl;drs directly on Twitter (we only tweet a few tl;drs per day, no bullshit):</p>
-  <iframe allowtransparency="true" frameborder="0" scrolling="no" src="//platform.twitter.com/widgets/follow_button.html?screen_name=tldrio" style="width:200px; height:20px; vertical-align:text-bottom; margin-left:20px;"></iframe>
+  <h3>Get the most popular tl;drs directly in your Twitter feed</h3>
+<a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-lang="en" data-size="large" >Follow @tldrio</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </section>
+
+
+<hr class="soften">
+<section class="marketing">
+  <h1>You can be a hero too!</h1>
+  <p class="marketing-byline">Always feels good if you ask me</p>
+  <p>
+    <a href="/whatisit#install-bm-section" class="btn btn-primary btn-large centered-button"> Contribute tl;drs</a>
+  </p>
+</section>
+
