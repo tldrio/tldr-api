@@ -6,26 +6,27 @@
       <ul class="unstyled">
         {{#latestTldrs}}
         <li>
-          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
           <p class="tldr-title-ellipsis">
             <a href="{{url}}" target="_blank">{{title}}</a>
           </p>
-          <span class="tldr-hostname tldr-hostname-list">({{hostname}})
-                  <span>
-                    <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
-                      <a href="{{url}}">tl;dr</a>
-                    </span>
-                    by
-                    <span class="tldr-creator">
-                      <a href="/{{creator.username}}" target="_blank">
-                        <em>{{creator.username}}</em>
-                      </a>
-                    </span>
-                    <span class="tldr-readcount">
-                      &middot; read {{readCount}} times
-                    </span>
-                  </span>
-                </span>
+            <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
+              <a href="{{url}}">tl;dr</a>
+            </span>
+            <span class="tldr-hostname tldr-hostname-list">
+              ({{hostname}})
+            </span>
+            <div></div>
+          <span class="tldr-metadata-tldrs">
+            <span class="tldr-creator">
+              contributed by
+              <a href="/{{creator.username}}" target="_blank">
+                <em>{{creator.username}}</em>
+              </a>
+            </span>
+            <span class="tldr-readcount">
+              &middot; read {{readCount}} times
+            </span>
+          </span>
           <!-- for powertip -->
           <div id="tldr-powertip-{{_id}}"  style="display: none;">
             <div class="tldr-read-container">
