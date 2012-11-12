@@ -11,6 +11,7 @@ module.exports = function (req, res, next) {
     , chrome = ua.match(/Chrome/g)
     ;
 
+  values.extension = true;
   values.chrome = chrome;
 
   res.render('website/basicLayout', { values: values
