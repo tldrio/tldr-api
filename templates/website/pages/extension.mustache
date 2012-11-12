@@ -2,9 +2,11 @@
 <div id="landing-extension-wrapper">
   <section class="marketing">
     <h1>See Through Hyperlinks</h1>
-    <p class="marketing-byline">Read summaries of Hacker News articles without leaving the front page</p>
+    <p class="marketing-byline">With our Chrome extension, read summaries of Hacker News articles without leaving the front page</p>
 
+    {{#chrome}}
     <img width="450" height="" class="graphic-helper" id="extension-gh1" src="/assets/img/extension.gh1.png">
+    {{/chrome}}
     <img width="450" height="" class="graphic-helper" id="extension-gh2" src="/assets/img/extension.gh2.png">
     <div id="hacker-news-container">
       <center>
@@ -90,7 +92,7 @@
                       <td colspan="2">
                       </td>
                       <td class="subtext  ">
-                        <span>111!!1 points</span> by <span>coolstorybro</span> 2 hours ago | <span>flag</span> | <span>127 comments</span>
+                        <span>111 points</span> by <span>coolstorybro</span> 2 hours ago | <span>flag</span> | <span>127 comments</span>
                       </td>
                     </tr>
                     <tr style="height:5px">
@@ -162,7 +164,7 @@
                         <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2"></span></center>
                       </td>
                       <td class="title">
-                        <span>Two-year old explains why NodeJS is faster than Rails</span>
+                        <span>Reasons why NodeJS is faster than Rails</span>
                         <span class="label tldr-label" data-powertip-id="tldr-powertip-3">
                           <a href="#">tl;dr</a>
                         </span>
@@ -186,15 +188,15 @@
                                 <ul>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    Node has an event loop and thus it is fast
+                                    Node is real-time yo!
                                   </li>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    Node has streams, and event emitters, and callbacks, and a cool logo, and it also has streams.
+                                    Node has a really slick logo which make codes look faster.
                                   </li>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    People who use nodeJS usually are smarter than people who use Rails, hence their code performs better
+                                    Using the same language on the front-end and the back-end means you can finally use jQuery on the backend. Lifesaver...
                                   </li>
                                 </ul>
                               </div>
@@ -221,23 +223,23 @@
                         <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2"></span></center>
                       </td>
                       <td class="title">
-                        <span>I am a founder and I love my life because it is so awesome</span>
+                        <span>How I hacked Halloween and made 3x more candy than last year</span>
                         <span class="label tldr-label" data-powertip-id="tldr-powertip-4">
                           <a href="#">tl;dr</a>
                         </span>
-                        <span class="comhead"> (seeyouin10years.com) </span>
+                        <span class="comhead"> (juicyhacking.com) </span>
                         <!-- begin powertip -->
                         <div id="tldr-powertip-4" style="display: none;">
                           <div class="tldr-read-container">
                             <div class="tldr-tldr">
                               <div class="tldr-header">
                                 <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain=">
-                                <p class="tldr-title tldr-title-ellipsis">I am a founder and I love my life because it is so awesome</p>
+                                <p class="tldr-title tldr-title-ellipsis">How I hacked Halloween and made 3x more candy than last year</p>
                               </div>
                               <div class="tldr-metadata">
                                 <span>
                                   tl;dr by
-                                  <span><a href="#" target="_blank"><em>woteva</em></a></span>
+                                  <span><a href="#" target="_blank"><em>sluttypumpkin</em></a></span>
                                 </span>
                               </div>
 
@@ -245,15 +247,11 @@
                                 <ul>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    I heard being a founder was cool so I thought hey lets be a founder! I put up a webpage, added some social media buttons and "subscribe to my newsletter" button and finally I was a founder.
+                                    I crowdsourced an A/B test of different costumes to see which converted the best.
                                   </li>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    It really feels great to finally be in control of my life, at least until my savings run out in a few months. In the meantime though I can do what I love and tell all my friends how blind they are to work for someone else and that you only live once.
-                                  </li>
-                                  <li class="tldr-bullet">
-                                    <i class="icon-stop"></i>
-                                    I'm glad I can help change the world with my new social local mobile app!
+                                    After waiting for 2 hours for the data to come in, I went to Walmart, bought the most succesful costume and went on a trick-or-treating rampage.
                                   </li>
                                 </ul>
                               </div>
@@ -302,7 +300,7 @@
                                   </li>
                                   <li class="tldr-bullet">
                                     <i class="icon-stop"></i>
-                                    It's free for dogs but plans for dog owners start at $100/month. If you love your dog there's never been a better opportunity to show them.
+                                    It's free for dogs but plans for dog owners start at $100/month. If you love your dog there's never been a better opportunity to prove it.
                                   </li>
                                 </ul>
                               </div>
@@ -353,7 +351,7 @@
       <div id="login-install-browser-extension" class="pre-install-extension" data-target="login">or <a href="#">Log in</a></div>
       {{/loggedUser}}
       {{#loggedUser}}
-      <button class="btn btn-success btn-large install-extension" >Install the damn thing!</button>
+      <button class="btn btn-success btn-large install-extension" >Install the damn extension!</button>
       {{/loggedUser}}
     </div>
 
@@ -398,11 +396,11 @@
     {{/chrome}}
     {{^chrome}}
     <div class="no-chrome" style="text-align:center;">
-      <h3>Looks like you're not using Chrome!</h3> <p>We're sorry that we only have an extension for Chrome right now. Please give us your email address so that we can notify you once we have an extension ready for your browser.</p>
+      <h3>Looks like you're not using Chrome!</h3> <p>Subscribe to get notified once we have an extension ready for your browser.</p>
       <form>
         <div class="input-append">
-        <input type="text" name="email" placeholder="No spam, we promise">
-        <button type="button" id="subscribe-email" class="btn btn-primary">Keep me posted!</button>
+        <input type="text" id="subscribe-email-input" name="email" placeholder="No spam, we promise">
+        <button type="submit" id="subscribe-email" class="btn btn-primary">Keep me posted!</button>
       </div>
       </form>
     </div>
