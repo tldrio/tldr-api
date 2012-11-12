@@ -14,11 +14,7 @@ module.exports = function (req, res, next) {
   values.index = true;
   partials.content = '{{>website/pages/index}}';
 
-  if (req.user) {
-    renderLatestTldrs(req, res, next);
-  } else {
-    res.render('website/basicLayout', { values: values
-                                      , partials: partials
-                                      });
-  }
+  res.render('website/basicLayout', { values: values
+                                    , partials: partials
+                                    });
 }
