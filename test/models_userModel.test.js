@@ -167,6 +167,7 @@ describe('User', function () {
       , async.apply(testUsername, 'resetpassword')
       , async.apply(testUsername, 'account')
       , async.apply(testUsername, 'forum')
+      , async.apply(testUsername, 'extension')
       , async.apply(testUsername, 'tldrscreated')
       ], done);
     });

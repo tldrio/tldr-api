@@ -33,6 +33,7 @@ reservedUsernames = {
   , 'account': true
   , 'confirm': true
   , 'confirmemail': true
+  , 'extension': true
   , 'forgotpassword': true
   , 'index': true
   , 'login': true
