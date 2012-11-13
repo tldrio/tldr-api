@@ -7,83 +7,84 @@
 
 {{^userNotFound}}
 
-<div class="row">
-  <div class="span12 well-white">
-    <div class="row">
+<div class="tldr-base-unit">
+  <div class="row">
+    <div class="span12">
+      <div class="row">
 
-      <div class="span3 vcard" itemscope itemtype="http://schema.org/Person">
-        <div class="avatar">
-          <img width="210px" height="210px" src="{{user.gravatar.url}}&s=210"  class="img-polaroid" alt="{{user.username}}">
+        <div class="span3 vcard" itemscope itemtype="http://schema.org/Person">
+          <div class="avatar">
+            <img width="210px" height="210px" src="{{user.gravatar.url}}&s=210"  class="img-polaroid" alt="{{user.username}}">
+          </div>
+
+          <div>
+            <h1 itemprop="name">{{user.username}}</h1>
+          </div>
+
+          <hr>
+
+          <div>
+            <dl class="dl-horizontal">
+              <dt>
+                <i class="icon icon-time"></i>
+                <span>Joined on:</span>
+              </dt>
+              <dd>
+                <span>{{user.createdAtReadable}}</span>
+              </dd>
+              <dt>
+                <i class="icon icon-gift"></i>
+                <span>tl;drs created:</span>
+              </dt>
+              <dd>
+                <span>{{user.numberTldrsCreated}}</span>
+              </dd>
+              {{#user.twitterHandle}}
+              <dt>
+                <i class="icon icon-retweet"></i>
+                <span>See on Twitter:</span>
+              </dt>
+              <dd>
+                <span>
+                  <a href="http://twitter.com/{{user.twitterHandle}}" target="_blank">@{{user.twitterHandle}}</a>
+                </span>
+              </dd>
+              {{/user.twitterHandle}}
+            </dl>
+          </div>
+
+          <hr>
+
+          {{#user.bio}}
+          <div>
+            <dl>
+              <dt>
+                <i class="icon icon-user"></i>
+                <span>tl;dr of {{user.username}} </span>
+              </dt>
+              <dd>
+                <span itemprop="description">
+                  {{user.bio}}
+                </span>
+              </dd>
+            </dl>
+          </div>
+          {{/user.bio}}
         </div>
 
-        <div>
-          <h1 itemprop="name">{{user.username}}</h1>
-        </div>
-
-        <hr>
-
-        <div>
-          <dl class="dl-horizontal">
-            <dt>
-              <i class="icon icon-time"></i>
-              <span>Joined on:</span>
-            </dt>
-            <dd>
-              <span>{{user.createdAtReadable}}</span>
-            </dd>
-            <dt>
-              <i class="icon icon-gift"></i>
-              <span>tl;drs created:</span>
-            </dt>
-            <dd>
-              <span>{{user.numberTldrsCreated}}</span>
-            </dd>
-            {{#user.twitterHandle}}
-            <dt>
-              <i class="icon icon-retweet"></i>
-              <span>See on Twitter:</span>
-            </dt>
-            <dd>
-              <span>
-                <a href="http://twitter.com/{{user.twitterHandle}}" target="_blank">@{{user.twitterHandle}}</a>
-              </span>
-            </dd>
-            {{/user.twitterHandle}}
-          </dl>
-        </div>
-
-        <hr>
-
-        {{#user.bio}}
-        <div>
-          <dl>
-            <dt>
-              <i class="icon icon-user"></i>
-              <span>tl;dr of {{user.username}} </span>
-            </dt>
-            <dd>
-              <span itemprop="description">
-                {{user.bio}}
-              </span>
-            </dd>
-          </dl>
-        </div>
-        {{/user.bio}}
-      </div>
-
-      <!-- Latest created tldrs if any -->
-      <div class="offset1 span8">
-        <div class="latest-tldrs-created">
-          {{#user.numberTldrsCreated}}
-            <h3>Latest webpages tamed:</h3>
-            <ul class="unstyled">
-              {{#user.tldrsCreated}}
-              <li>
-                <div class="tldr-icon">
-                </div>
-                <p class="tldr-title-ellipsis">
-                  <a href="{{url}}" target="_blank">{{title}}</a>
-                </p>
+        <!-- Latest created tldrs if any -->
+          <div class="user-latest-tldrs">
+            <div class="latest-tldrs-created">
+              {{#user.numberTldrsCreated}}
+              <h3>Latest webpages tamed:</h3>
+              <ul class="unstyled">
+                {{#user.tldrsCreated}}
+                <li>
+                  <div class="tldr-icon">
+                  </div>
+                  <p class="tldr-title-ellipsis">
+                    <a href="{{url}}" target="_blank">{{title}}</a>
+                  </p>
                   <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
                     <a href="{{url}}">tl;dr</a>
                   </span>
@@ -91,62 +92,63 @@
                     ({{hostname}})
                   </span>
                   <div></div>
-                <span class="tldr-metadata-tldrs">
-                  <span class="tldr-creator">
-                    contributed by
-                    <a href="/{{user.username}}" target="_blank">
-                      <em>{{user.username}}</em>
-                    </a>
+                  <span class="tldr-metadata-tldrs">
+                    <span class="tldr-creator">
+                      contributed by
+                      <a href="/{{user.username}}" target="_blank">
+                        <em>{{user.username}}</em>
+                      </a>
+                    </span>
+                    <span class="tldr-readcount">
+                      &middot; read {{readCount}} times
+                    </span>
                   </span>
-                  <span class="tldr-readcount">
-                    &middot; read {{readCount}} times
-                  </span>
-                </span>
-                <!-- for powertip -->
-                <div id="tldr-powertip-{{_id}}"  style="display: none;">
-                  <div class="tldr-read-container">
-                    <div class="tldr-tldr">
-                      <div class="tldr-header">
-                        <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
-                        <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
-                      </div>
-                      <div class="tldr-metadata">
-                        <span>
-                          tl;dr by
-                          <span><a href="/{{user.username}}" target="_blank"><em>{{user.username}}</em></a></span>
-                        </span>
-                      </div>
-
-                      <div class="tldr-summary">
-                        <ul>
-                          {{#summaryBullets}}
-                          <li class="tldr-bullet">
-                            <i class="icon-stop"></i>
-                            {{.}}
-                          </li>
-                          {{/summaryBullets}}
-                        </ul>
+                  <!-- for powertip -->
+                  <div id="tldr-powertip-{{_id}}"  style="display: none;">
+                    <div class="tldr-read-container">
+                      <div class="tldr-tldr">
+                        <div class="tldr-header">
+                          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+                          <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
+                        </div>
+                        <div class="tldr-metadata">
+                          <span>
+                            tl;dr by
+                            <span><a href="/{{user.username}}" target="_blank"><em>{{user.username}}</em></a></span>
+                          </span>
+                        </div>
+  
+                        <div class="tldr-summary">
+                          <ul>
+                            {{#summaryBullets}}
+                            <li class="tldr-bullet">
+                              <i class="icon-stop"></i>
+                              {{.}}
+                            </li>
+                            {{/summaryBullets}}
+                          </ul>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+          </div>
                 <!-- end powertip -->
               </li>
               {{/user.tldrsCreated}}
             </ul>
-          {{/user.numberTldrsCreated}}
+            {{/user.numberTldrsCreated}}
 
-          <!-- If no created tldr, a small humorous message -->
-          {{^user.numberTldrsCreated}}
+            <!-- If no created tldr, a small humorous message -->
+            {{^user.numberTldrsCreated}}
             <br><em>Looks like {{user.username}} has been on holiday for a long time, she doesn't have any tl;dr to show off!</em>
-          {{/user.numberTldrsCreated}}
+            {{/user.numberTldrsCreated}}
+          </div>
         </div>
+
+
       </div>
-
-
     </div>
   </div>
 </div>
 
 
-{{/userNotFound}}
+  {{/userNotFound}}
