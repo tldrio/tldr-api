@@ -162,8 +162,7 @@ app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
 
 // Login, logout
-app.get('/logout', function (req, res, next) { req.logOut(); return next(); }
-                 , routes.website_index);
+app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
