@@ -60,10 +60,19 @@ if (config.env === 'testMail') {
     });
 
     describe('should be sent correctly', function () {
-      it('when user signs up', function (done) {
+      it.only('when user signs up welcome him', function (done) {
+
+        mailer.sendEmail({ type: 'welcome'
+                         , to: 'hello+test@tldr.io'
+                         , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
+                         }, function() { done();} );
+
+      });
+
+      it('when user signs up confirm his email address', function (done) {
 
         mailer.sendEmail({ type: 'emailConfirmationToken'
-                         , to: user.email
+                         , to: 'hello+test@tldr.io'
                          , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
                          }, function() { done();} );
 
