@@ -79,11 +79,58 @@
             <ul class="unstyled">
               {{#user.tldrsCreated}}
               <li>
-                <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+                <div class="tldr-icon">
+                </div>
                 <p class="tldr-title-ellipsis">
-                  <a href="/tldrs/{{_id}}" target="_blank">{{title}}</a>
+                  <a href="{{url}}" target="_blank">{{title}}</a>
                 </p>
-                <span class="tldr-hostname tldr-hostname-list">&nbsp;({{hostname}})</span>
+                  <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
+                    <a href="{{url}}">tl;dr</a>
+                  </span>
+                  <span class="tldr-hostname tldr-hostname-list">
+                    ({{hostname}})
+                  </span>
+                  <div></div>
+                <span class="tldr-metadata-tldrs">
+                  <span class="tldr-creator">
+                    contributed by
+                    <a href="/{{user.username}}" target="_blank">
+                      <em>{{user.username}}</em>
+                    </a>
+                  </span>
+                  <span class="tldr-readcount">
+                    &middot; read {{readCount}} times
+                  </span>
+                </span>
+                <!-- for powertip -->
+                <div id="tldr-powertip-{{_id}}"  style="display: none;">
+                  <div class="tldr-read-container">
+                    <div class="tldr-tldr">
+                      <div class="tldr-header">
+                        <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+                        <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
+                      </div>
+                      <div class="tldr-metadata">
+                        <span>
+                          tl;dr by
+                          <span><a href="/{{user.username}}" target="_blank"><em>{{user.username}}</em></a></span>
+                        </span>
+                      </div>
+
+                      <div class="tldr-summary">
+                        <ul>
+                          {{#summaryBullets}}
+                          <li class="tldr-bullet">
+                            <i class="icon-stop"></i>
+                            {{.}}
+                          </li>
+                          {{/summaryBullets}}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- end powertip -->
               </li>
               {{/user.tldrsCreated}}
             </ul>
