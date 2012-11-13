@@ -41,14 +41,14 @@ function createNewUser(req, res, next) {
     mailer.sendEmail({ type: 'welcome'
                      , development: true
                      , to: user.email
-                     , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
+                     , values: { email: encodeURIComponent(user.email), user: user }
                      });
 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
 
-      mailer.sendEmail({ type: 'confirmEmailToken'
+      mailer.sendEmail({ type: 'emailConfirmationToken'
                        , development: true
                        , to: user.email
                        , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
