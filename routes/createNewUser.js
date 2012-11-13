@@ -43,7 +43,7 @@ function createNewUser(req, res, next) {
       if (err) { return next(err); }
 
       // Send the link by email
-      mailer.sendEmail({ type: 'emailConfirmationToken'
+      mailer.sendEmail({ type: 'welcome'
                        , development: true
                        , to: user.email
                        , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
