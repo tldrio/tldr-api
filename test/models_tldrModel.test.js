@@ -902,11 +902,11 @@ describe('Tldr', function () {
                      , resourceAuthor: 'bloup' };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
-        tldr.readCount.should.equal(0);
+        var startReadCount = tldr.readCount;
         tldr.incrementReadCount(function() {
-          tldr.readCount.should.equal(1);
+          tldr.readCount.should.equal(startReadCount + 1);
           tldr.incrementReadCount(function() {
-            tldr.readCount.should.equal(2);
+            tldr.readCount.should.equal(startReadCount + 2);
             done();
           });
         });
