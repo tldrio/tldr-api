@@ -159,7 +159,8 @@ app.get('/index', middleware.attachRenderingValues     // Routing for this page 
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
-app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
+app.get('/chromeextension', middleware.attachRenderingValues, routes.website_extension);
+app.get('/extension', function (req, res, next) { res.redirect(config.websiteUrl + '/chromeextension'); });
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });

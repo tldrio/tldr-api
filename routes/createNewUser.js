@@ -37,14 +37,19 @@ function createNewUser(req, res, next) {
 
     mailchimpSync.subscribeNewUser({ email: user.email, username: user.username });
 
+    // Send the link by email
+    mailer.sendEmail({ type: 'welcome'
+                     , development: true
+                     , to: user.email
+                     , values: { email: encodeURIComponent(user.email), user: user }
+                     });
 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
 
-      // Send the link by email
       mailer.sendEmail({ type: 'emailConfirmationToken'
-                       , development: false
+                       , development: true
                        , to: user.email
                        , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
                        });
