@@ -1,5 +1,5 @@
 
-<div id="landing-extension-wrapper">
+<div id="landing-extension-wrapper" data-version="{{version}}">
   <section class="marketing">
     <h1>See Through Hyperlinks</h1>
     <p class="marketing-byline">With our Chrome extension, read summaries of Hacker News articles without leaving the front page</p>
@@ -381,8 +381,13 @@
   {{#chrome}}
   <div id="install-browser-extension-wrapper">
     {{^loggedUser}}
-    <button class="btn btn-primary btn-large pre-install-extension" data-target="signup">Sign up to install our Chrome Extension</button> or <a class="pre-install-extension" data-target="login" href="#">Log in</a>
-    <div id="skip-signup-install-extension" ><a class="install-extension" href="#">I hate giving up my email for great products, I just want to install the extension</a></div>
+    {{#versionA}}
+      <button class="btn btn-primary btn-large pre-install-extension" data-target="signup" data-version="A">Sign up to install our Chrome Extension</button> or <a class="pre-install-extension" data-target="login" href="#">Log in</a>
+      <div id="skip-signup-install-extension" ><a class="install-extension" href="#">I hate giving up my email for great products, I just want to install the extension</a></div>
+    {{/versionA}}
+    {{#versionB}}
+      <button class="btn btn-success btn-large install-extension" >Install the damn extension!</button>
+    {{/versionB}}
     {{/loggedUser}}
     {{#loggedUser}}
     <button class="btn btn-success btn-large install-extension" >Install the damn extension!</button>

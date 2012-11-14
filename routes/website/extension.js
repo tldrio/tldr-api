@@ -9,10 +9,20 @@ module.exports = function (req, res, next) {
   var values = req.renderingValues
     , ua = req.headers['user-agent']
     , chrome = ua.match(/Chrome/g)
+    , AB = Math.floor( Math.random() * 2)
     ;
 
   values.extension = true;
   values.chrome = chrome;
+  // AB testing
+  if (AB) {
+    values.versionA = true;
+    values.version = 'A';
+  } else {
+    values.versionB = true;
+    values.version = 'B';
+  }
+  values.title = "See through hyperlinks with our Chrome extension for Hacker News - tldr.io";
 
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/extension}}' }
