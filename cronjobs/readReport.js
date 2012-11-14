@@ -60,8 +60,8 @@ function sendReadReport (previousFlush) {
 
              mailer.sendEmail({ type: 'readReport'
                               , development: true
-                              , to: 'hello+test@tldr.io'
-                              //, to: user.email
+                              //, to: 'hello+test@tldr.io'
+                              , to: user.email
                               , values: { tldrsForReport: tldrsForReport, user: user }
                               }, function () { callback(null); } );
            });
