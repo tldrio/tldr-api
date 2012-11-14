@@ -17,10 +17,10 @@ module.exports = function (req, res, next) {
   // AB testing
   if (AB) {
     values.versionA = true;
-    values.version = 'A';
+    values.version = 'bitching to get email';
   } else {
     values.versionB = true;
-    values.version = 'B';
+    values.version = 'directly';
   }
   values.title = "See through hyperlinks with our Chrome extension for Hacker News - tldr.io";
 
