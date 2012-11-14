@@ -14,7 +14,6 @@ module.exports = function (req, res, next) {
 
   values.extension = true;
   values.chrome = chrome;
-  console.log('ALKASJ',AB);
   // AB testing
   if (AB) {
     values.versionA = true;
