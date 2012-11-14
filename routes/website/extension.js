@@ -13,6 +13,7 @@ module.exports = function (req, res, next) {
 
   values.extension = true;
   values.chrome = chrome;
+  values.title = "See through hyperlinks with our Chrome extension for Hacker News - tldr.io";
 
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/extension}}' }
