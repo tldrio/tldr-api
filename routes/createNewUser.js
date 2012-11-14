@@ -39,7 +39,7 @@ function createNewUser(req, res, next) {
 
     // Send the link by email
     mailer.sendEmail({ type: 'welcome'
-                     , development: true
+                     , development: false
                      , to: user.email
                      , values: { email: encodeURIComponent(user.email), user: user }
                      });
@@ -49,7 +49,7 @@ function createNewUser(req, res, next) {
       if (err) { return next(err); }
 
       mailer.sendEmail({ type: 'emailConfirmationToken'
-                       , development: true
+                       , development: false
                        , to: user.email
                        , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
                        });
