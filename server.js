@@ -122,7 +122,8 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Admin only routes
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
-app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
+app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
+app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 app.get('/users/:id', middleware.adminOnly, routes.getUserById);
 
 // Vote for/against a topic
