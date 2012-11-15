@@ -1564,8 +1564,6 @@ describe('Webserver', function () {
         var expiration = new Date().setDate(new Date().getDate() + 2)
           , signature;
 
-          throw {};
-
         user.notificationsSettings.read.should.be.true;
         expiration = new Date().setDate(new Date().getDate() + 2);
         signature = customUtils.computeSignature(user1._id + '//' + expiration);
