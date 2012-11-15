@@ -10,6 +10,7 @@ var _ = require('underscore')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
   , Notification = models.Notification
+  , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
   , User = models.User;
 
@@ -17,7 +18,9 @@ var _ = require('underscore')
 function sendReadReport (previousFlush) {
   var notifsByUser
     , userIds
-    , emailsSent = 0;
+    , emailsSent = 0
+    , expiration = new Date().setDate(new Date().getDate() + 2); // 48h expiration
+
 
   Notification.find({})
    .where('createdAt').gte(previousFlush)
@@ -37,7 +40,8 @@ function sendReadReport (previousFlush) {
          var tldrsRead
            , tldrsForReport = []
 					 , newViews
-					 , newViewsText;
+					 , newViewsText
+           , signature;
 
          if (user.notificationsSettings.read) {
 
@@ -60,10 +64,13 @@ function sendReadReport (previousFlush) {
              });
 
              emailsSent += 1;
+
+             signature = customUtils.computeSignature(user._id + '/' + expiration);
+
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                              , values: { tldrsForReport: tldrsForReport, user: user }
+                              , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration }
                               }, function () { callback(null); } );
            });
           } else {

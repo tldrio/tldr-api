@@ -7,18 +7,29 @@
 var bunyan = require('../../lib/logger').bunyan
   , config = require('../../lib/config')
   , User = require('../../lib/models').User
+  , customUtils = require('../../lib/customUtils')
   , i18n = require('../../lib/i18n');
 
 
 
 function unsubscribe (req, res, next) {
   var type = req.query.type
-    , id = req.query.id;
+    , id = req.query.id
+    , signature = req.query.signature
+    , expiration = req.query.expiration
+    , check;
 
   bunyan.incrementMetric('users.unsubscribe.routeCalled');
 
-  if (!type || !id) {
-    return next({ statusCode: 403, body: { message: i18n.missingParameterUnsubscribe} } );
+  check = customUtils.computeSignature(id + '/' + expiration);
+
+  if ( !type || !id || !signature || !expiration
+     || expiration - new Date() < 0
+     || signature !== check ) {
+      req.renderingValues.error = true;
+      return res.render('website/basicLayout', { values: req.renderingValues
+                                        , partials: { content: '{{>website/pages/unsubscribe}}' }
+                                        });
   }
 
   User.findOne({ _id: id },  function (err, user) {
