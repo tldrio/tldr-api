@@ -20,5 +20,5 @@ module.exports = function (req, res, next) {
       res.send(i18n.makeUndiscoverableOk);
     }
   });
-}
+};
 
