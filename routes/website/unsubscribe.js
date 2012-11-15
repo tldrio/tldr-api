@@ -4,10 +4,10 @@
 */
 
 
-var bunyan = require('../lib/logger').bunyan
-  , config = require('../lib/config')
-  , User = require('../lib/models').User
-  , i18n = require('../lib/i18n');
+var bunyan = require('../../lib/logger').bunyan
+  , config = require('../../lib/config')
+  , User = require('../../lib/models').User
+  , i18n = require('../../lib/i18n');
 
 
 

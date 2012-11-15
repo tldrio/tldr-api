@@ -115,7 +115,6 @@ app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
 app.put('/notifications/:id', routes.updateNotification);
-app.get('/unsubscribe', routes.unsubscribe);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
@@ -187,6 +186,9 @@ app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingV
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
+// Unsubscribe Notifications
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
 
 
 
