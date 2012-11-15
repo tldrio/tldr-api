@@ -64,14 +64,15 @@ function sendReadReport (previousFlush) {
              });
 
              emailsSent += 1;
-
              signature = customUtils.computeSignature(user._id + '/' + expiration);
-
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
                               , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration }
-                              }, function () { callback(null); } );
+                              }, function () {
+                                bunyan.info('Report sent to ' + user.email);
+                                callback(null);
+                              } );
            });
           } else {
             callback(null);
