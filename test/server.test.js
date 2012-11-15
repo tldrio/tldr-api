@@ -1558,6 +1558,20 @@ describe('Webserver', function () {
       });
     });
 
+    it('One should be able to unsubscribe in one click from the notification emails', function (done) {
+      User.findOne({ _id: user1._id },  function (err, user) {
+        user.notificationsSettings.read.should.be.true;
+        request.get({ headers: {"Accept": "text/html"}
+                    , uri: rootUrl + '/unsubscribe?id='+ user1._id+ '&type=read' }, function (error, response, body) {
+            response.statusCode.should.equal(200);
+            User.findOne({ _id: user1._id },  function (err, user) {
+              user.notificationsSettings.read.should.be.false;
+              done();
+            });
+        });
+      });
+    });
+
   });   // ==== End of 'Notifications' ==== //
 
 

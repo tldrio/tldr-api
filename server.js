@@ -115,6 +115,7 @@ app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
 app.put('/notifications/:id', routes.updateNotification);
+app.get('/unsubscribe', routes.unsubscribe);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);

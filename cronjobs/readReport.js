@@ -16,7 +16,8 @@ var _ = require('underscore')
 
 function sendReadReport (previousFlush) {
   var notifsByUser
-    , userIds;
+    , userIds
+    , emailsSent = 0;
 
   Notification.find({})
    .where('createdAt').gte(previousFlush)
@@ -58,13 +59,16 @@ function sendReadReport (previousFlush) {
 																	 , tldr: tldr });
              });
 
+             emailsSent += 1;
              mailer.sendEmail({ type: 'readReport'
                               , development: true
-                              //, to: 'hello+test@tldr.io'
-                              , to: user.email
+                              , to: 'hello+test@tldr.io'
+                              //, to: user.email
                               , values: { tldrsForReport: tldrsForReport, user: user }
                               }, function () { callback(null); } );
            });
+          } else {
+            callback(null);
           }
        }, function (err) {
 				 if (err) {
@@ -72,7 +76,7 @@ function sendReadReport (previousFlush) {
 					 process.exit(1);
 				 }
 
-				 bunyan.info('ReadReport successfully executed');
+				 bunyan.info('ReadReport successfully executed. '+ emailsSent + ' emails sent');
 				 process.exit(0);
 			 });
 
