@@ -1565,7 +1565,7 @@ describe('Webserver', function () {
           , signature;
 
         user.notificationsSettings.read.should.be.true;
-        expiration = new Date().setDate(new Date().getDate() + 2)
+        expiration = new Date().setDate(new Date().getDate() + 2);
         signature = customUtils.computeSignature(user1._id + '//' + expiration);
 
         // This request is bad (signature)
@@ -1575,7 +1575,7 @@ describe('Webserver', function () {
           User.findOne({ _id: user1._id },  function (err, user) {
             user.notificationsSettings.read.should.be.true;
 
-            expiration = new Date().setDate(new Date().getDate() - 1)
+            expiration = new Date().setDate(new Date().getDate() - 1);
             signature = customUtils.computeSignature(user1._id + '/' + expiration);
             // This request is bad too (expiration)
             request.get({ headers: {"Accept": "text/html"}
@@ -1584,7 +1584,7 @@ describe('Webserver', function () {
               User.findOne({ _id: user1._id },  function (err, user) {
                 user.notificationsSettings.read.should.be.true;
 
-                expiration = new Date().setDate(new Date().getDate() + 2)
+                expiration = new Date().setDate(new Date().getDate() + 2);
                 signature = customUtils.computeSignature(user1._id + '/' + expiration);
 
                 request.get({ headers: {"Accept": "text/html"}
