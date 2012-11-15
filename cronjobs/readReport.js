@@ -62,8 +62,7 @@ function sendReadReport (previousFlush) {
              emailsSent += 1;
              mailer.sendEmail({ type: 'readReport'
                               , development: true
-                              , to: 'hello+test@tldr.io'
-                              //, to: user.email
+                              , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
                               , values: { tldrsForReport: tldrsForReport, user: user }
                               }, function () { callback(null); } );
            });
