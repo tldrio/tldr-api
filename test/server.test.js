@@ -21,6 +21,7 @@ var should = require('chai').should()
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , customUtils = require('../lib/customUtils')
   , Topic = models.Topic
 
   // Global variables used throughout the tests
@@ -1551,6 +1552,48 @@ describe('Webserver', function () {
                 response.statusCode.should.equal(200);
                 body.unseen.should.equal.false;
                 done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('One should be able to unsubscribe in one click from the notification emails', function (done) {
+      User.findOne({ _id: user1._id },  function (err, user) {
+        var expiration = new Date().setDate(new Date().getDate() + 2)
+          , signature;
+
+        user.notificationsSettings.read.should.be.true;
+        expiration = new Date().setDate(new Date().getDate() + 2);
+        signature = customUtils.computeSignature(user1._id + '//' + expiration);
+
+        // This request is bad (signature)
+        request.get({ headers: {"Accept": "text/html"}
+                    , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+          body.should.contain('alert-error');
+          User.findOne({ _id: user1._id },  function (err, user) {
+            user.notificationsSettings.read.should.be.true;
+
+            expiration = new Date().setDate(new Date().getDate() - 1);
+            signature = customUtils.computeSignature(user1._id + '/' + expiration);
+            // This request is bad too (expiration)
+            request.get({ headers: {"Accept": "text/html"}
+                        , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+              body.should.contain('alert-error');
+              User.findOne({ _id: user1._id },  function (err, user) {
+                user.notificationsSettings.read.should.be.true;
+
+                expiration = new Date().setDate(new Date().getDate() + 2);
+                signature = customUtils.computeSignature(user1._id + '/' + expiration);
+
+                request.get({ headers: {"Accept": "text/html"}
+                            , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+                    User.findOne({ _id: user1._id },  function (err, user) {
+                      user.notificationsSettings.read.should.be.false;
+                      done();
+                    });
+                });
               });
             });
           });
