@@ -28,10 +28,12 @@ app.db = new DbObject( config.dbHost
                         , config.dbPort
                         );
 
-// Used for HTML templating
-app.engine('mustache', customHogan(config.templatesDir, ['website']));
-app.set('view engine', 'mustache'); // Set mustache as the default extension
-app.set('views', config.templatesDir);
+// Set up templating
+customHogan(app, { baseDir: config.templatesDir
+                 , toCompileDirs: ['website']
+                 , extension: 'mustache'
+                 });
+
 
 // Trust the nginx proxy
 app.enable('trust proxy');
