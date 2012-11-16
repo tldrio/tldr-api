@@ -70,6 +70,37 @@
             </dl>
           </div>
           {{/user.bio}}
+
+          {{#admin}}
+          <div>
+            <dl class="dl-horizontal">
+              <dt>
+                <i class="icon icon-heart"></i>
+                <span>Email</span>
+              </dt>
+              <dd>
+              <span><a href="mailto:{{user.email}}">{{user.email}}</a></span>
+              </dd>
+              <dt>
+                <i class="icon icon-glass"></i>
+                <span>Confirmed</span>
+              </dt>
+              <dd>
+                <span>{{user.confirmedEmail}}</span>
+              </dd>
+              <dt>
+                <i class="icon icon-film"></i>
+                <span>Last Active</span>
+              </dt>
+              <dd>
+                <span>{{user.lastActiveReadable}}</span>
+              </dd>
+            </dl>
+          </div>
+
+          {{/admin}}
+
+
         </div>
 
         <!-- Latest created tldrs if any -->
