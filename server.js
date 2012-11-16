@@ -29,7 +29,7 @@ app.db = new DbObject( config.dbHost
                         );
 
 // Used for HTML templating
-app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
+app.engine('mustache', customHogan(config.templatesDir, ['website']));
 app.set('view engine', 'mustache'); // Set mustache as the default extension
 app.set('views', config.templatesDir);
 
@@ -147,6 +147,11 @@ app.options('*', function (req, res, next) {
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
+app.get('/test', function (req, res, next) {
+  res.render('website/pages/index', { values: {}
+                                    });
+});
+
 
 /*
  * Routes for the website, which all respond HTML
@@ -200,8 +205,8 @@ app.launchServer = function (cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  customHogan.readAndCompileTemplates('page', function () {
-    customHogan.readAndCompileTemplates('website', function () {
+  //customHogan.readAndCompileTemplates('page', function () {
+    //customHogan.readAndCompileTemplates('website', function () {
       self.db.connectToDatabase(function(err) {
         if (err) { return callback(err); }
 
@@ -219,8 +224,8 @@ app.launchServer = function (cb) {
           callback();
         }]);
       });
-    });
-  });
+    //});
+  //});
 };
 
 
