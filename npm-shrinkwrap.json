@@ -5,6 +5,9 @@
     "async": {
       "version": "0.1.22"
     },
+    "h4e": {
+      "version": "0.1.0"
+    },
     "bcrypt": {
       "version": "0.7.2",
       "dependencies": {

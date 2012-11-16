@@ -15,8 +15,7 @@ var express = require('express')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
-  , hogan = require('hogan.js')
-  , customHogan = require('./lib/customHogan');
+  , h4e = require('h4e');
 
 
 
@@ -29,10 +28,10 @@ app.db = new DbObject( config.dbHost
                         );
 
 // Set up templating
-customHogan(app, { baseDir: config.templatesDir
-                 , toCompileDirs: ['website']
-                 , extension: 'mustache'
-                 });
+h4e(app, { baseDir: config.templatesDir
+         , toCompileDirs: ['website']
+         , extension: 'mustache'
+         });
 
 
 // Trust the nginx proxy
@@ -202,27 +201,23 @@ app.launchServer = function (cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  //customHogan.readAndCompileTemplates('page', function () {
-    //customHogan.readAndCompileTemplates('website', function () {
-      self.db.connectToDatabase(function(err) {
-        if (err) { return callback(err); }
+  self.db.connectToDatabase(function(err) {
+    if (err) { return callback(err); }
 
-        self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
+    self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
 
-        // Handle any connection error gracefully
-        self.apiServer.on('error', function () {
-          bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
-          process.exit(1);
-        });
+    // Handle any connection error gracefully
+    self.apiServer.on('error', function () {
+      bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
+      process.exit(1);
+    });
 
-        // Begin to listen. If the callback gets called, it means the server was successfully launched
-        self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
-          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
-          callback();
-        }]);
-      });
-    //});
-  //});
+    // Begin to listen. If the callback gets called, it means the server was successfully launched
+    self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
+      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
+      callback();
+    }]);
+  });
 };
 
 
