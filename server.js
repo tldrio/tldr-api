@@ -149,11 +149,6 @@ app.options('*', function (req, res, next) {
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
-app.get('/test', function (req, res, next) {
-  res.render('website/pages/index', { values: {}
-                                    });
-});
-
 
 /*
  * Routes for the website, which all respond HTML
