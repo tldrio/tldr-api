@@ -19,7 +19,9 @@ var bunyan = require('../lib/logger').bunyan
  */
 function subscribeEmailAddress(req, res, next) {
   var body = req.body;
-  mailchimpSync.subscribeNewUser({ email: body.email, username: body.email, groups: body.groups });
+  mailchimpSync.subscribeNewUser({ email: body.email
+                                 , username: body.email
+                                 , groups: body.groups });
 
   return res.send(200);
 }

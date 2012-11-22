@@ -7,10 +7,13 @@
 var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
+  , bunyan = require('../../lib/logger').bunyan
   , async = require('async');
 
 
 module.exports = function (req, res, next) {
+  bunyan.incrementMetric('users.publicProfile.routeCalled');
+
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {}
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
@@ -27,6 +30,7 @@ module.exports = function (req, res, next) {
             if (! err && user) {
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
+              values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + ' - tldr.io';
             } else {
