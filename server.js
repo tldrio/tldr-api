@@ -30,7 +30,7 @@ app.db = new DbObject( config.dbHost
 // Set up templating
 h4e.setup({ app: app
           , baseDir: config.templatesDir
-          , toCompileDirs: ['website']
+          , toCompileDirs: ['website', 'emails']
           , extension: 'mustache'
           });
 
