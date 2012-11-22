@@ -42,13 +42,12 @@ describe('Custom utils', function () {
       customUtils.timeago(test).should.equal('12 days ago');
 
       done();
-      // code ...
     });
 
 
   });   // ==== End of '#timeago' ==== //
 
-  describe('#normalizeUrl', function() {
+  describe.only('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged and don\'t tamper with trailing slashes', function (done) {
       var theUrl = "http://domain.tld/path/file.extension";
@@ -160,34 +159,34 @@ describe('Custom utils', function () {
       done();
     });
 
-    //it('Remove a querystring if there are no arguments - it is only a "?"', function (done) {
-      //var theUrl = "http://subdomain.domain.tld/path/file.extension/?";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
+    it('Remove a querystring if there are no arguments - it is only a "?"', function (done) {
+      var theUrl = "http://subdomain.domain.tld/path/file.extension/?";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/");
 
-      //theUrl = "http://subdomain.domain.tld/path/file.extension?";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
+      theUrl = "http://subdomain.domain.tld/path/file.extension?";
+      normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
 
-      //done();
-    //});
+      done();
+    });
 
-    //it('Sort the arguments of a querystring and remove the useless ones', function (done) {
-      //var theUrl = "http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension/?arg=value&rtf=yto");
+    it('Sort the arguments of a querystring and remove the useless ones for the querystring-fucking domains', function (done) {
+      var theUrl = "http://www.youtube.com/path/file.extension/?arg=value&rtf=yto";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension/?arg=value&rtf=yto");
 
-      //theUrl = "http://subdomain.domain.tld/path/file.extension?eee=value&cd=yto";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?cd=yto&eee=value");
+      theUrl = "http://www.youtube.com/path/file.extension?eee=value&cd=yto";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?cd=yto&eee=value");
 
-      //theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value");
+      theUrl = "http://www.youtube.com/path/file.extension?caee=value&c5=yto";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?c5=yto&caee=value");
 
-      //theUrl = "http://subdomain.domain.tld/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?yyyyy=yto&zzzzz=value");
+      theUrl = "http://www.youtube.com/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
 
-      //theUrl = "http://subdomain.domain.tld/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
-      //normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
+      theUrl = "http://www.youtube.com/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
+      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
 
-      //done();
-    //});
+      done();
+    });
 
   });   // ==== End of '#normalizeUrl' ==== //
 
