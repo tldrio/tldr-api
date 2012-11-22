@@ -28,10 +28,11 @@ app.db = new DbObject( config.dbHost
                         );
 
 // Set up templating
-h4e(app, { baseDir: config.templatesDir
-         , toCompileDirs: ['website']
-         , extension: 'mustache'
-         });
+h4e({ app: app
+    , baseDir: config.templatesDir
+    , toCompileDirs: ['website']
+    , extension: 'mustache'
+    });
 
 
 // Trust the nginx proxy
