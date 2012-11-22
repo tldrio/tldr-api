@@ -7,6 +7,7 @@
 var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
+  , bunyan = require('../../lib/logger').bunyan
   , async = require('async');
 
 
