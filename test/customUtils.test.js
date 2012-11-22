@@ -191,7 +191,7 @@ describe('Custom utils', function () {
       var theUrl = "http://www.youtube.com/path/file.extension/?arg=value&rtf=yto";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?arg=value&rtf=yto");
 
-      var theUrl = "http://www.youtube.com/path/file/";
+      theUrl = "http://www.youtube.com/path/file/";
       normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file");
 
       done();
