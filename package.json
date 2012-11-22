@@ -11,7 +11,7 @@
 , "homepage": "http://tldr.io"
 , "engines": { "node": "0.8.2", "npm": "1.1.42" }
 , "dependencies": { "async": "0.1.x"
-                  , "h4e": "0.1.0"
+                  , "h4e": "0.2.0"
                   , "bcrypt": "0.7.x"
                   , "bunyan": "0.7.x"
                   , "connect-redis": "1.4.x"
