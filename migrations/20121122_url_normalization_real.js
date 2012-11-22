@@ -1,5 +1,5 @@
 /*
- * Migration to test which tldr urls would change and how with the new normalization, so as to to avoid bad surprise
+ * Migration to renormalize tldr urls
  * Date: Nov 22nd, 2012
  *
  */
@@ -29,9 +29,9 @@ async.waterfall([
 
   // Add the versionDisplayed field
 , function (cb) {
-    var i = 0, tu;
+    var i = 0;
 
-    console.log("Checking urls vs their normalization");
+    console.log("Normalize urls");
 
     Tldr.find({ }, function(err, tldrs) {
       if (err) { return cb(err); }
@@ -39,14 +39,12 @@ async.waterfall([
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          tu = tldrs[i].url;
-
-          if (tu !== customUtils.normalizeUrl(tu)) {
-            console.log('' + tldrs[i]._id + ": " + tu + " - vs - " + customUtils.normalizeUrl(tu));
-          }
-
-          i += 1;
-          cb();
+          tldrs[i].url = customUtils.normalizeUrl(tldrs[i].url);
+          tldrs[i].save(function (err) {
+            console.log("Normalized " + tldrs[i]._id);
+            i += 1;
+            cb(err);
+          });
         }
       , cb);
     });
