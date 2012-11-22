@@ -69,7 +69,7 @@ function createNewTldr (req, res, next) {
         mailer.sendEmail({ type: 'congratulationsFirstTldr'
                          , to: req.user.email
                          , development: true
-                         , values: { url: encodeURIComponent(tldr.url), user: req.user }
+                         , values: { tldr: tldr, user: req.user }
                          });
       }
 
