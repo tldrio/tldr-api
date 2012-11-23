@@ -124,6 +124,7 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Admin only routes
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
+app.get('/:username/admin', middleware.adminOnly, routes.getUser);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 
