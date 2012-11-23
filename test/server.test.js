@@ -13,7 +13,6 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , db = app.db
   , mongoose = require('mongoose')
-  , customHogan = require('../lib/customHogan')
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
