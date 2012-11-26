@@ -410,10 +410,19 @@ function isAdmin() {
                     , "charles.miglietti@gmail.com": true
                     , "charles@tldr.io": true
                     , "charles@needforair.com": true
+                    , "c.harlesmiglietti@gmail.com": true
+                    , "ch.arlesmiglietti@gmail.com": true
+                    , "cha.rlesmiglietti@gmail.com": true
+                    , "char.lesmiglietti@gmail.com": true
+                    , "charl.esmiglietti@gmail.com": true
+                    , "charle.smiglietti@gmail.com": true
+                    , "charlesm.iglietti@gmail.com": true
+                    , "charlesmi.glietti@gmail.com": true
                     , "c.harles.miglietti@gmail.com": true
                     , "ch.arles.miglietti@gmail.com": true
                     , "cha.rles.miglietti@gmail.com": true
                     , "char.les.miglietti@gmail.com": true
+                    , "charle.s.miglietti@gmail.com": true
                     , "stanislas.marion@gmail.com": true
                     , "stan@tldr.io": true
                     , "s.tanislas.marion@gmail.com": true

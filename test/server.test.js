@@ -13,7 +13,6 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , db = app.db
   , mongoose = require('mongoose')
-  , customHogan = require('../lib/customHogan')
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
@@ -21,6 +20,7 @@ var should = require('chai').should()
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , customUtils = require('../lib/customUtils')
   , Topic = models.Topic
 
   // Global variables used throughout the tests
@@ -732,42 +732,32 @@ describe('Webserver', function () {
 
   });   // ==== End of 'PUT tldrs' ==== //
 
-
   describe('GET users', function () {
 
     it('admins should be able to access any user\'s data', function (done) {
       var obj;
 
       async.waterfall([
-        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
-      , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
-            res.statusCode.should.equal(200);
-            obj = JSON.parse(body);
-            obj.email.should.equal('user1@nfa.com');
-
-            cb();
-          });
-        }
-      ], done);
-    });
-
-    it('non admin cannot access user data through /users/:id', function (done) {
-      var obj;
-
-      async.waterfall([
         async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
       , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
-            res.statusCode.should.equal(401);
-            obj = JSON.parse(body);
-            obj.message.should.equal(i18n.notAnAdmin);
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            body.should.not.contain('only-admin-infos');
+            cb();
+          });
+        }
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            body.should.contain('only-admin-infos');
 
             cb();
           });
         }
       ], done);
     });
+
 
   });   // ==== End of 'GET users' ==== //
 
@@ -1551,6 +1541,48 @@ describe('Webserver', function () {
                 response.statusCode.should.equal(200);
                 body.unseen.should.equal.false;
                 done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('One should be able to unsubscribe in one click from the notification emails', function (done) {
+      User.findOne({ _id: user1._id },  function (err, user) {
+        var expiration = new Date().setDate(new Date().getDate() + 2)
+          , signature;
+
+        user.notificationsSettings.read.should.be.true;
+        expiration = new Date().setDate(new Date().getDate() + 2);
+        signature = customUtils.computeSignature(user1._id + '//' + expiration);
+
+        // This request is bad (signature)
+        request.get({ headers: {"Accept": "text/html"}
+                    , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+          body.should.contain('alert-error');
+          User.findOne({ _id: user1._id },  function (err, user) {
+            user.notificationsSettings.read.should.be.true;
+
+            expiration = new Date().setDate(new Date().getDate() - 1);
+            signature = customUtils.computeSignature(user1._id + '/' + expiration);
+            // This request is bad too (expiration)
+            request.get({ headers: {"Accept": "text/html"}
+                        , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+              body.should.contain('alert-error');
+              User.findOne({ _id: user1._id },  function (err, user) {
+                user.notificationsSettings.read.should.be.true;
+
+                expiration = new Date().setDate(new Date().getDate() + 2);
+                signature = customUtils.computeSignature(user1._id + '/' + expiration);
+
+                request.get({ headers: {"Accept": "text/html"}
+                            , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+                    User.findOne({ _id: user1._id },  function (err, user) {
+                      user.notificationsSettings.read.should.be.false;
+                      done();
+                    });
+                });
               });
             });
           });

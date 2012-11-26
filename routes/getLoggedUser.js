@@ -1,5 +1,5 @@
 /**
- * Request Handlers for tldr
+ * Request Handler to get the logged user
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
 */

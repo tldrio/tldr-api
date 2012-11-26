@@ -10,13 +10,17 @@ var _ = require('underscore')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
   , Notification = models.Notification
+  , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
   , User = models.User;
 
 
 function sendReadReport (previousFlush) {
   var notifsByUser
-    , userIds;
+    , userIds
+    , emailsSent = 0
+    , expiration = new Date().setDate(new Date().getDate() + 2); // 48h expiration
+
 
   Notification.find({})
    .where('createdAt').gte(previousFlush)
@@ -36,7 +40,8 @@ function sendReadReport (previousFlush) {
          var tldrsRead
            , tldrsForReport = []
 					 , newViews
-					 , newViewsText;
+					 , newViewsText
+           , signature;
 
          if (user.notificationsSettings.read) {
 
@@ -58,13 +63,19 @@ function sendReadReport (previousFlush) {
 																	 , tldr: tldr });
              });
 
+             emailsSent += 1;
+             signature = customUtils.computeSignature(user._id + '/' + expiration);
              mailer.sendEmail({ type: 'readReport'
                               , development: true
-                              //, to: 'hello+test@tldr.io'
-                              , to: user.email
-                              , values: { tldrsForReport: tldrsForReport, user: user }
-                              }, function () { callback(null); } );
+                              , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                              , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration }
+                              }, function () {
+                                bunyan.info('Report sent to ' + user.email);
+                                callback(null);
+                              } );
            });
+          } else {
+            callback(null);
           }
        }, function (err) {
 				 if (err) {
@@ -72,7 +83,7 @@ function sendReadReport (previousFlush) {
 					 process.exit(1);
 				 }
 
-				 bunyan.info('ReadReport successfully executed');
+				 bunyan.info('ReadReport successfully executed. '+ emailsSent + ' emails sent');
 				 process.exit(0);
 			 });
 

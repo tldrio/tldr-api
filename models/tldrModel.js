@@ -122,6 +122,9 @@ TldrSchema = new Schema(
   , readCount: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
+  , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
+                  , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
+                  }
   }
 , { strict: true });
 
@@ -177,6 +180,19 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
   return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
 
+
+/**
+ * Make the tldr undiscoverable
+ * @param {String} id id of the tldr to make undiscoverable
+ * @param {Function} cb Optional callback, signature is err, numAffected
+ */
+TldrSchema.statics.makeUndiscoverable = function (id, cb) {
+  var callback = cb || function () {};
+
+  this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
+};
+
+
 /**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
@@ -185,7 +201,6 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
  * @param {Function} callback callback to be passed to save method
  *
  */
-
 TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;

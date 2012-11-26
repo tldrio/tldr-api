@@ -15,8 +15,7 @@ var express = require('express')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
-  , hogan = require('hogan.js')
-  , customHogan = require('./lib/customHogan');
+  , h4e = require('h4e');
 
 
 
@@ -28,10 +27,13 @@ app.db = new DbObject( config.dbHost
                         , config.dbPort
                         );
 
-// Used for HTML templating
-app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
-app.set('view engine', 'mustache'); // Set mustache as the default extension
-app.set('views', config.templatesDir);
+// Set up templating
+h4e.setup({ app: app
+          , baseDir: config.templatesDir
+          , toCompileDirs: ['website', 'emails']
+          , extension: 'mustache'
+          });
+
 
 // Trust the nginx proxy
 app.enable('trust proxy');
@@ -122,8 +124,9 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Admin only routes
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
-app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
-app.get('/users/:id', middleware.adminOnly, routes.getUserById);
+app.get('/:username/admin', middleware.adminOnly, routes.getUser);
+app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
+app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -187,6 +190,9 @@ app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingV
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
+// Unsubscribe Notifications
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
+
 
 
 /*
@@ -196,26 +202,22 @@ app.launchServer = function (cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  customHogan.readAndCompileTemplates('page', function () {
-    customHogan.readAndCompileTemplates('website', function () {
-      self.db.connectToDatabase(function(err) {
-        if (err) { return callback(err); }
+  self.db.connectToDatabase(function(err) {
+    if (err) { return callback(err); }
 
-        self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
+    self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
 
-        // Handle any connection error gracefully
-        self.apiServer.on('error', function () {
-          bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
-          process.exit(1);
-        });
-
-        // Begin to listen. If the callback gets called, it means the server was successfully launched
-        self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
-          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
-          callback();
-        }]);
-      });
+    // Handle any connection error gracefully
+    self.apiServer.on('error', function () {
+      bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
+      process.exit(1);
     });
+
+    // Begin to listen. If the callback gets called, it means the server was successfully launched
+    self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
+      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
+      callback();
+    }]);
   });
 };
 

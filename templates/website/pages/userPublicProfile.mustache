@@ -70,6 +70,37 @@
             </dl>
           </div>
           {{/user.bio}}
+
+          {{#admin}}
+          <div class="only-admin-infos">
+            <dl class="dl-horizontal">
+              <dt>
+                <i class="icon icon-heart"></i>
+                <span>Email</span>
+              </dt>
+              <dd>
+              <span><a href="mailto:{{user.email}}">{{user.email}}</a></span>
+              </dd>
+              <dt>
+                <i class="icon icon-glass"></i>
+                <span>Confirmed</span>
+              </dt>
+              <dd>
+                <span>{{user.confirmedEmail}}</span>
+              </dd>
+              <dt>
+                <i class="icon icon-film"></i>
+                <span>Last Active</span>
+              </dt>
+              <dd>
+                <span>{{user.lastActiveReadable}}</span>
+              </dd>
+            </dl>
+          </div>
+
+          {{/admin}}
+
+
         </div>
 
         <!-- Latest created tldrs if any -->
@@ -82,17 +113,18 @@
                 <li>
                   <div class="tldr-icon">
                   </div>
-                  <p class="tldr-title-ellipsis">
-                    <a href="{{url}}" target="_blank">{{title}}</a>
-                  </p>
-                  <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
-                    <a href="{{websiteUrl}}/tldrs/{{_id}}">tl;dr</a>
-                  </span>
-                  <span class="tldr-hostname tldr-hostname-list">
-                    ({{hostname}})
-                  </span>
-                  <div></div>
-                  <span class="tldr-metadata-tldrs">
+                  <div class="tldr-title-wrapper">
+                    <p class="tldr-title-ellipsis">
+                      <a href="{{url}}" target="_blank">{{title}}</a>
+                    </p>
+                    <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
+                      <a href="{{websiteUrl}}/tldrs/{{_id}}">tl;dr</a>
+                    </span>
+                    <span class="tldr-hostname tldr-hostname-list">
+                      ({{hostname}})
+                    </span>
+                  </div>
+                  <div class="tldr-metadata-tldrs">
                     <span class="tldr-creator">
                       contributed by
                       <a href="/{{user.username}}" target="_blank">
@@ -102,7 +134,7 @@
                     <span class="tldr-readcount">
                       &middot; read {{readCount}} times
                     </span>
-                  </span>
+                  </div>
                   <!-- for powertip -->
                   <div id="tldr-powertip-{{_id}}"  style="display: none;">
                     <div class="tldr-read-container">
