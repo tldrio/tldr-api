@@ -60,7 +60,7 @@ if (config.env === 'testMail') {
     });
 
     describe('should be sent correctly', function () {
-      it.only('when user signs up welcome him', function (done) {
+      it('when user signs up welcome him', function (done) {
 
         mailer.sendEmail({ type: 'welcome'
                          , to: 'hello+test@tldr.io'
@@ -81,7 +81,7 @@ if (config.env === 'testMail') {
       it('when user creates its first tldr', function (done) {
 
           mailer.sendEmail({ type: 'congratulationsFirstTldr'
-                           , to: user.email
+                         , to: 'hello+test@tldr.io'
                            , development: true
                            , values: { url: encodeURIComponent(tldr.url) }
                            }, function() { done();} );
@@ -91,7 +91,7 @@ if (config.env === 'testMail') {
       it('when user has reseted his password', function (done) {
 
         mailer.sendEmail({ type: 'passwordWasReset'
-                         , to: user.email
+                         , to: 'hello+test@tldr.io'
                          , values: { user: user }
                         }, function() { done();} );
 
@@ -100,7 +100,7 @@ if (config.env === 'testMail') {
       it('when user want to reset its passwrod', function (done) {
 
         mailer.sendEmail({ type: 'resetPassword'
-                         , to: user.email
+                         , to: 'hello+test@tldr.io'
                          , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(user.resetPasswordToken) }
                         }, function() { done();} );
 
