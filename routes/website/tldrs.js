@@ -7,7 +7,8 @@
 
 var models = require('../../lib/models')
   , Tldr = models.Tldr
-  , async = require('async');
+  , async = require('async')
+  , _ = require('underscore')
   ;
 
 module.exports = function (req, res, next) {
@@ -26,6 +27,9 @@ module.exports = function (req, res, next) {
         .populate('creator', 'username')
         .exec(function (err, tldrs) {
           values.latestTldrs = tldrs;
+          _.each(values.latestTldrs, function (tldr) {
+            tldr.linkToTldrPage = true;
+          });
           cb(null);
         });
     }
