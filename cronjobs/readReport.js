@@ -1,6 +1,7 @@
 #! /usr/local/bin/node
 
 var _ = require('underscore')
+  , h4e = require('h4e')
   , async = require('async')
   , bunyan = require('../lib/logger').bunyan
   , config = require('../lib/config')
@@ -14,6 +15,9 @@ var _ = require('underscore')
   , Tldr = models.Tldr
   , User = models.User;
 
+h4e.setup({ extension: 'mustache'
+          , baseDir: 'templates'
+          , toCompile: ['emails'] });
 
 function sendReadReport (previousFlush) {
   var notifsByUser
