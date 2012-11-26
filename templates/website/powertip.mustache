@@ -1,0 +1,42 @@
+<span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
+  {{#linkToTldrPage}}
+    <a target="blank" href="{{websiteUrl}}/tldrs/{{_id}}">
+  {{/linkToTldrPage}}
+  {{^linkToTldrPage}}
+    <a href="#">
+  {{/linkToTldrPage}}
+    tl;dr
+  </a>
+</span>
+<!-- for powertip -->
+<div id="tldr-powertip-{{_id}}"  style="display: none;">
+  <div class="tldr-read-container">
+    <div class="tldr-tldr">
+      <div class="tldr-header">
+        <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+        <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
+      </div>
+      <div class="tldr-metadata">
+        {{#creator}}
+        <span>
+          tl;dr by
+          <span><a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
+        </span>
+        {{/creator}}
+      </div>
+
+      <div class="tldr-summary">
+        <ul>
+          {{#summaryBullets}}
+          <li class="tldr-bullet">
+            <i class="icon-stop"></i>
+            {{.}}
+          </li>
+          {{/summaryBullets}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end powertip -->
+
