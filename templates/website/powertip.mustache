@@ -1,14 +1,3 @@
-<span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
-  <!-- By default, the link doesn't do anything -->
-  {{#linkToTldrPage}}
-    <a target="_blank" href="{{websiteUrl}}/tldrs/{{_id}}">
-  {{/linkToTldrPage}}
-  {{^linkToTldrPage}}
-    <a href="#" style="pointer-events: none;">
-  {{/linkToTldrPage}}
-    tl;dr
-  </a>
-</span>
 <!-- for powertip -->
 <div id="tldr-powertip-{{_id}}"  style="display: none;">
   <div class="tldr-read-container">
@@ -40,4 +29,3 @@
   </div>
 </div>
 <!-- end powertip -->
-

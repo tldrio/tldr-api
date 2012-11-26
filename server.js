@@ -149,6 +149,8 @@ app.options('*', function (req, res, next) {
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
+app.get('/steveblank', routes.exampleSB);
+
 
 /*
  * Routes for the website, which all respond HTML
