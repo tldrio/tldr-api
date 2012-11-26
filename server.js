@@ -149,7 +149,7 @@ app.options('*', function (req, res, next) {
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
-app.get('/exampleSB', routes.exampleSB);
+app.get('/steveblank', routes.exampleSB);
 
 
 /*
