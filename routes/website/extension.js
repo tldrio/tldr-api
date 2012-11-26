@@ -49,25 +49,21 @@ module.exports = function (req, res, next) {
 
 
   values.tldr4 = { _id: 'fakeTldrId4'
-                 , hostname: ''
-                 , title: ''
-                 , creator: { username: '' }
-                 , summaryBullets: [ ""
-                                   , ""
-                                   , ""
-                                   , ""
+                 , hostname: 'arstechnica.com'
+                 , title: 'Google Fiber is live in Kansas City, real-world speeds at 700 Mbps'
+                 , creator: { username: 'Louis' }
+                 , summaryBullets: [ "Google Fiber is now live in Kansas City, offering 1 Gbps speeds for $70 per month, significantly faster and cheaper than traditional American ISPs."
+                                   , "But fiber is not enough to make for a successful startup scene, you need a community."
                                    ]
                  };
 
 
   values.tldr5 = { _id: 'fakeTldrId5'
-                 , hostname: ''
-                 , title: ''
-                 , creator: { username: '' }
-                 , summaryBullets: [ ""
-                                   , ""
-                                   , ""
-                                   , ""
+                 , hostname: 'notsureifserious.com'
+                 , title: 'Show HN: My Life Project, Kickstarter for Dogs'
+                 , creator: { username: 'samwer' }
+                 , summaryBullets: [ "I love dogs and I want them to be able to fund the projects they like. That's why I created Kickstarter for dogs."
+                                   , "It's free for dogs but plans for dog owners start at $100/month. If you love your dog there's never been a better opportunity to prove it."
                                    ]
                  };
 
