@@ -12,6 +12,13 @@ module.exports = function (req, res, next) {
     , AB = Math.floor( Math.random() * 2)
     ;
 
+  values.tldr1 = { _id: 'fakeTldrId1'
+                 , hostname: 'theregister.co.uk'
+                 , title: 'Internet Explorer becomes Korean election issue'
+                 , creator: { username: 'rocket747' }
+                 , summaryBullets: []
+                 };
+
   values.extension = true;
   values.chrome = chrome;
   // AB testing

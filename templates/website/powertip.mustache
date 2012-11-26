@@ -1,9 +1,9 @@
 <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
   {{#linkToTldrPage}}
-    <a target="blank" href="{{websiteUrl}}/tldrs/{{_id}}">
+    <a target="_blank" href="{{websiteUrl}}/tldrs/{{_id}}">
   {{/linkToTldrPage}}
   {{^linkToTldrPage}}
-    <a href="#">
+    <a href="#" style="pointer-events: none;">
   {{/linkToTldrPage}}
     tl;dr
   </a>
