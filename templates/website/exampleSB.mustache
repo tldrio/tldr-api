@@ -77,37 +77,291 @@
 		.reblog-post .wpcom-enhanced-excerpt code,
 		.reblog-post .wpcom-enhanced-excerpt q { font-size: 98% !important; }
 
-    .tldr-label {
-      background-color: #999;
-      border-bottom-left-radius: 2px;
-      border-bottom-right-radius: 2px;
-      border-top-left-radius: 2px;
-      border-top-right-radius: 2px;
-      color: white;
-      cursor: pointer;
-      display: inline-block;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: 12px;
-      font-weight: bold;
-      height: 14px;
-      line-height: 14px;
-      list-style-image: none;
-      list-style-position: outside;
-      list-style-type: none;
-      margin-bottom: 0px;
-      margin-left: -4px;
-      margin-right: 0px;
-      margin-top: 0px;
-      padding-bottom: 1px;
-      padding-left: 2px;
-      padding-right: 2px;
-      padding-top: 1px;
-      text-align: left;
-      text-shadow: rgba(0, 0, 0, 0.246094) 0px -1px 0px;
-      vertical-align: baseline;
-      white-space: nowrap;
-      width: 19px;
-    }
+.label.tldr-label {
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: inline-block;
+  margin-left: 2px;
+  padding: 1px 2px 1px;
+}
+.label.tldr-label a,
+.label.tldr-label a:hover {
+  text-decoration: none;
+  color: #fff;
+  font-size: 10px;
+}
+#tldr-popover-d4a6ebe3 {
+  background-attachment: scroll;
+  background-color: transparent;
+  background-image: none;
+  -webkit-background-origin: padding;
+  -moz-background-origin: padding;
+  background-origin: padding-box;
+  background-position: 0px 0px;
+  background-repeat: repeat repeat;
+  -webkit-background-size: auto;
+  -moz-background-size: auto;
+  background-size: auto;
+  border-spacing: 0;
+  border: 0px solid #000;
+  border-image-source: none;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  clear: none;
+  color: #000;
+  content: normal;
+  cursor: default;
+  direction: ltr;
+  display: block;
+  float: none;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  height: auto;
+  letter-spacing: normal;
+  line-height: 20px;
+  margin: 0;
+  max-height: none;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  opacity: 1;
+  -ms-filter: none;
+  filter: none;
+  outline: invert none medium;
+  overflow: visible;
+  padding: 0;
+  position: static;
+  quotes: none;
+  text-align: left;
+  text-decoration: none;
+  text-indent: 0;
+  text-overflow: clip;
+  text-shadow: none;
+  text-transform: none;
+  unicode-bidi: normal;
+  visibility: visible;
+  white-space: normal;
+  width: auto;
+  widows: 2;
+  word-break: normal;
+  word-spacing: normal;
+  z-index: auto;
+  cursor: default;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  color: #000;
+  position: absolute;
+  z-index: 1010;
+  display: none;
+  width: 550px;
+  padding: 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0,0,0,0.2);
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  -webkit-background-clip: padding;
+  -moz-background-clip: padding;
+  background-clip: padding-box;
+}
+#tldr-popover-d4a6ebe3:before,
+#tldr-popover-d4a6ebe3:after {
+  content: "";
+  position: absolute;
+}
+.n:before,
+.s:before {
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  left: 50%;
+  margin-left: -10px;
+}
+.n:after,
+.s:after {
+  z-index: -1;
+  border-right: 11px solid transparent;
+  border-left: 11px solid transparent;
+  left: 50%;
+  margin-left: -11px;
+}
+.e:before,
+.w:before {
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  top: 50%;
+  margin-top: -10px;
+}
+.e:after,
+.w:after {
+  z-index: -1;
+  border-top: 11px solid transparent;
+  border-bottom: 11px solid transparent;
+  top: 50%;
+  margin-top: -11px;
+}
+.n:before {
+  border-top: 10px solid #fff;
+  bottom: -10px;
+}
+.n:after {
+  border-top: 11px solid rgba(0,0,0,0.2);
+  bottom: -11px;
+}
+.s:before {
+  border-bottom: 10px solid #fff;
+  top: -10px;
+}
+.s:after {
+  border-bottom: 11px solid rgba(0,0,0,0.2);
+  top: -11px;
+}
+.e:before {
+  border-right: 10px solid #fff;
+  left: -10px;
+}
+.e:after {
+  border-right: 11px solid rgba(0,0,0,0.2);
+  left: -11px;
+}
+.w:before {
+  border-left: 10px solid #fff;
+  right: -10px;
+}
+.w:after {
+  border-left: 11px solid rgba(0,0,0,0.2);
+  right: -11px;
+}
+.ne:before,
+.se:before {
+  border-right: 10px solid transparent;
+  border-left: 1px solid transparent;
+  left: 10px;
+}
+.ne:after,
+.se:after {
+  z-index: -1;
+  border-right: 11px solid transparent;
+  border-left: 2px solid transparent;
+  left: 9px;
+}
+.nw:before,
+.sw:before {
+  border-left: 10px solid transparent;
+  border-right: 1px solid transparent;
+  right: 10px;
+}
+.nw:after,
+.sw:after {
+  z-index: -1;
+  border-left: 11px solid transparent;
+  border-right: 2px solid transparent;
+  right: 9px;
+}
+.ne:before,
+.nw:before {
+  border-top: 10px solid #fff;
+  bottom: -10px;
+}
+.ne:after,
+.nw:after {
+  border-top: 10px solid rgba(0,0,0,0.2);
+  bottom: -11px;
+}
+.se:before,
+.sw:before {
+  border-bottom: 10px solid #fff;
+  top: -10px;
+}
+.se:after,
+.sw:after {
+  border-bottom: 11px solid rgba(0,0,0,0.2);
+  top: -11px;
+}
+ /* tldr
+-------------------------------------------------- */
+.tldr-tldr {
+  padding-left: 20px;
+}
+.tldr-metadata {
+  color: #666;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 18px;
+}
+.tldr-bullet {
+  font-size: 15px;
+  line-height: 20px;
+  margin-top: 11px;
+}
+.tldr-summary {
+  margin-top: 14px;
+}
+.tldr-summary ul {
+  list-style: none;
+  margin: 0;
+}
+.tldr-favicon {
+  width: 16px;
+  height: 16px;
+  vertical-align: baseline;
+}
+.tldr-favicon-ellipsis {
+  float: left;
+  margin-top: 3px;
+  margin-right: 5px;
+}
+.tldr-header {
+  line-height: 22px;
+}
+.tldr-title {
+  font-size: 17px;
+  font-weight: bold;
+}
+.tldr-title-ellipsis {
+  max-width: 439px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+.tldr-hostname {
+  font-size: 11px;
+  font-weight: normal;
+}
+ #tldr-popover-d4a6ebe3 [class^="icon-"],
+#tldr-popover-d4a6ebe3 [class*=" icon-"] {
+  background-image: url("/assets/img/glyphicons-halflings.png");
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+  line-height: 14px;
+  vertical-align: text-top;
+  background-position: 14px 14px;
+  background-repeat: no-repeat;
+}
+#tldr-popover-d4a6ebe3 .icon-stop {
+  background-position: -312px -72px;
+}
+#tldr-popover-d4a6ebe3 ul {
+  padding: 0px;
+}
+.label.tldr-label {
+  background-color: #999;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 14px;
+  text-shadow: rgba(0,0,0,0.25) 0px -1px 0px;
+}
 		
 
 		/* ]]> */		
