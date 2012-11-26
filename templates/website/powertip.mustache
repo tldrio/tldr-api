@@ -3,11 +3,10 @@
   {{#linkToTldrPage}}
     <a target="_blank" href="{{websiteUrl}}/tldrs/{{_id}}">
   {{/linkToTldrPage}}
-  {{^linkToTldrPage}}
-    <a href="#" style="pointer-events: none;">
-  {{/linkToTldrPage}}
     tl;dr
+  {{#linkToTldrPage}}
   </a>
+  {{/linkToTldrPage}}
 </span>
 <!-- for powertip -->
 <div id="tldr-powertip-{{_id}}"  style="display: none;">
