@@ -77,7 +77,7 @@
 		.reblog-post .wpcom-enhanced-excerpt code,
 		.reblog-post .wpcom-enhanced-excerpt q { font-size: 98% !important; }
 
-    .tldrio-powertip {
+    .tldr-label {
       background-color: #999;
       border-bottom-left-radius: 2px;
       border-bottom-right-radius: 2px;
@@ -372,41 +372,7 @@ Richard Nixon and <a href="http://en.wikipedia.org/wiki/Watergate_scandal" targe
 <p><strong>I Badly Want the Job<br>
 </strong>When I got <a href="http://steveblank.com/2009/06/29/agile-opportunism-entrepreneurial-dna/" target="_blank">my first job in Silicon Valley</a>
 
-<!-- #1 -->
-{{#tldr1}}
-<span class="label tldr-label tldrio-powertip" data-tldr-id="50ae47518502407962000003" data-powertip-id="tldr-powertip-50ae47518502407962000003">
-tl;dr
-</span>
-          <div id="tldr-powertip-50ae47518502407962000003"  style="display: none;">
-            <div class="tldr-read-container">
-              <div class="tldr-tldr">
-                <div class="tldr-header">
-                  <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
-                  <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
-                </div>
-                <div class="tldr-metadata">
-                  {{#creator}}
-                  <span>
-                    tl;dr by
-                    <span><a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
-                  </span>
-                  {{/creator}}
-                </div>
-
-                <div class="tldr-summary">
-                  <ul>
-                    {{#summaryBullets}}
-                    <li class="tldr-bullet">
-                      <i class="icon-stop"></i>
-                      {{.}}
-                    </li>
-                    {{/summaryBullets}}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-{{/tldr1}}
+{{#tldr1}} {{>website/powertip}} {{/tldr1}}
 
 it was through serendipity (my part) and desperation (on the part of my first employer.)&nbsp; I really didn’t have much of a resume – four years in the <a href="http://steveblank.com/category/air-force/" target="_blank">Air Force</a>, building a <a href="http://steveblank.com/2010/07/12/nukeem-till-they-glow-%E2%80%93-quitting-my-first-job/" target="_blank">scram system for a nuclear reactor</a>, a startup in Ann Arbor Michigan but not much else.</p>
 <p>It was at my <a href="http://steveblank.com/category/zilog/" target="_blank">second startup</a>&nbsp;in Silicon Valley that my life and career took an interesting turn. A recruiter found me, now in product marketing and wanted to introduce me to a hot startup making something called a workstation. “This is a technology-driven company and your background sounds great. Why don’t you send me a resume and I’ll pass it on.” A few days later I got a call back from the recruiter. “Steve, you left off your education.&nbsp; Where did you go to school?”</p>
