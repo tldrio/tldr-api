@@ -28,6 +28,9 @@ module.exports = function (req, res, next) {
   //values.tldr10 = ;
   //values.tldr11 = ;
   //values.tldr12 = ;
+  values.forEach(function (tldr) {
+    tldr.linkToTldrPage = true;
+  });
 
   res.render('website/exampleSB', { values: values, partials: {} });
 }
