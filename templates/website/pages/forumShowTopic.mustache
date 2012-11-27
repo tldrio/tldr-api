@@ -26,7 +26,7 @@
           <div class="media-body">
               <a href="/{{creator.username}}">
                 {{creator.username}}
-              </a> - <span class="post-topic-metadata">{{timeago}}</span> <br>
+              </a> - <span class="post-topic-metadata">{{timeago}}</span> {{#editable}}<a href="/forum/posts/{{_id}}/edit">edit</a>{{/editable}}<br>
               {{{markedText}}}
           </div>
         </div>

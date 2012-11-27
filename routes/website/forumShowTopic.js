@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
      _.each(posts, function (post) {
        post.timeago = customUtils.timeago(post.createdAt);
        post.markedText = marked(post.text);
-
+      if (values.admin) { post.editable = true; }
      });
 
      topic.moreThanOnePost = (topic.posts.length === 0) || (topic.posts.length > 1);
