@@ -78,6 +78,22 @@ PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
   newPost.save(callback);
 };
 
+/**
+ * Change a post text
+ * @param {String} newText Text set to replace the current text
+ * @param {Function} cb Optional callback
+ */
+PostSchema.methods.changeText = function (newText, cb) {
+  var callback = cb || function () {};
+
+  this.text = newText;
+  this.validate(function (err) {
+    if (err) { return callback(err); }
+
+    Post.update({ _id: this._id }, { $set: { text: newText } }, { multi: false }, callback);
+  });
+};
+
 
 // Expose preparePostForCreation
 PostSchema.statics.preparePostForCreation = preparePostForCreation;

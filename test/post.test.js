@@ -106,6 +106,31 @@ describe('Post', function () {
   });   // ==== End of 'createAndSaveInstance' ==== //
 
 
+  describe.only('#changeText', function () {
+    it('Should not change text if newText doesnt pass validation', function (done) {
+      var postData = { text: "youpla"
+                     }
+        , smallText = ''
+        , bigText = 'qqwqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopZ'
+        ;
+
+      Post.createAndSaveInstance(postData, user, function (err, post) {
+        assert.isNull(err);
+        post.text.should.equal("youpla");
+
+        post.changeText(smallText, function (err) {
+          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+
+          post.changeText(bigText, function (err) {
+            assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+            done();
+          });
+        });
+      });
+    });
+  });   // ==== End of '#changeText' ==== //
+
+
   describe('XSS prevention', function () {
 
     it('posts should be protected at creation against XSS', function (done) {
