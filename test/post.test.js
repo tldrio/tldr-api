@@ -120,10 +120,13 @@ describe('Post', function () {
 
         post.changeText(smallText, function (err) {
           assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+          Post.findOne({ _id: post._id }, function (err, _p) {
+            _p.text.should.equal('youpla');
 
-          post.changeText(bigText, function (err) {
-            assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
-            done();
+            post.changeText(bigText, function (err) {
+              assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+              done();
+            });
           });
         });
       });
