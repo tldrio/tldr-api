@@ -121,11 +121,14 @@ describe('Post', function () {
         post.changeText(smallText, function (err) {
           assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
           Post.findOne({ _id: post._id }, function (err, _p) {
-            _p.text.should.equal('youpla');
+            _p.text.should.equal('youpla');   // Text unchanged
 
             post.changeText(bigText, function (err) {
               assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
-              done();
+              Post.findOne({ _id: post._id }, function (err, _p) {
+                _p.text.should.equal('youpla');   // Text unchanged
+                  done();
+                });
             });
           });
         });
