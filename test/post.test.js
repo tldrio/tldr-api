@@ -147,7 +147,7 @@ describe('Post', function () {
         post.changeText('neeew', function (err) {
           assert.isNull(err);
           Post.findOne({ _id: post._id }, function (err, _p) {
-            _p.text.should.equal('neeew');   // Text unchanged
+            _p.text.should.equal('neeew');
 
             done();
           });

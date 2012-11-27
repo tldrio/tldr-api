@@ -84,13 +84,14 @@ PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
  * @param {Function} cb Optional callback
  */
 PostSchema.methods.changeText = function (newText, cb) {
-  var callback = cb || function () {};
+  var callback = cb || function () {}
+    , self = this;
 
   this.text = newText;
   this.validate(function (err) {
     if (err) { return callback(err); }
 
-    Post.update({ _id: this._id }, { $set: { text: newText } }, { multi: false }, callback);
+    Post.update({ _id: self._id }, { $set: { text: newText } }, { multi: false }, callback);
   });
 };
 
