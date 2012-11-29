@@ -285,18 +285,6 @@ TldrSchema.methods.goBackOneVersion = function (callback) {
 };
 
 
-/**
- * Increment the view counter for this tldr
- * @param {Function} cb Optional - Pass a callback if you want to resume flow after increment
- * @return {void}
- */
-TldrSchema.methods.incrementReadCount = function (cb) {
-  var callback = cb ? cb : function () {};   // If no cb provided, do nothing after increment
-
-  this.readCount += 1;
-  this.save(callback);
-};
-
 
 // Define tldr model
 Tldr = mongoose.model('tldr', TldrSchema);

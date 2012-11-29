@@ -937,29 +937,4 @@ describe('Tldr', function () {
   });   // ==== End of 'history management' ==== //
 
 
-  describe('#incrementReadCount', function() {
-
-    it('should be able to increment the read count with a callback', function (done) {
-      var tldrData = { title: 'Blog NFA'
-                     , url: 'http://mydomain.com'
-                     , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup' };
-
-      Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
-        var startReadCount = tldr.readCount;
-        tldr.incrementReadCount(function() {
-          tldr.readCount.should.equal(startReadCount + 1);
-          tldr.incrementReadCount(function() {
-            tldr.readCount.should.equal(startReadCount + 2);
-            done();
-          });
-        });
-      });
-    });
-
-  });   // ==== End of '#incrementReadCount' ==== //
-
-
-
-
 });
