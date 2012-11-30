@@ -106,6 +106,57 @@ describe('Post', function () {
   });   // ==== End of 'createAndSaveInstance' ==== //
 
 
+  describe.only('#changeText', function () {
+    it('Should not change text if newText doesnt pass validation', function (done) {
+      var postData = { text: "youpla"
+                     }
+        , smallText = ''
+        , bigText = 'qqwqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopZ'
+        ;
+
+      Post.createAndSaveInstance(postData, user, function (err, post) {
+        assert.isNull(err);
+        post.text.should.equal("youpla");
+
+        post.changeText(smallText, function (err) {
+          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+          Post.findOne({ _id: post._id }, function (err, _p) {
+            _p.text.should.equal('youpla');   // Text unchanged
+
+            post.changeText(bigText, function (err) {
+              assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).text);
+              Post.findOne({ _id: post._id }, function (err, _p) {
+                _p.text.should.equal('youpla');   // Text unchanged
+                  done();
+                });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to update the text if validation pass', function (done) {
+      var postData = { text: "youpla"
+                     }
+        ;
+
+      Post.createAndSaveInstance(postData, user, function (err, post) {
+        assert.isNull(err);
+        post.text.should.equal("youpla");
+
+        post.changeText('neeew', function (err) {
+          assert.isNull(err);
+          Post.findOne({ _id: post._id }, function (err, _p) {
+            _p.text.should.equal('neeew');
+
+            done();
+          });
+        });
+      });
+    });
+  });   // ==== End of '#changeText' ==== //
+
+
   describe('XSS prevention', function () {
 
     it('posts should be protected at creation against XSS', function (done) {
