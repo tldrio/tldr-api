@@ -210,6 +210,30 @@ describe('Webserver', function () {
 
     });
 
+    it('should increment the readcount with search, getbyId (json and html)', function (done) {
+
+      var prevReadCount;
+			Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
+				prevReadCount = tldr.readCount;
+				request.get({ headers: {"Accept": "application/json"}
+										, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent(tldr1.url) }, function (error, response, body) {
+					JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 1);
+					request.get({ headers: {"Accept": "application/json"}
+											, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
+						JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 2);
+						request.get({ headers: {"Accept": "text/html"}
+												, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
+							Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
+								tldr.readCount.should.be.equal(prevReadCount + 3);
+								done();
+							});
+						});
+					});
+				});
+			});
+
+    });
+
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
       var someTldrs = []

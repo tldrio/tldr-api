@@ -125,9 +125,7 @@ function validateTwitterHandle (value) {
 function setTwitterHandle (value) {
   var handle = customUtils.sanitizeInput(value);
 
-  if (handle[0] === '@') {
-    handle = handle.substring(1);
-  }
+  handle = handle.replace(/@/g, '');
 
   return handle;
 }

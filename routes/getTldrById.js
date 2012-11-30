@@ -20,7 +20,7 @@ function getTldrById (req, res, next) {
   var id = req.params.id
     , query;
 
-  query = Tldr.findOne({_id: id})
+  query = Tldr.findOneAndUpdate({ _id: id }, { $inc: { readCount: 1 } })
               .populate('creator', 'username twitterHandle');
 
   // If the user has the admin role, populate history

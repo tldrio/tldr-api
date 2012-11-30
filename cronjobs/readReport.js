@@ -1,6 +1,7 @@
 #! /usr/local/bin/node
 
 var _ = require('underscore')
+  , h4e = require('h4e')
   , async = require('async')
   , bunyan = require('../lib/logger').bunyan
   , config = require('../lib/config')
@@ -14,6 +15,9 @@ var _ = require('underscore')
   , Tldr = models.Tldr
   , User = models.User;
 
+h4e.setup({ extension: 'mustache'
+          , baseDir: 'templates'
+          , toCompile: ['emails'] });
 
 function sendReadReport (previousFlush) {
   var notifsByUser
@@ -41,7 +45,8 @@ function sendReadReport (previousFlush) {
            , tldrsForReport = []
 					 , newViews
 					 , newViewsText
-           , signature;
+           , signature
+           , fakeReadCount;
 
          if (user.notificationsSettings.read) {
 
@@ -59,7 +64,13 @@ function sendReadReport (previousFlush) {
 							 } else {
 							   newViewsText = newViews + ' more times';
 							 }
+               if (newViews >= tldr.readCount) {
+                 fakeReadCount =  newViews + Math.floor(Math.random()*25);
+               } else {
+                 fakeReadCount = tldr.readCount;
+               }
                tldrsForReport.push({ newViewsText: newViewsText
+                                   , fakeReadCount: fakeReadCount
 																	 , tldr: tldr });
              });
 
@@ -68,7 +79,7 @@ function sendReadReport (previousFlush) {
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                              , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration }
+                              , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration, fakeReadCount: fakeReadCount }
                               }, function () {
                                 bunyan.info('Report sent to ' + user.email);
                                 callback(null);

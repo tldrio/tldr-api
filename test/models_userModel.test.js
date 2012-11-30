@@ -666,7 +666,7 @@ describe('User', function () {
       });
     });
 
-    it('should remove the leading @ of a twitter handle if there is one', function (done) {
+    it('should all @ from a twitter handle if there are some', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -682,8 +682,16 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err, user) {
         user.updateValidFields(newData, function(err, user2) {
           user2.twitterHandle.should.equal('tldrio');
+          newData.twitterHandle = "@@bloup";
+          user.updateValidFields(newData, function(err, user2) {
+            user2.twitterHandle.should.equal('bloup');
+            newData.twitterHandle = "@@bl@o@up";
+            user.updateValidFields(newData, function(err, user2) {
+              user2.twitterHandle.should.equal('bloup');
 
-          done();
+              done();
+            });
+          });
         });
       });
     });

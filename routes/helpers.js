@@ -22,8 +22,6 @@ var i18n = require('../lib/i18n')
  * @param {Tldr} tldr The tldr to send. Fetching it is the job of this function's caller
  */
 function apiSendTldr (req, res, tldr) {
-  // Increment read count but don't wait for DB access to finish to return to client
-  tldr.incrementReadCount();
 
   // TODO dont send notif if user is admin
   notificator.publish({ type: 'read'
