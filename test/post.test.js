@@ -106,7 +106,7 @@ describe('Post', function () {
   });   // ==== End of 'createAndSaveInstance' ==== //
 
 
-  describe.only('#changeText', function () {
+  describe('#changeText', function () {
     it('Should not change text if newText doesnt pass validation', function (done) {
       var postData = { text: "youpla"
                      }
