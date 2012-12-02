@@ -163,6 +163,7 @@ app.get('/index', middleware.attachRenderingValues     // Routing for this page 
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
+app.get('/th', middleware.attachRenderingValues, routes.website_th);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
 app.get('/crx', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
 app.get('/chromeextension', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
