@@ -232,7 +232,7 @@ function getNotifications (_limit, _callback) {
     callback = _limit;
   } else {
     limit = _limit;
-    callback = _callback
+    callback = _callback;
   }
 
   User.findOne({ _id: this._id })
