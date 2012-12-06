@@ -221,11 +221,22 @@ function getCreatedTldrs (callback) {
 
 /**
  * Get the notifications of the user
- * @param {Function} callback Signature: err, [notifications]
+ * @param {Integer} _limit Optional. Maximum number of notifications to return. No limit if omitted or set to 0.
+ * @param {Function} _callback Signature: err, [notifications]
  */
-function getNotifications (callback) {
+function getNotifications (_limit, _callback) {
+  var limit, callback;
+
+  if (typeof _limit === 'function') {    // No limit was provided
+    limit = 0;
+    callback = _limit;
+  } else {
+    limit = _limit;
+    callback = _callback
+  }
+
   User.findOne({ _id: this._id })
-    .populate('notifications')
+    .populate('notifications', null, null, { sort: [[ 'createdAt', -1 ]], limit: limit })
     .exec(function(err, user) {
       if (err) { return callback(err); }
       callback(null, user.notifications);

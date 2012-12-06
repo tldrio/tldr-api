@@ -1170,6 +1170,30 @@ describe('User', function () {
       ], done);
     });
 
+    it('Should be able to get only some of the users notifs', function (done) {
+      function publish (options, cb) {
+        notificator.publish(options, function () { cb(); });
+      }
+
+      async.waterfall([
+        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
+      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
+      , function (cb) {
+          user1.getNotifications(2, function (err, notifs) {
+            notifs.length.should.equal(2);
+            notifs[0].unseen.should.equal(true);
+            notifs[1].unseen.should.equal(true);
+            user2.getNotifications(0, function (err, notifs) {
+              notifs.length.should.equal(1);
+              notifs[0].unseen.should.equal(true);
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
 
   });   // ==== End of 'Notifications' ==== //
 
