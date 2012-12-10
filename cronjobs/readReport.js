@@ -16,7 +16,7 @@ var _ = require('underscore')
   , User = models.User;
 
 h4e.setup({ extension: 'mustache'
-          , baseDir: 'templates'
+          , baseDir: process.env.TLDR_API_DIR + '/templates'
           , toCompile: ['emails'] });
 
 function sendReadReport (previousFlush) {
