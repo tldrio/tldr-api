@@ -13,7 +13,7 @@ function notificationsRoute (req, res, next) {
     , partials = req.renderingPartials || {}
     , notifications = values.notifications
     , prefixes = [ 'Cool beans! Someone read your awesome '
-                   , 'Good news! Your saved the day for someone with your '
+                   , 'Good news! You saved the day for someone with your '
                    , 'Way to go! You helped someone today with your '];
 
   partials.content = '{{>website/pages/notifications}}';
