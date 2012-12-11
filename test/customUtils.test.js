@@ -14,7 +14,7 @@ var should = require('chai').should()
   ;
 
 
-describe('Custom utils', function () {
+describe.only('Custom utils', function () {
 
   describe('#timeago', function () {
     it('Should return just ago if span is under a minute', function (done) {
