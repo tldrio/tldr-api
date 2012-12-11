@@ -483,6 +483,7 @@ UserSchema = new Schema(
                 , default: Date.now
                 }
   , notificationsSettings: { read: { type: Boolean, default: true}
+                           , congratsTldrViews: { type: Boolean, default: true}
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
                            }
