@@ -210,6 +210,29 @@ TldrSchema.statics.findAndIncrement = function (selector, isAdmin, callback) {
   }
 
   query.exec( function (err, tldr) {
+    //This can happen just once
+    if (tldr.readCount === 100) {
+      Tldr.findOne(selector)
+        .populate('creator')
+        .exec(function (err2, tldrWithCreatorPopulated) {
+
+          var creator = tldrWithCreatorPopulated.creator
+            , expiration = new Date().setDate(new Date().getDate() + 2) // 48h expiration
+            , signature = customUtils.computeSignature(creator._id + '/' + expiration);
+          if (creator.notificationsSettings.congratsTldrViews) {
+            mailer.sendEmail({ type: 'congratsTldrViews'
+                             , to: creator.email
+                             //, to: 'hello+test@tldr.io'
+                             , development: true
+                             , values: { tldr: tldrWithCreatorPopulated
+                                       , creator: creator
+                                       , expiration: expiration
+                                       , signature: signature
+                                       }
+                             });
+          }
+        });
+    }
     callback(err,tldr);
   });
 
