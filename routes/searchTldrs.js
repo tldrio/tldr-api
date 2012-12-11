@@ -39,9 +39,7 @@ function searchTldrs (req, res, next) {
     bunyan.incrementMetric('tldrs.search.byUrl');
 
     url = normalizeUrl(url);
-    Tldr.findOneAndUpdate({ url: url }, { $inc: { readCount: 1 } })
-        .populate('creator', 'username twitterHandle')
-        .exec( function (err, doc) {
+    Tldr.findAndIncrement({ url: url }, false, function (err, doc) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }

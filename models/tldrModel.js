@@ -194,6 +194,28 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 
 
 /**
+ * Find a tldr with query obj. Increment readcount
+ * @param {Object} selector Selector for Query
+ * @param {Boolean} isAdmin Boolean to populate more info if user is admin
+ * @param {Function} cb - Pass a callback if you want to resume flow after
+ * @return {void}
+ */
+TldrSchema.statics.findAndIncrement = function (selector, isAdmin, callback) {
+
+  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
+              .populate('creator', 'username twitterHandle');
+  // If the user has the admin role, populate history
+  if (isAdmin) {
+    query.populate('history');
+  }
+
+  query.exec( function (err, tldr) {
+    callback(err,tldr);
+  });
+
+};
+
+/**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
  * @param {Object} updates Object containing fields to update with corresponding value

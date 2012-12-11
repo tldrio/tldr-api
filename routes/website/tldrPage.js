@@ -19,9 +19,7 @@ module.exports = function (req, res, next) {
   bunyan.incrementMetric('tldrs.get.html');
 
 
-  Tldr.findOneAndUpdate({ _id: req.params.id }, { $inc: { readCount: 1 } })
-      .populate('creator', 'username twitterHandle')
-      .exec(function (err, tldr) {
+  Tldr.findAndIncrement({ _id: req.params.id }, false, function (err, tldr) {
 
     values = _.extend(values, tldr);
 

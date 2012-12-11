@@ -17,18 +17,9 @@ var Tldr = require('../lib/models').Tldr
 
 function getTldrById (req, res, next) {
 
-  var id = req.params.id
-    , query;
+  var id = req.params.id;
 
-  query = Tldr.findOneAndUpdate({ _id: id }, { $inc: { readCount: 1 } })
-              .populate('creator', 'username twitterHandle');
-
-  // If the user has the admin role, populate history
-  if (req.userRoleAdmin) {
-    query.populate('history');
-  }
-
-  query.exec( function (err, tldr) {
+  Tldr.findAndIncrement({ _id: id }, req.userRoleAdmin, function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
