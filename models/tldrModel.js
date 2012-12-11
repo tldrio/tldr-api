@@ -95,6 +95,7 @@ TldrSchema = new Schema(
          }
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
+                 , set: customUtils.sanitizeInput
                  }
   , hostname: { type: String
               , required: true
