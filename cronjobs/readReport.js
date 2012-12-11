@@ -42,44 +42,48 @@ function sendReadReport (previousFlush) {
      User.find({ _id: { $in: userIds } }, function (err, users) {
        async.forEach(users, function (user, callback) {
          var tldrsRead
-           , tldrsForReport = []
-					 , newViews
-					 , newViewsText
            , signature
-           , fakeReadCount;
+           , viewsThisWeek
+           , viewsTotal
+           , topThisWeek = {}
+           , maxNotifs
+           , topOfAllTime
+           , values;
 
          if (user.notificationsSettings.read) {
 
            // Group by tldr read
            tldrsRead = _.groupBy(notifsByUser[user._id], function(doc) { return doc.tldr.toString();});
+           // Find the most read tldr this week
+           maxNotifs = _.max(tldrsRead, function(tldr) { return tldr.length;});
+           topThisWeek = { _id: maxNotifs[0].tldr.toString(), readCountWeek: maxNotifs.length};
 
-           // Find the tldrs
-           Tldr.find({ _id: { $in: _.keys(tldrsRead) } }, function (err, tldrs) {
+           // total notif count this week
+           viewsThisWeek = notifsByUser[user._id].length;
 
-             // Iterate on the tldr for a given user
-             tldrs.forEach(function (tldr, j) {
-							 newViews = tldrsRead[tldr._id].length;
-							 if (newViews === 1) {
-							   newViewsText = newViews + ' more time';
-							 } else {
-							   newViewsText = newViews + ' more times';
-							 }
-               if (newViews >= tldr.readCount) {
-                 fakeReadCount =  newViews + Math.floor(Math.random()*25);
-               } else {
-                 fakeReadCount = tldr.readCount;
-               }
-               tldrsForReport.push({ newViewsText: newViewsText
-                                   , fakeReadCount: fakeReadCount
-																	 , tldr: tldr });
-             });
+           // This is all the tldrs from the given user
+           Tldr.find({ _id: { $in: user.tldrsCreated } }, function (err, tldrs) {
+
+             topOfAllTime = _.max(tldrs, function(tldr) { return tldr.readCount;});
+             // populate top tldr of this week
+             topThisWeek.tldr = _.find(tldrs, function(tldr) {return tldr._id.toString() === topThisWeek._id;});
+             //total readCount for all tldrs created
+             viewsTotal = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
+
+             values = { topThisWeek: topThisWeek
+                      , topOfAllTime: topOfAllTime
+                      , viewsTotal: viewsTotal
+                      , viewsThisWeek: viewsThisWeek
+                      , user: user
+                      , signature: signature
+                      , expiration: expiration};
 
              emailsSent += 1;
              signature = customUtils.computeSignature(user._id + '/' + expiration);
              mailer.sendEmail({ type: 'readReport'
                               , development: true
+                              , values: values
                               , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                              , values: { tldrsForReport: tldrsForReport, user: user, signature: signature, expiration: expiration, fakeReadCount: fakeReadCount }
                               }, function () {
                                 bunyan.info('Report sent to ' + user.email);
                                 callback(null);
