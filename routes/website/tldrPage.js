@@ -23,15 +23,19 @@ module.exports = function (req, res, next) {
       .populate('creator', 'username twitterHandle')
       .exec(function (err, tldr) {
 
-    values = _.extend(values, tldr);
+    if (!err && tldr) {
+      values = _.extend(values, tldr);
 
-    // Send Notif
-    notificator.publish({ type: 'read'
-                        , from: req.user
-                        , tldr: tldr
-                        // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                        , to: tldr.creator
-                        });
+      // Send Notif
+      notificator.publish({ type: 'read'
+                          , from: req.user
+                          , tldr: tldr
+                          // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                          , to: tldr.creator
+                          });
+    } else {
+      values.tldrNotFound = true;
+    }
 
     res.render('website/basicLayout', { values: values
                                       , partials: partials

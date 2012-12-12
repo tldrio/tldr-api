@@ -473,6 +473,14 @@ describe('Webserver', function () {
       });
     });
 
+    it('Should serve error page if a non existing tldr-page was requested', function (done) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/50af46f20bc6856c5403001s' }, function (err, res, body) {
+        res.statusCode.should.equal(200);
+        res.body.should.contain('<div class="alert alert-error">');
+        done();
+      });
+    });
+
   });   // ==== End of 'GET tldrs' ==== //
 
 
