@@ -19,7 +19,7 @@ module.exports = function (req, res, next) {
   bunyan.incrementMetric('tldrs.get.html');
 
 
-  Tldr.findAndIncrement({ _id: req.params.id }, false, function (err, tldr) {
+  Tldr.findAndIncrementReadCount({ _id: req.params.id }, false, function (err, tldr) {
 
     values = _.extend(values, tldr);
 

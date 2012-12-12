@@ -200,7 +200,7 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
  * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
  * @return {void}
  */
-TldrSchema.statics.findAndIncrement = function (selector, isAdmin, callback) {
+TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, callback) {
 
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
               .populate('creator', 'username twitterHandle');
