@@ -43,37 +43,37 @@ function sendReadReport (previousFlush) {
        async.forEach(users, function (user, callback) {
          var tldrsRead
            , signature
-           , viewsThisWeek
-           , viewsTotal
-           , topThisWeek = {}
-           , maxNotifs
-           , topOfAllTime
-           , values;
+           , totalViewsThisWeek // total notif count this week
+           , totalViewsForAllTldrs //total readCount for all tldrs created
+           , topTldrThisWeek = {} // top tldr this week
+           , notifsForTopTldrThisWeek // all notifs regarding the most read tldr this week
+           , topTldrOfAllTime // top tldr of all time
+           , values; // Object containing the values needed for templating
 
          if (user.notificationsSettings.read) {
 
            // Group by tldr read
            tldrsRead = _.groupBy(notifsByUser[user._id], function(doc) { return doc.tldr.toString();});
            // Find the most read tldr this week
-           maxNotifs = _.max(tldrsRead, function(tldr) { return tldr.length;});
-           topThisWeek = { _id: maxNotifs[0].tldr.toString(), readCountWeek: maxNotifs.length};
+           notifsForTopTldrThisWeek = _.max(tldrsRead, function(tldr) { return tldr.length;});
+           topTldrThisWeek = { _id: notifsForTopTldrThisWeek[0].tldr.toString(), readCountWeek: notifsForTopTldrThisWeek.length};
 
            // total notif count this week
-           viewsThisWeek = notifsByUser[user._id].length;
+           totalViewsThisWeek = notifsByUser[user._id].length;
 
            // This is all the tldrs from the given user
            Tldr.find({ _id: { $in: user.tldrsCreated } }, function (err, tldrs) {
 
-             topOfAllTime = _.max(tldrs, function(tldr) { return tldr.readCount;});
+             topTldrOfAllTime = _.max(tldrs, function(tldr) { return tldr.readCount;});
              // populate top tldr of this week
-             topThisWeek.tldr = _.find(tldrs, function(tldr) {return tldr._id.toString() === topThisWeek._id;});
+             topTldrThisWeek.tldr = _.find(tldrs, function(tldr) {return tldr._id.toString() === topTldrThisWeek._id;});
              //total readCount for all tldrs created
-             viewsTotal = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
+             totalViewsForAllTldrs = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
 
-             values = { topThisWeek: topThisWeek
-                      , topOfAllTime: topOfAllTime
-                      , viewsTotal: viewsTotal
-                      , viewsThisWeek: viewsThisWeek
+             values = { topTldrThisWeek: topTldrThisWeek
+                      , topTldrOfAllTime: topTldrOfAllTime
+                      , totalViewsForAllTldrs: totalViewsForAllTldrs
+                      , totalViewsThisWeek: totalViewsThisWeek
                       , user: user
                       , signature: signature
                       , expiration: expiration};

@@ -4,14 +4,14 @@ Hey {{user.username}}, <br>
 With your contribution to tldr.io your helped people <strong>save a massive amount of time</strong>.
 <br>
 <br>
-This week your tl;drs have been read <strong>{{viewsThisWeek}} times</strong> so you can now boast <strong>{{viewsTotal}} views</strong> for all your tl;drs!
+This week your tl;drs have been read <strong>{{totalViewsThisWeek}} times</strong> so you can now boast <strong>{{totalViewsForAllTldrs}} views</strong> for all your tl;drs!
 <br>
 <br>
-Your biggest hit this week is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{topThisWeek.tldr.title}}</a> which has been <strong>viewed {{topThisWeek.readCountWeek}} times.</strong>
+Your biggest hit this week is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{topTldrThisWeek.tldr._id}}">{{topTldrThisWeek.tldr.title}}</a> which has been <strong>viewed {{topTldrThisWeek.readCountWeek}} times.</strong>
 <br>
-Your most popular contribution is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{topOfAllTime.title}}</a> which has been <strong>viewed {{topOfAllTime.readCount}} times</strong>.
+Your most popular contribution is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{topTldrOfAllTime._id}}">{{topTldrOfAllTime.title}}</a> which has been <strong>viewed {{topTldrOfAllTime.readCount}} times</strong>.
 <br>
-Did you know you can access all your recent contributions and see their read counts on <a href="http://tldr.io/{{user.username}}">your public profile</a>?
+Did you know you can access all your recent contributions and see their read counts on <a href="{{websiteUrl}}/{{user.username}}">your public profile</a>?
 <br>
 <br>
 Congrats for these stats! I you wanna contribute the next big tl;dr hit <a href="http://news.ycombinator.com">Hacker News</a> is the sweet spot !
