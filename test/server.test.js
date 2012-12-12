@@ -246,6 +246,7 @@ describe('Webserver', function () {
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , originalUrl: 'http://needforair.com/sopa/number' + i
                                 , hostname: 'needforair.com'
                                 , title: 'sopa'
                                 , summaryBullets: ['Great article']
@@ -468,6 +469,14 @@ describe('Webserver', function () {
         res.statusCode.should.equal(200);
         res.headers['content-type'].should.contain('text/html');
         res.body.should.contain('<div class="tldr-read-container">');
+        done();
+      });
+    });
+
+    it('Should serve error page if a non existing tldr-page was requested', function (done) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/50af46f20bc6856c5403001s' }, function (err, res, body) {
+        res.statusCode.should.equal(200);
+        res.body.should.contain('<div class="alert alert-error">');
         done();
       });
     });

@@ -94,6 +94,10 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , originalUrl: { type: String   // Keep the original url in case normalization goes too far
+                 , required: true
+                 , set: customUtils.sanitizeInput
+                 }
   , hostname: { type: String
               , required: true
               }
@@ -141,6 +145,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   var validFields = _.pick(userInput, userSetableFields)
     , instance = new Tldr(validFields)
     , history = new TldrHistory();
+
+  instance.originalUrl = validFields.url;
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
