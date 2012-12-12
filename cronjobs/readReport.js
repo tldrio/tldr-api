@@ -75,7 +75,7 @@ function sendReadReport (previousFlush) {
              });
 
              emailsSent += 1;
-             signature = customUtils.computeSignature(user._id + '/' + expiration);
+             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email

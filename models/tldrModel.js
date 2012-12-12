@@ -218,7 +218,7 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, call
 
           var creator = tldrWithCreatorPopulated.creator
             , expiration = new Date().setDate(new Date().getDate() + 2) // 48h expiration
-            , signature = customUtils.computeSignature(creator._id + '/' + expiration);
+            , signature = customUtils.computeSignatureForUnsubscribeLink(creator._id + '/' + expiration);
           if (creator.notificationsSettings.congratsTldrViews) {
             mailer.sendEmail({ type: 'congratsTldrViews'
                              , to: creator.email
