@@ -68,9 +68,10 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(3);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.url.should.not.equal(null);
+        valErr.originalUrl.should.not.equal(null);
 
         done();
       });
@@ -633,7 +634,8 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance(userInput, user, function (err, theTldr) {
         assert.isNull(err, 'no errors');
-        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+        theTldr.url.should.equal('http://needforair.com/nutcrackers');
+        theTldr.originalUrl.should.equal('http://needforair.com/nutcrackers');
         theTldr.title.should.equal('Blog NFA');
         theTldr.summaryBullets[0].should.equal('Awesome Blog');
         theTldr.summaryBullets[1].should.equal('Bloup');
@@ -662,6 +664,7 @@ describe('Tldr', function () {
         tldr.updateValidFields(userInput, user, function(err, theTldr) {
           assert.isNull(err, 'no errors');
           theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
+          theTldr.originalUrl.should.equal('http://url.com/nutcrackers');   // originalUrl is not updatable
           theTldr.title.should.equal('Blog NFA');
           theTldr.summaryBullets[0].should.equal('Awesome Blog');
           theTldr.summaryBullets[1].should.equal('Bloup');

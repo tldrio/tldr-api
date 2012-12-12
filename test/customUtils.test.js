@@ -59,6 +59,24 @@ describe('Custom utils', function () {
       done();
     });
 
+    it('Should remove leading www subdomain, if any', function (done) {
+      var theUrl = "http://domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
+
+      theUrl = "http://subd.domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://subd.domain.tld/path/file.extension");
+
+      theUrl = "http://www.domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
+
+      // No problem with hostnames less than 4 characters
+      theUrl = "http://d.t/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://d.t/path/file.extension");
+
+      done();
+    });
+
+
     it('Should remove the querystring for non whitelisted websites', function (done) {
       var theUrl = "http://domain.tld/?aRg=valuEEe";
       normalizeUrl(theUrl).should.equal("http://domain.tld/");
@@ -73,14 +91,14 @@ describe('Custom utils', function () {
     });
 
     it('Should keep querystring for whitelisted domains but remove the utm ones and sort the remaining arguments', function (done) {
-      var theUrl = "http://www.youtube.com/?aRg=valuEEe";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe");
+      var theUrl = "http://youtube.com/?aRg=valuEEe";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/?aRg=valuEEe");
 
-      theUrl = "http://www.youtube.com/?eRg=valuEEe&bloup=blap";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
+      theUrl = "http://youtube.com/?eRg=valuEEe&bloup=blap";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/?bloup=blap&eRg=valuEEe");
 
-      theUrl = "http://www.youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
+      theUrl = "http://youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/?aRg=valuEEe&bloup=blap");
 
       done();
     });
@@ -102,41 +120,41 @@ describe('Custom utils', function () {
     });
 
     it('Should remove a trailing hash with its fragment except if it a #!', function (done) {
-      var theUrl = "http://www.domain.tld/path/file.extension/#";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+      var theUrl = "http://domain.tld/path/file.extension/#";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "http://www.domain.tld/path/file.extension/#something";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+      theUrl = "http://domain.tld/path/file.extension/#something";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "http://www.domain.tld/path/file.extension#";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+      theUrl = "http://domain.tld/path/file.extension#";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "http://www.domain.tld/path/file.extension#something";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file.extension");
+      theUrl = "http://domain.tld/path/file.extension#something";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "http://www.domain.tld/#";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+      theUrl = "http://domain.tld/#";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
-      theUrl = "http://www.domain.tld/#something";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+      theUrl = "http://domain.tld/#something";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
-      theUrl = "http://www.domain.tld#";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+      theUrl = "http://domain.tld#";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
-      theUrl = "http://www.domain.tld#something";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/");
+      theUrl = "http://domain.tld#something";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
-      theUrl = "http://www.domain.tld/#!bloup";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!bloup");
+      theUrl = "http://domain.tld/#!bloup";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/#!bloup");
 
-      theUrl = "http://www.domain.tld/#!/path/to/somethingelse";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/#!/path/to/somethingelse");
+      theUrl = "http://domain.tld/#!/path/to/somethingelse";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/#!/path/to/somethingelse");
 
-      theUrl = "http://www.domain.tld/path#!bloup";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path#!bloup");
+      theUrl = "http://domain.tld/path#!bloup";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path#!bloup");
 
-      theUrl = "http://www.domain.tld/path/file/#!bloup";
-      normalizeUrl(theUrl).should.equal("http://www.domain.tld/path/file#!bloup");
+      theUrl = "http://domain.tld/path/file/#!bloup";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file#!bloup");
 
       done();
     });
@@ -169,30 +187,30 @@ describe('Custom utils', function () {
     });
 
     it('Sort the arguments of a querystring and remove the useless ones for the querystring-fucking domains', function (done) {
-      var theUrl = "http://www.youtube.com/path/file.extension/?arg=value&rtf=yto";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?arg=value&rtf=yto");
+      var theUrl = "http://youtube.com/path/file.extension/?arg=value&rtf=yto";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?arg=value&rtf=yto");
 
-      theUrl = "http://www.youtube.com/path/file.extension?eee=value&cd=yto";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?cd=yto&eee=value");
+      theUrl = "http://youtube.com/path/file.extension?eee=value&cd=yto";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?cd=yto&eee=value");
 
-      theUrl = "http://www.youtube.com/path/file.extension?caee=value&c5=yto";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?c5=yto&caee=value");
+      theUrl = "http://youtube.com/path/file.extension?caee=value&c5=yto";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?c5=yto&caee=value");
 
-      theUrl = "http://www.youtube.com/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
+      theUrl = "http://youtube.com/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
 
-      theUrl = "http://www.youtube.com/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
+      theUrl = "http://youtube.com/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
 
       done();
     });
 
     it('Remove a trailing slash if there is a path', function (done) {
-      var theUrl = "http://www.youtube.com/path/file.extension/?arg=value&rtf=yto";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file.extension?arg=value&rtf=yto");
+      var theUrl = "http://youtube.com/path/file.extension/?arg=value&rtf=yto";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?arg=value&rtf=yto");
 
-      theUrl = "http://www.youtube.com/path/file/";
-      normalizeUrl(theUrl).should.equal("http://www.youtube.com/path/file");
+      theUrl = "http://youtube.com/path/file/";
+      normalizeUrl(theUrl).should.equal("http://youtube.com/path/file");
 
       done();
     });
@@ -206,37 +224,37 @@ describe('Custom utils', function () {
       urlsToTest.push("http://domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/bloup/blap");
-      urlsToTest.push("http://www.youtube.com/?aRg=valuEEe");
-      urlsToTest.push("http://www.youtube.com/?bloup=blap&eRg=valuEEe");
-      urlsToTest.push("http://www.youtube.com/?aRg=valuEEe&bloup=blap");
+      urlsToTest.push("http://youtube.com/?aRg=valuEEe");
+      urlsToTest.push("http://youtube.com/?bloup=blap&eRg=valuEEe");
+      urlsToTest.push("http://youtube.com/?aRg=valuEEe&bloup=blap");
       urlsToTest.push("http://domain.tld/");
       urlsToTest.push("http://domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/");
-      urlsToTest.push("http://www.domain.tld/path/file.extension");
-      urlsToTest.push("http://www.domain.tld/path/file.extension");
-      urlsToTest.push("http://www.domain.tld/path/file.extension");
-      urlsToTest.push("http://www.domain.tld/path/file.extension");
-      urlsToTest.push("http://www.domain.tld/");
-      urlsToTest.push("http://www.domain.tld/");
-      urlsToTest.push("http://www.domain.tld/");
-      urlsToTest.push("http://www.domain.tld/");
-      urlsToTest.push("http://www.domain.tld/#!bloup");
-      urlsToTest.push("http://www.domain.tld/#!/path/to/somethingelse");
-      urlsToTest.push("http://www.domain.tld/path#!bloup");
-      urlsToTest.push("http://www.domain.tld/path/file#!bloup");
+      urlsToTest.push("http://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/");
+      urlsToTest.push("http://domain.tld/");
+      urlsToTest.push("http://domain.tld/");
+      urlsToTest.push("http://domain.tld/");
+      urlsToTest.push("http://domain.tld/#!bloup");
+      urlsToTest.push("http://domain.tld/#!/path/to/somethingelse");
+      urlsToTest.push("http://domain.tld/path#!bloup");
+      urlsToTest.push("http://domain.tld/path/file#!bloup");
       urlsToTest.push("http://subdomain.domain.tld/path/fiLE.exTENsion");
       urlsToTest.push("http://subdomain.domain.tld/path/file.extension");
       urlsToTest.push("http://subdomain.domain.tld:99/path/file.extension");
       urlsToTest.push("http://subdomain.domain.tld/path/file.extension");
       urlsToTest.push("http://subdomain.domain.tld/");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?arg=value&rtf=yto");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?cd=yto&eee=value");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?c5=yto&caee=value");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
-      urlsToTest.push("http://www.youtube.com/path/file.extension?arg=value&rtf=yto");
-      urlsToTest.push("http://www.youtube.com/path/file");
+      urlsToTest.push("http://youtube.com/path/file.extension?arg=value&rtf=yto");
+      urlsToTest.push("http://youtube.com/path/file.extension?cd=yto&eee=value");
+      urlsToTest.push("http://youtube.com/path/file.extension?c5=yto&caee=value");
+      urlsToTest.push("http://youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
+      urlsToTest.push("http://youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
+      urlsToTest.push("http://youtube.com/path/file.extension?arg=value&rtf=yto");
+      urlsToTest.push("http://youtube.com/path/file");
 
       _.each(urlsToTest, function (theUrl) {
         normalizeUrl(theUrl).should.equal(theUrl);
