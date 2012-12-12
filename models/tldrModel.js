@@ -7,6 +7,7 @@
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
@@ -211,13 +212,13 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, call
 
   query.exec( function (err, tldr) {
     //This can happen just once
-    if (tldr.readCount === 100) {
+    if (tldr.readCount === config.thresholdCongratsTldrViews) {
       Tldr.findOne(selector)
         .populate('creator')
         .exec(function (err2, tldrWithCreatorPopulated) {
 
           var creator = tldrWithCreatorPopulated.creator
-            , expiration = new Date().setDate(new Date().getDate() + 2) // 48h expiration
+            , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays) // 48h expiration
             , signature = customUtils.computeSignatureForUnsubscribeLink(creator._id + '/' + expiration);
           if (creator.notificationsSettings.congratsTldrViews) {
             mailer.sendEmail({ type: 'congratsTldrViews'
