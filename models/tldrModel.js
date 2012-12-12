@@ -211,8 +211,9 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, call
   }
 
   query.exec( function (err, tldr) {
+    //A tldr has been found and its readcount reaches the threshold
     //This can happen just once
-    if (tldr.readCount === config.thresholdCongratsTldrViews) {
+    if (tldr && tldr.readCount === config.thresholdCongratsTldrViews) {
       Tldr.findOne(selector)
         .populate('creator')
         .exec(function (err2, tldrWithCreatorPopulated) {
