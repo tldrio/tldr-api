@@ -197,7 +197,7 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
  * Find a tldr with query obj. Increment readcount
  * @param {Object} selector Selector for Query
  * @param {Boolean} isAdmin Boolean to populate more info if user is admin
- * @param {Function} cb - Pass a callback if you want to resume flow after
+ * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
  * @return {void}
  */
 TldrSchema.statics.findAndIncrement = function (selector, isAdmin, callback) {
