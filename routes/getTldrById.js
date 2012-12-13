@@ -6,8 +6,7 @@
 
 
 var Tldr = require('../lib/models').Tldr
-  , i18n = require('../lib/i18n')
-  , helpers = require('./helpers');
+  , i18n = require('../lib/i18n');
 
 
 /**
@@ -35,7 +34,8 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    helpers.apiSendTldr(req, res, tldr);
+    bunyan.incrementMetric('tldrs.get.json');
+    return res.json(200, tldr);
 
   });
 }

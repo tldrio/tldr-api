@@ -7,7 +7,6 @@
 
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
-  , helpers = require('./helpers')
   , mailer = require('../lib/mailer')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , i18n = require('../lib/i18n');
@@ -58,7 +57,8 @@ function searchTldrs (req, res, next) {
       }
 
       // Success
-      helpers.apiSendTldr(req, res, doc);
+      bunyan.incrementMetric('tldrs.get.json');
+      return res.json(200, tldr);
     });
 
     return;
