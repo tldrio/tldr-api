@@ -6,6 +6,7 @@
 
 
 var Tldr = require('../lib/models').Tldr
+  , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n');
 
 
