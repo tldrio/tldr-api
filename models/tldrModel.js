@@ -204,7 +204,7 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
  * Find a tldr with query obj. Increment readcount
  * @param {Object} selector Selector for Query
  * @param {Boolean} isAdmin Boolean to populate more info if user is admin
- * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
+ * @param {Function} callback - Callback to execute after find. Signature function(err, tldr)
  * @return {void}
  */
 TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, callback) {
@@ -217,20 +217,19 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, call
   }
 
   query.exec( function (err, tldr) {
-    //A tldr has been found and its readcount reaches the threshold
-    //This can happen just once
+    // A tldr has been found and its readcount reaches the threshold
+    // This can happen just once
     if (tldr && tldr.readCount === config.thresholdCongratsTldrViews) {
       Tldr.findOne(selector)
         .populate('creator')
         .exec(function (err2, tldrWithCreatorPopulated) {
 
           var creator = tldrWithCreatorPopulated.creator
-            , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays) // 48h expiration
+            , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays)
             , signature = customUtils.computeSignatureForUnsubscribeLink(creator._id + '/' + expiration);
           if (creator.notificationsSettings.congratsTldrViews) {
             mailer.sendEmail({ type: 'congratsTldrViews'
                              , to: creator.email
-                             //, to: 'hello+test@tldr.io'
                              , development: true
                              , values: { tldr: tldrWithCreatorPopulated
                                        , creator: creator
