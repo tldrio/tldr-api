@@ -481,21 +481,24 @@ describe('Tldr', function () {
                       summaryBullets: ['Awesome Blog'],
                       resourceAuthor: 'NFA Crew',
                       url: 'http://needforair.com'}
-        , prevReadCount;
+        , prevReadCount, prevId;
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
         prevReadCount = tldr.readCount;
+        prevId = tldr._id;
 
-        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, tldr) {
+        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
 
-          tldr.readCount.should.equal(prevReadCount + 1);
+          _tldr.readCount.should.equal(prevReadCount + 1);
+          _tldr._id.toString().should.equal(prevId.toString());
           done();
         });
       });
     });
 
   });   // ==== End of '#findAndIncrementReadCount' ==== //
+
 
   describe('#makeUndiscoverable', function () {
 
