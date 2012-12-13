@@ -24,12 +24,12 @@ var i18n = require('../lib/i18n')
 function apiSendTldr (req, res, tldr) {
 
   // TODO dont send notif if user is admin
-  notificator.publish({ type: 'read'
-                      , from: req.user
-                      , tldr: tldr
-                      // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                      , to: tldr.creator
-                      });
+  //notificator.publish({ type: 'read'
+                      //, from: req.user
+                      //, tldr: tldr
+                      //// all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                      //, to: tldr.creator
+                      //});
 
   // If this is an admin type request, simply return data as JSON
   bunyan.incrementMetric('tldrs.get.json');
