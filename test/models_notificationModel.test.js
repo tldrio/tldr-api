@@ -108,7 +108,7 @@ describe('Notification', function () {
 
     it('should not do anything when publishing a notif with same from and to', function (done) {
 
-      notificator.publish({ type: 'read'
+      notificator.receiveNotification({ type: 'read'
                           , from: user
                           , tldr: tldr
                           , to: tldr.creator
@@ -123,7 +123,7 @@ describe('Notification', function () {
     });
 
     it('should assign a notif to the right person when publishing an event', function (done) {
-      notificator.publish({ type: 'read'
+      notificator.receiveNotification({ type: 'read'
                           , from: undefined
                           , tldr: tldr
                           // all contributors instead of creator only ?? we keep creator for now as there a very few edits

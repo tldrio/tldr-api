@@ -8,7 +8,6 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , i18n = require('../lib/i18n')
-  , notificator = require('../lib/notificator')
   , helpers = require('./helpers');
 
 

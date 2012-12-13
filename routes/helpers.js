@@ -11,7 +11,6 @@ var i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , bunyan = require('../lib/logger').bunyan
   , mailer = require('../lib/mailer')
-  , notificator = require('../lib/notificator')
   ;
 
 

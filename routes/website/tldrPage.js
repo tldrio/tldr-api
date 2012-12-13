@@ -6,7 +6,6 @@
 
 var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
-  , notificator = require('../../lib/notificator')
   , bunyan = require('../../lib/logger').bunyan;
 
 module.exports = function (req, res, next) {

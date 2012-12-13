@@ -9,6 +9,7 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
+  , socketPublisher = require('../lib/axon').publisher
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -24,7 +25,6 @@ var _ = require('underscore')
   , TldrHistory = require('./tldrHistoryModel')
   , async = require('async')
   ;
-
 
 
 
@@ -212,7 +212,7 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callbac
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
               .populate('creator', 'username twitterHandle');
   // If the user has the admin role, populate history
-  if (user && user.userRoleAdmin) {
+  if (user && user.isAdmin()) {
     query.populate('history');
   }
 
@@ -220,12 +220,12 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callbac
 
     if (!err && tldr) {
       // Send Notif
-      //notificator.publish({ type: 'read'
-                          //, from: user
-                          //, tldr: tldr
-                          //// all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                          //, to: tldr.creator
-                          //});
+      socketPublisher.emit('notif', { type: 'read'
+                                    , from: user
+                                    , tldr: tldr
+                                    // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                                    , to: tldr.creator
+                                    });
     }
     callback(err,tldr);
   });
