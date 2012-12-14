@@ -9,7 +9,7 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
-  , socketPublisher = require('../lib/axon').publisher
+  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -220,7 +220,7 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callbac
 
     if (!err && tldr) {
       // Send Notif
-      socketPublisher.emit('notif', { type: 'read'
+      rqClient.emit('tldr.read', { type: 'read'
                                     , from: user
                                     , tldr: tldr
                                     // all contributors instead of creator only ?? we keep creator for now as there a very few edits

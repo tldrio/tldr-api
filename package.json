@@ -36,7 +36,6 @@
     "underscore": "1.4.x",
     "validator": "0.4.x",
     "marked": "0.2.5",
-    "axon": "~0.4.6",
     "redis": "~0.8.2",
     "hiredis": "~0.1.14"
   },

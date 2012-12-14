@@ -209,20 +209,6 @@
     "marked": {
       "version": "0.2.5"
     },
-    "axon": {
-      "version": "0.4.6",
-      "dependencies": {
-        "debug": {
-          "version": "0.7.0"
-        },
-        "configurable": {
-          "version": "0.0.1"
-        },
-        "escape-regexp": {
-          "version": "0.0.1"
-        }
-      }
-    },
     "redis": {
       "version": "0.8.2"
     },
