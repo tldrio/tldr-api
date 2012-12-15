@@ -474,6 +474,32 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
+  describe('#findAndIncrementReadCount', function () {
+
+    it('Should increment read count when finding a tldr', function (done) {
+      var tldrData = { title: 'Blog NFA',
+                      summaryBullets: ['Awesome Blog'],
+                      resourceAuthor: 'NFA Crew',
+                      url: 'http://needforair.com'}
+        , prevReadCount, prevId;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        prevReadCount = tldr.readCount;
+        prevId = tldr._id;
+
+        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
+
+          _tldr.readCount.should.equal(prevReadCount + 1);
+          _tldr._id.toString().should.equal(prevId.toString());
+          done();
+        });
+      });
+    });
+
+  });   // ==== End of '#findAndIncrementReadCount' ==== //
+
+
   describe('#makeUndiscoverable', function () {
 
     it('Should make a tldr undiscoverable', function (done) {

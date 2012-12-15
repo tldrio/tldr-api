@@ -7,7 +7,9 @@
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
+  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -23,7 +25,6 @@ var _ = require('underscore')
   , TldrHistory = require('./tldrHistoryModel')
   , async = require('async')
   ;
-
 
 
 
@@ -198,6 +199,37 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
   this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
 };
 
+
+/**
+ * Find a tldr with query obj. Increment readcount
+ * @param {Object} selector Selector for Query
+ * @param {Object} user User who made the request
+ * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
+ * @return {void}
+ */
+TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
+
+  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
+              .populate('creator', 'username twitterHandle');
+  // If the user has the admin role, populate history
+  if (user && user.isAdmin()) {
+    query.populate('history');
+  }
+
+  query.exec( function (err, tldr) {
+    if (!err && tldr) {
+      // Send Notif
+      rqClient.emit('tldr.read', { type: 'read'
+                                 , from: user
+                                 , tldr: tldr
+                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                                 , to: tldr.creator
+                                 });
+    }
+    callback(err,tldr);
+  });
+
+};
 
 /**
  * Update tldr object.

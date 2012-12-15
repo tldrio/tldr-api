@@ -23,7 +23,7 @@ function sendReadReport (previousFlush) {
   var notifsByUser
     , userIds
     , emailsSent = 0
-    , expiration = new Date().setDate(new Date().getDate() + 2); // 48h expiration
+    , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays); // 48h expiration
 
 
   Notification.find({})
@@ -79,7 +79,7 @@ function sendReadReport (previousFlush) {
                       , expiration: expiration};
 
              emailsSent += 1;
-             signature = customUtils.computeSignature(user._id + '/' + expiration);
+             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , values: values

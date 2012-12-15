@@ -1105,7 +1105,7 @@ describe('User', function () {
 
     it('Should be able to get a users notifs', function (done) {
       function publish (options, cb) {
-        notificator.publish(options, function () { cb(); });
+        notificator.receiveNotification(options, function () { cb(); });
       }
 
       async.waterfall([
@@ -1131,7 +1131,7 @@ describe('User', function () {
 
     it('Should be able to mark all unseen notifs as seen', function (done) {
       function publish (options, cb) {
-        notificator.publish(options, function () { cb(); });
+        notificator.receiveNotification(options, function () { cb(); });
       }
 
       async.waterfall([
@@ -1172,7 +1172,7 @@ describe('User', function () {
 
     it('Should be able to get only some of the users notifs', function (done) {
       function publish (options, cb) {
-        notificator.publish(options, function () { cb(); });
+        notificator.receiveNotification(options, function () { cb(); });
       }
 
       async.waterfall([

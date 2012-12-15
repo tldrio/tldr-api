@@ -1588,7 +1588,7 @@ describe('Webserver', function () {
 
         user.notificationsSettings.read.should.be.true;
         expiration = new Date().setDate(new Date().getDate() + 2);
-        signature = customUtils.computeSignature(user1._id + '//' + expiration);
+        signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '//' + expiration);
 
         // This request is bad (signature)
         request.get({ headers: {"Accept": "text/html"}
@@ -1598,7 +1598,7 @@ describe('Webserver', function () {
             user.notificationsSettings.read.should.be.true;
 
             expiration = new Date().setDate(new Date().getDate() - 1);
-            signature = customUtils.computeSignature(user1._id + '/' + expiration);
+            signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '/' + expiration);
             // This request is bad too (expiration)
             request.get({ headers: {"Accept": "text/html"}
                         , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
@@ -1607,7 +1607,7 @@ describe('Webserver', function () {
                 user.notificationsSettings.read.should.be.true;
 
                 expiration = new Date().setDate(new Date().getDate() + 2);
-                signature = customUtils.computeSignature(user1._id + '/' + expiration);
+                signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '/' + expiration);
 
                 request.get({ headers: {"Accept": "text/html"}
                             , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
