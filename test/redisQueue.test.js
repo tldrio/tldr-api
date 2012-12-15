@@ -15,9 +15,9 @@ var should = require('chai').should()
   ;
 
 
-describe.only('Redis Queue', function () {
+describe('Redis Queue', function () {
 
-  it('Should send standard messages correctly', function (done) {
+  it('Should send and receive standard messages correctly', function (done) {
     var rq1 = new RedisQueue(config.redisQueue)
       , rq2 = new RedisQueue(config.redisQueue)
       ;
@@ -29,6 +29,22 @@ describe.only('Redis Queue', function () {
     }
     , function () {
         rq2.emit('un test', { first: 'First message'
+                            , second: 'Second message' });
+      });
+  });
+
+  it('Should receive pattern messages correctly', function (done) {
+    var rq1 = new RedisQueue(config.redisQueue)
+      , rq2 = new RedisQueue(config.redisQueue)
+      ;
+
+    rq1.on('test:*', function (data) {
+      data.first.should.equal('First message');
+      data.second.should.equal('Second message');
+      done();
+    }
+    , function () {
+        rq2.emit('test:created', { first: 'First message'
                             , second: 'Second message' });
       });
   });
