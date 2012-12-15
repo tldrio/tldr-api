@@ -9,6 +9,7 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
+  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -24,7 +25,6 @@ var _ = require('underscore')
   , TldrHistory = require('./tldrHistoryModel')
   , async = require('async')
   ;
-
 
 
 
@@ -203,42 +203,28 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 /**
  * Find a tldr with query obj. Increment readcount
  * @param {Object} selector Selector for Query
- * @param {Boolean} isAdmin Boolean to populate more info if user is admin
- * @param {Function} callback - Callback to execute after find. Signature function(err, tldr)
+ * @param {Object} user User who made the request
+ * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
  * @return {void}
  */
-TldrSchema.statics.findAndIncrementReadCount = function (selector, isAdmin, callback) {
+TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
 
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
               .populate('creator', 'username twitterHandle');
   // If the user has the admin role, populate history
-  if (isAdmin) {
+  if (user && user.isAdmin()) {
     query.populate('history');
   }
 
   query.exec( function (err, tldr) {
-    // A tldr has been found and its readcount reaches the threshold
-    // This can happen just once
-    if (tldr && tldr.readCount === config.thresholdCongratsTldrViews) {
-      Tldr.findOne(selector)
-        .populate('creator')
-        .exec(function (err2, tldrWithCreatorPopulated) {
-
-          var creator = tldrWithCreatorPopulated.creator
-            , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays)
-            , signature = customUtils.computeSignatureForUnsubscribeLink(creator._id + '/' + expiration);
-          if (creator.notificationsSettings.congratsTldrViews) {
-            mailer.sendEmail({ type: 'congratsTldrViews'
-                             , to: creator.email
-                             , development: true
-                             , values: { tldr: tldrWithCreatorPopulated
-                                       , creator: creator
-                                       , expiration: expiration
-                                       , signature: signature
-                                       }
-                             });
-          }
-        });
+    if (!err && tldr) {
+      // Send Notif
+      rqClient.emit('tldr.read', { type: 'read'
+                                 , from: user
+                                 , tldr: tldr
+                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                                 , to: tldr.creator
+                                 });
     }
     callback(err,tldr);
   });

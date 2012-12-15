@@ -8,7 +8,6 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , i18n = require('../lib/i18n')
-  , notificator = require('../lib/notificator')
   , helpers = require('./helpers');
 
 
@@ -31,16 +30,10 @@ function updateTldrWithId (req, res, next) {
   // Increment readcount if body contains the key `incrementReadCount`
   // Usefull for increment readCOunt on hover in the extension
   if (req.body.incrementReadCount) {
-    Tldr.findAndIncrementReadCount({ _id: id }, false, function (err, tldr) {
+    Tldr.findAndIncrementReadCount({ _id: id }, req.user, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
-      // Send Notif
-      notificator.publish({ type: 'read'
-                          , from: req.user
-                          , tldr: tldr
-                          , to: tldr.creator
-                          });
       return res.send(204);
     }) ;
     return;

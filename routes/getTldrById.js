@@ -6,8 +6,8 @@
 
 
 var Tldr = require('../lib/models').Tldr
-  , i18n = require('../lib/i18n')
-  , helpers = require('./helpers');
+  , bunyan = require('../lib/logger').bunyan
+  , i18n = require('../lib/i18n');
 
 
 /**
@@ -19,7 +19,7 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  Tldr.findAndIncrementReadCount({ _id: id }, req.userRoleAdmin, function (err, tldr) {
+  Tldr.findAndIncrementReadCount({ _id: id }, req.user, function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
@@ -35,7 +35,8 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    helpers.apiSendTldr(req, res, tldr);
+    bunyan.incrementMetric('tldrs.get.json');
+    return res.json(200, tldr);
 
   });
 }

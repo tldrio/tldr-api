@@ -15,6 +15,7 @@ var express = require('express')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
+  , notificator = require('./lib/notificator')
   , h4e = require('h4e');
 
 
@@ -250,6 +251,7 @@ app.stopServer = function (cb) {
  */
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
+  notificator.init();
 }
 
 
