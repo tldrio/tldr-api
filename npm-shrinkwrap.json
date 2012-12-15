@@ -213,7 +213,7 @@
       "version": "0.8.2"
     },
     "hiredis": {
-      "version": "0.1.14"
+       "version": "0.1.14"
     },
     "sinon": {
       "version": "1.3.4"
