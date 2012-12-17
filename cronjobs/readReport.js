@@ -70,6 +70,7 @@ function sendReadReport (previousFlush) {
              //total readCount for all tldrs created
              totalViewsForAllTldrs = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
 
+             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
              values = { topTldrThisWeek: topTldrThisWeek
                       , topTldrOfAllTime: topTldrOfAllTime
                       , totalViewsForAllTldrs: totalViewsForAllTldrs
@@ -79,7 +80,6 @@ function sendReadReport (previousFlush) {
                       , expiration: expiration};
 
              emailsSent += 1;
-             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
              mailer.sendEmail({ type: 'readReport'
                               , development: true
                               , values: values
