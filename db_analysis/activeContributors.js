@@ -31,11 +31,12 @@ async.waterfall([
       if (err) { return cb(err); }
 
       _.each(users, function (user) {
-        if (user.tldrsCreated.length >= 10) {
+        if (user.tldrsCreated.length >= 5) {
           console.log(user.email);
         }
-      });
 
+        cb();
+      });
     });
   }
 ], function (err) {
