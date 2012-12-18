@@ -33,7 +33,7 @@ async.waterfall([
 
       _.each(users, function (user) {
         if (user.tldrsCreated.length >= 5 && !user.isAdmin()) {
-          console.log(user.email);
+          console.log(user.email + ' - ' + user.tldrsCreated.length);
         }
       });
 
