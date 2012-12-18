@@ -484,6 +484,7 @@ UserSchema = new Schema(
                 }
   , notificationsSettings: { read: { type: Boolean, default: true}
                            , congratsTldrViews: { type: Boolean, default: true}
+                           , postForum: { type: Boolean, default: true}
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
                            }
