@@ -1,12 +1,11 @@
-Hi {{participant.username}} <br> <br>
+Hi {{participant.username}}, <br> <br>
 
 <a href="{{websiteUrl}}/{{user.username}}">{{user.username}}</a> just posted this new message to the thread 
 <a href="{{websiteUrl}}/forum/topics/{{topic._id}}">{{topic.title}}</a>:<br><br>
 
-{{post.text}}
+"{{post.text}}"
 <br><br>
 Continue the discussion <a href="{{websiteUrl}}/forum/topics/{{topic._id}}">here</a>!
-<br>
 <br>
 Cheers,
 <br>
@@ -18,5 +17,3 @@ Cofounders of <a href="http://tldr.io">tldr.io</a>
 <br>
 Useless notification?
 <a href="{{websiteUrl}}/notifications/unsubscribe?id={{participant._id}}&type=postForum&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">Unsubscribe</a> in one click.
-
-
