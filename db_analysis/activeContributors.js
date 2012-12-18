@@ -34,9 +34,9 @@ async.waterfall([
         if (user.tldrsCreated.length >= 5) {
           console.log(user.email);
         }
-
-        cb();
       });
+
+      cb();
     });
   }
 ], function (err) {
