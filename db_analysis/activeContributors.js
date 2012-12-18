@@ -14,7 +14,8 @@ var async = require('async')
   , db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
-                     );
+                     )
+  ;
 
 async.waterfall([
   // Connect to db
@@ -31,7 +32,7 @@ async.waterfall([
       if (err) { return cb(err); }
 
       _.each(users, function (user) {
-        if (user.tldrsCreated.length >= 5) {
+        if (user.tldrsCreated.length >= 5 && !user.isAdmin()) {
           console.log(user.email);
         }
       });
