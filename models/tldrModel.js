@@ -219,8 +219,7 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callbac
   query.exec( function (err, tldr) {
     if (!err && tldr) {
       // Send Notif
-      rqClient.emit('tldr.read', { type: 'read'
-                                 , from: user
+      rqClient.emit('tldr.read', { from: user
                                  , tldr: tldr
                                  // all contributors instead of creator only ?? we keep creator for now as there a very few edits
                                  , to: tldr.creator
