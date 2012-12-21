@@ -1,19 +1,18 @@
 Hi {{participant.username}}, <br> <br>
 
-<a href="{{websiteUrl}}/{{lastPostCreator.username}}">{{lastPostCreator.username}}</a> just posted this new message to the thread 
+<a href="{{websiteUrl}}/{{lastPostCreator.username}}">{{lastPostCreator.username}}</a> just posted this new message to the thread
 <a href="{{websiteUrl}}/forum/topics/{{topic._id}}">{{topic.title}}</a>:<br><br>
 
 "{{post.text}}"
 <br><br>
-Continue the discussion <a href="{{websiteUrl}}/forum/topics/{{topic._id}}">here</a>!
+<a href="{{websiteUrl}}/forum/topics/{{topic._id}}">You can answer here</a>
+<br>
 <br>
 Cheers,
 <br>
-<br>
-Charles, Louis and Stan <br>
-Cofounders of <a href="http://tldr.io">tldr.io</a>
-<br>
+Charles, Louis and Stan
+<br><br>
 --
 <br>
-Useless notification?
-<a href="{{websiteUrl}}/notifications/unsubscribe?id={{participant._id}}&type=postForum&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">Unsubscribe</a> in one click.
+If you want to stop receiving email when someone posts to a discussion you participate in,
+<a href="{{websiteUrl}}/notifications/unsubscribe?id={{participant._id}}&type=postForum&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">Click here</a>.
