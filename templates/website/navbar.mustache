@@ -58,16 +58,20 @@
                 <img class="small-avatar" height="20" width="20" src="{{gravatar.url}}&s=20" alt="{{loggedUser.username}}">
                 <span id="logged-user-username" data-username="{{loggedUser.username}}" data-email="{{loggedUser.email}}">
                   {{loggedUser.username}} 
+                  <!--
                   {{#unseenNotifications}}
                   <span class="badge unseen-notifs-count">{{unseenNotifications}}</span>
                   {{/unseenNotifications}}
+                  -->
                 </span>
               <b class="caret"></b>
             </a>
 
             <ul class="dropdown-menu dropdown-form">
+              <!--
                 <li><a href="/notifications">My notifications {{#unseenNotifications}}<span class="badge unseen-notifs-count">{{unseenNotifications}}</span>{{/unseenNotifications}}</a></li>
                 <li class="divider"></li>
+                -->
                 <li><a href="/account">My account</a></li>
                 <li class="divider"></li>
                 <li><a href="/{{loggedUser.username}}">My profile</a></li>
