@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   partials.content = '{{>website/pages/tldrPage}}';
-  partials.fbmetatags = '{{>website/metatags/metatagsPage}}'
+  partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
   bunyan.incrementMetric('tldrs.get.html');
 
