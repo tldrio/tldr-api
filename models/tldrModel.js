@@ -94,6 +94,7 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , slug: { type: String, unique: true }
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput
@@ -133,6 +134,30 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
+
+/**
+ * Use a tldr's title to create it's unique slug
+ * @param {Function} callback Callback to be called when the tldr's slug field was updated. Signature: err, tldr
+ */
+TldrSchema.methods.createUnusedSlug = function (callback) {
+  var self = this
+    , slugBody = customUtils.slugify(self.title)
+    ;
+
+  Tldr.find({ slug: new RegExp('^' + slugBody + '(-{0-9}+)?') }, function (err, tldrs) {
+    if (err) { return callback(err); }
+
+    if (tldrs.length === 0) {
+      self.slug = slugBody;
+    } else {
+      self.slug = slugBody + "-" + tldrs.length;
+    }
+
+    callback(null, self);
+  });
+}
+
+
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
  * Also sets the creator if we have one and initializes the tldr history
@@ -152,22 +177,21 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
     instance.creator = creator._id;
-
-    // Populate hostname field
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    // Save tldr
-    instance.save(function(err, tldr) {
-      if (err) { return callback(err); }
+    instance.createUnusedSlug(function () {
+      instance.save(function(err, tldr) {
+        if (err) { return callback(err); }
 
-      // Put it in the creator's list of created tldrs
-      creator.tldrsCreated.push(tldr._id);
-      creator.save(function(err, _user) {
-        if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+        // Put it in the creator's list of created tldrs
+        creator.tldrsCreated.push(tldr._id);
+        creator.save(function(err, _user) {
+          if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-        // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
-        creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
-          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-          callback(null, tldr);
+          // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+          creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+            if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+            callback(null, tldr);
+          });
         });
       });
     });
