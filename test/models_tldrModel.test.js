@@ -299,7 +299,7 @@ describe('Tldr', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe('#createAndSaveInstance and #createAndUnusedSlug', function () {
+  describe.only('#createAndSaveInstance and #createAndUnusedSlug', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
@@ -471,7 +471,7 @@ describe('Tldr', function () {
       });
     });
 
-    it.only('Should be able to find a slug that was never used before', function (done) {
+    it('Should be able to find a slug that was never used before', function (done) {
       var tldrData1 = {
             title: 'Blog NFA yo bitch!',
             summaryBullets: ['Awesome Blog'],
@@ -486,6 +486,10 @@ describe('Tldr', function () {
                       , summaryBullets: ['hgf', 'oiugtf']
                       , url: 'http://needforair.com/yup/bloup'
           }
+        , tldrData4 = { title: 'blog nfa yo BITCH'
+                      , summaryBullets: ['hgf', 'oiugtf']
+                      , url: 'http://needforair.com/yup/bloup/blip'
+          }
         ;
 
       Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
@@ -496,8 +500,67 @@ describe('Tldr', function () {
 
           Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr3) {
             tldr3.slug.should.equal('blog-nfa-yo-bitch-2');
+
+            Tldr.createAndSaveInstance(tldrData4, user, function (err, tldr4) {
+              tldr4.slug.should.equal('blog-nfa-yo-bitch-3');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should increment a slug\'s counter only if it finds slugs with identical bodies', function (done) {
+      var tldrData1 = {
+            title: 'Blog NFA yo bitch!',
+            summaryBullets: ['Awesome Blog'],
+            resourceAuthor: 'NFA Crew',
+            url: 'http://needforair.com',
+          }
+        , tldrData2 = { title: 'something before blog nfa-yo bitch'
+                      , summaryBullets: ['hgf']
+                      , url: 'http://needforair.com/yup'
+          }
+        , tldrData3 = { title: 'blog nfa yo BITCH something after'
+                      , summaryBullets: ['hgf', 'oiugtf']
+                      , url: 'http://needforair.com/yup/bloup'
+          }
+        ;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+        tldr1.slug.should.equal('blog-nfa-yo-bitch');
+
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+          tldr2.slug.should.equal('something-before-blog-nfa-yo-bitch');
+
+          Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr3) {
+            tldr3.slug.should.equal('blog-nfa-yo-bitch-something-after');
             done();
           });
+        });
+      });
+    });
+
+    it('Should handle the pathological case where one slub body is a complete slug', function (done) {
+      var tldrData1 = {
+            title: 'Blog NFA yo bitch-1',
+            summaryBullets: ['Awesome Blog'],
+            resourceAuthor: 'NFA Crew',
+            url: 'http://needforair.com',
+          }
+        , tldrData2 = { title: 'blog nfa-yo bitch'
+                      , summaryBullets: ['hgf']
+                      , url: 'http://needforair.com/yup'
+          }
+        ;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+        tldr1.slug.should.equal('blog-nfa-yo-bitch-1');
+
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+          tldr2.slug.should.equal('blog-nfa-yo-bitch');
+
+          done();
         });
       });
     });

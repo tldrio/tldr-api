@@ -142,18 +142,26 @@ TldrSchema = new Schema(
 TldrSchema.methods.createUnusedSlug = function (callback) {
   var self = this
     , slugBody = customUtils.slugify(self.title)
+    , max = 0
     ;
 
-  Tldr.find({ slug: new RegExp('^' + slugBody + '(-{0-9}+)?') }, function (err, tldrs) {
+  Tldr.findOne({ slug: new RegExp('^' + slugBody + '$') }, function (err, tldr) {
     if (err) { return callback(err); }
 
-    if (tldrs.length === 0) {
+    if (!tldr) {   // Simple case where the slug was never seen before
       self.slug = slugBody;
-    } else {
-      self.slug = slugBody + "-" + tldrs.length;
-    }
+      return callback(null, self);
+    } else {       // Slugs from the same family were found, craft a not yet used one
+      Tldr.find({ slug: new RegExp('^' + slugBody + '-[0-9]*$') }, function (err, tldrs) {
+        _.each(tldrs, function (_tldr) {
+          var numberPart = _tldr.slug.substring(slugBody.length + 1);
+          max = Math.max(max, parseInt(numberPart));
+        });
 
-    callback(null, self);
+        self.slug = slugBody + '-' + (max + 1);
+        callback(null, self);
+      });
+    }
   });
 }
 
@@ -178,7 +186,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    instance.createUnusedSlug(function () {
+    instance.createUnusedSlug(function (err) {
+      if (err) { return callback(err); }
       instance.save(function(err, tldr) {
         if (err) { return callback(err); }
 
