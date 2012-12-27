@@ -299,7 +299,7 @@ describe('Tldr', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe.only('#createAndSaveInstance and #createAndUnusedSlug', function () {
+  describe('#createAndSaveInstance and #createAndUnusedSlug', function () {
 
     it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
@@ -559,6 +559,29 @@ describe('Tldr', function () {
 
         Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
           tldr2.slug.should.equal('blog-nfa-yo-bitch');
+
+          done();
+        });
+      });
+    });
+
+    it('Should not crash because no title was provided', function (done) {
+      var tldrData1 = {
+            summaryBullets: ['Awesome Blog'],
+            resourceAuthor: 'NFA Crew',
+            url: 'http://needforair.com',
+          }
+        , tldrData2 = { title: ''
+                      , summaryBullets: ['hgf']
+                      , url: 'http://needforair.com/yup'
+          }
+        ;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+        assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
+
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
 
           done();
         });

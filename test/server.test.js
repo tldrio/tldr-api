@@ -249,6 +249,7 @@ describe('Webserver', function () {
                                 , originalUrl: 'http://needforair.com/sopa/number' + i
                                 , hostname: 'needforair.com'
                                 , title: 'sopa'
+                                , slug: 'sopa-' + i
                                 , summaryBullets: ['Great article']
                                 , resourceAuthor: 'Louis'
                                 , resourceDate: new Date()
