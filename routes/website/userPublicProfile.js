@@ -28,6 +28,7 @@ module.exports = function (req, res, next) {
           .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
+              values.description = "tldr.io profile of user " + user.username;
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);

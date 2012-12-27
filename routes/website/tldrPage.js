@@ -21,7 +21,10 @@ module.exports = function (req, res, next) {
   Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
 
     if (!err && tldr) {
-      values = _.extend(values, tldr);
+      // Warning: don't use double quotes in the meta description tag
+      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
+      values.title = tldr.title + " - tldr.io";
+      values.tldr = tldr;
     } else {
       values.tldrNotFound = true;
     }
