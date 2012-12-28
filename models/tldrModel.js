@@ -94,7 +94,7 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
-  , slug: { type: String, unique: true }
+  , slug: { type: String, unique: true }   // Based on the title which will already have been sanitized
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput

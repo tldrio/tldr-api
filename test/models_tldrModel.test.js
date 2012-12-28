@@ -783,6 +783,7 @@ describe('Tldr', function () {
         theTldr.summaryBullets[0].should.equal('Awesome Blog');
         theTldr.summaryBullets[1].should.equal('Bloup');
         theTldr.resourceAuthor.should.equal('NFA Crew');
+        theTldr.slug.should.equal('blog-nfa');
 
         done();
       });
