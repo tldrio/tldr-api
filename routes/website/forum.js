@@ -2,6 +2,7 @@ var models = require('../../lib/models')
   , Topic = models.Topic
   , customUtils = require('../../lib/customUtils')
   , _ = require('underscore')
+  , config = require('../../lib/config')
   ;
 
 module.exports = function (req, res, next) {
@@ -9,7 +10,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
-  values.title = "Forum | tldr.io";
+  values.title = "Forum" + config.titles.branding;
   partials.content = '{{>website/pages/forum}}';
 
   Topic.find({})

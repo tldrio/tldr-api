@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
     ;
 
   partials.content = '{{>website/pages/tldrscreated}}';
-  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - tldrs you created | tldr.io";
+  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - tldrs you created" + config.titles.branding;
 
   values.loggedUser.getCreatedTldrs(function(err, tldrs) {
     values.tldrsCreated = tldrs;

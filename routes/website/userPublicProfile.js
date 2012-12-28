@@ -8,6 +8,7 @@ var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
   , bunyan = require('../../lib/logger').bunyan
+  , config = require('../../lib/config')
   , async = require('async');
 
 
@@ -32,7 +33,7 @@ module.exports = function (req, res, next) {
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
-              values.title = user.username + ' | tldr.io - Man-written summaries of interesting content';
+              values.title = user.username + config.titles.branding + config.titles.shortDescription;
             } else {
               values.userNotFound = true;
             }

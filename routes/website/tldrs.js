@@ -9,6 +9,7 @@ var models = require('../../lib/models')
   , Tldr = models.Tldr
   , async = require('async')
   , _ = require('underscore')
+  , config = require('../../lib/config')
   ;
 
 module.exports = function (req, res, next) {
@@ -16,7 +17,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.tldrs = true;
-  values.title = "Latest summaries | tldr.io - Man-written summaries of interesting content";
+  values.title = "Latest summaries" + config.titles.branding + config.titles.shortDescription;
   partials.content = '{{>website/pages/tldrs}}';
 
   async.waterfall(

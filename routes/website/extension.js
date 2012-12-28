@@ -10,6 +10,7 @@ module.exports = function (req, res, next) {
     , ua = req.headers['user-agent']
     , chrome = ua.match(/Chrome/g)
     , AB = Math.floor( Math.random() * 2)
+    , config = require('../../lib/config')
     ;
 
   // Fake tldrs are called tldr1, ..., tldr5
@@ -79,7 +80,7 @@ module.exports = function (req, res, next) {
     values.versionB = true;
     values.version = 'directly';
   }
-  values.title = "See through hyperlinks with our Chrome extension for Hacker News | tldr.io";
+  values.title = "See through hyperlinks with our Chrome extension for Hacker News" + config.titles.branding;
 
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/extension}}' }

@@ -4,11 +4,12 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config')
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {};
   values.signup = true;
-  values.title = "Sign up in 20 seconds | tldr.io - Man-written summaries of interesting content";
+  values.title = "Sign up in 20 seconds" + config.titles.branding + config.titles.shortDescription;
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/signup}}' }
                                     });

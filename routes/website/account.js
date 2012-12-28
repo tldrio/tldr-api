@@ -4,6 +4,7 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
   var partials = req.renderingPartials || {}
@@ -11,7 +12,7 @@ module.exports = function (req, res, next) {
     ;
 
   partials.content = '{{>website/pages/account}}';
-  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - manage my account | tldr.io";
+  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - manage my account" + config.titles.branding;
 
   res.render('website/basicLayout', { values: values
                                     , partials: partials
