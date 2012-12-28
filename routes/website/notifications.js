@@ -20,7 +20,7 @@ function notificationsRoute (req, res, next) {
 
   // We populate the fields we need for display
   Notification.find({ _id: { $in: _.pluck(notifications, '_id')} })
-  .populate('tldr', 'title readCount url')
+  .populate('tldr', 'title readCount url slug')
   .sort('-createdAt')
   .exec(function(err, populatedNotifs) {
     values.notifications = populatedNotifs;
