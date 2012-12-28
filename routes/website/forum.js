@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
-  values.title = "Forum - tldr.io";
+  values.title = "Forum | tldr.io";
   partials.content = '{{>website/pages/forum}}';
 
   Topic.find({})

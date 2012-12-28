@@ -7,10 +7,12 @@
 var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues
-    , partials = req.renderingPartials;
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {}
+    ;
 
   partials.content = '{{>website/pages/tldrscreated}}';
+  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - tldrs you created | tldr.io";
 
   values.loggedUser.getCreatedTldrs(function(err, tldrs) {
     values.tldrsCreated = tldrs;

@@ -10,6 +10,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.index = true;
+  values.title = "tldr.io - Man-written summaries of interesting content";
   partials.content = '{{>website/pages/index}}';
 
   res.render('website/basicLayout', { values: values

@@ -6,11 +6,14 @@
 
 
 module.exports = function (req, res, next) {
-  var partials = req.renderingPartials || {};
+  var partials = req.renderingPartials || {}
+    , values = req.renderingValues || {}
+    ;
 
+  values.title = "The team | tldr.io - Man-written summaries of interesting content";
   partials.content = '{{>website/pages/about}}';
 
-  res.render('website/basicLayout', { values: req.renderingValues
+  res.render('website/basicLayout', { values: values
                                     , partials: partials
                                     });
 }

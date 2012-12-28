@@ -32,7 +32,7 @@ module.exports = function (req, res, next) {
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
-              values.title = user.username + ' - tldr.io';
+              values.title = user.username + ' | tldr.io - Man-written summaries of interesting content';
             } else {
               values.userNotFound = true;
             }

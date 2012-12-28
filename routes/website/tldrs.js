@@ -16,6 +16,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.tldrs = true;
+  values.title = "Latest summaries | tldr.io - Man-written summaries of interesting content";
   partials.content = '{{>website/pages/tldrs}}';
 
   async.waterfall(
