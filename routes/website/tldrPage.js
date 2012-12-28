@@ -21,7 +21,10 @@ module.exports = function (req, res, next) {
   Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
 
     if (!err && tldr) {
-      values = _.extend(values, tldr);
+      values.tldr = tldr;
+      values.title = tldr.title.substring(0, 60) +
+                     (tldr.title.length > 60 ? '...' : '') +
+                     " | tldr.io - Man-written summaries";
     } else {
       values.tldrNotFound = true;
     }
