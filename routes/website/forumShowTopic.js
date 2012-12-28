@@ -12,7 +12,6 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
-  values.nofollowAllLinks = true;
   partials.content = '{{>website/pages/forumShowTopic}}';
 
   Topic.findOne({ _id: req.params.id })
@@ -26,6 +25,7 @@ module.exports = function (req, res, next) {
      _.each(posts, function (post) {
        post.timeago = customUtils.timeago(post.createdAt);
        post.markedText = marked(post.text);
+       post.markedText = post.markedText.replace(/<a href="([^>]*)">/g, '<a href="$1" rel="nofollow">'); // Make all user-supplied links nofollow
        if (values.admin) { post.editable = true; }
      });
 
