@@ -12,6 +12,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
+  values.nofollowAllLinks = true;
   partials.content = '{{>website/pages/forumShowTopic}}';
 
   Topic.findOne({ _id: req.params.id })
