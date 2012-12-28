@@ -267,7 +267,7 @@ describe('Custom utils', function () {
   });   // ==== End of '#normalizeUrl' ==== //
 
 
-  describe('Slugification', function () {
+  describe.only('Slugification', function () {
 
     it('Should lowercase all upper case letter', function (done) {
       var input;
@@ -302,6 +302,13 @@ describe('Custom utils', function () {
       input = "Salut ca farte??? 145 fois";
       customUtils.slugify(input).should.equal("salut-ca-farte-145-fois");
 
+      input = "lemonde.fr et,la;ca va";
+      customUtils.slugify(input).should.equal("lemonde-fr-et-la-ca-va");
+
+      done();
+    });
+
+    it('Should collapse multiple successive dash into only one', function (done) {
       done();
     });
 
