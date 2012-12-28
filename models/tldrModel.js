@@ -141,7 +141,7 @@ TldrSchema = new Schema(
  */
 TldrSchema.methods.createUnusedSlug = function (callback) {
   var self = this
-    , slugBody = customUtils.slugify(self.title)
+    , slugBody = customUtils.slugify(self.title).substring(0, config.slugSize)
     , max = 0
     ;
 
