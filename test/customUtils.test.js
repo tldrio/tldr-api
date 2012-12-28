@@ -267,7 +267,7 @@ describe('Custom utils', function () {
   });   // ==== End of '#normalizeUrl' ==== //
 
 
-  describe.only('Slugification', function () {
+  describe('Slugification', function () {
 
     it('Should lowercase all upper case letter', function (done) {
       var input;
@@ -309,6 +309,11 @@ describe('Custom utils', function () {
     });
 
     it('Should collapse multiple successive dash into only one', function (done) {
+      var input;
+
+      input = "Salut   ca farte - hn.com";
+      customUtils.slugify(input).should.equal("salut-ca-farte-hn-com");
+
       done();
     });
 
