@@ -243,7 +243,7 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
 
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
-              .populate('creator', 'username twitterHandle');
+                  .populate('creator', 'username twitterHandle');
   // If the user has the admin role, populate history
   if (user && user.isAdmin()) {
     query.populate('history');
