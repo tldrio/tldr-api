@@ -157,7 +157,7 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
  */
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
-app.get('/index', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
+app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
                 , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
@@ -169,7 +169,7 @@ app.get('/extension', function (req, res, next) { return res.redirect(301, '/chr
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 
 // Login, logout
-app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });
+app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery

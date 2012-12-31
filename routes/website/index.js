@@ -1,5 +1,5 @@
 /**
- * /index page of the website
+ * / page of the website
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
 */
