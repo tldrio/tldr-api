@@ -168,7 +168,7 @@ app.get('/chromeextension', middleware.attachRenderingValues, routes.website_ext
 app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
 
 // Login, logout
-app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });
+app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/index'); });
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
