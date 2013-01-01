@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
-  values.description = "Discuss anything tldr.io-related: your favourite topics, feature suggestions etc.";
+  values.description = "Discuss everything related to tldr.io: feature suggestions, the best tl;drs, your favorite contributors etc.";
   values.title = "Forum - tldr.io";
   partials.content = '{{>website/pages/forum}}';
 
