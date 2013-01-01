@@ -135,36 +135,6 @@ TldrSchema = new Schema(
 , { strict: true });
 
 
-/**
- * Use a tldr's title to create it's unique slug
- * @param {Function} callback Callback to be called when the tldr's slug field was updated. Signature: err, tldr
- */
-TldrSchema.methods.createUnusedSlug = function (callback) {
-  var self = this
-    , slugBody = customUtils.slugify(self.title).substring(0, config.slugSize)
-    , max = 0
-    ;
-
-  Tldr.findOne({ slug: new RegExp('^' + slugBody + '$') }, function (err, tldr) {
-    if (err) { return callback(err); }
-
-    if (!tldr) {   // Simple case where the slug was never seen before
-      self.slug = slugBody;
-      return callback(null, self);
-    } else {       // Slugs from the same family were found, craft a not yet used one
-      Tldr.find({ slug: new RegExp('^' + slugBody + '-[0-9]*$') }, function (err, tldrs) {
-        _.each(tldrs, function (_tldr) {
-          var numberPart = _tldr.slug.substring(slugBody.length + 1);
-          max = Math.max(max, parseInt(numberPart));
-        });
-
-        self.slug = slugBody + '-' + (max + 1);
-        callback(null, self);
-      });
-    }
-  });
-}
-
 
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
@@ -186,7 +156,9 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    instance.createUnusedSlug(function (err) {
+
+    customUtils.createUnusedSlug(instance, 'title', 'slug', function(err) {
+    //instance.createUnusedSlug(function (err) {
       if (err) { return callback(err); }
       instance.save(function(err, tldr) {
         if (err) { return callback(err); }
