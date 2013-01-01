@@ -1,5 +1,5 @@
 /*
- * Migration to give a slug to all current tldrs
+ * Migration to give a slug to all current topics
  * Date: Nov 22nd, 2012
  *
  */
@@ -7,7 +7,7 @@
 var async = require('async')
   , _ = require('underscore')
   , models = require('../lib/models')
-  , Tldr = models.Tldr
+  , Topic = models.Topic
   , DbObject = require('../lib/db')
   , customUtils = require('../lib/customUtils')
   , config = require('../lib/config')
@@ -31,17 +31,17 @@ async.waterfall([
 , function (cb) {
     var i = 0;
 
-    console.log("Slugify tldrs");
+    console.log("Slugify topics");
 
-    Tldr.find({ }, function(err, tldrs) {
+    Topic.find({ }, function(err, topics) {
       if (err) { return cb(err); }
 
       async.whilst(
-        function () { return i < tldrs.length; }
+        function () { return i < topics.length; }
       , function (cb) {
-          customUtils.createUnusedSlug(tldrs[i], 'title', 'slug', function (err, tldr) {
-            tldrs[i].save(function (err) {
-              console.log("Slugified " + tldrs[i]._id);
+          customUtils.createUnusedSlug(topics[i], 'title', 'slug', function () {
+            topics[i].save(function (err) {
+              console.log("Slugified " + topics[i]._id);
               i += 1;
               cb(err);
             });

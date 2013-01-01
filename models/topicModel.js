@@ -42,6 +42,7 @@ TopicSchema = new Schema(
            , set: customUtils.sanitizeInput
            , required: true
            }
+  , slug: { type: String, unique: true }
   , creator: { type: ObjectId, ref: 'user', required: true }
   , posts: [{ type: ObjectId, ref: 'post' }]
   , lastPost: { at: { type: Date
@@ -92,7 +93,9 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
   var callback = cb ? cb : function () {}
     , newTopic = prepareTopicForCreation(topicData, creator);
 
-  newTopic.save(callback);
+  customUtils.createUnusedSlug(newTopic, 'title', 'slug', function (err, topic) {
+    newTopic.save(callback);
+  });
 };
 
 

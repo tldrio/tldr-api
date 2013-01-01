@@ -14,9 +14,7 @@ module.exports = function (req, res, next) {
   values.forum = true;
   partials.content = '{{>website/pages/forumShowTopic}}';
 
-  Topic.findOne({ _id: req.params.id })
-       .exec(function (err, topic) {
-
+  function showTopic (topic) {
     // Still not possible in mongoose to subpopulate documents so we do it manually
     Post.find({ _id: { $in: topic.posts } })
         .populate('creator', 'username gravatar')
@@ -42,5 +40,19 @@ module.exports = function (req, res, next) {
                                         , partials: partials
                                         });
     });
+  }
+
+  Topic.findOne({ slug: req.params.id }, function (err, topic) {
+    if (!err && topic) {
+      return showTopic(topic);
+    } else {
+      Topic.findOne({ _id: req.params.id }, function (err, topic) {
+        if (err || ! topic || !topic.slug || topic.slug.length === 0) {
+          return res.json(404, {});   // Assume that a topic with no slug doesn't exist, we don't want any ugly url anymore
+        } else {
+          return res.redirect(301, config.websiteUrl + '/forum/topics/' + topic.slug);
+        }
+      });
+    }
   });
 };
