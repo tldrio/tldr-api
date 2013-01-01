@@ -158,7 +158,6 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
 
     customUtils.createUnusedSlug(instance, 'title', 'slug', function(err) {
-    //instance.createUnusedSlug(function (err) {
       if (err) { return callback(err); }
       instance.save(function(err, tldr) {
         if (err) { return callback(err); }
