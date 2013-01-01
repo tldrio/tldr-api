@@ -16,7 +16,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.tldrs = true;
-  values.description = "Latest summaries contributed by the community. Get the most popular directly in your Twitter feed.";   // Don't put any double quote here, use single quotes if you need
+  values.description = "Latest summaries contributed by the community.";   // Don't put any double quote here, use single quotes if you need
   partials.content = '{{>website/pages/tldrs}}';
 
   async.waterfall(
