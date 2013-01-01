@@ -10,7 +10,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.index = true;
-  values.description = "tldr.io lets you read man-written summaries of content so you can easily select what you want to read, and skim the rest.";
+  values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
   partials.content = '{{>website/pages/index}}';
 
   res.render('website/basicLayout', { values: values
