@@ -27,7 +27,7 @@ async.waterfall([
     });
   }
 
-  // Add the versionDisplayed field
+  // Add the slug
 , function (cb) {
     var i = 0;
 
@@ -39,7 +39,7 @@ async.waterfall([
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          tldrs[i].createUnusedSlug(function (err, tldr) {
+          customUtils.createUnusedSlug(tldrs[i], 'title', 'slug', function (err, tldr) {
             tldrs[i].save(function (err) {
               console.log("Slugified " + tldrs[i]._id);
               i += 1;
