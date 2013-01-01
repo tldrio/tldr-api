@@ -13,6 +13,7 @@ var fs = require('fs')
   , models = require('../lib/models')
   , Tldr = models.Tldr
   , User = models.User
+  , Topic = models.Topic
   , writeStream = fs.createWriteStream('./sitemap.xml')
   , before = fs.readFileSync('./sitemap.before.xml', 'utf8')
   , after = fs.readFileSync('./sitemap.after.xml', 'utf8')
@@ -33,7 +34,7 @@ async.waterfall([
     writeStream.write("\n", 'utf8');
     db.connectToDatabase(cb);
   }
-, function (cb) {
+, function (cb) {   // Add tldr pages
     Tldr.find({}, function (err, tldrs) {
       _.each(tldrs, function (tldr) {
         addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr.slug, 'monthly', '0.3');
@@ -41,11 +42,33 @@ async.waterfall([
       cb();
     });
   }
+, function (cb) {   // Add user public profiles
+    User.find({}, function (err, users) {
+      _.each(users, function (user) {
+        addUrlToMap(writeStream, 'http://tldr.io/' + user.username, 'weekly', '0.3');
+      });
+      cb();
+    });
+  }
+, function (cb) {   // Add topics
+    Topic.find({}, function (err, topics) {
+      _.each(topics, function (topic) {
+        addUrlToMap(writeStream, 'http://tldr.io/forum/topics/' + topic.slug, 'weekly', '0.2');
+      });
+      cb();
+    });
+  }
 , function (cb) {
     writeStream.write(after, 'utf8');
     writeStream.write("\n", 'utf8');
+
+    // Can only call the callback when the write stream is indeed closed
+    writeStream.on('close', function () {
+      console.log('Write stream now closed');
+      cb();
+    });
+
     writeStream.end();
-    cb();
   }
 ], function (err) {
      if (err) {
