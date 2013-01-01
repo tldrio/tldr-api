@@ -8,7 +8,6 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , sinon = require('sinon')
-  , mongoose = require('mongoose') // Mongoose ODM to Mongo
   , models = require('../lib/models')
   , Tldr = models.Tldr
   , User = models.User
@@ -29,7 +28,6 @@ describe('Database', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
-
   });
 
   after(function (done) {
