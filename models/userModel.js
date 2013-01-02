@@ -31,8 +31,10 @@ var mongoose = require('mongoose')
 reservedUsernames = {
     'about': true
   , 'account': true
+  , 'chromeextension': true
   , 'confirm': true
   , 'confirmemail': true
+  , 'crx': true
   , 'extension': true
   , 'forgotpassword': true
   , 'index': true

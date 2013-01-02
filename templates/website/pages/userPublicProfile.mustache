@@ -118,7 +118,7 @@
                       <a href="{{url}}" target="_blank">{{title}}</a>
                     </p>
                     <span class="label tldr-label" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
-                      <a href="{{websiteUrl}}/tldrs/{{slug}}">tl;dr</a>
+                      <a href="/tldrs/{{_id}}/{{slug}}">tl;dr</a>
                     </span>
                     <span class="tldr-hostname tldr-hostname-list">
                       ({{hostname}})
@@ -140,7 +140,7 @@
                     <div class="tldr-read-container">
                       <div class="tldr-tldr">
                         <div class="tldr-header">
-                          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+                          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}" alt="Favicon for {{hostname}}">
                           <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
                         </div>
                         <div class="tldr-metadata">

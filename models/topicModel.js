@@ -42,7 +42,6 @@ TopicSchema = new Schema(
            , set: customUtils.sanitizeInput
            , required: true
            }
-  , slug: { type: String, unique: true }
   , creator: { type: ObjectId, ref: 'user', required: true }
   , posts: [{ type: ObjectId, ref: 'post' }]
   , lastPost: { at: { type: Date
@@ -59,6 +58,10 @@ TopicSchema = new Schema(
   }
 , { strict: true });
 
+// Keep a virtual 'slug' attribute
+TopicSchema.virtual('slug').get(function () {
+  return customUtils.slugify(this.title);
+});
 
 
 /**
@@ -93,9 +96,7 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
   var callback = cb ? cb : function () {}
     , newTopic = prepareTopicForCreation(topicData, creator);
 
-  customUtils.createUnusedSlug(newTopic, 'title', 'slug', function (err, topic) {
-    newTopic.save(callback);
-  });
+  newTopic.save(callback);
 };
 
 

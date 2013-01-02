@@ -1,12 +1,4 @@
-{{#notFound}}
-  <div class="alert alert-error">
-    Oh noes! The topic you looked for could not be found. If you think this is a bug, please <a href="mailto:hello@tldr.io?subject=I%20looked%20for%20a%20topic%20that%20is%20missing">tell us</a>.<br>
-    You can also <a href ="/forum/topics">go back on the forum homepage.</a>
-  </div>
-{{/notFound}}
-
 <div class="centered-block">
-  {{^notFound}}
     <div id="title-and-vote">
       {{#topic}}{{>website/voting}}{{/topic}}
       <div class="right-of-voting">
@@ -37,7 +29,7 @@
     <br>
 
     {{^loggedUser}}
-    You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic._id}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
+    You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic._id}}/{{topic.slug}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
     {{/loggedUser}}
 
     {{#loggedUser}}
@@ -50,8 +42,4 @@
     {{/loggedUser}}
 
     <br><br><br>
-
-
-
-  {{/notFound}}
 </div>

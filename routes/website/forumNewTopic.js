@@ -12,6 +12,7 @@ module.exports = function (req, res, next) {
     ;
 
   values.forum = true;
+  values.title = "Start a discussion" + config.titles.branding;
   partials.content = '{{>website/pages/forumNewTopic}}';
 
   res.render('website/basicLayout', { values: values

@@ -221,7 +221,7 @@ describe('Webserver', function () {
 											, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
 						JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 2);
 						request.get( { headers: {"Accept": "text/html"}
-												 , uri: rootUrl + '/tldrs/' + tldr1.slug }
+                         , uri: rootUrl + '/tldrs/' + tldr1._id + '/' + tldr1.slug }
                        , function (error, response, body) {
 							Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
 								tldr.readCount.should.be.equal(prevReadCount + 3);
@@ -464,44 +464,44 @@ describe('Webserver', function () {
 
     });
 
-
-    it('Should serve tldr-page if accept header is text/html', function (done) {
-      request.get({ headers: {"Accept": "text/html"}
-                  , uri: rootUrl + '/tldrs/' + tldr2.slug}
-                  , function (err, res, body) {
-        res.statusCode.should.equal(200);
-        res.headers['content-type'].should.contain('text/html');
-        res.body.should.contain('<div class="tldr-read-container">');
-        done();
-      });
-    });
-
-    it('Should redirect to tldr-page "slug url" if queried with the "id url" with header text/html, with no change in readCount', function (done) {
+    it('Should redirect to correct tldr-page "slug url" if queried with the wrong one or the former url type, with no change in readCount', function (done) {
       var previousReadCount;
 
       Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
         previousReadCount = _tldr.readCount;
 
         request.get( { headers: {"Accept": "text/html"}
-                     , uri: rootUrl + '/tldrs/' + tldr2._id
+                     , uri: rootUrl + '/tldrs/' + tldr2._id + '/some-bad-slug'
                      , followRedirect: false }
                    , function (err, res, body) {
-          res.statusCode.should.equal(301);
+          res.statusCode.should.equal(302);
           res.headers['content-type'].should.contain('text/html');
-          res.headers['location'].should.match(new RegExp('/tldrs/' + tldr2.slug + '$'));
+          res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
 
           Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
             _tldr.readCount.should.equal(previousReadCount);
-            done();
+
+          request.get( { headers: {"Accept": "text/html"}
+                       , uri: rootUrl + '/tldrs/' + tldr2._id
+                       , followRedirect: false }
+                     , function (err, res, body) {
+              res.statusCode.should.equal(302);
+              res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
+
+              Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
+                _tldr.readCount.should.equal(previousReadCount);
+
+                done();
+              });
+            });
           });
         });
       });
     });
 
-    it('Should serve error page if a non existing tldr-page was requested', function (done) {
-      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/50af46f20bc6856c5403001s' }, function (err, res, body) {
-        res.statusCode.should.equal(200);
-        res.body.should.contain('<div class="alert alert-error">');
+    it('Should serve 404 if a non existing tldr-page was requested', function (done) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/bloup/50af46f20bc6851111111111' }, function (err, res, body) {
+        res.statusCode.should.equal(404);
         done();
       });
     });

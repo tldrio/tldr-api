@@ -8,32 +8,34 @@ var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
   , bunyan = require('../../lib/logger').bunyan
   , config = require('../../lib/config')
+  , customUtils = require('../../lib/customUtils')
   ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {};
 
+  partials.content = '{{>website/pages/tldrPage}}';
+  partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
+
   bunyan.incrementMetric('tldrs.get.html');
 
-  partials.content = '{{>website/pages/tldrPage}}';
-  partials.fbmetatags = '{{>website/metatags/metatagsPage}}'
+  Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
+    if (err || !tldr) { return res.json(404, {}); }
 
-  // First, try to find the tldr by the slug
-  Tldr.findAndIncrementReadCount({ slug: req.params.id }, req.user, function (err, tldr) {
-    if (!err && tldr) {
-      values = _.extend(values, tldr);
+    if (req.params.slug !== customUtils.slugify(tldr.title)) {
+      Tldr.update({ _id: req.params.id }, { $inc: { readCount: -1 } }, {}, function() {   // Avoid counting two reads if the wrong url was called
+        return res.redirect(302, '/tldrs/' + tldr._id + '/' + tldr.slug);   // 302 redirects to avoid 301 redirect loops if title changes
+      });
+    } else {
+      values.tldr = tldr;
+      values.title = tldr.title.substring(0, 60) +
+                     (tldr.title.length > 60 ? '...' : '') +
+                     config.titles.branding + config.titles.shortDescription;
+      // Warning: don't use double quotes in the meta description tag
+      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
+
       return res.render('website/basicLayout', { values: values , partials: partials });
     }
-
-    // If it can't be found by the slug, try the _id for retrocompatibility
-    Tldr.findOne({ _id: req.params.id }, function (err, tldr) {
-      if (err || !tldr || !tldr.slug || tldr.slug.length === 0) {
-        values.tldrNotFound = true;
-        return res.render('website/basicLayout', { values: values , partials: partials });
-      }
-
-      return res.redirect(301, config.websiteUrl + '/tldrs/' + tldr.slug);
-    });
   });
 }

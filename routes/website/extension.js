@@ -10,6 +10,7 @@ module.exports = function (req, res, next) {
     , ua = req.headers['user-agent']
     , chrome = ua.match(/Chrome/g)
     , AB = Math.floor( Math.random() * 2)
+    , config = require('../../lib/config')
     ;
 
   // Fake tldrs are called tldr1, ..., tldr5
@@ -69,8 +70,8 @@ module.exports = function (req, res, next) {
 
 
   values.extension = true;
+  values.description = "Chrome extension that lets you read summaries of articles posted to Hacker News without leaving the front page";
   values.chrome = chrome;
-  console.log('ALKASJ',AB);
   // AB testing
   if (AB) {
     values.versionA = true;
@@ -79,7 +80,7 @@ module.exports = function (req, res, next) {
     values.versionB = true;
     values.version = 'directly';
   }
-  values.title = "See through hyperlinks with our Chrome extension for Hacker News - tldr.io";
+  values.title = "See through hyperlinks with our Chrome extension for Hacker News" + config.titles.branding;
 
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/extension}}' }
