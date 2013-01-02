@@ -1,0 +1,5 @@
+user-agent: *
+disallow: /account
+disallow: /tldrscreated
+
+sitemap: http://tldr.io/robots/sitemap.xml
