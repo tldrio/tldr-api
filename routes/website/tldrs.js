@@ -9,6 +9,7 @@ var models = require('../../lib/models')
   , Tldr = models.Tldr
   , async = require('async')
   , _ = require('underscore')
+  , config = require('../../lib/config')
   ;
 
 module.exports = function (req, res, next) {
@@ -16,6 +17,8 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.tldrs = true;
+  values.title = "Latest summaries" + config.titles.branding + config.titles.shortDescription;
+  values.description = "Latest summaries contributed by the community. Get the most popular directly in your Twitter feed.";
   partials.content = '{{>website/pages/tldrs}}';
 
   async.waterfall(

@@ -4,13 +4,17 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config');
 
 module.exports = function (req, res, next) {
-  var partials = req.renderingPartials || {};
+  var partials = req.renderingPartials || {}
+    , values = req.renderingValues || {}
+    ;
 
   partials.content = '{{>website/pages/account}}';
+  values.title = (values.loggedUser ? values.loggedUser.username : '') + " - manage my account" + config.titles.branding;
 
-  res.render('website/basicLayout', { values: req.renderingValues
+  res.render('website/basicLayout', { values: values
                                     , partials: partials
                                     });
 }

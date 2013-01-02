@@ -22,7 +22,7 @@ module.exports = function (req, res, next) {
                                         });
     } else {
       post.changeText(req.body.text, function (err) {
-        res.redirect(config.websiteUrl + '/forum/posts/' + req.params.id + '/edit');
+        res.redirect('/forum/posts/' + req.params.id + '/edit');
       });
     }
   });

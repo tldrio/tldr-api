@@ -23,6 +23,7 @@ module.exports = function (req, res, next) {
      _.each(posts, function (post) {
        post.timeago = customUtils.timeago(post.createdAt);
        post.markedText = marked(post.text);
+       post.markedText = post.markedText.replace(/<a href="([^>]*)">/g, '<a href="$1" rel="nofollow">'); // Make all user-supplied links nofollow
        if (values.admin) { post.editable = true; }
      });
 
@@ -34,7 +35,7 @@ module.exports = function (req, res, next) {
 
       values.posts = posts;
       values.topic = topic;
-      values.title = topic.title + " - tldr.io";
+      values.title = topic.title + config.titles.branding;
 
       res.render('website/basicLayout', { values: values
                                         , partials: partials
