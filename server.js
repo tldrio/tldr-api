@@ -114,7 +114,6 @@ app.get('/tldrs/search', routes.searchTldrs);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
-app.get('/tldrs/:id', routes.getTldrById);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
@@ -144,7 +143,8 @@ app.options('*', function (req, res, next) {
 
 
 
-
+// Only hybrid for retrocompatibility
+app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
 
 /*
@@ -165,7 +165,7 @@ app.get('/extension', function (req, res, next) { return res.redirect(301, '/chr
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 
 // Tldr page
-app.get('/tldrs/:slug/:id', middleware.attachRenderingValues, routes.website_tldrPage);
+app.get('/tldrs/:id/:slug', middleware.attachRenderingValues, routes.website_tldrPage);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
