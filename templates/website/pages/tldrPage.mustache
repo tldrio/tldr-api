@@ -16,7 +16,9 @@
     <div class="">
       <span class="help-inline">This is a summarized version.</span>
       <a id="cta-to-tldr" href="http://tldr.io/whatisit" target="_blank"><small>Where does this summary come from?</small></a>
-      {{#admin}}<br><a href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><i class="icon icon-edit"></i>admin in db</a>{{/admin}}
+      {{#admin}}
+      <br><a href="{{dbguiUrl}}/tldrs/{{tldr._id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
+      {{/admin}}
     </div>
   </div>
 </div>
