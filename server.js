@@ -130,7 +130,7 @@ app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, 
 app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 
 // Vote for/against a topic
-app.put('/forum/topics/:id/:slug', routes.voteOnTopic);
+app.put('/forum/topics/:id', routes.voteOnTopic);
 
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
@@ -184,7 +184,8 @@ app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingVal
 // Forum
 app.get('/forum/topics', middleware.attachRenderingValues, routes.website_forum);
 app.get('/forum/topics/:id/:slug', middleware.attachRenderingValues, routes.website_forumShowTopic);   // Show a whole topic
-app.post('/forum/topics/:id/:slug', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
+app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumShowTopic);   // For retrocompatibility
+app.post('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumNewTopic);    // Display the newTopic form
 app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 app.get('/forum/posts/:id/edit', middleware.adminOnly, middleware.attachRenderingValues, routes.website_editPost);

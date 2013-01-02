@@ -35,7 +35,7 @@
     {{#loggedUser}}
       {{>website/validationErrors}}
 
-      <form method="post" action="/forum/topics/{{topic._id}}/{{topic.slug}}">
+      <form method="post" action="/forum/topics/{{topic._id}}">
         <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{userInput.text}}</textarea><br>
         <input type="submit" value="Express yourself" class="btn btn-primary">
       </form>
