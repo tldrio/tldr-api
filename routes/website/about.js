@@ -12,6 +12,7 @@ module.exports = function (req, res, next) {
     ;
 
   values.title = "The team" + config.titles.branding + config.titles.shortDescription;
+  values.description = "The tldr.io team is composed of Louis Chatriot, Stanislas Marion and Charles Miglietti.";
   partials.content = '{{>website/pages/about}}';
 
   res.render('website/basicLayout', { values: values

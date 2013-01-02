@@ -70,8 +70,8 @@ module.exports = function (req, res, next) {
 
 
   values.extension = true;
+  values.description = "Chrome extension that lets you read summaries of articles posted to Hacker News without leaving the front page";
   values.chrome = chrome;
-  console.log('ALKASJ',AB);
   // AB testing
   if (AB) {
     values.versionA = true;

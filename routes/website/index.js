@@ -12,6 +12,7 @@ module.exports = function (req, res, next) {
 
   values.index = true;
   values.title = "tldr.io" + config.titles.shortDescription;
+  values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
   partials.content = '{{>website/pages/index}}';
 
   res.render('website/basicLayout', { values: values

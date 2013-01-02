@@ -15,7 +15,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   partials.content = '{{>website/pages/tldrPage}}';
-  partials.fbmetatags = '{{>website/metatags/metatagsPage}}'
+  partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
   bunyan.incrementMetric('tldrs.get.html');
 
@@ -27,6 +27,8 @@ module.exports = function (req, res, next) {
       values.title = tldr.title.substring(0, 60) +
                      (tldr.title.length > 60 ? '...' : '') +
                      config.titles.branding + config.titles.shortDescription;
+      // Warning: don't use double quotes in the meta description tag
+      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
     } else {
       values.tldrNotFound = true;
     }

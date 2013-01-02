@@ -11,6 +11,7 @@ module.exports = function (req, res, next) {
 
   values.forum = true;
   values.title = "Forum" + config.titles.branding;
+  values.description = "Discuss everything related to tldr.io: feature suggestions, the best tl;drs, your favorite contributors etc.";
   partials.content = '{{>website/pages/forum}}';
 
   Topic.find({})
