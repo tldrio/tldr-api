@@ -1646,7 +1646,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/' + topic1.slug + '/' + topic1._id}, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/topics/' + topic1._id + '/' + topic1.slug}, function (err, res, obj) {
             res.statusCode.should.equal(401);
 
             cb();
@@ -1661,7 +1661,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/bloupibloup/123456789009876543211234' }, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/topics/123456789009876543211234/bloupibloup' }, function (err, res, obj) {
             res.statusCode.should.equal(404);
 
             cb();
@@ -1676,7 +1676,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/' + topic1.slug + '/' + topic1._id }, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/topics/' + topic1._id + '/' + topic1.slug }, function (err, res, obj) {
             res.statusCode.should.equal(200);
             Topic.findOne({ _id: topic1._id }, function (err, topic) {
               topic.votes.should.equal(2);

@@ -47,7 +47,7 @@ module.exports = function (req, res, next) {
     if (err || !topic) { return res.json(404, {}); }
 
     if (req.params.slug !== customUtils.slugify(topic.title)) {
-      return res.redirect('/forum/topics/' + customUtils.slugify(topic.title) + '/' + topic._id);
+      return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
     }
 
     return showTopic(topic);

@@ -29,13 +29,13 @@
     <br>
 
     {{^loggedUser}}
-    You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic.slug}}/{{topic._id}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
+    You need to be <a href="/login?warning=false&returnUrl=/forum/topics/{{topic._id}}/{{topic.slug}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
     {{/loggedUser}}
 
     {{#loggedUser}}
       {{>website/validationErrors}}
 
-      <form method="post" action="/forum/topics/{{topic.slug}}/{{topic._id}}">
+      <form method="post" action="/forum/topics/{{topic._id}}/{{topic.slug}}">
         <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{userInput.text}}</textarea><br>
         <input type="submit" value="Express yourself" class="btn btn-primary">
       </form>
