@@ -20,21 +20,22 @@ module.exports = function (req, res, next) {
 
   bunyan.incrementMetric('tldrs.get.html');
 
-
-  Tldr.findAndIncrementReadCount({ _id: req.params.id }, function (err, tldr) {
+  Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
     if (req.params.slug !== customUtils.slugify(tldr.title)) {
-      return res.redirect('/tldrs/' + customUtils.slugify(tldr.title) + '/' + tldr._id);
+      Tldr.update({ _id: req.params.id }, { $inc: { readCount: -1 } }, {}, function() {   // Avoid counting two reads if the wrong url was called
+        return res.redirect('/tldrs/' + customUtils.slugify(tldr.title) + '/' + tldr._id);   // 302 redirects to avoid 301 redirect loops if title changes
+      });
+    } else {
+      values.tldr = tldr;
+      values.title = tldr.title.substring(0, 60) +
+                     (tldr.title.length > 60 ? '...' : '') +
+                     config.titles.branding + config.titles.shortDescription;
+      // Warning: don't use double quotes in the meta description tag
+      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
+
+      return res.render('website/basicLayout', { values: values , partials: partials });
     }
-
-    values.tldr = tldr;
-    values.title = tldr.title.substring(0, 60) +
-                   (tldr.title.length > 60 ? '...' : '') +
-                   config.titles.branding + config.titles.shortDescription;
-    // Warning: don't use double quotes in the meta description tag
-    values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
-
-    return res.render('website/basicLayout', { values: values , partials: partials });
   });
 }

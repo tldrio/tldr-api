@@ -114,6 +114,7 @@ app.get('/tldrs/search', routes.searchTldrs);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
+app.get('/tldrs/:id', routes.getTldrById);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // Notifications
@@ -143,12 +144,6 @@ app.options('*', function (req, res, next) {
 
 
 
-/*
- * Hybrid routes that can either serve HTML or JSON depending on the requested content type
- *
- */
-app.get('/tldrs/:id', routes.getTldrById);
-app.get('/tldrs/:slug/:id', routes.website_tldrPage);
 
 
 
@@ -168,6 +163,9 @@ app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_ex
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+
+// Tldr page
+app.get('/tldrs/:slug/:id', routes.website_tldrPage);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
