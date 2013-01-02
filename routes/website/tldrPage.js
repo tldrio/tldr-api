@@ -6,7 +6,9 @@
 
 var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
-  , bunyan = require('../../lib/logger').bunyan;
+  , bunyan = require('../../lib/logger').bunyan
+  , config = require('../../lib/config')
+  ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
@@ -24,7 +26,7 @@ module.exports = function (req, res, next) {
       values.tldr = tldr;
       values.title = tldr.title.substring(0, 60) +
                      (tldr.title.length > 60 ? '...' : '') +
-                     " | tldr.io - Man-written summaries";
+                     config.titles.branding + config.titles.shortDescription;
     } else {
       values.tldrNotFound = true;
     }
