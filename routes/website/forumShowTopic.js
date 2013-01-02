@@ -43,17 +43,13 @@ module.exports = function (req, res, next) {
     });
   }
 
-  Topic.findOne({ slug: req.params.id }, function (err, topic) {
-    if (!err && topic) {
-      return showTopic(topic);
-    } else {
-      Topic.findOne({ _id: req.params.id }, function (err, topic) {
-        if (err || ! topic || !topic.slug || topic.slug.length === 0) {
-          return res.json(404, {});   // Assume that a topic with no slug doesn't exist, we don't want any ugly url anymore
-        } else {
-          return res.redirect(301, config.websiteUrl + '/forum/topics/' + topic.slug);
-        }
-      });
+  Topic.findOne({ _id: req.params.id }, function (err, topic) {
+    if (err || !topic) { return res.json(404, {}); }
+
+    if (req.params.slug !== customUtils.slugify(topic.title)) {
+      return res.redirect('/forum/topics/' + customUtils.slugify(topic.title) + '/' + topic._id);
     }
+
+    return showTopic(topic);
   });
 };

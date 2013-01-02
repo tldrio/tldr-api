@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
                        , values: { user: req.user, topic: topic, postData: postData }
                        });
 
-      return res.redirect('/forum/topics/' + topic._id);
+      return res.redirect('/forum/topics/' + topic.slug + '/' + topic._id);
     }
   });
 }
