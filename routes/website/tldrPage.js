@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
 
     if (req.params.slug !== customUtils.slugify(tldr.title)) {
       Tldr.update({ _id: req.params.id }, { $inc: { readCount: -1 } }, {}, function() {   // Avoid counting two reads if the wrong url was called
-        return res.redirect('/tldrs/' + tldr._id + '/' + tldr.slug);   // 302 redirects to avoid 301 redirect loops if title changes
+        return res.redirect(302, '/tldrs/' + tldr._id + '/' + tldr.slug);   // 302 redirects to avoid 301 redirect loops if title changes
       });
     } else {
       values.tldr = tldr;

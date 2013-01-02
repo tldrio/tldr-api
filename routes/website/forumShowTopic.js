@@ -14,7 +14,13 @@ module.exports = function (req, res, next) {
   values.forum = true;
   partials.content = '{{>website/pages/forumShowTopic}}';
 
-  function showTopic (topic) {
+  Topic.findOne({ _id: req.params.id }, function (err, topic) {
+    if (err || !topic) { return res.json(404, {}); }
+
+    if (req.params.slug !== customUtils.slugify(topic.title)) {
+      return res.redirect(302, '/forum/topics/' + topic._id + '/' + topic.slug);
+    }
+
     // Still not possible in mongoose to subpopulate documents so we do it manually
     Post.find({ _id: { $in: topic.posts } })
         .populate('creator', 'username gravatar')
@@ -41,15 +47,5 @@ module.exports = function (req, res, next) {
                                         , partials: partials
                                         });
     });
-  }
-
-  Topic.findOne({ _id: req.params.id }, function (err, topic) {
-    if (err || !topic) { return res.json(404, {}); }
-
-    if (req.params.slug !== customUtils.slugify(topic.title)) {
-      return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
-    }
-
-    return showTopic(topic);
   });
 };
