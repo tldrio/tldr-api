@@ -4,10 +4,12 @@
  * Proprietary License
 */
 
+var config = require('../../lib/config')
 
 module.exports = function (req, res, next) {
-  var values = req.renderingValues;
+  var values = req.renderingValues || {};
   values.signup = true;
+  values.title = "Sign up in 20 seconds" + config.titles.branding + config.titles.shortDescription;
   res.render('website/basicLayout', { values: values
                                     , partials: { content: '{{>website/pages/signup}}' }
                                     });

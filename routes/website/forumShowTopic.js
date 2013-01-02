@@ -37,7 +37,7 @@ module.exports = function (req, res, next) {
 
       values.posts = posts;
       values.topic = topic;
-      values.title = topic.title + " - tldr.io";
+      values.title = topic.title + config.titles.branding;
 
       res.render('website/basicLayout', { values: values
                                         , partials: partials
