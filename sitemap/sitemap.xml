@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://tldr.io</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>http://tldr.io/chrome-extension</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>http://tldr.io/forum/topics</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>http://tldr.io/whatisit</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>http://tldr.io/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>http://tldr.io/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+<url>
+<loc>http://tldr.io/tldrs/50e43b5cd3e2b85d3b000003/vehicle-rental-giant-avis-acquires-car-sharing-company-zipcar-for-500-million-the-next-web</loc>
+<changefreq>monthly</changefreq>
+<priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/tldrs/50e43b87d3e2b85d3b000007/upgrading-freebsd-9-0-to-9-1-using-freebsd-update-bsd-guides</loc>
+<changefreq>monthly</changefreq>
+<priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/tldrs/50e45653db3565a54e00000e/hacker-news</loc>
+<changefreq>monthly</changefreq>
+<priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/sdfkjsfs</loc>
+<changefreq>weekly</changefreq>
+<priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/Louis</loc>
+<changefreq>weekly</changefreq>
+<priority>0.3</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e4547f3a413c6a4e000005/vbn</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e454d51dc0b2974e000006/mmm</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e43a91ba5942b938000010/xfg-djg-jdfg-jdfgj</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e43a81ba5942b938000008/dcfgh-regf-jdjd-drgj-dj</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e4532d9e44a88f4a000005/dvnmdfvmb</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e44c3b158e152e44000005/jhsdf-jdgfj-rdf-jdf-djfg-djdfgj-dfg-jdfg-djg</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+<url>
+<loc>http://tldr.io/forum/topics/50e43a87ba5942b93800000c/zzz</loc>
+<changefreq>weekly</changefreq>
+<priority>0.2</priority>
+</url>
+
+</urlset>
+
