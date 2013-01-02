@@ -147,7 +147,8 @@ app.options('*', function (req, res, next) {
  * Hybrid routes that can either serve HTML or JSON depending on the requested content type
  *
  */
-app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
+app.get('/tldrs/:id', routes.getTldrById);
+app.get('/tldrs/:slug/:id', routes.website_tldrPage);
 
 
 
