@@ -115,7 +115,7 @@ describe('Topic', function () {
       });
     });
 
-    it('Should create a slug out of the topics title', function (done) {
+    it('Should have a virtual slug attribute out of the topics title', function (done) {
       var topicData = { title: "youpla boum tzing"
                      };
 

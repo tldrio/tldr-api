@@ -494,6 +494,27 @@ describe('Tldr', function () {
       });
     });
 
+    it('should automatically set virtual slug', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.slug.should.equal('blog-nfa');
+        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+          if (err) { return done(err); }
+          docs[0].slug.should.equal('blog-nfa');
+          done();
+        });
+      });
+    });
+
+
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
