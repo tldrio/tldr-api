@@ -157,18 +157,19 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
  */
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
-app.get('/index', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
+app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
                 , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
-app.get('/crx', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
-app.get('/chromeextension', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
-app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
+app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_extension);   // 1 search engine friendly url and 3 aliases because of the HN fiasco
+app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 
 // Login, logout
-app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });
+app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
