@@ -17,6 +17,7 @@ var fs = require('fs')
   , writeStream = fs.createWriteStream('./sitemap.xml')
   , before = fs.readFileSync('./sitemap.before.xml', 'utf8')
   , after = fs.readFileSync('./sitemap.after.xml', 'utf8')
+  , numberOfUrls = 5   // There are 5 static urls we want google to crawl
   ;
 
 // Add an url to the sitemap represented by writeStream ws
@@ -26,6 +27,8 @@ function addUrlToMap(ws, url, changefreq, priority) {
   ws.write('<changefreq>' + changefreq + '</changefreq>\n', 'utf8');
   ws.write('<priority>' + priority + '</priority>\n', 'utf8');
   ws.write('</url>\n\n');
+
+  numberOfUrls += 1;
 }
 
 async.waterfall([
@@ -37,7 +40,7 @@ async.waterfall([
 , function (cb) {   // Add tldr pages
     Tldr.find({}, function (err, tldrs) {
       _.each(tldrs, function (tldr) {
-        addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr.slug, 'monthly', '0.3');
+        addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug, 'monthly', '0.3');
       });
       cb();
     });
@@ -53,7 +56,7 @@ async.waterfall([
 , function (cb) {   // Add topics
     Topic.find({}, function (err, topics) {
       _.each(topics, function (topic) {
-        addUrlToMap(writeStream, 'http://tldr.io/forum/topics/' + topic.slug, 'weekly', '0.2');
+        addUrlToMap(writeStream, 'http://tldr.io/forum/topics/' + topic._id + '/' + topic.slug, 'weekly', '0.2');
       });
       cb();
     });
@@ -74,7 +77,7 @@ async.waterfall([
      if (err) {
        console.log('An error occured', err);
      } else {
-       console.log('Sitemap created successfully');
+       console.log('Sitemap created successfully, ' + numberOfUrls + ' urls added');
      }
 
      process.exit(0);
