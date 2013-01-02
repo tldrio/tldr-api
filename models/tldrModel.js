@@ -133,6 +133,11 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
+// Keep a virtual 'slug' attribute
+TldrSchema.virtual('slug').get(function () {
+  return customUtils.slugify(this.title);
+});
+
 
 
 /**
