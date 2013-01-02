@@ -36,7 +36,7 @@ module.exports = function (req, res, next) {
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + config.titles.branding + config.titles.shortDescription;
             } else {
-              values.userNotFound = true;
+              return res.json(404, {});
             }
 
             cb(null);
@@ -50,7 +50,7 @@ module.exports = function (req, res, next) {
             if (! err && user) {
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
             } else {
-              values.userNotFound = true;
+              return res.json(404, {});
             }
 
             cb(null);

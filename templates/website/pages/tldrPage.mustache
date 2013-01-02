@@ -1,11 +1,3 @@
-{{#tldrNotFound}}
-<div class="alert alert-error">
-  Sorry but this tl;dr doesn't exist!
-</div>
-{{/tldrNotFound}}
-
-
-{{^tldrNotFound}}
 <div class="row">
   <div class="tldr-base-unit page-tldr-container">
     {{#tldr}} {{>website/tldr.read.page}} {{/tldr}}
@@ -22,4 +14,3 @@
     </div>
   </div>
 </div>
-{{/tldrNotFound}}
