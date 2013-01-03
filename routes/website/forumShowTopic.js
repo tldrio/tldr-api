@@ -18,7 +18,7 @@ module.exports = function (req, res, next) {
     if (err || !topic) { return res.json(404, {}); }
 
     if (req.params.slug !== customUtils.slugify(topic.title)) {
-      return res.redirect(302, '/forum/topics/' + topic._id + '/' + topic.slug);
+      return res.redirect(301, '/forum/topics/' + topic._id + '/' + topic.slug);
     }
 
     // Still not possible in mongoose to subpopulate documents so we do it manually
