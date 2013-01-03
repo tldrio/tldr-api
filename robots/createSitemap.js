@@ -40,7 +40,7 @@ async.waterfall([
 , function (cb) {   // Add tldr pages
     Tldr.find({}, function (err, tldrs) {
       _.each(tldrs, function (tldr) {
-        addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug, 'monthly', '0.3');
+        addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug, 'monthly', '0.5');
       });
       cb();
     });
@@ -48,7 +48,7 @@ async.waterfall([
 , function (cb) {   // Add user public profiles
     User.find({}, function (err, users) {
       _.each(users, function (user) {
-        addUrlToMap(writeStream, 'http://tldr.io/' + user.username, 'weekly', '0.3');
+        addUrlToMap(writeStream, 'http://tldr.io/' + user.username, 'daily', '0.4');
       });
       cb();
     });
