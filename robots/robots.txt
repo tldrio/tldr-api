@@ -3,4 +3,4 @@ disallow: /account
 disallow: /tldrscreated
 disallow: /forum/newTopic
 
-sitemap: http://tldr.io/robots/sitemap.xml
+sitemap: http://tldr.io/sitemaps/sitemap.xml
