@@ -7,7 +7,6 @@ var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , DbObject = require('./lib/db')
-  , mongoose = require('mongoose')
   , models = require('./lib/models')
   , app                               // Will store our express app
   , config = require('./lib/config')
