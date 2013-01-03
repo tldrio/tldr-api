@@ -141,7 +141,6 @@ app.options('*', function (req, res, next) {
 });
 
 
-
 // Only hybrid for retrocompatibility
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
