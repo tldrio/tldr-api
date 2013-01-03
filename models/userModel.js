@@ -44,6 +44,7 @@ reservedUsernames = {
   , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
   , 'signup': true
+  , 'sitemaps': true
   , 'summaries': true
   , 'tldrs': true
   , 'tldrscreated': true
