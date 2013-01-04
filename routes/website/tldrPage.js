@@ -39,8 +39,6 @@ module.exports = function (req, res, next) {
       values.pageMetaProperties['og:title'] = tldr.title;
       values.pageMetaProperties['og:type'] = 'article';
       values.pageMetaProperties['og:url'] = 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug;
-      values.pageMetaProperties['og:image'] = 'http://tldr.io/assets/img/fbicon.png';
-      values.pageMetaProperties['og:site_name'] = 'tldr.io';
       values.pageMetaProperties['og:description'] = tldr.summaryBullets.join(' - ');
       values.pageMetaProperties.tldrCreatorTwitterHandle = tldr.creator.twitterHandle;
 
