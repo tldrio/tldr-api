@@ -133,6 +133,13 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
+// Keep a virtual 'slug' attribute
+TldrSchema.virtual('slug').get(function () {
+  return customUtils.slugify(this.title);
+});
+
+
+
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
  * Also sets the creator if we have one and initializes the tldr history
@@ -152,10 +159,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
     instance.creator = creator._id;
-
-    // Populate hostname field
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
 
@@ -210,7 +214,7 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
 
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
-              .populate('creator', 'username twitterHandle');
+                  .populate('creator', 'username twitterHandle');
   // If the user has the admin role, populate history
   if (user && user.isAdmin()) {
     query.populate('history');

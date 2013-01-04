@@ -30,7 +30,7 @@ module.exports = function (req, res, next) {
                                      });
 
         // Redirect instead of render so that user can reload the topic without the "POST" error message
-        return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);
+        return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
       }
     });
   });

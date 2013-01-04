@@ -1,14 +1,6 @@
-{{#tldrNotFound}}
-<div class="alert alert-error">
-  Sorry but this tl;dr doesn't exist!
-</div>
-{{/tldrNotFound}}
-
-
-{{^tldrNotFound}}
 <div class="row">
   <div class="tldr-base-unit page-tldr-container">
-    {{>website/tldr.read.page}}
+    {{#tldr}} {{>website/tldr.read.page}} {{/tldr}}
   </div>
 </div>
 <div class="page-help">
@@ -16,7 +8,9 @@
     <div class="">
       <span class="help-inline">This is a summarized version.</span>
       <a id="cta-to-tldr" href="http://tldr.io/whatisit" target="_blank"><small>Where does this summary come from?</small></a>
+      {{#admin}}
+      <br><a href="{{dbguiUrl}}/tldrs/{{tldr._id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
+      {{/admin}}
     </div>
   </div>
 </div>
-{{/tldrNotFound}}

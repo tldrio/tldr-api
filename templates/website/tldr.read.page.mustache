@@ -2,7 +2,7 @@
 
   <div class="tldr-tldr">
     <div class="tldr-header">
-      <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}">
+      <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}" alt="Favicon for {{hostname}}">
       <p class="tldr-title">
         <a target="_blank" href="{{url}}">{{title}}</a>
         <span class="tldr-hostname">({{hostname}})</span>
@@ -14,6 +14,7 @@
       <span>
         tl;dr by
           <span><a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
+          - read {{readCount}} times
       </span>
       {{/creator}}
     </div>

@@ -22,10 +22,10 @@ module.exports = function (req, res, next) {
       // Send moderation email
       mailer.sendEmail({ type: 'postToForum'
                        , development: false
-                       , values: { user: req.user, websiteUrl: config.websiteUrl, topic: topic, postData: postData }
+                       , values: { user: req.user, topic: topic, postData: postData }
                        });
 
-      return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);
+      return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
     }
   });
 }

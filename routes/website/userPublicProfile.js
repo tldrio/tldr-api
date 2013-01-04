@@ -8,6 +8,7 @@ var models = require('../../lib/models')
   , User = models.User
   , customUtils = require('../../lib/customUtils')
   , bunyan = require('../../lib/logger').bunyan
+  , config = require('../../lib/config')
   , async = require('async');
 
 
@@ -24,17 +25,18 @@ module.exports = function (req, res, next) {
   async.waterfall([
     function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
-          .populate('tldrsCreated', '_id url title hostname readCount summaryBullets', {}, { limit: 14, sort: [['createdAt', -1]] })
+          .populate('tldrsCreated', '_id url slug title hostname readCount summaryBullets', {}, { limit: 14, sort: [['createdAt', -1]] })
           .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
+              values.description = user.username + ' has contributed' + user.tldrsCreated.length.toString() + ' tl;drs. Follow them on tldr.io';
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
-              values.title = user.username + ' - tldr.io';
+              values.title = user.username + config.titles.branding + config.titles.shortDescription;
             } else {
-              values.userNotFound = true;
+              return res.json(404, {});
             }
 
             cb(null);
@@ -48,7 +50,7 @@ module.exports = function (req, res, next) {
             if (! err && user) {
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
             } else {
-              values.userNotFound = true;
+              return res.json(404, {});
             }
 
             cb(null);

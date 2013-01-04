@@ -471,6 +471,50 @@ describe('Tldr', function () {
       });
     });
 
+    it('Should not crash because no title was provided', function (done) {
+      var tldrData1 = {
+            summaryBullets: ['Awesome Blog'],
+            resourceAuthor: 'NFA Crew',
+            url: 'http://needforair.com',
+          }
+        , tldrData2 = { title: ''
+                      , summaryBullets: ['hgf']
+                      , url: 'http://needforair.com/yup'
+          }
+        ;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+        assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
+
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
+
+          done();
+        });
+      });
+    });
+
+    it('should automatically set virtual slug', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.slug.should.equal('blog-nfa');
+        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+          if (err) { return done(err); }
+          docs[0].slug.should.equal('blog-nfa');
+          done();
+        });
+      });
+    });
+
+
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 

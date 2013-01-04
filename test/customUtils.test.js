@@ -267,5 +267,59 @@ describe('Custom utils', function () {
   });   // ==== End of '#normalizeUrl' ==== //
 
 
+  describe('Slugification', function () {
+
+    it('Should lowercase all upper case letter', function (done) {
+      var input;
+
+      input = "SalUT";
+      customUtils.slugify(input).should.equal("salut");
+
+      done();
+    });
+
+    it('Should replace non English characters by English ones', function (done) {
+      var input;
+
+      input = "ééèêëẽáàâäãúùûüũíìîïĩóòôöõýỳŷÿỹ";
+      customUtils.slugify(input).should.equal("eeeeeeaaaaauuuuuiiiiioooooyyyyy");
+
+      done();
+    });
+
+    it('Should use only a dash as delimiter', function (done) {
+      var input;
+
+      input = "Salut ca farte_fourte-firte";
+      customUtils.slugify(input).should.equal("salut-ca-farte-fourte-firte");
+
+      done();
+    });
+
+    it('Should remove all unexpected characters', function (done) {
+      var input;
+
+      input = "Salut ca farte??? 145 fois";
+      customUtils.slugify(input).should.equal("salut-ca-farte-145-fois");
+
+      input = "lemonde.fr et,la;ca va";
+      customUtils.slugify(input).should.equal("lemonde-fr-et-la-ca-va");
+
+      done();
+    });
+
+    it('Should collapse multiple successive dash into only one', function (done) {
+      var input;
+
+      input = "Salut   ca farte - hn.com";
+      customUtils.slugify(input).should.equal("salut-ca-farte-hn-com");
+
+      done();
+    });
+
+
+  });   // ==== End of 'Slugification' ==== //
+
+
 });
 
