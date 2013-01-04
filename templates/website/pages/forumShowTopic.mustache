@@ -2,14 +2,13 @@
     <div id="title-and-vote">
       {{#topic}}{{>website/voting}}{{/topic}}
       <div class="right-of-voting">
-        <span class="topic-title">{{topic.title}}</span><br>
+        <h1 class="topic-title">{{topic.title}}</h1><br>
         <span class="post-topic-metadata">{{topic.posts.length}} post{{#topic.moreThanOnePost}}s{{/topic.moreThanOnePost}}</span>
       </div>
     </div>
-    <br><br><br>
+    <br><br>
 
     <em><a href="/forum/topics">Back to the forum</a></em>
-
 
     <div class="list-box">
       {{#posts}}
