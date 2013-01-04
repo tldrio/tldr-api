@@ -35,6 +35,15 @@ module.exports = function (req, res, next) {
       // Warning: don't use double quotes in the meta description tag
       values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
 
+      // Specific metatags for the tldr page
+      values.pageMetaProperties['og:title'] = tldr.title;
+      values.pageMetaProperties['og:type'] = 'article';
+      values.pageMetaProperties['og:url'] = 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug;
+      values.pageMetaProperties['og:image'] = 'http://tldr.io/assets/img/fbicon.png';
+      values.pageMetaProperties['og:site_name'] = 'tldr.io';
+      values.pageMetaProperties['og:description'] = tldr.summaryBullets.join(' - ');
+      values.pageMetaProperties.tldrCreatorTwitterHandle = tldr.creator.twitterHandle;
+
       return res.render('website/basicLayout', { values: values , partials: partials });
     }
   });
