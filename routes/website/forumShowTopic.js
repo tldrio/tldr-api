@@ -43,6 +43,12 @@ module.exports = function (req, res, next) {
       values.topic = topic;
       values.title = topic.title + config.titles.branding;
 
+      // Topic specific metatags
+      values.pageMetaProperties['og:title'] = topic.title;
+      values.pageMetaProperties['og:type'] = 'discussion';
+      values.pageMetaProperties['og:url'] = 'http://tldr.io/' + topic._id + '/' + topic.slug;
+      values.pageMetaProperties['og:description'] = "Discussion on tldr.io's forum";
+
       res.render('website/basicLayout', { values: values
                                         , partials: partials
                                         });
