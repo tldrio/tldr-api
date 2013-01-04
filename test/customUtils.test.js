@@ -290,7 +290,7 @@ describe('Custom utils', function () {
     it('Should use only a dash as delimiter', function (done) {
       var input;
 
-      input = "Salut ca farte_fourte-firte";
+      input = "Salut/ca\\farte_fourte-firte";
       customUtils.slugify(input).should.equal("salut-ca-farte-fourte-firte");
 
       done();
