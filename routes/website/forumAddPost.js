@@ -23,11 +23,10 @@ module.exports = function (req, res, next) {
         req.renderingValues.userInput = req.body;
         return next();
       } else {
-        rqClient.emit('forum.post', { type: 'forumPost'
-                                     , from: req.user
-                                     , topic: topic
-                                     , post: post
-                                     });
+        rqClient.emit('forum.post', { from: req.user
+                                    , topic: topic
+                                    , post: post
+                                    });
 
         // Redirect instead of render so that user can reload the topic without the "POST" error message
         return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
