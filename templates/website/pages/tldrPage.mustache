@@ -1,8 +1,50 @@
 <div class="row">
   <div class="tldr-base-unit page-tldr-container">
-    {{#tldr}} {{>website/tldr.read.page}} {{/tldr}}
+    <div class="tldr-read-container">
+      <div class="tldr-tldr">
+        <div class="tldr-header">
+          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}" alt="Favicon for {{hostname}}">
+          <p class="tldr-title">
+            <a target="_blank" href="{{tldr.url}}">{{title}}</a>
+            <span class="tldr-hostname">({{tldr.hostname}})</span>
+          </p>
+        </div>
+
+        <div class="tldr-metadata">
+          <span>
+            tl;dr by
+              <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
+              - read {{tldr.readCount}} times
+          </span>
+        </div>
+
+        <div class="tldr-summary">
+          <ul>
+            {{#tldr.summaryBullets}}
+            <li class="tldr-bullet">
+              <i class="icon-stop"></i>
+                    {{.}}
+            </li>
+            {{/tldr.summaryBullets}}
+          </ul>
+        </div>
+      </div>
+
+      <div class="tldr-tldr">
+        <div class="sub-tldr">
+          <a href="{{tldr.url}}" target="_blank" id="read-full-article" class="btn btn-primary">Read full article</a>
+          <div class="sharing-container">
+            <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+              <i class="icon-white icon-share-alt"></i>
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
 <div class="page-help">
   <div class="row">
     <div class="">
