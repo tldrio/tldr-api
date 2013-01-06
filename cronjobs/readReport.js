@@ -22,8 +22,7 @@ h4e.setup({ extension: 'mustache'
 function sendReadReport (previousFlush) {
   var notifsByUser
     , userIds
-    , emailsSent = 0
-    , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays); // 48h expiration
+    , emailsSent = 0;
 
 
   Notification.find({})
@@ -42,7 +41,7 @@ function sendReadReport (previousFlush) {
      User.find({ _id: { $in: userIds } }, function (err, users) {
        async.forEach(users, function (user, callback) {
          var tldrsRead
-           , signature
+           , dataForUnsubscribe
            , totalViewsThisWeek // total notif count this week
            , totalViewsForAllTldrs //total readCount for all tldrs created
            , topTldrThisWeek = {} // top tldr this week
@@ -70,14 +69,14 @@ function sendReadReport (previousFlush) {
              //total readCount for all tldrs created
              totalViewsForAllTldrs = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
 
-             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
+             dataForUnsubscribe = customUtils.createDataForUnsubscribeLink(user._id);
              values = { topTldrThisWeek: topTldrThisWeek
                       , topTldrOfAllTime: topTldrOfAllTime
                       , totalViewsForAllTldrs: totalViewsForAllTldrs
                       , totalViewsThisWeek: totalViewsThisWeek
                       , user: user
-                      , signature: signature
-                      , expiration: expiration};
+                      , dataForUnsubscribe: dataForUnsubscribe
+                      };
 
              emailsSent += 1;
              mailer.sendEmail({ type: 'readReport'

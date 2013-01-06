@@ -1,5 +1,18 @@
-User <a href="{{websiteUrl}}/{{user.username}}">{{user.username}}</a> just posted to this topic:<br><br>
+Hi {{participant.username}}, <br> <br>
 
-<a href="{{websiteUrl}}/forum/topics/{{topic._id}}/{{topic.slug}}">{{topic.title}}</a><br><br>
+<a href="{{websiteUrl}}/{{lastPostCreator.username}}">{{lastPostCreator.username}}</a> just posted this new message to the thread 
+<a href="{{websiteUrl}}/forum/topics/{{topic._id}}/{{topic.slug}}">{{topic.title}}</a>:<br><br>
 
-{{postData.text}}
+"{{post.text}}"
+<br><br>
+<a href="{{websiteUrl}}/forum/topics/{{topic._id}}">You can answer here</a>
+<br>
+<br>
+Cheers,
+<br>
+Charles, Louis and Stan
+<br><br>
+--
+<br>
+If you want to stop receiving email when someone posts to a discussion you participate in,
+<a href="{{websiteUrl}}/notifications/unsubscribe?id={{participant._id}}&type=postForum&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">Unsubscribe in one click</a>.
