@@ -414,6 +414,26 @@ describe('Custom utils', function () {
       done();
     });
 
+    it('An empty string is not an empty value', function (done) {
+      var a = [
+                { key: 'k1', value: 'v1' }
+              , { key: 'k2', value: 'v2' }
+              , { key: 'k3', value: 'v3' }
+              ]
+
+      a = customUtils.upsertKVInArray(a, 'kk', '');
+      a[0].key.should.equal('k1');
+      a[1].key.should.equal('k2');
+      a[2].key.should.equal('k3');
+      a[3].key.should.equal('kk');
+      a[0].value.should.equal('v1');
+      a[1].value.should.equal('v2');
+      a[2].value.should.equal('v3');
+      a[3].value.should.equal('');
+
+      done();
+    });
+
   });   // ==== End of '#upsertKVInArray' ==== //
 
 

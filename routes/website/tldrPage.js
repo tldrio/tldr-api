@@ -36,11 +36,11 @@ module.exports = function (req, res, next) {
       values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
 
       // Specific metatags for the tldr page
-      values.pageMetaProperties['og:title'] = tldr.title;
-      values.pageMetaProperties['og:type'] = 'article';
-      values.pageMetaProperties['og:url'] = 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug;
-      values.pageMetaProperties['og:description'] = tldr.summaryBullets.join(' - ');
-      values.pageMetaProperties.tldrCreatorTwitterHandle = tldr.creator.twitterHandle;
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'article');
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug);
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || '');   // Ensure tldrCreatorTwitterHandle gets populated
 
       return res.render('website/basicLayout', { values: values , partials: partials });
     }

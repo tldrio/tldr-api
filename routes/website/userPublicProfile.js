@@ -37,11 +37,11 @@ module.exports = function (req, res, next) {
               values.title = user.username + config.titles.branding + config.titles.shortDescription;
 
               // Specific metatags
-              values.pageMetaProperties['og:title'] = values.description;
-              values.pageMetaProperties['og:type'] = 'author';
-              values.pageMetaProperties['og:url'] = 'http://tldr.io/' + user.username;
-              values.pageMetaProperties['og:image'] = user.gravatar.url + '&s=210';
-              values.pageMetaProperties['og:description'] = user.bio;
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', values.description);
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'author');
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + user.username);
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', user.gravatar.url + '&s=210');
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', user.bio);
             } else {
               return res.json(404, {});
             }

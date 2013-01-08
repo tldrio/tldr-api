@@ -6,9 +6,9 @@
     <meta name="description" content="{{description}}{{^description}}Summaries of interesting content, written by people.{{/description}}">
     <meta name="author" content="">
 
-    {{#showPageMetaProperties}}
-      <meta property="{{property}}" content="{{content}}">
-    {{/showPageMetaProperties}}
+    {{#pageMetaProperties}}
+      <meta property="{{key}}" content="{{value}}">
+    {{/pageMetaProperties}}
 
     <!-- Le styles -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
