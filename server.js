@@ -191,8 +191,8 @@ app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_fo
 app.post('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumNewTopic);    // Display the newTopic form
 app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
-app.get('/forum/posts/:id/edit', middleware.adminOnly, middleware.attachRenderingValues, routes.website_editPost);
-app.post('/forum/posts/:id/edit', middleware.adminOnly, routes.website_changePostText);
+app.get('/forum/posts/:id/edit', middleware.attachRenderingValues, routes.website_editPost);
+app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched

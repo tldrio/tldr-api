@@ -14,12 +14,14 @@ module.exports = function (req, res, next) {
     ;
 
   Post.findOne({ _id: req.params.id }, function (err, post) {
-    if (err || !post) {
-      partials.content = "Couldn't find the post you want to edit ...";
-    } else {
-      values.post = post;
-      partials.content = '{{>website/pages/forumEditPost}}';
+    if (err || !post) { return res.send(404); }
+
+    if (! values.admin && (! req.user || post.creator.toString() !== req.user._id.toString())) {
+      return res.send(401, 'You can only edit your own posts!');
     }
+
+    values.post = post;
+    partials.content = '{{>website/pages/forumEditPost}}';
 
     res.render('website/basicLayout', { values: values
                                       , partials: partials
