@@ -346,7 +346,76 @@ describe('Custom utils', function () {
     });
 
   });   // ==== End of '#arrayify' ==== //
-  
+
+
+  describe('#upsertKVInArray', function () {
+
+    it('Should not touch the array if key or value is missing', function (done) {
+      var a = [
+                { key: 'k1', value: 'v1' }
+              , { key: 'k2', value: 'v2' }
+              , { key: 'k3', value: 'v3' }
+              ]
+
+      a = customUtils.upsertKVInArray(a, 'bloup');
+      a[0].key.should.equal('k1');
+      a[1].key.should.equal('k2');
+      a[2].key.should.equal('k3');
+      a[0].value.should.equal('v1');
+      a[1].value.should.equal('v2');
+      a[2].value.should.equal('v3');
+
+      a = customUtils.upsertKVInArray(a, null, 'bloup');
+      a[0].key.should.equal('k1');
+      a[1].key.should.equal('k2');
+      a[2].key.should.equal('k3');
+      a[0].value.should.equal('v1');
+      a[1].value.should.equal('v2');
+      a[2].value.should.equal('v3');
+
+      done();
+    });
+
+    it('Should update the key if it exists', function (done) {
+      var a = [
+                { key: 'k1', value: 'v1' }
+              , { key: 'k2', value: 'v2' }
+              , { key: 'k3', value: 'v3' }
+              ]
+
+      a = customUtils.upsertKVInArray(a, 'k2', 'bloup');
+      a[0].key.should.equal('k1');
+      a[1].key.should.equal('k2');
+      a[2].key.should.equal('k3');
+      a[0].value.should.equal('v1');
+      a[1].value.should.equal('bloup');
+      a[2].value.should.equal('v3');
+
+      done();
+    });
+
+    it('Should add the key if it doesnt exist', function (done) {
+      var a = [
+                { key: 'k1', value: 'v1' }
+              , { key: 'k2', value: 'v2' }
+              , { key: 'k3', value: 'v3' }
+              ]
+
+      a = customUtils.upsertKVInArray(a, 'kk', 'bloup');
+      a[0].key.should.equal('k1');
+      a[1].key.should.equal('k2');
+      a[2].key.should.equal('k3');
+      a[3].key.should.equal('kk');
+      a[0].value.should.equal('v1');
+      a[1].value.should.equal('v2');
+      a[2].value.should.equal('v3');
+      a[3].value.should.equal('bloup');
+
+      done();
+    });
+
+  });   // ==== End of '#upsertKVInArray' ==== //
+
 
 
 });
