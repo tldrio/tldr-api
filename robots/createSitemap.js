@@ -1,3 +1,5 @@
+#! /usr/local/bin/node
+
 /**
  * Script to create the latest version of the sitemap
  * The sitemap file shouldn't exceed 50MB and 50,000 urls
