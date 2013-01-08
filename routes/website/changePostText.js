@@ -15,16 +15,15 @@ module.exports = function (req, res, next) {
     ;
 
   Post.findOne({ _id: req.params.id }, function (err, post) {
-    if (err || !post) {
-      partials.content = "Couldn't find the post you want to edit ...";
-      res.render('website/basicLayout', { values: values
-                                        , partials: partials
-                                        });
-    } else {
-      post.changeText(req.body.text, function (err) {
-        res.redirect('/forum/posts/' + req.params.id + '/edit');
-      });
+    if (err || !post) { return res.send(404, "Couldn't find the post you want to edit!"); }
+
+    if (! values.admin && (! req.user || post.creator.toString() !== req.user._id.toString())) {
+      return res.send(401, 'You can only edit your own posts!');
     }
+
+    post.changeText(req.body.text, function (err) {
+      res.redirect('/forum/posts/' + req.params.id + '/edit');
+    });
   });
 }
 
