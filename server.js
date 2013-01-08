@@ -155,8 +155,13 @@ app.get('/', middleware.attachRenderingValues     // Routing for this page depen
                 , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
-app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
-app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
+
+app.get('/latest-summaries', middleware.attachRenderingValues, routes.website_tldrs);
+app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
+
+app.get('/what-is-tldr', middleware.attachRenderingValues, routes.website_whatisit);
+app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
+
 app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_extension);   // 1 search engine friendly url and 3 aliases because of the HN fiasco
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
