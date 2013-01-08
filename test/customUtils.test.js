@@ -321,5 +321,33 @@ describe('Custom utils', function () {
   });   // ==== End of 'Slugification' ==== //
 
 
+  describe('#arrayify', function () {
+
+    it('Should return an empty array if given an empty object', function (done) {
+      customUtils.arrayify({}).length.should.equal(0);
+      done();
+    });
+
+    it('Should transform an object in an array of { key, value } and preserve types', function (done) {
+      var obj = { bloup: 'blap'
+                , clic: 5
+                , grass: false }
+        , res = customUtils.arrayify(obj);
+
+      res[0].key.should.equal('bloup');
+      res[1].key.should.equal('clic');
+      res[2].key.should.equal('grass');
+
+      res[0].value.should.equal('blap');
+      res[1].value.should.equal(5);
+      res[2].value.should.equal(false);
+
+      done();
+    });
+
+  });   // ==== End of '#arrayify' ==== //
+  
+
+
 });
 
