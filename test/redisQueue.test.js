@@ -11,7 +11,6 @@ var should = require('chai').should()
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , RedisQueue = require('../lib/redis-queue')
-  //, rqClient1 = new RedisQueue(config.redisQueue)
   ;
 
 

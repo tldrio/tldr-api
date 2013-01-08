@@ -24,5 +24,6 @@ db.connectToDatabase(function () {
     });
 
     console.log("Total read count: " + result);
+    process.exit(0);
   });
 });
