@@ -355,7 +355,7 @@ describe('Custom utils', function () {
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
               , { key: 'k3', value: 'v3' }
-              ]
+              ];
 
       a = customUtils.upsertKVInArray(a, 'bloup');
       a[0].key.should.equal('k1');
@@ -381,7 +381,7 @@ describe('Custom utils', function () {
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
               , { key: 'k3', value: 'v3' }
-              ]
+              ];
 
       a = customUtils.upsertKVInArray(a, 'k2', 'bloup');
       a[0].key.should.equal('k1');
@@ -399,7 +399,7 @@ describe('Custom utils', function () {
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
               , { key: 'k3', value: 'v3' }
-              ]
+              ];
 
       a = customUtils.upsertKVInArray(a, 'kk', 'bloup');
       a[0].key.should.equal('k1');
@@ -419,7 +419,7 @@ describe('Custom utils', function () {
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
               , { key: 'k3', value: 'v3' }
-              ]
+              ];
 
       a = customUtils.upsertKVInArray(a, 'kk', '');
       a[0].key.should.equal('k1');
