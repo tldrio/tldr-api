@@ -111,7 +111,7 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  Post.createAndSaveInstance(userInput, creator, function (err, post) {
+  Post.createAndSaveInstance(userInput, creator, self, function (err, post) {
     if (err) { return callback(err); }
     self.participants.addToSet(creator._id);
 

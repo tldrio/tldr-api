@@ -13,6 +13,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , User = models.User
   , Post = models.Post
+  , Topic = models.Topic
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
@@ -20,7 +21,7 @@ var should = require('chai').should()
 
 
 describe('Post', function () {
-  var user;
+  var user, topic;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -32,10 +33,15 @@ describe('Post', function () {
 
   beforeEach(function (done) {
     User.remove({}, function (err) {
-      Post.remove({}, function (err) {
-        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
-          user = _user;
-          done();
+      Topic.remove({}, function (err) {
+        Post.remove({}, function (err) {
+          User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+            user = _user;
+            Topic.createAndSaveInstance({ title: 'Hello you' }, user, function (err, _topic) {
+              topic = _topic;
+              done();
+            });
+          });
         });
       });
     });
@@ -48,18 +54,18 @@ describe('Post', function () {
       var postData = {}
         , valErr;
 
-      Post.createAndSaveInstance(postData, null, function (err, post) {
+      Post.createAndSaveInstance(postData, null, topic, function (err, post) {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.text.should.equal(i18n.validatePostText);
 
         postData.text = "";
-        Post.createAndSaveInstance(postData, null, function (err, post) {
+        Post.createAndSaveInstance(postData, null, topic, function (err, post) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.text.should.equal(i18n.validatePostText);
 
           // Let's try with 1001 characters
           postData.text = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-          Post.createAndSaveInstance(postData, null, function (err, post) {
+          Post.createAndSaveInstance(postData, null, topic, function (err, post) {
             valErr = models.getAllValidationErrorsWithExplanations(err.errors);
             valErr.text.should.equal(i18n.validatePostText);
 
@@ -73,12 +79,12 @@ describe('Post', function () {
       var postData = { text: "youpla" }
         , valErr;
 
-      Post.createAndSaveInstance(postData, null, function (err, post) {
+      Post.createAndSaveInstance(postData, null, topic, function (err, post) {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.creator.should.equal('required');
         _.keys(valErr).length.should.equal(1);
 
-        Post.createAndSaveInstance(postData, undefined, function (err, post) {
+        Post.createAndSaveInstance(postData, undefined, topic, function (err, post) {
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.creator.should.equal('required');
           _.keys(valErr).length.should.equal(1);
@@ -93,10 +99,11 @@ describe('Post', function () {
                      , unusedField: "test"
                      };
 
-      Post.createAndSaveInstance(postData, user, function (err, post) {
+      Post.createAndSaveInstance(postData, user, topic, function (err, post) {
         assert.isNull(err);
         post.text.should.equal("youpla");
         post.creator.toString().should.equal(user._id.toString());
+        post.topic.toString().should.equal(topic._id.toString());
         assert.isUndefined(post.unusedField);
         done();
       });
@@ -114,7 +121,7 @@ describe('Post', function () {
         , bigText = 'qqwqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopqqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopqwertyuiopwertyuiopZ'
         ;
 
-      Post.createAndSaveInstance(postData, user, function (err, post) {
+      Post.createAndSaveInstance(postData, user, topic, function (err, post) {
         assert.isNull(err);
         post.text.should.equal("youpla");
 
@@ -140,7 +147,7 @@ describe('Post', function () {
                      }
         ;
 
-      Post.createAndSaveInstance(postData, user, function (err, post) {
+      Post.createAndSaveInstance(postData, user, topic, function (err, post) {
         assert.isNull(err);
         post.text.should.equal("youpla");
 
@@ -163,7 +170,7 @@ describe('Post', function () {
       var postData = { text: "youpdocument.writela"
                      };
 
-      Post.createAndSaveInstance(postData, user, function (err, post) {
+      Post.createAndSaveInstance(postData, user, topic, function (err, post) {
         post.text.should.equal("youpla");
         done();
       });

@@ -1,4 +1,21 @@
-<form method="post" action="/forum/posts/{{post._id}}/edit">
-  <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{post.text}}</textarea><br>
-  <input type="submit" value="Express yourself" class="btn btn-primary">
-</form>
+<div class="centered-block">
+    <div id="title-and-vote">
+      {{#topic}}{{>website/voting}}{{/topic}}
+      <div class="right-of-voting">
+        <h1 class="topic-title">{{topic.title}}</h1><br>
+        <span class="post-topic-metadata">{{topic.posts.length}} post{{#topic.moreThanOnePost}}s{{/topic.moreThanOnePost}}</span>
+      </div>
+    </div>
+    <br><br>
+
+    <em><a href="/forum/topics/{{topic._id}}/{{topic.slug}}">Back to the topic</a></em>
+
+    <br>
+
+    <form method="post" action="/forum/posts/{{post._id}}/edit">
+      <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{post.text}}</textarea><br>
+      <input type="submit" value="Edit your post" class="btn btn-primary">
+    </form>
+
+    <br><br><br>
+</div>
