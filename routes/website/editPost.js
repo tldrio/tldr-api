@@ -25,9 +25,8 @@ module.exports = function (req, res, next) {
     values.post = post;
     values.topic = post.topic;
     values.topic.moreThanOnePost = post.topic.posts.length > 1
-     if (req.user) {   // Won't display the buttons if nobody's logged in
-       values.topic.userHasntVoted = values.topic.alreadyVoted.indexOf(req.user._id) === -1;
-     }
+    if (req.user) { values.topic.userHasntVoted = values.topic.alreadyVoted.indexOf(req.user._id) === -1; }
+
     partials.content = '{{>website/pages/forumEditPost}}';
 
     res.render('website/basicLayout', { values: values

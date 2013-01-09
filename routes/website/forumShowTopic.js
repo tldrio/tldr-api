@@ -36,9 +36,7 @@ module.exports = function (req, res, next) {
 
      topic.moreThanOnePost = (topic.posts.length === 0) || (topic.posts.length > 1);
      topic.moreThanOneVote = (topic.votes > 1) || (topic.votes === 0) || (topic.votes < -1);
-     if (req.user) {   // Won't display the buttons if nobody's logged in
-       topic.userHasntVoted = topic.alreadyVoted.indexOf(req.user._id) === -1;
-     }
+     if (req.user) { topic.userHasntVoted = topic.alreadyVoted.indexOf(req.user._id) === -1; }
 
       values.posts = posts;
       values.topic = topic;
