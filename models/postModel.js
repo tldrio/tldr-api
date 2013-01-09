@@ -55,12 +55,10 @@ PostSchema = new Schema(
  */
 function preparePostForCreation (postData, creator, topic) {
   var newPost = new Post(postData)
-    , creatorId = creator ? creator._id : null   // If there is no creator, a validation error will be returned
-    , topicId = topic ? topic._id : null
     ;
 
-  newPost.creator = creatorId;
-  newPost.topic = topicId;
+  newPost.creator = creator ? creator._id : null;
+  newPost.topic = topic ? topic._id : null;
 
   return newPost;
 }
