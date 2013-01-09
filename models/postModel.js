@@ -37,6 +37,7 @@ PostSchema = new Schema(
           , required: true
           }
   , creator: { type: ObjectId, ref: 'user', required: true }
+  , topic: { type: ObjectId, ref: 'topic' }
   , createdAt: { type: Date
                , default: Date.now
                }
@@ -49,13 +50,17 @@ PostSchema = new Schema(
  * Used to create a Post object and prepare it, to be created (=saved) or only validated
  * @param {Object} postData Data entered to create this posst
  * @param {User} creator Creator of this post
+ * @param {User} topic Topic containing this post
  * @return {Post}
  */
-function preparePostForCreation (postData, creator) {
+function preparePostForCreation (postData, creator, topic) {
   var newPost = new Post(postData)
-    , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
+    , creatorId = creator ? creator._id : null   // If there is no creator, a validation error will be returned
+    , topicId = topic ? topic._id : null
+    ;
 
   newPost.creator = creatorId;
+  newPost.topic = topicId;
 
   return newPost;
 }
@@ -69,11 +74,12 @@ function preparePostForCreation (postData, creator) {
  * Create a new post and persist it to the database
  * @param {Object} postData Data entered to create this post
  * @param {User} creator Creator of this post
+ * @param {User} topic Topic containing this post
  * @param {Function} cb Optional callback. Signature: err, post
  */
-PostSchema.statics.createAndSaveInstance = function (postData, creator, cb) {
+PostSchema.statics.createAndSaveInstance = function (postData, creator, topic, cb) {
   var callback = cb ? cb : function () {}
-    , newPost = preparePostForCreation(postData, creator);
+    , newPost = preparePostForCreation(postData, creator, topic);
 
   newPost.save(callback);
 };
