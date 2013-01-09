@@ -103,6 +103,7 @@ describe('Post', function () {
         assert.isNull(err);
         post.text.should.equal("youpla");
         post.creator.toString().should.equal(user._id.toString());
+        post.topic.toString().should.equal(topic._id.toString());
         assert.isUndefined(post.unusedField);
         done();
       });

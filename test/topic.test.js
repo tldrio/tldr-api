@@ -300,6 +300,7 @@ describe('Topic', function () {
         Post.findOne({ _id: topic.posts[0] }, function (err, post) {
           post.text.should.equal("And aaaa text");
           post.creator.toString().should.equal(user._id.toString());
+          post.topic.toString().should.equal(topic._id.toString());
 
           done();
         });
