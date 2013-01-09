@@ -20,6 +20,7 @@ var fs = require('fs')
   , numberOfUrls = 5   // There are 5 static urls we want google to crawl
   ;
 
+console.log("Rebuilding the sitemap: " + new Date());
 process.chdir(process.env.TLDR_API_ROOT);
 
 writeStream = fs.createWriteStream('./robots/sitemaps/sitemap.xml')
