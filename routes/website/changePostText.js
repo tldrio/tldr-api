@@ -14,16 +14,18 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {}
     ;
 
-  Post.findOne({ _id: req.params.id }, function (err, post) {
-    if (err || !post) { return res.send(404, "Couldn't find the post you want to edit!"); }
+  Post.findOne({ _id: req.params.id })
+      .populate('topic')
+      .exec(function (err, post) {
+        if (err || !post) { return res.send(404, "Couldn't find the post you want to edit!"); }
 
-    if (! values.admin && (! req.user || post.creator.toString() !== req.user._id.toString())) {
-      return res.send(401, 'You can only edit your own posts!');
-    }
+        if (! values.admin && (! req.user || post.creator.toString() !== req.user._id.toString())) {
+          return res.send(401, 'You can only edit your own posts!');
+        }
 
-    post.changeText(req.body.text, function (err) {
-      res.redirect('/forum/posts/' + req.params.id + '/edit');
-    });
-  });
+        post.changeText(req.body.text, function (err) {
+          res.redirect('/forum/topics/' + post.topic.id + '/' + post.topic.slug);
+        });
+      });
 }
 
