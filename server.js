@@ -167,6 +167,8 @@ app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_ex
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/api-documentation', middleware.attachRenderingValues, routes.website_apiDoc);
+
 
 // Tldr page
 app.get('/tldrs/:id/:slug', middleware.attachRenderingValues, routes.website_tldrPage);
