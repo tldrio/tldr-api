@@ -20,7 +20,9 @@ var bunyan = require('../lib/logger').bunyan
 function searchTldrsByBatch (req, res, next) {
   var query = req.query
     , batch = []
-    , urls = {};
+    , urls = {}
+    , maxBatchSize = 30
+    ;
 
   bunyan.incrementMetric('tldrs.search.routeCalled');
 
@@ -31,6 +33,7 @@ function searchTldrsByBatch (req, res, next) {
     urls[url] = normalizedUrl;
   });
 
+  if (batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
 
   //Search by batch
   Tldr.find({ url: { $in: batch } })
