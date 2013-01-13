@@ -8,31 +8,43 @@
     if something doesn't work!
   </p>
 
-  <h2>Url and authentication</h2>
-  <p>
-    The API base url is: <strong>https://api.tldr.io</strong>.<br><br>
-    All requests will contain two extra headers to authenticate them:
-    <ul>
-      <li><strong>api-client-name</strong>: the name of your application</li>
-      <li><strong>api-client-key</strong>: your secret key</li>
-    </ul>
-    To request a developer account, drop us an email at <a href="mailto:hello@tldr.io">hello@tldr.io</a>, tell us what you want to use our
-    API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining you why the request
-    was refused.
-  </p>
+  <h2>General information</h2>
+{{#markdown}}
+This is a JSON API whose base url is: `https://api.tldr.io`.  
+
+All requests will contain two extra headers to authenticate them:
+
+* `api-client-name`: the name of your application
+* `api-client-key`: your secret key
+{{/markdown}}
+
+To request a developer account, <a href="mailto:hello@tldr.io">drop us an email</a>, tell us what you want to use our
+API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining you why the request
+was refused.
 
   <hr class="soften">
 
-  <h2>GET /tldrs/latest/<em>:number</em></h2>
-  <p>
-    Get the <em>:number</em> latest tldrs. You can only get between 1 and 10 tldrs.
-  </p>
+  <h2>Routes</h2>
+{{#markdown}}
+**GET /tldrs/latest/_:number_**  
+Get the `:number` latest tldrs. You can only get between 1 and 10 tldrs.  
+{{/markdown}}
+<br>
+{{#markdown}}
+**GET /tldrs/search?url=_:url_**  
+Search the summary of the webpage whose url is `:url`. `:url` should be properly URL-encoded (for example in Javascript with `encodeURIComponent`).  
 
-  <h2>GET /tldrs/search?url=<em>:url</em></h2>
-  <p>
-    Search the summary of the webpage whose url is <em>:url</em>. <em>:url</em> should be properly URL-encoded (for example in Javascript with encodeURIComponent).
-    A 404 response means there is no tldr for this url.
-  </p>
+A 404 response means there is no tldr for this url.  
+{{/markdown}}
+<br>
+{{#markdown}}
+**POST /tldrs/searchBatch**  
+Search the tldrs for a batch of urls, not just one as in the route above.  
+The body of the request must be a JSON object of the form `{ batch: [url1, url2, ...] }`  
+The response will be of the form `{ tldrs: [tldr1, tldr2, ...] }.`  
+
+This route can only return up to 30 tldrs, if your batch contains more than 30 urls the response will be a 403 error.
+{{/markdown}}
 
   <hr class="soften">
 
