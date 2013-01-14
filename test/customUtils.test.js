@@ -199,8 +199,13 @@ describe('Custom utils', function () {
       theUrl = "http://youtube.com/path/file.extension?zzzzz=value&yyyyy=yto&utm_source=a&utm_medium=b&utm_content=c&utm_campaign=d&utm_term=e";
       normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?yyyyy=yto&zzzzz=value");
 
-      theUrl = "http://youtube.com/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
+      // Still be querystring-aware event if original url has a www that has been removed
+      theUrl = "http://www.youtube.com/path/file.extension?caee=value&c5=yto&ffutm_sss=bloup&utma=b";  // Don't remove key of the utm_ is not the beginning of the string or the underscore is missing
       normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
+
+      // Work well with non-www subdomains
+      theUrl = "http://news.ycombinator.com/path/file.extension?caee=value&c5=yto";
+      normalizeUrl(theUrl).should.equal("http://news.ycombinator.com/path/file.extension?c5=yto&caee=value");
 
       done();
     });
