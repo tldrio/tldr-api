@@ -2,5 +2,6 @@ user-agent: *
 disallow: /account
 disallow: /tldrscreated
 disallow: /forum/newTopic
+disallow: /forum/posts/
 
 sitemap: http://tldr.io/sitemaps/sitemap.xml

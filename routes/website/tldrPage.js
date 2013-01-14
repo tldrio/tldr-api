@@ -23,19 +23,26 @@ module.exports = function (req, res, next) {
   Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
+    // Redirect to the correct url if the slug is not the right one. Will result in partial double counting
+    // but also in much simpler code
     if (req.params.slug !== customUtils.slugify(tldr.title)) {
-      Tldr.update({ _id: req.params.id }, { $inc: { readCount: -1 } }, {}, function() {   // Avoid counting two reads if the wrong url was called
-        return res.redirect(301, '/tldrs/' + tldr._id + '/' + tldr.slug);
-      });
-    } else {
-      values.tldr = tldr;
-      values.title = tldr.title.substring(0, 60) +
-                     (tldr.title.length > 60 ? '...' : '') +
-                     config.titles.branding + config.titles.shortDescription;
-      // Warning: don't use double quotes in the meta description tag
-      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
-
-      return res.render('website/basicLayout', { values: values , partials: partials });
+      return res.redirect(301, '/tldrs/' + tldr._id + '/' + tldr.slug);
     }
+
+    values.tldr = tldr;
+    values.title = tldr.title.substring(0, 60) +
+                   (tldr.title.length > 60 ? '...' : '') +
+                   config.titles.branding + config.titles.shortDescription;
+    // Warning: don't use double quotes in the meta description tag
+    values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
+
+    // Specific metatags for the tldr page
+    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
+    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'article');
+    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug);
+    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
+    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || '');   // Ensure tldrCreatorTwitterHandle gets populated
+
+    return res.render('website/basicLayout', { values: values , partials: partials });
   });
-}
+};

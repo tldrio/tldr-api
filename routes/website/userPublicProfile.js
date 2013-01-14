@@ -29,12 +29,19 @@ module.exports = function (req, res, next) {
           .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
-              values.description = user.username + ' has contributed' + user.tldrsCreated.length.toString() + ' tl;drs. Follow them on tldr.io';
+              values.description = user.username + ' has contributed ' + user.tldrsCreated.length.toString() + ' tl;drs. Read them on tldr.io';
               values.user = user;
               values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + config.titles.branding + config.titles.shortDescription;
+
+              // Specific metatags
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', values.description);
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'author');
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + user.username);
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', user.gravatar.url + '&s=210');
+              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', user.bio);
             } else {
               return res.json(404, {});
             }

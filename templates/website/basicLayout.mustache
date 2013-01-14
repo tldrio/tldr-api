@@ -5,7 +5,10 @@
     <title>{{title}}{{^title}}Read summaries of interesting content{{/title}}</title>
     <meta name="description" content="{{description}}{{^description}}Summaries of interesting content, written by people.{{/description}}">
     <meta name="author" content="">
-    {{>fbmetatags}}
+
+    {{#pageMetaProperties}}
+      <meta property="{{key}}" content="{{value}}">
+    {{/pageMetaProperties}}
 
     <!-- Le styles -->
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">

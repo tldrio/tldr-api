@@ -21,11 +21,11 @@ function unsubscribe (req, res, next) {
 
   bunyan.incrementMetric('users.unsubscribe.routeCalled');
 
-  check = customUtils.computeSignatureForUnsubscribeLink(id + '/' + expiration);
+  check = customUtils.createDataForUnsubscribeLink(id, expiration);
 
   if ( !type || !id || !signature || !expiration
      || expiration - new Date() < 0
-     || signature !== check ) {
+     || signature !== check.signature ) {
       req.renderingValues.error = true;
       return res.render('website/basicLayout', { values: req.renderingValues
                                         , partials: { content: '{{>website/pages/unsubscribe}}' }

@@ -175,6 +175,24 @@ describe('Topic', function () {
       });
     });
 
+    it('Should add a new post creator to the list of participants', function (done) {
+      var topicData = { title: "A title" }
+        , postData1 = { text: "first post yeaaah" }
+        ;
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        topic.addPost(postData1, userbis, function (err, post) {
+          Topic.findOne({ _id: topic._id })
+          .exec(function (err, topic) {
+            topic.participants.length.should.equal(1);
+            topic.participants[0].toString().should.equal(userbis._id.toString());
+
+            done();
+          });
+        });
+      });
+    });
+
     it('Should update lastPost.at iif someone posts succesfully to a topic', function (done) {
       var topicData = { title: "A title" }
         , postData1 = { text: "first post yeaaah" }
@@ -266,7 +284,7 @@ describe('Topic', function () {
 
     });
 
-    it('Should able to create a topic with first post if everything is OK', function (done) {
+    it('Should able to create a topic with first post if everything is OK and add the creator to the participants', function (done) {
       var topicData = { title: "Onnnnne title" }
         , postData = { text: "And aaaa text" }
         , valErr;
@@ -276,10 +294,13 @@ describe('Topic', function () {
         topic.title.should.equal("Onnnnne title");
         topic.posts.length.should.equal(1);
         topic.creator.toString().should.equal(user._id.toString());
+        topic.participants.length.should.equal(1);
+        topic.participants[0].toString().should.equal(user._id.toString());
 
         Post.findOne({ _id: topic.posts[0] }, function (err, post) {
           post.text.should.equal("And aaaa text");
           post.creator.toString().should.equal(user._id.toString());
+          post.topic.toString().should.equal(topic._id.toString());
 
           done();
         });

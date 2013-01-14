@@ -43,6 +43,7 @@ TopicSchema = new Schema(
            , required: true
            }
   , creator: { type: ObjectId, ref: 'user', required: true }
+  , participants: [{ type: ObjectId, ref: 'user' }]
   , posts: [{ type: ObjectId, ref: 'post' }]
   , lastPost: { at: { type: Date
                     , default: Date.now }
@@ -110,8 +111,9 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  Post.createAndSaveInstance(userInput, creator, function (err, post) {
+  Post.createAndSaveInstance(userInput, creator, self, function (err, post) {
     if (err) { return callback(err); }
+    self.participants.addToSet(creator._id);
 
     self.posts.push(post);   // TODO: Mongoose claims this is atomic, but I think it's not. Check MongoDB's doc
     self.lastPost = {};

@@ -1,3 +1,5 @@
+#! /usr/local/bin/node
+
 /**
  * Script to create the latest version of the sitemap
  * The sitemap file shouldn't exceed 50MB and 50,000 urls
@@ -14,11 +16,16 @@ var fs = require('fs')
   , Tldr = models.Tldr
   , User = models.User
   , Topic = models.Topic
-  , writeStream = fs.createWriteStream('./sitemaps/sitemap.xml')
-  , before = fs.readFileSync('./sitemap.before.xml', 'utf8')
-  , after = fs.readFileSync('./sitemap.after.xml', 'utf8')
+  , writeStream, before, after
   , numberOfUrls = 5   // There are 5 static urls we want google to crawl
   ;
+
+console.log("Rebuilding the sitemap: " + new Date());
+process.chdir(process.env.TLDR_API_ROOT);
+
+writeStream = fs.createWriteStream('./robots/sitemaps/sitemap.xml')
+before = fs.readFileSync('./robots/sitemap.before.xml', 'utf8')
+after = fs.readFileSync('./robots/sitemap.after.xml', 'utf8')
 
 // Add an url to the sitemap represented by writeStream ws
 function addUrlToMap(ws, url, changefreq, priority) {
