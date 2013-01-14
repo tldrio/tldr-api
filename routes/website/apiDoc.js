@@ -15,7 +15,6 @@ module.exports = function (req, res, next) {
   values.title = "Developpers" + config.titles.branding + config.titles.shortDescription;
   values.description = "Documentation for our API.";
   partials.content = '{{>website/pages/apiDoc}}';
-  values.markdown = function (text) { return marked(text); };   // Lambda to use markdown
 
   res.render('website/basicLayout', { values: values
                                     , partials: partials
