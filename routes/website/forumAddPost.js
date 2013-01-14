@@ -24,11 +24,11 @@ module.exports = function (req, res, next) {
         // Send moderation email
         mailer.sendEmail({ type: 'postToForum'
                          , development: false
-                         , values: { user: req.user, websiteUrl: config.websiteUrl, topic: topic, postData: { text: req.body.text } }
+                         , values: { user: req.user, topic: topic, postData: { text: req.body.text } }
                          });
 
         // Redirect instead of render so that user can reload the topic without the "POST" error message
-        return res.redirect(config.websiteUrl + '/forum/topics/' + topic._id);
+        return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
       }
     });
   });

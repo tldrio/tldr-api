@@ -2,9 +2,11 @@
 
   <div class="tldr-tldr">
     <div class="tldr-header">
-      <img class="tldr-favicon" src="http://www.google.com/s2/favicons?domain={{hostname}}">
-      <span class="tldr-title">{{title}}</span>
-      <span class="tldr-hostname">({{hostname}})</span>
+      <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}" alt="Favicon for {{hostname}}">
+      <p class="tldr-title">
+        <a target="_blank" href="{{url}}">{{title}}</a>
+        <span class="tldr-hostname">({{hostname}})</span>
+      </p>
     </div>
 
     <div class="tldr-metadata">
@@ -12,6 +14,7 @@
       <span>
         tl;dr by
           <span><a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
+          - read {{readCount}} times
       </span>
       {{/creator}}
     </div>
@@ -28,12 +31,18 @@
     </div>
   </div>
 
-  <div class="sharing-container sharing-container-page">
-    <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
-      <i class="icon-white icon-share-alt"></i>
-      Share
-    </button>
+  <div class="tldr-tldr">
+    <div class="sub-tldr">
+      <a href="{{url}}" target="_blank" id="read-full-article" class="btn btn-primary">Read full article</a>
+      <div class="sharing-container">
+        <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
+          <i class="icon-white icon-share-alt"></i>
+          Share
+        </button>
+      </div>
+    </div>
   </div>
+
 
 </div>
 

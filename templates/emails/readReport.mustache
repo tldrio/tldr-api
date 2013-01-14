@@ -1,24 +1,28 @@
 Hey {{user.username}}, <br>
 <br>
 
-We thought you'd be glad to know that you <strong>made a big difference for people around the world</strong> with your contribution to tldr.io <br>
-<br>
-
-{{#tldrsForReport}}
-- The tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}">{{tldr.title}}</a> has been read <strong>{{newViewsText}}</strong> since last time. It now boasts a total read count of <strong>{{tldr.readCount}}</strong>.<br>
-{{/tldrsForReport}}
+Your tl;drs are saving people <strong>a massive amount of time</strong>.
 <br>
 <br>
-Want to read some interesting articles? <a href="{{websiteUrl}}/tldrs">Check out the latest contributions to tldr.io</a>!
+This week your tl;drs have been read <strong>{{totalViewsThisWeek}} times</strong> so you can now boast <strong>{{totalViewsForAllTldrs}} views</strong> for all your tl;drs!
 <br>
 <br>
-Cheers
+Your biggest hit this week is <a href="{{websiteUrl}}/tldrs/{{topTldrThisWeek.tldr._id}}/{{topTldrThisWeek.tldr.slug}}">{{topTldrThisWeek.tldr.title}}</a> which has been <strong>viewed {{topTldrThisWeek.readCountWeek}} times.</strong>
+Your most popular contribution is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{topTldrOfAllTime._id}}/{{topTldrOfAllTime.slug}}">{{topTldrOfAllTime.title}}</a> which has been <strong>viewed {{topTldrOfAllTime.readCount}} times</strong>.
+<br>
+Did you know you can access all your recent contributions and see their read counts on <a href="{{websiteUrl}}/{{user.username}}">your public profile</a>?
 <br>
 <br>
+Congrats for these stats! If you wanna contribute the next big tl;dr hit, try summarizing the top of <a href="http://news.ycombinator.com">Hacker News</a>!
+<br>
+<br>
+<br>
+Cheers,
 Charles, Louis and Stan <br>
 Cofounders of <a href="http://tldr.io">tldr.io</a>
 <br>
 <br>
 --
 <br>
-Tired of being congratulated? You can <a href="{{websiteUrl}}/account">unsubscribe here</a> by changing your email preferences.
+Tired of being congratulated?
+<a href="{{websiteUrl}}/notifications/unsubscribe?id={{user._id}}&type=read&signature={{signature}}&expiration={{expiration}}">Unsubscribe</a> in one click.

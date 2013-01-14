@@ -58,6 +58,10 @@ TopicSchema = new Schema(
   }
 , { strict: true });
 
+// Keep a virtual 'slug' attribute
+TopicSchema.virtual('slug').get(function () {
+  return customUtils.slugify(this.title);
+});
 
 
 /**

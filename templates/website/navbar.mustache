@@ -6,78 +6,84 @@
 
       <ul class="nav">
         <li{{#tldrs}} class="active"{{/tldrs}}><a href="/tldrs">Latest tldrs</a></li>
-        <li{{#extension}} class="active"{{/extension}}><a href="/chromeextension">Chrome extension</a></li>
+        <li{{#extension}} class="active"{{/extension}}><a href="/chrome-extension">Chrome extension</a></li>
         <li{{#forum}} class="active"{{/forum}}><a href="/forum/topics">Forum</a></li>
         <li{{#whatisit}} class="active"{{/whatisit}}><a href="/whatisit">What is this?</a></li>
       </ul>
 
-        <!-- Right part of the navbar, holding the signup and login links -->
-        <ul class="nav pull-right">
+      <!-- Right part of the navbar, holding the signup and login links -->
+      <ul class="nav pull-right">
 
-          <!-- User is not logged, display the login widget -->
-          {{^loggedUser}}
-            <li{{#signup}} class="active"{{/signup}}>
-              <a href="/signup">Sign up!</a>
+        <!-- User is not logged, display the login widget -->
+        {{^loggedUser}}
+        <li{{#signup}} class="active"{{/signup}}>
+          <a href="/signup">Sign up!</a>
+        </li>
+        <li class="divider-vertical"></li>
+
+        <li  class="dropdown">
+          <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
+            <small>Already a member?</small>
+            Log in
+            <b class="caret"></b>
+          </a>
+
+          <ul id="login-widget" class="dropdown-menu dropdown-form">
+            <!-- If there are login errors, they are displayed here -->
+            <li class="login-invalid-input" style="display: none;">
+              <div class="alert">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <small class='login-error-message'></small>
+              </div>
             </li>
-            <li class="divider-vertical"></li>
 
-            <li  class="dropdown">
-              <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
-                <small>Already a member?</small>
-                Log in
-              <b class="caret"></b>
-            </a>
+            <!-- Login form -->
+            <li>
+              <form>
+                <fieldset>
+                  <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
+                  <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password">
+                  <button type="submit" class="btn btn-primary login-status-submit">Log in</button>
+                  <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
+                </fieldset>
+              </form>
+            </li>
+          </ul>
+        </li>
+        {{/loggedUser}}
 
-            <ul id="login-widget" class="dropdown-menu dropdown-form">
-              <!-- If there are login errors, they are displayed here -->
-              <li class="login-invalid-input" style="display: none;">
-                <div class="alert">
-                  <button type="button" class="close" data-dismiss="alert">×</button>
-                  <small class='login-error-message'></small>
-                </div>
-              </li>
+        <!-- User is logged, display his personal space -->
+        {{#loggedUser}}
+        <li  class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <img class="small-avatar" height="20" width="20" src="{{gravatar.url}}&s=20" alt="{{loggedUser.username}}">
+            <span id="logged-user-username" data-username="{{loggedUser.username}}" data-email="{{loggedUser.email}}">
+              {{loggedUser.username}} 
+              <!--
+              {{#unseenNotifications}}
+              <span class="badge unseen-notifs-count">{{unseenNotifications}}</span>
+              {{/unseenNotifications}}
+              -->
+            </span>
+            <b class="caret"></b>
+          </a>
 
-              <!-- Login form -->
-              <li>
-                <form>
-                  <fieldset>
-                    <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
-                    <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password">
-                    <button type="submit" class="btn btn-primary login-status-submit">Log in</button>
-                    <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
-                  </fieldset>
-                </form>
-              </li>
-            </ul>
-          {{/loggedUser}}
-
-          <!-- User is logged, display his personal space -->
-          {{#loggedUser}}
-            <li  class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                <img class="small-avatar" height="20" width="20" src="{{gravatar.url}}&s=20" alt="{{loggedUser.username}}">
-                <span id="logged-user-username" data-username="{{loggedUser.username}}" data-email="{{loggedUser.email}}">
-                  {{loggedUser.username}} 
-                  {{#unseenNotifications}}
-                  <span class="badge unseen-notifs-count">{{unseenNotifications}}</span>
-                  {{/unseenNotifications}}
-                </span>
-              <b class="caret"></b>
-            </a>
-
-            <ul class="dropdown-menu dropdown-form">
-                <li><a href="/notifications">My notifications {{#unseenNotifications}}<span class="badge unseen-notifs-count">{{unseenNotifications}}</span>{{/unseenNotifications}}</a></li>
-                <li class="divider"></li>
-                <li><a href="/account">My account</a></li>
-                <li class="divider"></li>
-                <li><a href="/{{loggedUser.username}}">My profile</a></li>
-                <li class="divider"></li>
-                <li><a href="/tldrscreated">My <em>tl;drs</em></a></li>
-                <li class="divider"></li>
-                <li><a href="/logout" id="login-status-logout">Sign out</a></li>
-            </ul>
-          {{/loggedUser}}
-       </ul>
+          <ul class="dropdown-menu dropdown-form">
+            <!--
+            <li><a href="/notifications">My notifications {{#unseenNotifications}}<span class="badge unseen-notifs-count">{{unseenNotifications}}</span>{{/unseenNotifications}}</a></li>
+            <li class="divider"></li>
+            -->
+            <li><a href="/account">My account</a></li>
+            <li class="divider"></li>
+            <li><a href="/{{loggedUser.username}}">My profile</a></li>
+            <li class="divider"></li>
+            <li><a href="/tldrscreated">My <em>tl;drs</em></a></li>
+            <li class="divider"></li>
+            <li><a href="/logout" id="login-status-logout">Sign out</a></li>
+          </ul>
+        </li>
+        {{/loggedUser}}
+      </ul>
 
     </div>
   </div>

@@ -13,7 +13,6 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , db = app.db
   , mongoose = require('mongoose')
-  , customHogan = require('../lib/customHogan')
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
@@ -21,6 +20,7 @@ var should = require('chai').should()
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
+  , customUtils = require('../lib/customUtils')
   , Topic = models.Topic
 
   // Global variables used throughout the tests
@@ -210,6 +210,30 @@ describe('Webserver', function () {
 
     });
 
+    it('should increment the readcount with search, getbyId (json), and tldr page calls', function (done) {
+      var prevReadCount;
+			Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
+				prevReadCount = tldr.readCount;
+				request.get({ headers: {"Accept": "application/json"}
+										, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent(tldr1.url) }, function (error, response, body) {
+					JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 1);
+					request.get({ headers: {"Accept": "application/json"}
+											, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
+						JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 2);
+						request.get( { headers: {"Accept": "text/html"}
+                         , uri: rootUrl + '/tldrs/' + tldr1._id + '/' + tldr1.slug }
+                       , function (error, response, body) {
+							Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
+								tldr.readCount.should.be.equal(prevReadCount + 3);
+								done();
+							});
+						});
+					});
+				});
+			});
+
+    });
+
     // This test will contain all we need to test this function as it takes some time to prepare the database every time
     it('Search tldrs with custom query', function (done) {
       var someTldrs = []
@@ -222,8 +246,10 @@ describe('Webserver', function () {
       for (i = 0; i <= 25; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
+                                , originalUrl: 'http://needforair.com/sopa/number' + i
                                 , hostname: 'needforair.com'
                                 , title: 'sopa'
+                                , slug: 'sopa-' + i
                                 , summaryBullets: ['Great article']
                                 , resourceAuthor: 'Louis'
                                 , resourceDate: new Date()
@@ -438,12 +464,44 @@ describe('Webserver', function () {
 
     });
 
+    it('Should redirect to correct tldr-page "slug url" if queried with the wrong one or the former url type, with no change in readCount', function (done) {
+      var previousReadCount;
 
-    it('Should serve tldr-page if accept header is text/html', function (done) {
-      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, body) {
-        res.statusCode.should.equal(200);
-        res.headers['content-type'].should.contain('text/html');
-        res.body.should.contain('<div class="tldr-read-container">');
+      Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
+        previousReadCount = _tldr.readCount;
+
+        request.get( { headers: {"Accept": "text/html"}
+                     , uri: rootUrl + '/tldrs/' + tldr2._id + '/some-bad-slug'
+                     , followRedirect: false }
+                   , function (err, res, body) {
+          res.statusCode.should.equal(301);
+          res.headers['content-type'].should.contain('text/html');
+          res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
+
+          Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
+            _tldr.readCount.should.equal(previousReadCount);
+
+          request.get( { headers: {"Accept": "text/html"}
+                       , uri: rootUrl + '/tldrs/' + tldr2._id
+                       , followRedirect: false }
+                     , function (err, res, body) {
+              res.statusCode.should.equal(301);
+              res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
+
+              Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
+                _tldr.readCount.should.equal(previousReadCount);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should serve 404 if a non existing tldr-page was requested', function (done) {
+      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/bloup/50af46f20bc6851111111111' }, function (err, res, body) {
+        res.statusCode.should.equal(404);
         done();
       });
     });
@@ -732,42 +790,32 @@ describe('Webserver', function () {
 
   });   // ==== End of 'PUT tldrs' ==== //
 
-
   describe('GET users', function () {
 
     it('admins should be able to access any user\'s data', function (done) {
       var obj;
 
       async.waterfall([
-        async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
-      , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
-            res.statusCode.should.equal(200);
-            obj = JSON.parse(body);
-            obj.email.should.equal('user1@nfa.com');
-
-            cb();
-          });
-        }
-      ], done);
-    });
-
-    it('non admin cannot access user data through /users/:id', function (done) {
-      var obj;
-
-      async.waterfall([
         async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
       , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/users/' + user1._id }, function (err, res, body) {
-            res.statusCode.should.equal(401);
-            obj = JSON.parse(body);
-            obj.message.should.equal(i18n.notAnAdmin);
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            body.should.not.contain('only-admin-infos');
+            cb();
+          });
+        }
+      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
+      , function (cb) {
+          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+            res.statusCode.should.equal(200);
+            body.should.contain('only-admin-infos');
 
             cb();
           });
         }
       ], done);
     });
+
 
   });   // ==== End of 'GET users' ==== //
 
@@ -1551,6 +1599,48 @@ describe('Webserver', function () {
                 response.statusCode.should.equal(200);
                 body.unseen.should.equal.false;
                 done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('One should be able to unsubscribe in one click from the notification emails', function (done) {
+      User.findOne({ _id: user1._id },  function (err, user) {
+        var expiration = new Date().setDate(new Date().getDate() + 2)
+          , signature;
+
+        user.notificationsSettings.read.should.be.true;
+        expiration = new Date().setDate(new Date().getDate() + 2);
+        signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '//' + expiration);
+
+        // This request is bad (signature)
+        request.get({ headers: {"Accept": "text/html"}
+                    , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+          body.should.contain('alert-error');
+          User.findOne({ _id: user1._id },  function (err, user) {
+            user.notificationsSettings.read.should.be.true;
+
+            expiration = new Date().setDate(new Date().getDate() - 1);
+            signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '/' + expiration);
+            // This request is bad too (expiration)
+            request.get({ headers: {"Accept": "text/html"}
+                        , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+              body.should.contain('alert-error');
+              User.findOne({ _id: user1._id },  function (err, user) {
+                user.notificationsSettings.read.should.be.true;
+
+                expiration = new Date().setDate(new Date().getDate() + 2);
+                signature = customUtils.computeSignatureForUnsubscribeLink(user1._id + '/' + expiration);
+
+                request.get({ headers: {"Accept": "text/html"}
+                            , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ expiration+'&signature='+signature }, function (error, response, body) {
+                    User.findOne({ _id: user1._id },  function (err, user) {
+                      user.notificationsSettings.read.should.be.false;
+                      done();
+                    });
+                });
               });
             });
           });

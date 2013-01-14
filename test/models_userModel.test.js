@@ -666,7 +666,7 @@ describe('User', function () {
       });
     });
 
-    it('should remove the leading @ of a twitter handle if there is one', function (done) {
+    it('should all @ from a twitter handle if there are some', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -682,8 +682,16 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err, user) {
         user.updateValidFields(newData, function(err, user2) {
           user2.twitterHandle.should.equal('tldrio');
+          newData.twitterHandle = "@@bloup";
+          user.updateValidFields(newData, function(err, user2) {
+            user2.twitterHandle.should.equal('bloup');
+            newData.twitterHandle = "@@bl@o@up";
+            user.updateValidFields(newData, function(err, user2) {
+              user2.twitterHandle.should.equal('bloup');
 
-          done();
+              done();
+            });
+          });
         });
       });
     });
@@ -1097,7 +1105,7 @@ describe('User', function () {
 
     it('Should be able to get a users notifs', function (done) {
       function publish (options, cb) {
-        notificator.publish(options, function () { cb(); });
+        notificator.receiveNotification(options, function () { cb(); });
       }
 
       async.waterfall([
@@ -1123,7 +1131,7 @@ describe('User', function () {
 
     it('Should be able to mark all unseen notifs as seen', function (done) {
       function publish (options, cb) {
-        notificator.publish(options, function () { cb(); });
+        notificator.receiveNotification(options, function () { cb(); });
       }
 
       async.waterfall([
@@ -1162,6 +1170,30 @@ describe('User', function () {
       ], done);
     });
 
+    it('Should be able to get only some of the users notifs', function (done) {
+      function publish (options, cb) {
+        notificator.receiveNotification(options, function () { cb(); });
+      }
+
+      async.waterfall([
+        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
+      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
+      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
+      , function (cb) {
+          user1.getNotifications(2, function (err, notifs) {
+            notifs.length.should.equal(2);
+            notifs[0].unseen.should.equal(true);
+            notifs[1].unseen.should.equal(true);
+            user2.getNotifications(0, function (err, notifs) {
+              notifs.length.should.equal(1);
+              notifs[0].unseen.should.equal(true);
+              cb();
+            });
+          });
+        }
+      ], done);
+    });
 
   });   // ==== End of 'Notifications' ==== //
 

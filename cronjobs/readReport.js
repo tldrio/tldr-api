@@ -1,6 +1,7 @@
 #! /usr/local/bin/node
 
 var _ = require('underscore')
+  , h4e = require('h4e')
   , async = require('async')
   , bunyan = require('../lib/logger').bunyan
   , config = require('../lib/config')
@@ -10,13 +11,20 @@ var _ = require('underscore')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
   , Notification = models.Notification
+  , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
   , User = models.User;
 
+h4e.setup({ extension: 'mustache'
+          , baseDir: process.env.TLDR_API_DIR + '/templates'
+          , toCompile: ['emails'] });
 
 function sendReadReport (previousFlush) {
   var notifsByUser
-    , userIds;
+    , userIds
+    , emailsSent = 0
+    , expiration = new Date().setDate(new Date().getDate() + config.unsubscribeExpDays); // 48h expiration
+
 
   Notification.find({})
    .where('createdAt').gte(previousFlush)
@@ -34,37 +42,55 @@ function sendReadReport (previousFlush) {
      User.find({ _id: { $in: userIds } }, function (err, users) {
        async.forEach(users, function (user, callback) {
          var tldrsRead
-           , tldrsForReport = []
-					 , newViews
-					 , newViewsText;
+           , signature
+           , totalViewsThisWeek // total notif count this week
+           , totalViewsForAllTldrs //total readCount for all tldrs created
+           , topTldrThisWeek = {} // top tldr this week
+           , notifsForTopTldrThisWeek // all notifs regarding the most read tldr this week
+           , topTldrOfAllTime // top tldr of all time
+           , values; // Object containing the values needed for templating
 
          if (user.notificationsSettings.read) {
 
            // Group by tldr read
            tldrsRead = _.groupBy(notifsByUser[user._id], function(doc) { return doc.tldr.toString();});
+           // Find the most read tldr this week
+           notifsForTopTldrThisWeek = _.max(tldrsRead, function(tldr) { return tldr.length;});
+           topTldrThisWeek = { _id: notifsForTopTldrThisWeek[0].tldr.toString(), readCountWeek: notifsForTopTldrThisWeek.length};
 
-           // Find the tldrs
-           Tldr.find({ _id: { $in: _.keys(tldrsRead) } }, function (err, tldrs) {
+           // total notif count this week
+           totalViewsThisWeek = notifsByUser[user._id].length;
 
-             // Iterate on the tldr for a given user
-             tldrs.forEach(function (tldr, j) {
-							 newViews = tldrsRead[tldr._id].length;
-							 if (newViews === 1) {
-							   newViewsText = newViews + ' more time';
-							 } else {
-							   newViewsText = newViews + ' more times';
-							 }
-               tldrsForReport.push({ newViewsText: newViewsText
-																	 , tldr: tldr });
-             });
+           // This is all the tldrs from the given user
+           Tldr.find({ _id: { $in: user.tldrsCreated } }, function (err, tldrs) {
 
+             topTldrOfAllTime = _.max(tldrs, function(tldr) { return tldr.readCount;});
+             // populate top tldr of this week
+             topTldrThisWeek.tldr = _.find(tldrs, function(tldr) {return tldr._id.toString() === topTldrThisWeek._id;});
+             //total readCount for all tldrs created
+             totalViewsForAllTldrs = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
+
+             signature = customUtils.computeSignatureForUnsubscribeLink(user._id + '/' + expiration);
+             values = { topTldrThisWeek: topTldrThisWeek
+                      , topTldrOfAllTime: topTldrOfAllTime
+                      , totalViewsForAllTldrs: totalViewsForAllTldrs
+                      , totalViewsThisWeek: totalViewsThisWeek
+                      , user: user
+                      , signature: signature
+                      , expiration: expiration};
+
+             emailsSent += 1;
              mailer.sendEmail({ type: 'readReport'
                               , development: true
-                              //, to: 'hello+test@tldr.io'
-                              , to: user.email
-                              , values: { tldrsForReport: tldrsForReport, user: user }
-                              }, function () { callback(null); } );
+                              , values: values
+                              , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                              }, function () {
+                                bunyan.info('Report sent to ' + user.email);
+                                callback(null);
+                              } );
            });
+          } else {
+            callback(null);
           }
        }, function (err) {
 				 if (err) {
@@ -72,7 +98,7 @@ function sendReadReport (previousFlush) {
 					 process.exit(1);
 				 }
 
-				 bunyan.info('ReadReport successfully executed');
+				 bunyan.info('ReadReport successfully executed. '+ emailsSent + ' emails sent');
 				 process.exit(0);
 			 });
 

@@ -14,8 +14,12 @@ module.exports = function (req, res, next) {
   values.forum = true;
   partials.content = '{{>website/pages/forumShowTopic}}';
 
-  Topic.findOne({ _id: req.params.id })
-       .exec(function (err, topic) {
+  Topic.findOne({ _id: req.params.id }, function (err, topic) {
+    if (err || !topic) { return res.json(404, {}); }
+
+    if (req.params.slug !== customUtils.slugify(topic.title)) {
+      return res.redirect(301, '/forum/topics/' + topic._id + '/' + topic.slug);
+    }
 
     // Still not possible in mongoose to subpopulate documents so we do it manually
     Post.find({ _id: { $in: topic.posts } })
@@ -25,7 +29,8 @@ module.exports = function (req, res, next) {
      _.each(posts, function (post) {
        post.timeago = customUtils.timeago(post.createdAt);
        post.markedText = marked(post.text);
-
+       post.markedText = post.markedText.replace(/<a href="([^>]*)">/g, '<a href="$1" rel="nofollow">'); // Make all user-supplied links nofollow
+       if (values.admin) { post.editable = true; }
      });
 
      topic.moreThanOnePost = (topic.posts.length === 0) || (topic.posts.length > 1);
@@ -36,6 +41,7 @@ module.exports = function (req, res, next) {
 
       values.posts = posts;
       values.topic = topic;
+      values.title = topic.title + config.titles.branding;
 
       res.render('website/basicLayout', { values: values
                                         , partials: partials

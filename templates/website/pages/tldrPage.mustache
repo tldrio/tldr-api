@@ -1,18 +1,16 @@
 <div class="row">
-  <div class="well-white page-tldr-container">
-    {{>website/tldr.read.page}}
+  <div class="tldr-base-unit page-tldr-container">
+    {{#tldr}} {{>website/tldr.read.page}} {{/tldr}}
   </div>
 </div>
 <div class="page-help">
   <div class="row">
     <div class="">
       <span class="help-inline">This is a summarized version.</span>
-      <a href="{{url}}" target="_blank" id="read-full-article" class="btn btn-primary">Read full article</a>
-    </div>
-  </div>
-  <div class="">
-    <div class="">
       <a id="cta-to-tldr" href="http://tldr.io/whatisit" target="_blank"><small>Where does this summary come from?</small></a>
+      {{#admin}}
+      <br><a href="{{dbguiUrl}}/tldrs/{{tldr._id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
+      {{/admin}}
     </div>
   </div>
 </div>

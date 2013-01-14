@@ -7,7 +7,6 @@ var express = require('express')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , DbObject = require('./lib/db')
-  , mongoose = require('mongoose')
   , models = require('./lib/models')
   , app                               // Will store our express app
   , config = require('./lib/config')
@@ -15,8 +14,8 @@ var express = require('express')
   , passport = require('./lib/passport')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
-  , hogan = require('hogan.js')
-  , customHogan = require('./lib/customHogan');
+  , notificator = require('./lib/notificator')
+  , h4e = require('h4e');
 
 
 
@@ -28,10 +27,13 @@ app.db = new DbObject( config.dbHost
                         , config.dbPort
                         );
 
-// Used for HTML templating
-app.engine('mustache', customHogan.render); // Assign Hogan engine to .mustache files
-app.set('view engine', 'mustache'); // Set mustache as the default extension
-app.set('views', config.templatesDir);
+// Set up templating
+h4e.setup({ app: app
+          , baseDir: config.templatesDir
+          , toCompileDirs: ['website', 'emails']
+          , extension: 'mustache'
+          });
+
 
 // Trust the nginx proxy
 app.enable('trust proxy');
@@ -122,8 +124,9 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Admin only routes
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
-app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // delete tldr
-app.get('/users/:id', middleware.adminOnly, routes.getUserById);
+app.get('/:username/admin', middleware.adminOnly, routes.getUser);
+app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
+app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -138,13 +141,8 @@ app.options('*', function (req, res, next) {
 });
 
 
-
-/*
- * Hybrid routes that can either serve HTML or JSON depending on the requested content type
- *
- */
+// Only hybrid for retrocompatibility
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
-
 
 
 /*
@@ -153,18 +151,22 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
  */
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
-app.get('/index', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
+app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
                 , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
                                            , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
 app.get('/tldrs', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/whatisit', middleware.attachRenderingValues, routes.website_whatisit);
-app.get('/crx', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
-app.get('/chromeextension', middleware.attachRenderingValues, routes.website_extension);   // Fuck us
-app.get('/extension', middleware.attachRenderingValues, routes.website_extension);
+app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_extension);   // 1 search engine friendly url and 3 aliases because of the HN fiasco
+app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+
+// Tldr page
+app.get('/tldrs/:id/:slug', middleware.attachRenderingValues, routes.website_tldrPage);
 
 // Login, logout
-app.get('/logout', function (req, res, next) { req.logOut(); res.redirect(config.websiteUrl + '/index'); });
+app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
 app.get('/login', routes.website_login);
 
 // Email confirmation, password recovery
@@ -179,13 +181,19 @@ app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingVal
 
 // Forum
 app.get('/forum/topics', middleware.attachRenderingValues, routes.website_forum);
-app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumShowTopic);   // Show a whole topic
+app.get('/forum/topics/:id/:slug', middleware.attachRenderingValues, routes.website_forumShowTopic);   // Show a whole topic
+app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumShowTopic);   // For retrocompatibility
 app.post('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumNewTopic);    // Display the newTopic form
 app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
+app.get('/forum/posts/:id/edit', middleware.adminOnly, middleware.attachRenderingValues, routes.website_editPost);
+app.post('/forum/posts/:id/edit', middleware.adminOnly, routes.website_changePostText);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
+// Unsubscribe Notifications
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
 
 
 
@@ -196,26 +204,22 @@ app.launchServer = function (cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
-  customHogan.readAndCompileTemplates('page', function () {
-    customHogan.readAndCompileTemplates('website', function () {
-      self.db.connectToDatabase(function(err) {
-        if (err) { return callback(err); }
+  self.db.connectToDatabase(function(err) {
+    if (err) { return callback(err); }
 
-        self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
+    self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
 
-        // Handle any connection error gracefully
-        self.apiServer.on('error', function () {
-          bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
-          process.exit(1);
-        });
-
-        // Begin to listen. If the callback gets called, it means the server was successfully launched
-        self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
-          bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
-          callback();
-        }]);
-      });
+    // Handle any connection error gracefully
+    self.apiServer.on('error', function () {
+      bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
+      process.exit(1);
     });
+
+    // Begin to listen. If the callback gets called, it means the server was successfully launched
+    self.apiServer.listen.apply(self.apiServer, [config.svPort, function() {
+      bunyan.info('Server %s launched in %s environment, on port %s. Db name is %s on port %d', self.name, config.env, config.svPort, config.dbName, config.dbPort);
+      callback();
+    }]);
   });
 };
 
@@ -243,6 +247,7 @@ app.stopServer = function (cb) {
  */
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
+  notificator.init();
 }
 
 

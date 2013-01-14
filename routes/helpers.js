@@ -11,33 +11,8 @@ var i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , bunyan = require('../lib/logger').bunyan
   , mailer = require('../lib/mailer')
-  , notificator = require('../lib/notificator')
   ;
 
-
-/**
- * Common function used by all API routes that want to send a tldr to a client
- * @param {Request} req The usual request object
- * @param {Response} req The usual response object
- * @param {Tldr} tldr The tldr to send. Fetching it is the job of this function's caller
- */
-function apiSendTldr (req, res, tldr) {
-  // Increment read count but don't wait for DB access to finish to return to client
-  tldr.incrementReadCount();
-
-  // TODO dont send notif if user is admin
-  notificator.publish({ type: 'read'
-                      , from: req.user
-                      , tldr: tldr
-                      // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                      , to: tldr.creator
-                      });
-
-  // If this is an admin type request, simply return data as JSON
-  bunyan.incrementMetric('tldrs.get.json');
-
-  return res.json(200, tldr);
-}
 
 /**
  * Convenience function to factor code betweet PUT and POST on
@@ -85,5 +60,4 @@ function updateCallback (err, docs, req, res, next) {
 }
 
 // Module interface
-module.exports.apiSendTldr = apiSendTldr;
 module.exports.updateCallback = updateCallback;

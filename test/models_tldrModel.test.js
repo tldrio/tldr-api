@@ -68,9 +68,10 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
 
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(3);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.url.should.not.equal(null);
+        valErr.originalUrl.should.not.equal(null);
 
         done();
       });
@@ -455,7 +456,121 @@ describe('Tldr', function () {
       });
     });
 
+    it('Should set discoverable to true automatically', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.discoverable.should.equal(true);
+        done();
+      });
+    });
+
+    it('Should not crash because no title was provided', function (done) {
+      var tldrData1 = {
+            summaryBullets: ['Awesome Blog'],
+            resourceAuthor: 'NFA Crew',
+            url: 'http://needforair.com',
+          }
+        , tldrData2 = { title: ''
+                      , summaryBullets: ['hgf']
+                      , url: 'http://needforair.com/yup'
+          }
+        ;
+
+      Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+        assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
+
+        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).title);
+
+          done();
+        });
+      });
+    });
+
+    it('should automatically set virtual slug', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.slug.should.equal('blog-nfa');
+        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+          if (err) { return done(err); }
+          docs[0].slug.should.equal('blog-nfa');
+          done();
+        });
+      });
+    });
+
+
   });   // ==== End of '#createAndSaveInstance' ==== //
+
+
+  describe('#findAndIncrementReadCount', function () {
+
+    it('Should increment read count when finding a tldr', function (done) {
+      var tldrData = { title: 'Blog NFA',
+                      summaryBullets: ['Awesome Blog'],
+                      resourceAuthor: 'NFA Crew',
+                      url: 'http://needforair.com'}
+        , prevReadCount, prevId;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        prevReadCount = tldr.readCount;
+        prevId = tldr._id;
+
+        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
+
+          _tldr.readCount.should.equal(prevReadCount + 1);
+          _tldr._id.toString().should.equal(prevId.toString());
+          done();
+        });
+      });
+    });
+
+  });   // ==== End of '#findAndIncrementReadCount' ==== //
+
+
+  describe('#makeUndiscoverable', function () {
+
+    it('Should make a tldr undiscoverable', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.discoverable.should.equal(true);
+
+        Tldr.makeUndiscoverable(tldr._id, function (err, numAffected) {
+          numAffected.should.equal(1);
+
+          Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
+            theTldr.discoverable.should.equal(false);
+
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#makeUndiscoverable' ==== //
 
 
   describe('#updateValidFields', function () {
@@ -589,7 +704,8 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance(userInput, user, function (err, theTldr) {
         assert.isNull(err, 'no errors');
-        theTldr.url.should.equal('http://needforair.com/nutcrackers');   // The 'document.cookie' part is a forbidden string that was removed
+        theTldr.url.should.equal('http://needforair.com/nutcrackers');
+        theTldr.originalUrl.should.equal('http://needforair.com/nutcrackers');
         theTldr.title.should.equal('Blog NFA');
         theTldr.summaryBullets[0].should.equal('Awesome Blog');
         theTldr.summaryBullets[1].should.equal('Bloup');
@@ -618,6 +734,7 @@ describe('Tldr', function () {
         tldr.updateValidFields(userInput, user, function(err, theTldr) {
           assert.isNull(err, 'no errors');
           theTldr.url.should.equal('http://url.com/nutcrackers');   // url is not updatable
+          theTldr.originalUrl.should.equal('http://url.com/nutcrackers');   // originalUrl is not updatable
           theTldr.title.should.equal('Blog NFA');
           theTldr.summaryBullets[0].should.equal('Awesome Blog');
           theTldr.summaryBullets[1].should.equal('Bloup');
@@ -891,31 +1008,6 @@ describe('Tldr', function () {
     });
 
   });   // ==== End of 'history management' ==== //
-
-
-  describe('#incrementReadCount', function() {
-
-    it('should be able to increment the read count with a callback', function (done) {
-      var tldrData = { title: 'Blog NFA'
-                     , url: 'http://mydomain.com'
-                     , summaryBullets: ['coin', 'hihan']
-                     , resourceAuthor: 'bloup' };
-
-      Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
-        var startReadCount = tldr.readCount;
-        tldr.incrementReadCount(function() {
-          tldr.readCount.should.equal(startReadCount + 1);
-          tldr.incrementReadCount(function() {
-            tldr.readCount.should.equal(startReadCount + 2);
-            done();
-          });
-        });
-      });
-    });
-
-  });   // ==== End of '#incrementReadCount' ==== //
-
-
 
 
 });

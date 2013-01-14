@@ -6,35 +6,36 @@
 
 var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
-  , notificator = require('../../lib/notificator')
-  , bunyan = require('../../lib/logger').bunyan;
+  , bunyan = require('../../lib/logger').bunyan
+  , config = require('../../lib/config')
+  , customUtils = require('../../lib/customUtils')
+  ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {};
 
   partials.content = '{{>website/pages/tldrPage}}';
-  partials.fbmetatags = '{{>website/metatags/metatagsPage}}'
+  partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
   bunyan.incrementMetric('tldrs.get.html');
 
+  Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
+    if (err || !tldr) { return res.json(404, {}); }
 
-  Tldr.findOne({ _id: req.params.id })
-      .populate('creator', 'username twitterHandle')
-      .exec(function (err, tldr) {
+    if (req.params.slug !== customUtils.slugify(tldr.title)) {
+      Tldr.update({ _id: req.params.id }, { $inc: { readCount: -1 } }, {}, function() {   // Avoid counting two reads if the wrong url was called
+        return res.redirect(301, '/tldrs/' + tldr._id + '/' + tldr.slug);
+      });
+    } else {
+      values.tldr = tldr;
+      values.title = tldr.title.substring(0, 60) +
+                     (tldr.title.length > 60 ? '...' : '') +
+                     config.titles.branding + config.titles.shortDescription;
+      // Warning: don't use double quotes in the meta description tag
+      values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
 
-    values = _.extend(values, tldr);
-
-    // Send Notif
-    notificator.publish({ type: 'read'
-                        , from: req.user
-                        , tldr: tldr
-                        // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                        , to: tldr.creator
-                        });
-
-    res.render('website/basicLayout', { values: values
-                                      , partials: partials
-                                      });
+      return res.render('website/basicLayout', { values: values , partials: partials });
+    }
   });
 }

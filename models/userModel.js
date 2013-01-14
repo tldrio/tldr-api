@@ -31,8 +31,10 @@ var mongoose = require('mongoose')
 reservedUsernames = {
     'about': true
   , 'account': true
+  , 'chromeextension': true
   , 'confirm': true
   , 'confirmemail': true
+  , 'crx': true
   , 'extension': true
   , 'forgotpassword': true
   , 'index': true
@@ -42,6 +44,7 @@ reservedUsernames = {
   , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
   , 'signup': true
+  , 'sitemaps': true
   , 'summaries': true
   , 'tldrs': true
   , 'tldrscreated': true
@@ -125,9 +128,7 @@ function validateTwitterHandle (value) {
 function setTwitterHandle (value) {
   var handle = customUtils.sanitizeInput(value);
 
-  if (handle[0] === '@') {
-    handle = handle.substring(1);
-  }
+  handle = handle.replace(/@/g, '');
 
   return handle;
 }
@@ -223,11 +224,22 @@ function getCreatedTldrs (callback) {
 
 /**
  * Get the notifications of the user
- * @param {Function} callback Signature: err, [notifications]
+ * @param {Integer} _limit Optional. Maximum number of notifications to return. No limit if omitted or set to 0.
+ * @param {Function} _callback Signature: err, [notifications]
  */
-function getNotifications (callback) {
+function getNotifications (_limit, _callback) {
+  var limit, callback;
+
+  if (typeof _limit === 'function') {    // No limit was provided
+    limit = 0;
+    callback = _limit;
+  } else {
+    limit = _limit;
+    callback = _callback;
+  }
+
   User.findOne({ _id: this._id })
-    .populate('notifications')
+    .populate('notifications', null, null, { sort: [[ 'createdAt', -1 ]], limit: limit })
     .exec(function(err, user) {
       if (err) { return callback(err); }
       callback(null, user.notifications);
@@ -410,10 +422,19 @@ function isAdmin() {
                     , "charles.miglietti@gmail.com": true
                     , "charles@tldr.io": true
                     , "charles@needforair.com": true
+                    , "c.harlesmiglietti@gmail.com": true
+                    , "ch.arlesmiglietti@gmail.com": true
+                    , "cha.rlesmiglietti@gmail.com": true
+                    , "char.lesmiglietti@gmail.com": true
+                    , "charl.esmiglietti@gmail.com": true
+                    , "charle.smiglietti@gmail.com": true
+                    , "charlesm.iglietti@gmail.com": true
+                    , "charlesmi.glietti@gmail.com": true
                     , "c.harles.miglietti@gmail.com": true
                     , "ch.arles.miglietti@gmail.com": true
                     , "cha.rles.miglietti@gmail.com": true
                     , "char.les.miglietti@gmail.com": true
+                    , "charle.s.miglietti@gmail.com": true
                     , "stanislas.marion@gmail.com": true
                     , "stan@tldr.io": true
                     , "s.tanislas.marion@gmail.com": true
@@ -465,6 +486,7 @@ UserSchema = new Schema(
                 , default: Date.now
                 }
   , notificationsSettings: { read: { type: Boolean, default: true}
+                           , congratsTldrViews: { type: Boolean, default: true}
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
                            }

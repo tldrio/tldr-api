@@ -115,6 +115,17 @@ describe('Topic', function () {
       });
     });
 
+    it('Should have a virtual slug attribute out of the topics title', function (done) {
+      var topicData = { title: "youpla boum tzing"
+                     };
+
+      Topic.createAndSaveInstance(topicData, user, function (err, topic) {
+        assert.isNull(err);
+        topic.slug.should.equal("youpla-boum-tzing");
+
+        done();
+      });
+    });
 
   });   // ==== End of 'createAndSaveInstance' ==== //
 

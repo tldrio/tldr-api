@@ -7,7 +7,6 @@
 
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
-  , helpers = require('./helpers')
   , mailer = require('../lib/mailer')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , i18n = require('../lib/i18n');
@@ -39,14 +38,12 @@ function searchTldrs (req, res, next) {
     bunyan.incrementMetric('tldrs.search.byUrl');
 
     url = normalizeUrl(url);
-    Tldr.findOne({url: url})
-        .populate('creator', 'username twitterHandle')
-        .exec( function (err, doc) {
+    Tldr.findAndIncrementReadCount({ url: url }, req.user, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }
 
-      if (!doc) {
+      if (!tldr) {
 
         // Advertise admins there is a summary emergency
         if (req.user && !req.user.isAdmin()) {
@@ -60,7 +57,8 @@ function searchTldrs (req, res, next) {
       }
 
       // Success
-      helpers.apiSendTldr(req, res, doc);
+      bunyan.incrementMetric('tldrs.get.json');
+      return res.json(200, tldr);
     });
 
     return;

@@ -7,7 +7,9 @@
 var _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
   , i18n = require('../lib/i18n')
+  , config = require('../lib/config')
   , mailer = require('../lib/mailer')
+  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -23,7 +25,6 @@ var _ = require('underscore')
   , TldrHistory = require('./tldrHistoryModel')
   , async = require('async')
   ;
-
 
 
 
@@ -93,6 +94,10 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , originalUrl: { type: String   // Keep the original url in case normalization goes too far
+                 , required: true
+                 , set: customUtils.sanitizeInput
+                 }
   , hostname: { type: String
               , required: true
               }
@@ -122,8 +127,18 @@ TldrSchema = new Schema(
   , readCount: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
+  , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
+                  , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
+                  }
   }
 , { strict: true });
+
+// Keep a virtual 'slug' attribute
+TldrSchema.virtual('slug').get(function () {
+  return customUtils.slugify(this.title);
+});
+
+
 
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
@@ -138,14 +153,13 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , instance = new Tldr(validFields)
     , history = new TldrHistory();
 
+  instance.originalUrl = validFields.url;
+
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     instance.history = _history._id;
     instance.creator = creator._id;
-
-    // Populate hostname field
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    // Save tldr
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
 
@@ -177,6 +191,50 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
   return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
 
+
+/**
+ * Make the tldr undiscoverable
+ * @param {String} id id of the tldr to make undiscoverable
+ * @param {Function} cb Optional callback, signature is err, numAffected
+ */
+TldrSchema.statics.makeUndiscoverable = function (id, cb) {
+  var callback = cb || function () {};
+
+  this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
+};
+
+
+/**
+ * Find a tldr with query obj. Increment readcount
+ * @param {Object} selector Selector for Query
+ * @param {Object} user User who made the request
+ * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
+ * @return {void}
+ */
+TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
+
+  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
+                  .populate('creator', 'username twitterHandle');
+  // If the user has the admin role, populate history
+  if (user && user.isAdmin()) {
+    query.populate('history');
+  }
+
+  query.exec( function (err, tldr) {
+    if (!err && tldr) {
+      // Send Notif
+      rqClient.emit('tldr.read', { type: 'read'
+                                 , from: user
+                                 , tldr: tldr
+                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
+                                 , to: tldr.creator
+                                 });
+    }
+    callback(err,tldr);
+  });
+
+};
+
 /**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
@@ -185,7 +243,6 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
  * @param {Function} callback callback to be passed to save method
  *
  */
-
 TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
     , self = this;
@@ -269,18 +326,6 @@ TldrSchema.methods.goBackOneVersion = function (callback) {
   });
 };
 
-
-/**
- * Increment the view counter for this tldr
- * @param {Function} cb Optional - Pass a callback if you want to resume flow after increment
- * @return {void}
- */
-TldrSchema.methods.incrementReadCount = function (cb) {
-  var callback = cb ? cb : function () {};   // If no cb provided, do nothing after increment
-
-  this.readCount += 1;
-  this.save(callback);
-};
 
 
 // Define tldr model
