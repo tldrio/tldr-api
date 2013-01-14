@@ -407,8 +407,8 @@ describe('Webserver', function () {
         , batchTooLarge = []
         , now = new Date();
 
-      // Create a batch with 31 urls
-      for (i = 0; i < 31; i += 1) {
+      // Create a batch with 51 urls
+      for (i = 0; i < 51; i += 1) {
         batchTooLarge.push('http://baaad.com/' + i);
       }
 

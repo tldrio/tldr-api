@@ -21,7 +21,7 @@ function searchTldrsByBatch (req, res, next) {
   var query = req.query
     , batch = []
     , urls = {}
-    , maxBatchSize = 30
+    , maxBatchSize = 50
     ;
 
   bunyan.incrementMetric('tldrs.search.routeCalled');
