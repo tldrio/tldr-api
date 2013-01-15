@@ -73,12 +73,11 @@ APIClientSchema.methods.incrementRouteUsage = function (route, cb) {
   var query = { $inc: {}}
     , selector = 'routeUsage.' + route
     , callback = cb || function () {}
-    , safe = cb ? true : false
     ;
 
   query["$inc"][selector] = 1;
 
-  this.update(query, { safe: safe }, cb);
+  this.update(query, { safe: true }, callback);
 };
 
 
