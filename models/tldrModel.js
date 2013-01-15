@@ -17,7 +17,7 @@ var _ = require('underscore')
   , TldrSchema
   , Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
@@ -46,6 +46,7 @@ function validateUrl (value) {
     return false;
   }
 }
+
 
 //Summary should be an Array, non empty and not be too long
 function validateBullets (value) {
@@ -116,6 +117,8 @@ TldrSchema = new Schema(
                     , set: customUtils.sanitizeInput
                     }
   , resourceDate: { type: Date }   // No need to sanitize, automatically casted to date which is a number
+  , imageUrl: { type: String
+              , set: customUtils.sanitizeInput }
   , createdAt: { type: Date
                , default: Date.now
                }
