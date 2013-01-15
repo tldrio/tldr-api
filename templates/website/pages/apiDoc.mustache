@@ -1,0 +1,49 @@
+<section class="marketing">
+  <h1>API documentation</h1>
+
+  <p>
+    For now only the read-only part is open, enabling you to get the latest tldrs or to search tldrs by url.
+    What's here shouldn't change, but we may add new routes along the way. Still, keep in mind this is experimental
+        so don't hesitate to drop us an email at <a href="mailto:hello@tldr.io">hello@tldr.io</a> if you have a question or
+    if something doesn't work!
+  </p>
+
+  <h2>General information</h2>
+  This is a JSON API whose base url is: <code>https://api.tldr.io</code>.<br><br>
+
+  All requests will contain two extra headers to authenticate them:
+  <ul>
+  <li><code>api-client-name</code>: the name of your application</li>
+  <li><code>api-client-key</code>: your secret key</li>
+  </ul>
+
+  To request a developper account with your own credentials, <a href="mailto:hello@tldr.io">drop us an email</a>, tell us what you want to use our
+  API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining you why the request
+  was refused (unknown username or wrong secret key).
+
+  <hr class="soften">
+
+  <h2>Routes</h2>
+  <strong>GET /tldrs/latest/<em>:number</em></strong><br>
+  Get the <code>:number</code> latest tldrs. You can only get between 1 and 10 tldrs.<br><br>
+
+  <strong>GET /tldrs/search?url=<em>:url</em></strong><br>
+  Search the summary of the webpage whose url is <code>:url</code>. <code>:url</code>
+  should be properly URL-encoded (for example in Javascript with <code>encodeURIComponent</code>).<br>
+  A 404 response means there is no tldr for this url.<br><br>
+
+  <strong>POST /tldrs/searchBatch</strong><br>
+  Search the tldrs for a batch of urls, not just one as in the route above.<br>
+  The body of the request must be a JSON object of the form <code>{ batch: [url1, url2, ...] }</code><br>
+  The response will be of the form <code>{ tldrs: [tldr1, tldr2, ...] }.</code><br><br>
+  This route can only return up to 30 tldrs, if your batch contains more than 50 urls the response will be a 403 error.
+
+  <hr class="soften">
+
+  <h2>Clients</h2>
+  <p>
+    This API is very simple but we still made a Javascript client for the browser. You can find it <a href="https://github.com/tldrio/api-js-client" target="_blank">here</a>.
+  </p>
+
+
+</section>
