@@ -51,6 +51,7 @@ app.use(express.session(config.session));
 app.use(passport.initialize());// Use Passport for authentication and sessions
 app.use(passport.session());
 app.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
+app.use(middleware.logAPIUsage);
 app.use(app.router); // Map routes
 app.use(middleware.handleErrors); // Use middleware to handle errors
 
@@ -166,6 +167,8 @@ app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_ex
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/api-documentation', middleware.attachRenderingValues, routes.website_apiDoc);
+
 
 // Tldr page
 app.get('/tldrs/:id/:slug', middleware.attachRenderingValues, routes.website_tldrPage);
