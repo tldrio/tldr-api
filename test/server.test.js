@@ -404,7 +404,13 @@ describe('Webserver', function () {
         , i
         , temp
         , batch
+        , batchTooLarge = []
         , now = new Date();
+
+      // Create a batch with 51 urls
+      for (i = 0; i < 51; i += 1) {
+        batchTooLarge.push('http://baaad.com/' + i);
+      }
 
       // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
       for (i = 0; i <= 10; i += 1) {
@@ -440,23 +446,33 @@ describe('Webserver', function () {
 
           body.tldrs.length.should.be.equal(0);
 
-          // Request should return existing tldrs in the batch array
+          // Try with a batch thats too large
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/tldrs/searchBatch'
-                       , json: { batch: batch } } , function (err, res, body) {
+                       , json: { batch: batchTooLarge } } , function (err, res, body) {
 
-            var tldrs = body.tldrs
-              , urls = body.urls
-              , tldrizedUrls = _.pluck(tldrs, 'url');
+            res.statusCode.should.equal(403);
+            body.message.should.equal(i18n.batchTooLarge);
+            assert.isUndefined(body.tldrs);
 
-            tldrizedUrls.length.should.equal(3);
-            tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
-            tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
-            tldrs[0].creator.username.should.equal('UserOne');
-            assert.isUndefined(tldrs[0].creator.password);
+            // Request should return existing tldrs in the batch array
+            request.post({ headers: {"Accept": "application/json"}
+                         , uri: rootUrl + '/tldrs/searchBatch'
+                         , json: { batch: batch } } , function (err, res, body) {
 
-            urls['http://needforair.com/sopa/number0?toto=ata'].should.equal('http://needforair.com/sopa/number0');
-            done();
+              var tldrs = body.tldrs
+                , urls = body.urls
+                , tldrizedUrls = _.pluck(tldrs, 'url');
+
+              tldrizedUrls.length.should.equal(3);
+              tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
+              tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
+              tldrs[0].creator.username.should.equal('UserOne');
+              assert.isUndefined(tldrs[0].creator.password);
+
+              urls['http://needforair.com/sopa/number0?toto=ata'].should.equal('http://needforair.com/sopa/number0');
+              done();
+            });
           });
         });
          }
