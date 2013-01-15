@@ -40,12 +40,12 @@ describe('APIClient Model', function () {
         _.keys(err.errors).length.should.equal(1);
         models.getAllValidationErrorsWithExplanations(err.errors).name.should.equal(i18n.validateAPIClientName);
 
-        apicData = { name: 'ee', key: 'akey' }
+        apicData = { name: 'ee', key: 'akey' };
         APIClient.createAndSaveInstance(apicData, function (err) {
           _.keys(err.errors).length.should.equal(1);
           models.getAllValidationErrorsWithExplanations(err.errors).name.should.equal(i18n.validateAPIClientName);
 
-          apicData = { name: 'eeeeeeeeeeeeeeeeeeeee', key: 'akey' }
+          apicData = { name: 'eeeeeeeeeeeeeeeeeeeee', key: 'akey' };
           APIClient.createAndSaveInstance(apicData, function (err) {
             _.keys(err.errors).length.should.equal(1);
             models.getAllValidationErrorsWithExplanations(err.errors).name.should.equal(i18n.validateAPIClientName);
