@@ -138,6 +138,10 @@ TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
 
+TldrSchema.set('toJSON', {
+   virtuals: true
+});
+
 
 
 /**

@@ -20,9 +20,9 @@ module.exports = function (req, res, next) {
       return next();
     } else {
       // Send moderation email
-      mailer.sendEmail({ type: 'postToForum'
+      mailer.sendEmail({ type: 'adminPostToForum'
                        , development: false
-                       , values: { user: req.user, topic: topic, postData: postData }
+                       , values: { lastPostCreator: req.user, topic: topic, post: postData }
                        });
 
       return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
