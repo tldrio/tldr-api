@@ -12,7 +12,7 @@ module.exports = function (req, res, next) {
     , marked = require('../../lib/customMarked')
     ;
 
-  values.title = "Developpers" + config.titles.branding + config.titles.shortDescription;
+  values.title = "Developers" + config.titles.branding + config.titles.shortDescription;
   values.description = "Documentation for our API.";
   partials.content = '{{>website/pages/apiDoc}}';
 
