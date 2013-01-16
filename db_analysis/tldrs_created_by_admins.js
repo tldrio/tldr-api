@@ -27,7 +27,7 @@ var adminTldrsBetweenDates = function (begin, end, cb) {
           if (err) { return cb(err); }
 
           _.each(tldrs, function(tldr) {
-            if (tldr.creator.isAdmin()) {
+            if (tldr.creator.isAdmin) {
               admins += 1;
             } else {
               nonAdmins += 1;

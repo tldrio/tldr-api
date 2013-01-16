@@ -1065,32 +1065,34 @@ describe('User', function () {
       , async.apply(createUser, userData17, 'sm5')
 
       , function (cb) {
-          users.lc.isAdmin().should.equal(true);
-          users.sm.isAdmin().should.equal(true);
-          users.cm.isAdmin().should.equal(true);
-          users.rb.isAdmin().should.equal(false);
+          users.lc.isAdmin.should.equal(true);
+          users.sm.isAdmin.should.equal(true);
+          users.cm.isAdmin.should.equal(true);
+          users.rb.isAdmin.should.equal(false);
 
           // Fake accounts based on Louis' should be admins too
-          users.lc1.isAdmin().should.equal(true);
-          users.lc2.isAdmin().should.equal(true);
-          users.lc3.isAdmin().should.equal(true);
-          users.lc4.isAdmin().should.equal(true);
-          users.lc5.isAdmin().should.equal(true);
+          users.lc1.isAdmin.should.equal(true);
+          users.lc2.isAdmin.should.equal(true);
+          users.lc3.isAdmin.should.equal(true);
+          users.lc4.isAdmin.should.equal(true);
+          users.lc5.isAdmin.should.equal(true);
 
           // Fake accounts based on Charles' should be admins too
-          users.cm1.isAdmin().should.equal(true);
-          users.cm2.isAdmin().should.equal(true);
-          users.cm3.isAdmin().should.equal(true);
-          users.cm4.isAdmin().should.equal(true);
-          users.cm5.isAdmin().should.equal(true);
-          users.cm6.isAdmin().should.equal(true);
+          users.cm1.isAdmin.should.equal(true);
+          users.cm2.isAdmin.should.equal(true);
+          users.cm3.isAdmin.should.equal(true);
+          users.cm4.isAdmin.should.equal(true);
+          users.cm5.isAdmin.should.equal(true);
+          users.cm6.isAdmin.should.equal(true);
 
           // Fake accounts based on Stan' should be admins too
-          users.sm1.isAdmin().should.equal(true);
-          users.sm2.isAdmin().should.equal(true);
-          users.sm3.isAdmin().should.equal(true);
-          users.sm4.isAdmin().should.equal(true);
-          users.sm5.isAdmin().should.equal(true);
+          users.sm1.isAdmin.should.equal(true);
+          users.sm2.isAdmin.should.equal(true);
+          users.sm3.isAdmin.should.equal(true);
+          users.sm4.isAdmin.should.equal(true);
+          users.sm5.isAdmin.should.equal(true);
+
+          user1.isAdmin.should.equal(false);
 
           cb();
         }
