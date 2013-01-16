@@ -16,19 +16,23 @@
           </span>
         </div>
 
-        <div class="tldr-image">
-          <img src="{{tldr.imageUrl}}" alt=" " onerror="javascript: this.style.display= 'none';">
-        </div>
+        <!-- Group image and summary bullets and clear both of them as in http://learn.shayhowe.com/advanced-html-css/detailed-css-positioning -->
+        <div>
+          <div class="tldr-image">
+            <img src="{{tldr.imageUrl}}" alt=" " onerror="javascript: this.style.display= 'none';">
+          </div>
 
-        <div class="tldr-summary">
-          <ul>
-            {{#tldr.summaryBullets}}
-            <li class="tldr-bullet">
-              <i class="icon-stop"></i>
-                    {{.}}
-            </li>
-            {{/tldr.summaryBullets}}
-          </ul>
+          <div class="tldr-summary">
+            <ul>
+              {{#tldr.summaryBullets}}
+              <li class="tldr-bullet">
+                <i class="icon-stop"></i>
+                      {{.}}
+              </li>
+              {{/tldr.summaryBullets}}
+            </ul>
+          </div>
+          <div style="clear: both;"></div>
         </div>
       </div>
 
