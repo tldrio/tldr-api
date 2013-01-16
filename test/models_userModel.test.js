@@ -405,8 +405,9 @@ describe('User', function () {
           docs.should.have.length(1);
           sessionUsableFields = docs[0].getAuthorizedFields();
 
-          assert.isDefined(sessionUsableFields.username);
-          assert.isDefined(sessionUsableFields.email);
+          sessionUsableFields.username.should.equal('NFADeploy');
+          sessionUsableFields.email.should.equal('valid@email.com');
+          sessionUsableFields.isAdmin.should.equal(false);
           assert.isUndefined(sessionUsableFields.password);
 
           done();

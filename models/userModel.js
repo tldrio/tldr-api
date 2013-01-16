@@ -21,7 +21,7 @@ var mongoose = require('mongoose')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'isAdmin']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -200,8 +200,10 @@ function getAuthorizedFields() {
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
+    usableKeys.push('isAdmin');   // isAdmin was not included since it's a virtual
+
   _.each( usableKeys, function (key) {
-    res[key] = self._doc[key];
+    res[key] = self[key];
   });
 
   return res;
