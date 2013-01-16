@@ -71,7 +71,7 @@
           </div>
           {{/user.bio}}
 
-          {{#admin}}
+          {{#loggedUser.isAdmin}}
           <div class="only-admin-infos">
             <dl class="dl-horizontal">
               <dt>
@@ -98,7 +98,7 @@
             </dl>
           </div>
 
-          {{/admin}}
+          {{/loggedUser.isAdmin}}
 
 
         </div>
