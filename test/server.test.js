@@ -364,22 +364,27 @@ describe('Webserver', function () {
                                   obj = JSON.parse(res.body);
                                   obj.length.should.equal(defaultLimit);
 
-                                  // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects
-                                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4'}, function (err, res, body) {
-                                    obj = JSON.parse(res.body);
-                                    obj.length.should.equal(4);
-                                    temp = _.map(obj, function (o) { return o. url; });
-                                    _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
-                                    _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
-                                    _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
-                                    _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
-
-                                    // Empty quantity will be intepreted as 0 so will return defaultLimit tldrs
-                                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity='}, function (err, res, body) {
+                                  // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects, and no return non discoverable tldrs
+                                  Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { discoverable: false } }, { multi: false }, function (err, n) {
+                                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/7'}, function (err, res, body) {
                                       obj = JSON.parse(res.body);
-                                      obj.length.should.equal(defaultLimit);
+                                      obj.length.should.equal(7);
+                                      temp = _.map(obj, function (o) { return o. url; });
+                                      _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+                                      _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
 
-                                      done();
+                                      // Empty quantity will be intepreted as 0 so will return defaultLimit tldrs
+                                      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?quantity='}, function (err, res, body) {
+                                        obj = JSON.parse(res.body);
+                                        obj.length.should.equal(defaultLimit);
+
+                                        done();
+                                      });
                                     });
                                   });
                                 });

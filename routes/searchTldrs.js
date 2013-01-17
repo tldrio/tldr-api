@@ -76,7 +76,7 @@ function searchTldrs (req, res, next) {
     // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
-    Tldr.find({})
+    Tldr.find({ discoverable: true })
      .sort('-updatedAt')
      .limit(limit)
      .populate('creator', 'username twitterHandle')
@@ -95,7 +95,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(startat)) { startat = 0; }
     startat = Math.max(0, startat);
 
-    Tldr.find({})
+    Tldr.find({ discoverable: true })
      .sort('-updatedAt')
      .limit(limit)
      .skip(startat)
