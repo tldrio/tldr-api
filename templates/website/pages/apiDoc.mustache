@@ -34,7 +34,8 @@
     <li><code>url</code> <em class="muted">(String)</em> The url above, normalized and used to index the tldr. There is a lot of content that is available
         through different urls (e.g. different utm query strings), we want the same tldr to correspond to all of them. This is not a perfect solution,
         and we improve it regularly. We have plans for an additional system to take care of shitty geo-dependent urls such as blogpost's.</li>
-    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, the fields are explicit</li>
+    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, with two fields: <code>username</code> and
+        <code>twitterHandle</code> (if the user registered it)</li>
     <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
     <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
   </ul><br>
