@@ -40,6 +40,9 @@ APIClientSchema = new Schema(
          , set: customUtils.sanitizeInput
          , required: true
          }
+  , isOfficial: { type: Boolean
+                , default: false
+                }
   , routeUsage: {}   // Will be filled along the way
   , createdAt: { type: Date
                , default: Date.now

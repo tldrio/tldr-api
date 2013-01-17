@@ -33,8 +33,8 @@ async.waterfall([
     });
   }
 , function (cb) {
-    var bmLocal = { name: 'bm-local', key: 'fF5TVeCAlTqsLjEpNCb9' }
-      , crxLocal = { name: 'chrome-ext-local', key: 'JjlZcfAW8NMFWXSCIeiz' }
+    var bmLocal = { name: 'bm-local', key: 'fF5TVeCAlTqsLjEpNCb9', isOfficial: true }
+      , crxLocal = { name: 'chrome-ext-local', key: 'JjlZcfAW8NMFWXSCIeiz', isOfficial: true }
       ;
 
     console.log("Recreating the two local clients");
