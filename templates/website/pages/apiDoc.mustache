@@ -23,6 +23,34 @@
 
   <hr class="soften">
 
+  <h2>Format of the tldr objects</h2>
+  <p>For now, almost the data we have about a tldr is in the object you receive. Some of it is useful for you, some probably less so (we use it internally).</p>
+  <strong>Useful</strong>
+  <ul>
+    <li><code>title</code> <em class="muted">(String)</em> The title of the article</li>
+    <li><code>summaryBullets</code> <em class="muted">(Array of String)</em> The bullet points composing the summary (maximum: 5)</li>
+    <li><code>readCount</code> <em class="muted">(Integer)</em> Number of times the tldr has been read</li>
+    <li><code>originalUrl</code> <em class="muted">(String)</em> The url of the page the tldr is the summary of</li>
+    <li><code>url</code> <em class="muted">(String)</em> The url above, normalized and used to index the tldr. There is a lot of content that is available
+        through different urls (e.g. different utm query strings), we want the same tldr to correspond to all of them. This is not a perfect solution,
+        and we improve it regularly. We have plans for an additional system to take care of shitty geo-dependent urls such as blogpost's.</li>
+    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, with two fields: <code>username</code> and
+        <code>twitterHandle</code> (if the user registered it)</li>
+    <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
+    <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
+  </ul><br>
+
+  <strong>Not so useful (if you disagree please tell us!)</strong>
+  <ul>
+    <li><code>discoverable</code> <em class="muted">(Boolean)</em> Can article be included in results from <code>/tldrs/latest/:number</code>?</li>
+    <li><code>versionDisplayed</code> <em class="muted">(Integer)</em> If edits were made, what is the public version. Most of the time at 0 (= 'latest')</li>
+    <li><code>slug</code> <em class="muted">(String)</em> Slug of the title used in the website's url for the tldr</li>
+    <li><code>history</code> <em class="muted">(ObjectId)</em> Pointer to the tldr's history (not public)</li>
+    <li><code>hostname</code> <em class="muted">(String)</em> Hostname for this tldr's corresponding webpage (used to find favicons)</li>
+
+  </ul><br>
+
+
   <h2>Routes</h2>
   <strong>GET /tldrs/latest/<em>:number</em></strong><br>
   Get the <code>:number</code> latest tldrs. You can only get between 1 and 10 tldrs.<br><br>
