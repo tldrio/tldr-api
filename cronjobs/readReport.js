@@ -13,7 +13,9 @@ var _ = require('underscore')
   , Notification = models.Notification
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
-  , User = models.User;
+  , User = models.User
+  , thresholdSendMail = 20   // Don't send email with ridiculously low amounts
+  ;
 
 h4e.setup({ extension: 'mustache'
           , baseDir: process.env.TLDR_API_DIR + '/templates'
@@ -79,14 +81,16 @@ function sendReadReport (previousFlush) {
                       };
 
              emailsSent += 1;
-             mailer.sendEmail({ type: 'readReport'
-                              , development: true
-                              , values: values
-                              , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                              }, function () {
-                                bunyan.info('Report sent to ' + user.email);
-                                callback(null);
-                              } );
+             if (totalViewsThisWeek >= thresholdSendMail) {
+               mailer.sendEmail({ type: 'readReport'
+                                , development: true
+                                , values: values
+                                , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                                }, function () {
+                                  bunyan.info('Report sent to ' + user.email);
+                                  callback(null);
+                                });
+             }
            });
           } else {
             callback(null);
