@@ -58,7 +58,7 @@ function createNewTldr (req, res, next) {
     } else {
       bunyan.incrementMetric('tldrs.creation.creationSuccess');
 
-      if (req.user.isAdmin()) {
+      if (req.user.isAdmin) {
         mailer.sendEmail({ type: 'adminTldrWasCreatedByAdmin'
                        , development: false
                        , values: { user: req.user, tldr: tldr }

@@ -200,8 +200,10 @@ function getAuthorizedFields() {
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
 
+    usableKeys.push('isAdmin');   // isAdmin was not included since it's a virtual
+
   _.each( usableKeys, function (key) {
-    res[key] = self._doc[key];
+    res[key] = self[key];
   });
 
   return res;
@@ -408,43 +410,6 @@ function saveAction (type, data, cb) {
 }
 
 
-/**
- * Returns true if and only if the user is an admin
- * @return {boolean} Is the user an admin ?
- */
-function isAdmin() {
-  var adminEmails = { "louis.chatriot@gmail.com": true
-                    , "louis.chatrio.t@gmail.com": true
-                    , "lo.uis.chatriot@gmail.com": true
-                    , "louis.cha.triot@gmail.com": true
-                    , "loui.s.chatriot@gmail.com": true
-                    , "l.ouis.chatriot@gmail.com": true
-                    , "charles.miglietti@gmail.com": true
-                    , "charles@tldr.io": true
-                    , "charles@needforair.com": true
-                    , "c.harlesmiglietti@gmail.com": true
-                    , "ch.arlesmiglietti@gmail.com": true
-                    , "cha.rlesmiglietti@gmail.com": true
-                    , "char.lesmiglietti@gmail.com": true
-                    , "charl.esmiglietti@gmail.com": true
-                    , "charle.smiglietti@gmail.com": true
-                    , "charlesm.iglietti@gmail.com": true
-                    , "charlesmi.glietti@gmail.com": true
-                    , "c.harles.miglietti@gmail.com": true
-                    , "ch.arles.miglietti@gmail.com": true
-                    , "cha.rles.miglietti@gmail.com": true
-                    , "char.les.miglietti@gmail.com": true
-                    , "charle.s.miglietti@gmail.com": true
-                    , "stanislas.marion@gmail.com": true
-                    , "stan@tldr.io": true
-                    , "s.tanislas.marion@gmail.com": true
-                    , "st.anislas.marion@gmail.com": true
-                    , "sta.nislas.marion@gmail.com": true
-                    , "stan.islas.marion@gmail.com": true
-                    };
-
-  return adminEmails[this.email] ? true : false;
-}
 
 /**
  * Sets the URL to this user's gravatar
@@ -458,8 +423,6 @@ function updateGravatarEmail(gravatarEmail, callback) {
   this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
 }
-
-
 
 
 
@@ -528,6 +491,25 @@ UserSchema = new Schema(
   }
 , { strict: true });
 
+/** Keep a virtual 'isAdmin' attribute
+ *  isAdmin is true when user is an admin, false otherwise (of course ...)
+ */
+UserSchema.virtual('isAdmin').get(function () {
+  var adminEmails = { "louis.chatriot@gmail.com": true , "louis.chatrio.t@gmail.com": true , "lo.uis.chatriot@gmail.com": true , "louis.cha.triot@gmail.com": true , "loui.s.chatriot@gmail.com": true , "l.ouis.chatriot@gmail.com": true
+                    , "charles.miglietti@gmail.com": true , "charles@tldr.io": true , "charles@needforair.com": true , "c.harlesmiglietti@gmail.com": true , "ch.arlesmiglietti@gmail.com": true , "cha.rlesmiglietti@gmail.com": true
+                    , "char.lesmiglietti@gmail.com": true , "charl.esmiglietti@gmail.com": true , "charle.smiglietti@gmail.com": true , "charlesm.iglietti@gmail.com": true , "charlesmi.glietti@gmail.com": true , "c.harles.miglietti@gmail.com": true
+                    , "ch.arles.miglietti@gmail.com": true , "cha.rles.miglietti@gmail.com": true , "char.les.miglietti@gmail.com": true , "charle.s.miglietti@gmail.com": true , "stanislas.marion@gmail.com": true , "stan@tldr.io": true
+                    , "s.tanislas.marion@gmail.com": true , "st.anislas.marion@gmail.com": true , "sta.nislas.marion@gmail.com": true , "stan.islas.marion@gmail.com": true };
+
+  return adminEmails[this.email] ? true : false;
+});
+
+// Send virtual attributes along with real ones
+UserSchema.set('toJSON', {
+   virtuals: true
+});
+
+
 // Validate username
 UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
 UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
@@ -543,7 +525,6 @@ UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.isAdmin = isAdmin;
 UserSchema.methods.markAllNotificationsAsSeen = markAllNotificationsAsSeen;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;

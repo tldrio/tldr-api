@@ -133,7 +133,7 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
-// Keep a virtual 'slug' attribute
+// Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
@@ -220,7 +220,7 @@ TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callbac
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
                   .populate('creator', 'username twitterHandle');
   // If the user has the admin role, populate history
-  if (user && user.isAdmin()) {
+  if (user && user.isAdmin) {
     query.populate('history');
   }
 

@@ -32,7 +32,7 @@ async.waterfall([
       if (err) { return cb(err); }
 
       _.each(users, function (user) {
-        if (user.tldrsCreated.length >= 5 && !user.isAdmin()) {
+        if (user.tldrsCreated.length >= 5 && !user.isAdmin) {
           console.log(user.email + ' - ' + user.tldrsCreated.length);
         }
       });
