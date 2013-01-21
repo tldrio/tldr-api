@@ -1,12 +1,93 @@
+<div class="marketing">
 
-<div id="landing-extension-wrapper" data-version="{{version}}">
-  <section class="marketing">
-    <h1>See Through Hyperlinks</h1>
-    <h2 class="marketing-byline">Use it to read summaries of Hacker News articles without leaving the front page</h2>
+  <div class="more-on-extension-container">
+    <h1 class="featurette-heading" style="text-shadow:0px 1px 0px white;color:#999;"><span style="font-weight:bold">t</span>oo <span style="font-weight:bold">l</span>ong; <span style="font-weight:bold">d</span>idn't <span style="font-weight:bold">r</span>ead</h1>
+    <section class="container tldr-base-unit-2">
+    <div class="featurette">
+      <div class="featurette-image pull-right first-featurette">
+        tldr
+      </div>
+      <h2 class="featurette-heading">Read human written summaries. <span class="muted">Save time and energy.</span></h2>
+    </div>
+    <div class="tutorial">
+      <div class="row">
+        <div class="span4">
+          <img  src="assets/img/onboarding1.png" alt="Article which has been summarized">
+        </div>
+        <div class="span4 click-screenshot">
+          <img  src="assets/img/onboarding2.png" alt="Zoom on tldr green page action">
+        </div>
+        <div class="span4">
+          <img  src="assets/img/onboarding3.png" alt="Summary for the page">
+        </div>
+      </div>
+      <div class="row">
+        <div class="span4">
+          <h2>1. Find a page</h2>
+        </div>
+        <div class="span4">
+          <h2>2. Click the green button</h2>
+        </div>
+        <div class="span4">
+          <h2>3. Enjoy your summary!</h2>
+        </div>
+      </div>
+    </div>
 
-    {{#chrome}}
-    <img width="450" height="" class="graphic-helper" id="extension-gh1" src="/assets/img/extension.gh1.png" alt="Want the same on the actual HN front page?">
-    {{/chrome}}
+    {{^installed}}
+      {{>website/addToChrome}}
+    {{/installed}}
+
+    <hr class="soften">
+
+    <div class="featurette" id="contribute-tldrs">
+      <div class="featurette-image pull-left second-featurette">
+        tldr
+      </div>
+      <h2 class="featurette-heading">Read something interesting? <span class="muted">Summarize it for posterity!</span></h2>
+    </div>
+
+    <div class="tutorial">
+      <div class="row">
+        <div class="span4">
+          <img  src="assets/img/onboarding4.png" alt="Article to be summarized">
+        </div>
+        <div class="span4 click-screenshot">
+          <img  src="assets/img/onboarding5.png" alt="Red Page Action to create summary">
+        </div>
+        <div class="span4">
+          <img  src="assets/img/onboarding6.png" alt="Form to create a summary for the page">
+        </div>
+      </div>
+      <div class="row">
+        <div class="span4">
+          <h2>1. Read an article</h2>
+        </div>
+        <div class="span4">
+          <h2>2. Click the red button</h2>
+        </div>
+        <div class="span4">
+          <h2>3. Summarize it for everyone else!</h2>
+        </div>
+      </div>
+    </div>
+
+    {{^installed}}
+      {{>website/addToChrome}}
+    {{/installed}}
+
+    <hr class="soften">
+
+    <div class="featurette">
+      <div class="featurette-image pull-right third-featurette">
+        tldr
+      </div>
+      <h2 class="featurette-heading">See through hyperlinks.<span class="muted"> Give superpowers to your browser.</span></h2>
+    </div>
+
+
+
+    <div id="landing-extension-wrapper">
     <img width="450" height="" class="graphic-helper" id="extension-gh2" src="/assets/img/extension.gh2.png" alt="Hover over these little badges!">
     <div id="hacker-news-container">
       <center>
@@ -169,78 +250,12 @@
 
 
   </div>
-  {{#chrome}}
-  <div id="install-browser-extension-wrapper">
-    {{^loggedUser}}
-    <div class="pre-install-extension-wrapper">
-      {{#versionA}}
-        <button class="btn btn-primary btn-large pre-install-extension" data-target="signup" data-version="A">Sign up to install our Chrome Extension</button> or <a class="pre-install-extension" data-target="login" href="#">Log in</a>
-        <div id="skip-signup-install-extension" ><a class="install-extension" href="#">I'd rather try it before giving my email address!</a></div>
-      {{/versionA}}
-      {{#versionB}}
-        <button class="btn btn-success btn-large install-extension" >Install this awesome extension!</button>
-      {{/versionB}}
-      {{/loggedUser}}
-      {{#loggedUser}}
-      <button class="btn btn-success btn-large install-extension" >Install this awesome extension!</button>
-      {{/loggedUser}}
-    </div>
   </div>
 
-
-  <div id="onboarding">
-    <div id="onboarding-overlay">
-      <div id="onboarding-wrapper">
-        <div id="onboarding-content">
-          <div class="row-fluid">
-            <div class="span12">
-              <div class="signup-container"></div>
-              <div class="login-widget">
-                <div class="row">
-                  <div class="span4 offset4 ">
-                    <h1>Login</h1>
-                    <span>
-                      <div class="alert login-invalid-input" style="display: none;">
-                        <button type="button" class="close" data-dismiss="alert">×</button>
-                        <small class='login-error-message'></small>
-                      </div>
-                      <form>
-                        <fieldset>
-                          <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email"><br><br>
-                          <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password"><br><br>
-                          <button type="submit" class="btn btn-primary login-status-submit">Log in</button><br><br>
-                          <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a><br><br>
-                        </fieldset>
-                      </form>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div id="onboarding-close">
-          <button id="onboarding-close-btn"></button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {{/chrome}}
-  {{^chrome}}
-  <div class="no-chrome" style="text-align:center;">
-    <h3>Looks like you're not using Chrome!</h3> <p>Subscribe to get notified once we have an extension ready for your browser.</p>
-    <form>
-      <div class="input-append">
-        <input type="text" id="subscribe-email-input" name="email" placeholder="No spam, we promise">
-        <button type="submit" id="subscribe-email" class="btn btn-primary">Keep me posted!</button>
-      </div>
-    </form>
-  </div>
-  {{/chrome}}
-
-
-
-
+  {{^installed}}
+    {{>website/addToChrome}}
+  {{/installed}}
 </section>
 
 </div>
+
