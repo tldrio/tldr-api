@@ -33,6 +33,9 @@
       </div>
     </div>
 
+    {{^installed}}
+      {{>website/addToChrome}}
+    {{/installed}}
 
     <hr class="soften">
 
@@ -67,6 +70,10 @@
         </div>
       </div>
     </div>
+
+    {{^installed}}
+      {{>website/addToChrome}}
+    {{/installed}}
 
     <hr class="soften">
 
@@ -244,7 +251,9 @@
   </div>
   </div>
 
-  {{>website/addToChrome}}
+  {{^installed}}
+    {{>website/addToChrome}}
+  {{/installed}}
 
 </div>
 
