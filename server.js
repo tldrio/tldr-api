@@ -163,10 +163,10 @@ app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-
 app.get('/what-is-tldr', middleware.attachRenderingValues, routes.website_whatisit);
 app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
 
-app.get('/more-on-extension', middleware.attachRenderingValues, routes.website_more_extension);
-app.get('/crx', function (req, res, next) { return res.redirect(301, '/more-on-extension'); });
-app.get('/extension', function (req, res, next) { return res.redirect(301, '/more-on-extension'); });
-app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/more-on-extension'); });
+app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_chrome_extension);
+app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/api-documentation', middleware.attachRenderingValues, routes.website_apiDoc);
 
 

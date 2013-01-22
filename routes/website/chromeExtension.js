@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
   values.title = "More on the tldr.io Extension" + config.titles.branding + config.titles.shortDescription;
   values.description = "tldr.io lets you read man-written summaries of interesting content so you can easily select what you want to read, and skim the rest.";
   values.installed = req.query.installed;
-  partials.content = '{{>website/pages/more-on-extension}}';
+  partials.content = '{{>website/pages/chrome-extension}}';
   // Fake tldrs are called tldr1, ..., tldr5
   values.tldr1 = { _id: 'fakeTldrId1'
                  , hostname: 'theregister.co.uk'
