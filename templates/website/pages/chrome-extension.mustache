@@ -34,6 +34,11 @@
       </div>
     </div>
 
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://www.motherjones.com/environment/2013/01/lead-crime-link-gasoline" target="_blank" class="btn btn-primary btn-large" id="install-extension">Try it!</a>
+      </div>
+    {{/installed}}
     {{^installed}}
       {{>website/addToChrome}}
     {{/installed}}
@@ -72,6 +77,11 @@
       </div>
     </div>
 
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://en.wikipedia.org/wiki/Special:Randompage" target="_blank" class="btn btn-primary btn-large" id="install-extension">Summarize your first article!</a>
+      </div>
+    {{/installed}}
     {{^installed}}
       {{>website/addToChrome}}
     {{/installed}}
@@ -82,7 +92,7 @@
       <div class="featurette-image pull-right third-featurette">
         tldr
       </div>
-      <h2 class="featurette-heading">See through hyperlinks.<span class="muted"> Give superpowers to your browser.</span></h2>
+      <h2 class="featurette-heading">We give you superpowers<span class="muted">See through hyperlinks.</span></h2>
     </div>
 
 
@@ -252,6 +262,11 @@
   </div>
   </div>
 
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://news.ycombinator.com" target="_blank" class="btn btn-primary btn-large" id="install-extension">Put on your X-rays glasses</a>
+      </div>
+    {{/installed}}
   {{^installed}}
     {{>website/addToChrome}}
   {{/installed}}
