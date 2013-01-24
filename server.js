@@ -218,7 +218,8 @@ app.launchServer = function (cb) {
     self.apiServer = http.createServer(self);   // Let's not call it 'server' we never know if express will want to use this variable!
 
     // Handle any connection error gracefully
-    self.apiServer.on('error', function () {
+    self.apiServer.on('error', function (err) {
+      bunyan.fatal(err);
       bunyan.fatal("An error occured while launching the server, probably a server is already running on the same port!");
       process.exit(1);
     });

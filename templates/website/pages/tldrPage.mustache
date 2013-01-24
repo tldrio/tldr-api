@@ -30,7 +30,7 @@
 
       <div class="tldr-tldr">
         <div class="sub-tldr">
-          <a href="{{tldr.url}}" target="_blank" id="read-full-article" class="btn btn-primary">Read full article</a>
+          <a href="{{tldr.url}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
           <div class="sharing-container">
             <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
               <i class="icon-white icon-share-alt"></i>
@@ -48,9 +48,9 @@
     <div class="">
       <span class="help-inline">This is a summarized version.</span>
       <a id="cta-to-tldr" href="http://tldr.io/whatisit" target="_blank"><small>Where does this summary come from?</small></a>
-      {{#admin}}
+      {{#loggedUser.isAdmin}}
       <br><a href="{{dbguiUrl}}/tldrs/{{tldr._id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
-      {{/admin}}
+      {{/loggedUser.isAdmin}}
     </div>
   </div>
 </div>

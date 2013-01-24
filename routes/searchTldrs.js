@@ -46,11 +46,12 @@ function searchTldrs (req, res, next) {
       if (!tldr) {
         // Advertise admins there is a summary emergency
         // Only done for official clients (bookmarklet and chrome extension)
-        if (req.clientIsOfficial && req.user && !req.user.isAdmin()) {
-          mailer.sendEmail({ type: 'adminSummaryEmergency'
-                           , development: false
-                           , values: { url: url, user: req.user }
-                           });
+        if (req.clientIsOfficial && req.user && !req.user.isAdmin) {
+          console.log('EMERGENCY');
+          //mailer.sendEmail({ type: 'adminSummaryEmergency'
+                           //, development: false
+                           //, values: { url: url, user: req.user }
+                           //});
         }
 
         return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
@@ -76,7 +77,7 @@ function searchTldrs (req, res, next) {
     // olderthan should be an Integer. If not we use the default value (now as the number of milliseconds since Epoch)
     if (isNaN(olderthan)) { olderthan = (new Date()).getTime(); }
 
-    Tldr.find({})
+    Tldr.find({ discoverable: true })
      .sort('-updatedAt')
      .limit(limit)
      .populate('creator', 'username twitterHandle')
@@ -95,7 +96,7 @@ function searchTldrs (req, res, next) {
     if (isNaN(startat)) { startat = 0; }
     startat = Math.max(0, startat);
 
-    Tldr.find({})
+    Tldr.find({ discoverable: true })
      .sort('-updatedAt')
      .limit(limit)
      .skip(startat)

@@ -18,7 +18,7 @@ module.exports = function (req, res, next) {
       .exec(function (err, post) {
     if (err || !post) { return res.send(404, "Couldn't find the post you want to edit!"); }
 
-    if (! req.user || (post.creator.toString() !== req.user._id.toString() && ! req.user.isAdmin() )) {
+    if (! req.user || (post.creator.toString() !== req.user._id.toString() && ! req.user.isAdmin )) {
       return res.send(401, 'You can only edit your own posts!');
     }
 

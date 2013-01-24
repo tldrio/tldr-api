@@ -301,12 +301,14 @@ describe('Tldr', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should allow user to set url, title, summary and resourceAuthor only', function (done) {
+    it('should allow user to set url, title, summary, resourceAuthor and imageUrl only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , createdAt: '2012'};
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
           if (err) { return done(err); }
@@ -317,6 +319,7 @@ describe('Tldr', function () {
             tldr.url.should.equal('http://mydomain.com/');
             tldr.summaryBullets.should.include('coin');
             tldr.resourceAuthor.should.equal('bloup');
+            tldr.imageUrl.should.equal('http://google.com/image.png');
             tldr.createdAt.should.not.equal('2012');
 
             done();
@@ -580,11 +583,15 @@ describe('Tldr', function () {
                       , summaryBullets: ['new2']
                       , title: 'Blog NeedForAir'
                       , resourceAuthor: 'new3'
-                      , createdAt: '2012'}
+                      , createdAt: '2012'
+                      , imageUrl: 'http://g.com/second.png'
+                      }
           , tldrData = { title: 'Blog NFA'
                        , url: 'http://mydomain.com'
                        , summaryBullets: ['coin']
-                       , resourceAuthor: 'bloup'};
+                       , resourceAuthor: 'bloup'
+                       , imageUrl: 'http://g.com/first.png'
+                       };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err) {
           if (err) { return done(err); }
@@ -596,6 +603,7 @@ describe('Tldr', function () {
             tldr.summaryBullets.should.include('coin');
             tldr.title.should.equal('Blog NFA');
             tldr.resourceAuthor.should.equal('bloup');
+            tldr.imageUrl.should.equal('http://g.com/first.png');
 
             // Perform update
             tldr.updateValidFields(updated, user, function(err) {
@@ -606,6 +614,7 @@ describe('Tldr', function () {
               tldr.title.should.equal('Blog NeedForAir');
               tldr.resourceAuthor.should.equal('new3');
               tldr.createdAt.should.not.equal('2012');
+              tldr.imageUrl.should.equal('http://g.com/first.png');
 
               done();
             });
@@ -699,7 +708,8 @@ describe('Tldr', function () {
           title: 'Blog NFdocument.writeA',
           summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
           resourceAuthor: 'NFA Crewwindow.location',
-          resourceDate: '2012'
+          resourceDate: '2012',
+          imageUrl: 'http://googledocument.write.fr/bloup.png'
           };
 
       Tldr.createAndSaveInstance(userInput, user, function (err, theTldr) {
@@ -710,6 +720,7 @@ describe('Tldr', function () {
         theTldr.summaryBullets[0].should.equal('Awesome Blog');
         theTldr.summaryBullets[1].should.equal('Bloup');
         theTldr.resourceAuthor.should.equal('NFA Crew');
+        theTldr.imageUrl.should.equal('http://google.fr/bloup.png');
 
         done();
       });
