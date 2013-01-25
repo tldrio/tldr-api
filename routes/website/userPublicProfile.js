@@ -6,6 +6,7 @@
 
 var models = require('../../lib/models')
   , User = models.User
+  , _ = require('underscore')
   , customUtils = require('../../lib/customUtils')
   , bunyan = require('../../lib/logger').bunyan
   , config = require('../../lib/config')
@@ -35,6 +36,10 @@ module.exports = function (req, res, next) {
               values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
               values.user.numberTldrsCreated = user.tldrsCreated.length ;
               values.title = user.username + config.titles.branding + config.titles.shortDescription;
+
+              _.each(values.user.tldrsCreated, function (tldr) {
+                tldr.linkToTldrPage = true;
+              });
 
               // Specific metatags
               values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', values.description);
