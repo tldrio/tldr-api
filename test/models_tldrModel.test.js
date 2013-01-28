@@ -547,7 +547,7 @@ describe('Tldr', function () {
   });   // ==== End of '#findAndIncrementReadCount' ==== //
 
 
-  describe('#makeUndiscoverable', function () {
+  describe('discoverable and accepted', function () {
 
     it('Should make a tldr undiscoverable', function (done) {
       var tldrData = {
@@ -573,7 +573,31 @@ describe('Tldr', function () {
       });
     });
 
-  });   // ==== End of '#makeUndiscoverable' ==== //
+    it('Should accept a tldr', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.accepted.should.equal(false);
+
+        Tldr.acceptTldr(tldr._id, function (err, numAffected) {
+          numAffected.should.equal(1);
+
+          Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
+            theTldr.accepted.should.equal(true);
+
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'discoverable and accepted' ==== //
 
 
   describe('#updateValidFields', function () {
