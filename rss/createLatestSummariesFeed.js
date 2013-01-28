@@ -18,8 +18,7 @@ var fs = require('fs')
   ;
 
 console.log("Rebuilding the 'Latest Summaries' RSS feed: " + new Date());
-//process.chdir(process.env.TLDR_API_ROOT);
-process.chdir('/home/louis/Projects/tldr-api/Repo');
+process.chdir(process.env.TLDR_API_ROOT);
 
 writeStream = fs.createWriteStream('./rss/feeds/latest-summaries.xml')
 before = fs.readFileSync('./rss/latest-summaries.before.xml', 'utf8')
@@ -28,7 +27,6 @@ after = fs.readFileSync('./rss/latest-summaries.after.xml', 'utf8')
 h4e.setup({ extension: 'mustache'
           , baseDir: 'rss'
           , toCompile: ['.'] });
-
 
 // Add an item to the RSS feed
 function addTldrToFeed(ws, tldr) {
@@ -45,6 +43,7 @@ async.waterfall([
     Tldr.find({ discoverable: true })
         .sort('-updatedAt')
         .limit(30)
+        .populate('creator', 'username')
         .exec(function (err, tldrs) {
           _.each(tldrs, function (tldr) {
             addTldrToFeed(writeStream, tldr);
