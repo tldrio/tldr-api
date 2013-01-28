@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf8" ?>
+<rss version="2.0">
+<channel>
+  <title>Latest summaries from tldr.io</title>
+  <link>http://tldr.io</link>
+  <description>Latest summaries created by the tldr.io community</description>
+  <language>en-us</language>
+  <ttl>360</ttl>   <!-- In minutes -->
+  <webMaster>hello@tldr.io</webMaster>
+  <!-- Put an image tag, like this
+  <image>
+    <url></url>
+    <title></title>
+    <link></link>
+  </image>
+  -->
+
+<item>
+  <title>Mark Zuckerberg’s Hoodie</title>
+  <link>http://tldr.io/tldrs/510646322fc6997a2a000003/mark-zuckerbergs-hoodie</link>
+  <guid>510646322fc6997a2a000003</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>ghgg</li>
+      <li>gggg</li>
+      <li>ZZZ</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>Afrique : Toute l&#39;actualité sur Le Monde.fr.</title>
+  <link>http://tldr.io/tldrs/50f93f6ab68f6c313a000004/afrique-toute-lactualite-sur-le-monde-fr-</link>
+  <guid>50f93f6ab68f6c313a000004</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>mmmm</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>Prise d&#39;otages en Algérie : craintes d&#39;un lourd bilan après l&#39;assaut militaire</title>
+  <link>http://tldr.io/tldrs/50f900094e12f44719000013/prise-dotages-en-algerie-craintes-dun-lourd-bilan-apres-lassaut-militaire</link>
+  <guid>50f900094e12f44719000013</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>sdjgdjfj</li>
+      <li>fdjdfjgdj</li>
+      <li>qjjjjj</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>Hacker News</title>
+  <link>http://tldr.io/tldrs/50f6b8842f523f855700001a/hacker-news</link>
+  <guid>50f6b8842f523f855700001a</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>qwertymmmmm</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>bloup</title>
+  <link>http://tldr.io/tldrs/50f7c8fc412faa362e000003/bloup</link>
+  <guid>50f7c8fc412faa362e000003</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>aint that &quot;witchcraft&quot; dog ?</li>
+      <li>sa race \</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>White House raises petition signature threshold to 100K</title>
+  <link>http://tldr.io/tldrs/50f6a7282f523f8557000003/white-house-raises-petition-signature-threshold-to-100k</link>
+  <guid>50f6a7282f523f8557000003</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>xcvbnm</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>Tred Gets $1.7M To Be An Uber For Car Test Drives</title>
+  <link>http://tldr.io/tldrs/50f66f77e0f6d2c22f000006/tred-gets-1-7m-to-be-an-uber-for-car-test-drives</link>
+  <guid>50f66f77e0f6d2c22f000006</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>The startup aims to compete with showrooms and car manufacturers that already allow shoppers to test drive autos outside of the showroom at “ride and drive</li>
+      <li>The startup aims to compete with showrooms and car manufacturers that already allow shoppers to test drive autos outside of the showroom at “ride and drive</li>
+      <li>The startup aims to compete with showrooms and car manufacturers that already allow shoppers to test drive autos outside of the showroom at “ride and drive</li>
+      <li>The startup aims to compete with showrooms and car manufacturers that already allow shoppers to test drive autos outside of the showroom at “ride and drive</li>
+    </ul>
+  ]]>
+  </description>
+</item>
+
+</channel>
+</rss>
+
