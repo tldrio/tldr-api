@@ -15,6 +15,38 @@
   </image>
   -->
 
+<item>
+  <title>Writing is hard, so do it</title>
+  <link>http://tldr.io/tldrs/5107f03551c617727600000a/writing-is-hard-so-do-it</link>
+  <guid>5107f03551c617727600000a</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>BBB</li>
+    </ul>
+    <br><br>
+    <i>Tldr created by <a href="http://tldr.io/Louis">Louis</a></i>
+
+  ]]>
+  </description>
+</item>
+
+<item>
+  <title>15,000 Raspberry Pis for UK schools – thanks Google!</title>
+  <link>http://tldr.io/tldrs/5107f01c51c6177276000006/15-000-raspberry-pis-for-uk-schools-thanks-google</link>
+  <guid>5107f01c51c6177276000006</guid>
+  <description>
+  <![CDATA[
+    <ul>
+      <li>AAA</li>
+    </ul>
+    <br><br>
+    <i>Tldr created by <a href="http://tldr.io/Louis">Louis</a></i>
+
+  ]]>
+  </description>
+</item>
+
 </channel>
 </rss>
 
