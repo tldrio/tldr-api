@@ -18,7 +18,7 @@ var fs = require('fs')
   ;
 
 console.log("Rebuilding the 'Latest Summaries' RSS feed: " + new Date());
-process.chdir(process.env.TLDR_API_ROOT);
+process.chdir(process.env.TLDR_API_DIR);
 
 writeStream = fs.createWriteStream('./rss/feeds/latest-summaries.xml')
 before = fs.readFileSync('./rss/latest-summaries.before.xml', 'utf8')
