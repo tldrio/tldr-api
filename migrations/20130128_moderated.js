@@ -41,7 +41,7 @@ async.waterfall([
       , function (cb) {
           console.log('Adding moderated to: ' + tldrs[i]._id);
 
-          tldrs[i].accepted = tldrs[i].discoverable;
+          tldrs[i].moderated = tldrs[i].discoverable;
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 

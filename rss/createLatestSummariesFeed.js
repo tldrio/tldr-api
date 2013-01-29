@@ -40,7 +40,7 @@ async.waterfall([
     db.connectToDatabase(cb);
   }
 , function (cb) {   // Add tldr pages
-    Tldr.find({ accepted: true })
+    Tldr.find({ moderated: true })
         .sort('-updatedAt')
         .limit(30)
         .populate('creator', 'username')
