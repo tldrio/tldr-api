@@ -153,9 +153,11 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
 app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
-                , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
-                                           , ifNotLogged: routes. website_index }));
-app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
+           , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
+                                      , ifNotLogged: routes. website_index }));
+app.get('/signup', middleware.attachRenderingValues
+                 , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
+                                            , ifNotLogged: routes.website_signup }));
 
 app.get('/latest-summaries', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
