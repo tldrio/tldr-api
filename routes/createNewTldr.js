@@ -58,18 +58,13 @@ function createNewTldr (req, res, next) {
     } else {
       bunyan.incrementMetric('tldrs.creation.creationSuccess');
 
-      if (req.user.isAdmin) {
-        mailer.sendEmail({ type: 'adminTldrWasCreatedByAdmin'
-                       , development: false
-                       , values: { user: req.user, tldr: tldr }
+      mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
+                       , development: true
+                       , values: { user: req.user
+                                 , tldr: tldr
+                                 , type: 'Created'
+                                 , message: req.user.isAdmin ? 'Please cockslap Charles' : 'A tldr was created' }
                        });
-      }
-      else {
-        mailer.sendEmail({ type: 'adminTldrWasCreatedByUser'
-                       , development: false
-                       , values: { user: req.user, tldr: tldr }
-                       });
-      }
 
       // If this is the creator's first tldr, send him a congratulory email
       if (req.user.tldrsCreated.length === 1) {
