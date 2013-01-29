@@ -547,7 +547,7 @@ describe('Tldr', function () {
   });   // ==== End of '#findAndIncrementReadCount' ==== //
 
 
-  describe('discoverable and accepted', function () {
+  describe('discoverable and moderated', function () {
 
     it('Should make a tldr undiscoverable', function (done) {
       var tldrData = {
@@ -573,7 +573,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('Should accept a tldr', function (done) {
+    it('Should moderate a tldr', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
@@ -583,13 +583,13 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
-        tldr.accepted.should.equal(false);
+        tldr.moderated.should.equal(false);
 
-        Tldr.acceptTldr(tldr._id, function (err, numAffected) {
+        Tldr.moderateTldr(tldr._id, function (err, numAffected) {
           numAffected.should.equal(1);
 
           Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
-            theTldr.accepted.should.equal(true);
+            theTldr.moderated.should.equal(true);
 
             done();
           });
@@ -597,7 +597,7 @@ describe('Tldr', function () {
       });
     });
 
-  });   // ==== End of 'discoverable and accepted' ==== //
+  });   // ==== End of 'discoverable and moderated' ==== //
 
 
   describe('#updateValidFields', function () {

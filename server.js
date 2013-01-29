@@ -128,7 +128,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
-app.get('/tldrs/:id/accept', middleware.adminOnly, routes.acceptTldr);
+app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);

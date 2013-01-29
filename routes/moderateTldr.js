@@ -13,11 +13,11 @@ module.exports = function (req, res, next) {
 
   var id = req.params.id;
 
-  Tldr.acceptTldr(id , function (err) {
+  Tldr.moderateTldr(id , function (err) {
     if (err) {
-      res.send(500, i18n.acceptTldrFailure);
+      res.send(500, i18n.moderateTldrFailure);
     } else {
-      res.send(200, i18n.acceptTldrOk);
+      res.send(200, i18n.moderateTldrSuccess);
     }
   });
 };

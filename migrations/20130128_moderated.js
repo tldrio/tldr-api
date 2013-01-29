@@ -1,5 +1,5 @@
 /*
- * This migration was necessary once we defined the new required field "accepted" on tldr
+ * This migration was necessary once we defined the new required field "moderated" on tldr
  * We set it to true for all tldrs
  * Date: 26/09/2012
  *
@@ -31,7 +31,7 @@ async.waterfall([
 , function (cb) {
     var i = 0;
 
-    console.log("Adding missing accepted to tldrs");
+    console.log("Adding missing moderated to tldrs");
 
     Tldr.find({ }, function(err, tldrs) {
       if (err) { return cb(err); }
@@ -39,9 +39,9 @@ async.waterfall([
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          console.log('Adding accepted to: ' + tldrs[i]._id);
+          console.log('Adding moderated to: ' + tldrs[i]._id);
 
-          tldrs[i].accepted = false;
+          tldrs[i].accepted = tldrs[i].discoverable;
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 

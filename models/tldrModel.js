@@ -133,7 +133,7 @@ TldrSchema = new Schema(
   , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
                   , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
                   }
-  , accepted: { type: Boolean, default: false }   // Has the tldr been accepted by a moderator? For now this doesn't 'freeze' the tldr but it could be the case in the future
+  , moderated: { type: Boolean, default: false }   // Has the tldr been accepted by a moderator? For now this doesn't 'freeze' the tldr but it could be the case in the future
   }
 , { strict: true });
 
@@ -212,13 +212,13 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 
 
 /**
- * Accept a tldr as an accurate representation of the resource
- * @param {String} id id of the tldr to accept
+ * Mark a tldr as moderated, meaning it's an accurate summary of the resource
+ * @param {String} id id of the tldr to moderate
  * @param {Function} cb Optional callback, signature is err, numAffected
  */
-TldrSchema.statics.acceptTldr = function (id, cb) {
+TldrSchema.statics.moderateTldr = function (id, cb) {
   var callback = cb || function () {};
-  this.update({ _id: id }, { $set: { accepted: true } }, { multi: false }, callback);
+  this.update({ _id: id }, { $set: { moderated: true } }, { multi: false }, callback);
 };
 
 
