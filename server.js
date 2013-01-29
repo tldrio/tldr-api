@@ -156,7 +156,7 @@ app.get('/', middleware.attachRenderingValues     // Routing for this page depen
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
                                       , ifNotLogged: routes. website_index }));
 app.get('/signup', middleware.attachRenderingValues
-                 , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
+                 , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
 
 app.get('/latest-summaries', middleware.attachRenderingValues, routes.website_tldrs);
