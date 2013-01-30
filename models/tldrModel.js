@@ -14,8 +14,7 @@ var _ = require('underscore')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
-  , TldrSchema
-  , Tldr
+  , TldrSchema, Tldr
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
@@ -27,14 +26,10 @@ var _ = require('underscore')
   ;
 
 
-
-
-
 /**
  * Validators
  *
  */
-
 
 //url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
@@ -89,12 +84,13 @@ function validateAuthor (value) {
  */
 
 TldrSchema = new Schema(
-  { url: { type: String
+  { url: { type: String   // The canonical url
          , unique: true
          , required: true
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , possibleUrls: [{ type: String }]   // All urls that correspond to this tldr
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput
@@ -162,6 +158,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , history = new TldrHistory();
 
   instance.originalUrl = validFields.url;
+  if (instance.url) { instance.possibleUrls.push(instance.url); }
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {

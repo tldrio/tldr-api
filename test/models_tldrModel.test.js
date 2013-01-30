@@ -327,6 +327,29 @@ describe('Tldr', function () {
         });
     });
 
+    it('Should initialize the array of possible urls by the url used for creating this tldr', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://www.mydomain.com/bloup/'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          if (err) { return done(err); }
+          Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
+            if (err) { return done(err); }
+
+            var tldr = docs[0];
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls[0].should.equal(tldr.url);
+
+            done();
+          });
+        });
+    });
+
     it('should initialize a new tldr\'s history with the first version of the data', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
