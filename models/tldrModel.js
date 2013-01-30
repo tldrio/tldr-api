@@ -220,6 +220,39 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 
 
 /**
+ * Look for a tldr by its url
+ * Signature for cb: err, tldr
+ */
+TldrSchema.statics.findOneByUrl = function (url, cb) {
+  var callback = cb || function () {};
+  Tldr.findOne({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+}
+
+
+/**
+ * A new redirection/canonicalization was found, register it
+ * @param {String} from The url from which the redirection comes
+ * @param {String} to The url to which the redirection points
+ * @param {Function} cb Optional callback
+ */
+TldrSchema.statics.registerRedirection = function (from, to, cb) {
+  var fromN = customUtils.normalizeUrl(from)
+    , toN = customUtils.normalizeUrl(to)
+    , callback = cb || function () {}
+    ;
+
+  Tldr.findOneByUrl(toN, function (err, tldr) {
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      tldr.possibleUrls.addToSet(fromN);
+      tldr.save(callback);
+    }
+  });
+}
+
+
+/**
  * Find a tldr with query obj. Increment readcount
  * @param {Object} selector Selector for Query
  * @param {Object} user User who made the request

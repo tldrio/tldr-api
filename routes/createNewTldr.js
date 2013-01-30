@@ -47,7 +47,7 @@ function createNewTldr (req, res, next) {
 
         // POST on existing resource so we act as if it's an update
         url = normalizeUrl(req.body.url);
-        Tldr.find({url: url}, function (err, docs) {
+        Tldr.find({ possibleUrls: url }, function (err, docs) {
           helpers.updateCallback(err, docs, req, res, next);
         });
 

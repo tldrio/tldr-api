@@ -529,7 +529,7 @@ describe('Tldr', function () {
       }
       , valErr;
 
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
         tldr.slug.should.equal('blog-nfa');
         Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
@@ -542,6 +542,79 @@ describe('Tldr', function () {
 
 
   });   // ==== End of '#createAndSaveInstance' ==== //
+
+
+  describe.only('find by url', function () {
+
+    it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        async.waterfall([
+          function (cb) {
+            Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb()
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://www.needforair.com', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              tldr.possibleUrls.push('http://bloup.com/bim');
+              tldr.save(function (err, tldr) { cb(); });
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://bloup.com/bim', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb()
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://www.bloup.com/bim', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb()
+            });
+          }
+        ], done);
+      });
+    });
+
+  });   // ==== End of 'find by url' ==== //
+
+
+  describe('Redirection and canonicalization handling', function () {
+
+    it('If a tldr exist with the to url, redirection should add the from as a possible url', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.registerRedirection('http://bloups.com/bam', 'http://needforair.com', function () {
+          Tldr.findOneByUrl('http://bloups.com/bam', function (err, tldr) {
+            tldr._id.toString().should.equal(id.toString());
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
   describe('#findAndIncrementReadCount', function () {
