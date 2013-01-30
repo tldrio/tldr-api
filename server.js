@@ -200,12 +200,14 @@ app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingV
 app.get('/forum/posts/:id/edit', middleware.attachRenderingValues, routes.website_editPost);
 app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
+// Moderation
+app.get('/moderation', middleware.attachRenderingValues, middleware.adminOnly, routes.website_moderation);
+
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 // Unsubscribe Notifications
 app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
-
 
 
 /*

@@ -130,10 +130,8 @@ TldrSchema = new Schema(
   , readCount: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
-                  , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
-                  }
-  , moderated: { type: Boolean, default: false }   // Has the tldr been accepted by a moderator? For now this doesn't 'freeze' the tldr but it could be the case in the future
+  , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
+  , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
 
