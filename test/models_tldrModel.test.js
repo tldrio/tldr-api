@@ -544,7 +544,7 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
-  describe.only('find by url', function () {
+  describe('find by url', function () {
 
     it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
       var tldrData = {
