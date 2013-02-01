@@ -1,20 +1,21 @@
 <item>
   <title>{{title}}</title>
   <link>http://tldr.io/tldrs/{{_id}}/{{slug}}</link>
-  <guid>{{_id}}</guid>
-  <pubDate>{{createdAt}}</pubDate>
-  {{#imageUrl}}
-    <enclosure url="{{.}}" />
-  {{/imageUrl}}
+  <guid isPermaLink="false">{{_id}}</guid>
+  <pubDate>{{pubDate}}</pubDate>
   <description>
   <![CDATA[
+    {{#imageUrl}}
+      <img src="{{imageUrl}}" alt="{{title}}">
+    {{/imageUrl}}
     <ul>
     {{#summaryBullets}}
       <li>{{.}}</li>
     {{/summaryBullets}}
     </ul>
-    <br><br>
-    <i>Tldr created by <a href="http://tldr.io/{{creator.username}}">{{creator.username}}</a></i>
+    <br>
+    <i>Tldr created by <a href="http://tldr.io/{{creator.username}}">{{creator.username}}</a></i><br><br>
+    <a href="{{originalUrl}}">Read complete article</a>
 
   ]]>
   </description>

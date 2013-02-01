@@ -30,6 +30,8 @@ h4e.setup({ extension: 'mustache'
 
 // Add an item to the RSS feed
 function addTldrToFeed(ws, tldr) {
+  tldr.pubDate = tldr.createdAt.toUTCString();
+
   ws.write(h4e.render('item', { values: tldr }));
 }
 
@@ -41,8 +43,8 @@ async.waterfall([
   }
 , function (cb) {   // Add tldr pages
     Tldr.find({ moderated: true, discoverable: true })
-        .sort('-updatedAt')
-        .limit(30)
+        .sort('-createdAt')
+        .limit(50)
         .populate('creator', 'username')
         .exec(function (err, tldrs) {
           _.each(tldrs, function (tldr) {
