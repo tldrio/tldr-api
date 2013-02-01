@@ -4,7 +4,7 @@
       <div class="tldr-tldr">
         <div class="tldr-header">
           <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{tldr.hostname}}" alt="Favicon for {{tldr.hostname}}">
-          <h1 class="tldr-title tldr-page-title"><a target="_blank" href="{{tldr.url}}">{{tldr.title}}</a></h1>
+          <h1 class="tldr-title tldr-page-title"><a target="_blank" href="{{tldr.originalUrl}}">{{tldr.title}}</a></h1>
           <span class="tldr-hostname">({{tldr.hostname}})</span>
         </div>
 
@@ -30,7 +30,7 @@
 
       <div class="tldr-tldr">
         <div class="sub-tldr">
-          <a href="{{tldr.url}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
+          <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
           <div class="sharing-container">
             <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
               <i class="icon-white icon-share-alt"></i>
