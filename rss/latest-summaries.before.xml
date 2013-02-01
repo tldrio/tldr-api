@@ -7,10 +7,8 @@
   <language>en-us</language>
   <ttl>60</ttl>   <!-- In minutes -->
   <webMaster>hello@tldr.io (Tldr Team)</webMaster>
-  <!-- Put an image tag, like this
   <image>
-    <url></url>
-    <title></title>
-    <link></link>
+    <url>http://tldr.io/assets/img/fbicon.png</url>
+    <title>tldr.io</title>
+    <link>http://tldr.io</link>
   </image>
-  -->
