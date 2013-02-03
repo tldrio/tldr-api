@@ -32,6 +32,11 @@
             {{/tldr.summaryBullets}}
           </ul>
         </div>
+
+        <!-- just in case the image is taller than the summary -->
+        {{#tldr.imageUrl}}
+        <div class="clearfix"> </div>
+        {{/tldr.imageUrl}}
       </div>
 
       <div class="tldr-tldr">
