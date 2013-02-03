@@ -11,6 +11,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.index = true;
+  values.rssFeedPromotionLink = true;
   values.title = "tldr.io" + config.titles.shortDescription;
   values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
   partials.content = '{{>website/pages/index}}';

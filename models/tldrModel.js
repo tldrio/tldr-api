@@ -130,9 +130,8 @@ TldrSchema = new Schema(
   , readCount: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
-                  , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
-                  }
+  , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
+  , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
 
@@ -206,8 +205,18 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
  */
 TldrSchema.statics.makeUndiscoverable = function (id, cb) {
   var callback = cb || function () {};
-
   this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
+};
+
+
+/**
+ * Mark a tldr as moderated, meaning it's an accurate summary of the resource
+ * @param {String} id id of the tldr to moderate
+ * @param {Function} cb Optional callback, signature is err, numAffected
+ */
+TldrSchema.statics.moderateTldr = function (id, cb) {
+  var callback = cb || function () {};
+  this.update({ _id: id }, { $set: { moderated: true } }, { multi: false }, callback);
 };
 
 

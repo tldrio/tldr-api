@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0">
+<channel>
+  <title>Latest summaries from tldr.io</title>
+  <link>http://tldr.io</link>
+  <description>Latest summaries created by the tldr.io community</description>
+  <language>en-us</language>
+  <ttl>60</ttl>   <!-- In minutes -->
+  <webMaster>hello@tldr.io (Tldr Team)</webMaster>
+  <image>
+    <url>http://tldr.io/assets/img/fbicon.png</url>
+    <title>tldr.io</title>
+    <link>http://tldr.io</link>
+  </image>

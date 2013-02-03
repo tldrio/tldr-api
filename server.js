@@ -128,6 +128,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
+app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -153,9 +154,11 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
 // General pages
 app.get('/about', middleware.attachRenderingValues, routes.website_about);
 app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
-                , middleware.loggedInCheck({ ifLogged: routes.website_tldrs
-                                           , ifNotLogged: routes. website_index }));
-app.get('/signup', middleware.attachRenderingValues, routes.website_signup);
+           , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
+                                      , ifNotLogged: routes. website_index }));
+app.get('/signup', middleware.attachRenderingValues
+                 , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
+                                            , ifNotLogged: routes.website_signup }));
 
 app.get('/latest-summaries', middleware.attachRenderingValues, routes.website_tldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
@@ -197,12 +200,14 @@ app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingV
 app.get('/forum/posts/:id/edit', middleware.attachRenderingValues, routes.website_editPost);
 app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
+// Moderation
+app.get('/moderation', middleware.attachRenderingValues, middleware.adminOnly, routes.website_moderation);
+
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 // Unsubscribe Notifications
 app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
-
 
 
 /*

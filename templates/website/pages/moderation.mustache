@@ -1,0 +1,42 @@
+<section class="marketing">
+  <h1>Tldrs in need of some moderation</h1>
+  <div class="tldr-base-unit">
+    <div class="latest-tldrs-created">
+      <ul class="unstyled">
+        {{#latestTldrs}}
+        <li>
+          <div class="tldr-icon">
+          </div>
+          <div class="tldr-title-wrapper">
+            <p class="tldr-title-ellipsis">
+              <a href="{{url}}" target="_blank">{{title}}</a>
+            </p>
+            {{>website/tldrBadge}}
+            {{>website/powertip}}
+            <span class="tldr-hostname tldr-hostname-list">
+              ({{hostname}})
+            </span>
+            <button style="float: right; margin-left: 8px;" class="btn btn-danger btn-mini badTldr" type="button">Hide</button>
+            <button style="float: right; margin-left: 8px;" class="btn btn-success btn-mini goodTldr" type="button">Show in RSS/latest</button>
+          </div>
+          <div class="tldr-metadata-tldrs">
+            <span class="tldr-creator">
+              contributed by
+              <a href="/{{creator.username}}" target="_blank">
+                <em>{{creator.username}}</em>
+              </a>
+            </span>
+            <span class="tldr-readcount">
+              &middot; read {{readCount}} times
+            </span>
+          </div>
+        </li>
+        {{/latestTldrs}}
+      </ul>
+
+      {{^latestTldrs}}
+        Woohoo, no tldrs need to be moderated!
+      {{/latestTldrs}}
+    </div>
+  </div>
+</section>

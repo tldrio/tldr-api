@@ -46,9 +46,13 @@ function updateCallback (err, docs, req, res, next) {
       }
       bunyan.incrementMetric('tldrs.update.success');
 
-      mailer.sendEmail({ type: 'adminTldrWasEdited'
+      mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
                        , development: false
-                       , values: { user: req.user, tldr: updatedTldr }
+                       , values: { user: req.user
+                                 , tldr: updatedTldr
+                                 , type: 'Edited'
+                                 , message: 'A tldr was edited'
+                                 }
                        });
 
       // With 204 even if a object is provided it's not sent by express

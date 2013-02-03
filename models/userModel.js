@@ -40,6 +40,7 @@ reservedUsernames = {
   , 'index': true
   , 'login': true
   , 'logout': true
+  , 'moderation': true
   , 'notifications': true
   , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true

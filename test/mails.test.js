@@ -83,7 +83,7 @@ if (config.env === 'testMail') {
           mailer.sendEmail({ type: 'congratulationsFirstTldr'
                          , to: 'hello+test@tldr.io'
                            , development: true
-                           , values: { url: encodeURIComponent(tldr.url) }
+                           , values: {}
                            }, function() { done();} );
 
       });
