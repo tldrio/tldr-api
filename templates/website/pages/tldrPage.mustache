@@ -16,6 +16,12 @@
           </span>
         </div>
 
+        {{#tldr.imageUrl}}
+        <div class="tldr-image">
+          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+        </div>
+        {{/tldr.imageUrl}}
+
         <div class="tldr-summary">
           <ul>
             {{#tldr.summaryBullets}}
