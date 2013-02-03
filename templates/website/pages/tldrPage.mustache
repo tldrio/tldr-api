@@ -16,6 +16,12 @@
           </span>
         </div>
 
+        {{#tldr.imageUrl}}
+        <div class="tldr-image">
+          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+        </div>
+        {{/tldr.imageUrl}}
+
         <div class="tldr-summary">
           <ul>
             {{#tldr.summaryBullets}}
@@ -26,6 +32,11 @@
             {{/tldr.summaryBullets}}
           </ul>
         </div>
+
+        <!-- just in case the image is taller than the summary -->
+        {{#tldr.imageUrl}}
+        <div class="clearfix"> </div>
+        {{/tldr.imageUrl}}
       </div>
 
       <div class="tldr-tldr">
