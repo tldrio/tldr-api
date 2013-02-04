@@ -631,7 +631,7 @@ describe('Tldr', function () {
         prevReadCount = tldr.readCount;
         prevId = tldr._id;
 
-        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
+        Tldr.findAndIncrementReadCount({ _id: tldr._id }, function (err, _tldr) {
 
           _tldr.readCount.should.equal(prevReadCount + 1);
           _tldr._id.toString().should.equal(prevId.toString());

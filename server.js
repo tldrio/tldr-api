@@ -103,7 +103,6 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
-app.put('/users/you/notifications/markAllAsSeen', routes.markAllNotificationsAsSeen);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
@@ -115,9 +114,6 @@ app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
-
-// Notifications
-app.put('/notifications/:id', routes.updateNotification);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
@@ -205,9 +201,6 @@ app.get('/moderation', middleware.attachRenderingValues, middleware.adminOnly, r
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
-
-// Unsubscribe Notifications
-app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
 
 
 /*

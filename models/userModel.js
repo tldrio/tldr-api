@@ -12,7 +12,6 @@ var mongoose = require('mongoose')
   , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
-  , Notification = require('./notificationModel')
   , bcrypt = require('bcrypt')
   , crypto = require('crypto')
   , config = require('../lib/config')
@@ -223,40 +222,6 @@ function getCreatedTldrs (callback) {
       if (err) { return callback(err); }
       callback(null, tldrs);
     });
-}
-
-/**
- * Get the notifications of the user
- * @param {Integer} _limit Optional. Maximum number of notifications to return. No limit if omitted or set to 0.
- * @param {Function} _callback Signature: err, [notifications]
- */
-function getNotifications (_limit, _callback) {
-  var limit, callback;
-
-  if (typeof _limit === 'function') {    // No limit was provided
-    limit = 0;
-    callback = _limit;
-  } else {
-    limit = _limit;
-    callback = _callback;
-  }
-
-  User.findOne({ _id: this._id })
-    .populate('notifications', null, null, { sort: [[ 'createdAt', -1 ]], limit: limit })
-    .exec(function(err, user) {
-      if (err) { return callback(err); }
-      callback(null, user.notifications);
-    });
-}
-
-/**
- * Mark this user's notification as seen
- * @param {Function} cb Optional callback
- */
-function markAllNotificationsAsSeen (cb) {
-  var callback = cb ? cb : function () {};
-
-  Notification.update({ to: this._id, unseen: true }, { unseen: false }, { multi: true }, callback);
 }
 
 
@@ -524,9 +489,7 @@ UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameN
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
-UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.markAllNotificationsAsSeen = markAllNotificationsAsSeen;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;

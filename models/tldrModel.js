@@ -255,24 +255,18 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
 /**
  * Find a tldr with query obj. Increment readcount
  * @param {Object} selector Selector for Query
- * @param {Object} user User who made the request
- * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
+ * @param {Function} cb - Callback to execute after find. Signature err, tldr
  * @return {void}
  */
-TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
+TldrSchema.statics.findAndIncrementReadCount = function (selector, callback) {
 
   var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
                   .populate('creator', 'username twitterHandle');
-  // If the user has the admin role, populate history
-  if (user && user.isAdmin) {
-    query.populate('history');
-  }
 
   query.exec( function (err, tldr) {
     if (!err && tldr) {
       // Send Notif
-      mqClient.emit('tldr.read', { from: user
-                                 , tldr: tldr
+      mqClient.emit('tldr.read', { tldr: tldr
                                  // all contributors instead of creator only ?? we keep creator for now as there a very few edits
                                  , to: tldr.creator
                                  });

@@ -38,7 +38,7 @@ function searchTldrs (req, res, next) {
     bunyan.incrementMetric('tldrs.search.byUrl');
 
     url = normalizeUrl(url);
-    Tldr.findAndIncrementReadCount({ possibleUrls: url }, req.user, function (err, tldr) {
+    Tldr.findAndIncrementReadCount({ possibleUrls: url }, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }

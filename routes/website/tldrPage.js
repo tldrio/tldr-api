@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
 
   bunyan.incrementMetric('tldrs.get.html');
 
-  Tldr.findAndIncrementReadCount({ _id: req.params.id }, req.user, function (err, tldr) {
+  Tldr.findAndIncrementReadCount({ _id: req.params.id }, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
     // Redirect to the correct url if the slug is not the right one. Will result in partial double counting
