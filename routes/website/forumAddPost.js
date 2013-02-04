@@ -2,7 +2,7 @@ var models = require('../../lib/models')
   , Topic = models.Topic
   , _ = require('underscore')
   , config = require('../../lib/config')
-  , mqClient = require('../../lib/message-queue')()
+  , mqClient = require('../../lib/message-queue')
   ;
 
 module.exports = function (req, res, next) {
