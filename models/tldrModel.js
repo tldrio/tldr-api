@@ -90,7 +90,7 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
-  , possibleUrls: [{ type: String }]   // All urls that correspond to this tldr
+  , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput
@@ -133,7 +133,7 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
-TldrSchema.path('possibleUrls').index({ unique: true });
+
 
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
