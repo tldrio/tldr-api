@@ -226,7 +226,7 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 TldrSchema.statics.findOneByUrl = function (url, cb) {
   var callback = cb || function () {};
   Tldr.findOne({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
-}
+};
 
 
 /**
@@ -249,7 +249,7 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
       tldr.save(callback);
     }
   });
-}
+};
 
 
 /**

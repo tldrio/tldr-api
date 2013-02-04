@@ -562,7 +562,7 @@ describe('Tldr', function () {
           function (cb) {
             Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
               tldr._id.toString().should.equal(id.toString());
-              cb()
+              cb();
             });
           }
         , function (cb) {
@@ -575,13 +575,13 @@ describe('Tldr', function () {
         , function (cb) {
             Tldr.findOneByUrl('http://bloup.com/bim', function (err, tldr) {
               tldr._id.toString().should.equal(id.toString());
-              cb()
+              cb();
             });
           }
         , function (cb) {
             Tldr.findOneByUrl('http://www.bloup.com/bim', function (err, tldr) {
               tldr._id.toString().should.equal(id.toString());
-              cb()
+              cb();
             });
           }
         ], done);
