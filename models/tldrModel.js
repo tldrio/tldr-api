@@ -224,14 +224,6 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
-TldrSchema.statics.findOneByUrl = function (url, cb) {
-  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
-};
-
-TldrSchema.statics.findOneById = function (id, cb) {
-  findOneInternal({ _id: id }, cb);
-};
-
 function findOneInternal (selector, cb) {
   var callback = cb || function () {};
 
@@ -247,6 +239,14 @@ function findOneInternal (selector, cb) {
 
     callback(null, tldr);
   });
+}
+
+TldrSchema.statics.findOneByUrl = function (url, cb) {
+  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+};
+
+TldrSchema.statics.findOneById = function (id, cb) {
+  findOneInternal({ _id: id }, cb);
 };
 
 

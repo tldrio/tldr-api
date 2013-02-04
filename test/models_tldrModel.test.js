@@ -634,7 +634,7 @@ describe('Tldr', function () {
           });
         }
       , function (cb) {
-          Tldr.findOneByUrl('http://needforair.com', function () { cb(); })
+          Tldr.findOneByUrl('http://needforair.com', function () { cb(); });
         }
       , async.apply(wait, 20)   // Give time for the message queue to do its job
       , function (cb) {
@@ -645,7 +645,7 @@ describe('Tldr', function () {
           });
         }
       , function (cb) {
-          Tldr.findOneById(id, function () { cb(); })
+          Tldr.findOneById(id, function () { cb(); });
         }
       , async.apply(wait, 20)   // Give time for the message queue to do its job
       , function (cb) {
