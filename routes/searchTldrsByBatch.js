@@ -24,8 +24,6 @@ function searchTldrsByBatch (req, res, next) {
     , maxBatchSize = 50
     ;
 
-  bunyan.incrementMetric('tldrs.search.routeCalled');
-
   // We normalize the urls
   _.each(req.body.batch, function (url) {
     var normalizedUrl = normalizeUrl(url);

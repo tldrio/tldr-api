@@ -19,8 +19,6 @@ function unsubscribe (req, res, next) {
     , expiration = req.query.expiration
     , check;
 
-  bunyan.incrementMetric('users.unsubscribe.routeCalled');
-
   check = customUtils.createDataForUnsubscribeLink(id, expiration);
 
   if ( !type || !id || !signature || !expiration

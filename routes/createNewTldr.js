@@ -24,8 +24,6 @@ var bunyan = require('../lib/logger').bunyan
  */
 
 function createNewTldr (req, res, next) {
-
-  bunyan.incrementMetric('tldrs.creation.routeCalled');
   var tldrToSend
     , url;
 
@@ -39,8 +37,6 @@ function createNewTldr (req, res, next) {
 
   Tldr.createAndSaveInstance(req.body, req.user, function (err, tldr) {
     if (err) {
-      bunyan.incrementMetric('tldrs.creation.creationError');
-
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
@@ -56,8 +52,6 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
-      bunyan.incrementMetric('tldrs.creation.creationSuccess');
-
       mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
                        , development: false
                        , values: { user: req.user

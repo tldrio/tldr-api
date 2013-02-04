@@ -19,8 +19,6 @@ var bunyan = require('../lib/logger').bunyan
  */
 
 function updateTldrWithId (req, res, next) {
-  bunyan.incrementMetric('tldrs.updateById.routeCalled');
-
   var id = req.params.id;
 
   if (!req.body) {

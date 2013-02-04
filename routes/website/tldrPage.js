@@ -18,8 +18,6 @@ module.exports = function (req, res, next) {
   partials.content = '{{>website/pages/tldrPage}}';
   partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
-  bunyan.incrementMetric('tldrs.get.html');
-
   Tldr.findAndIncrementReadCount({ _id: req.params.id }, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 

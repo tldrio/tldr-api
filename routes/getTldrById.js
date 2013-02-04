@@ -35,7 +35,6 @@ function getTldrById (req, res, next) {
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    bunyan.incrementMetric('tldrs.get.json');
     return res.json(200, tldr);
 
   });
