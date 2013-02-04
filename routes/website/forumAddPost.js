@@ -2,8 +2,6 @@ var models = require('../../lib/models')
   , Topic = models.Topic
   , _ = require('underscore')
   , config = require('../../lib/config')
-  , mailer = require('../../lib/mailer')
-  , RedisQueue = require('../../lib/redis-queue')
   , mqClient = require('../../lib/message-queue')()
   ;
 
