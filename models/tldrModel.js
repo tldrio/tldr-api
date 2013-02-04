@@ -14,8 +14,7 @@ var _ = require('underscore')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
-  , TldrSchema
-  , Tldr
+  , TldrSchema, Tldr
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
@@ -27,14 +26,10 @@ var _ = require('underscore')
   ;
 
 
-
-
-
 /**
  * Validators
  *
  */
-
 
 //url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
@@ -89,12 +84,13 @@ function validateAuthor (value) {
  */
 
 TldrSchema = new Schema(
-  { url: { type: String
+  { url: { type: String   // The canonical url
          , unique: true
          , required: true
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput
@@ -135,6 +131,8 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
+
+
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
@@ -160,6 +158,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , history = new TldrHistory();
 
   instance.originalUrl = validFields.url;
+  if (instance.url) { instance.possibleUrls.push(instance.url); }
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
@@ -194,7 +193,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
  */
 TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
   var callback = cb || function () {};
-  return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, callback);
+  return this.update({ possibleUrls: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
 
 
@@ -218,6 +217,39 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
   var callback = cb || function () {};
   this.update({ _id: id }, { $set: { moderated: true } }, { multi: false }, callback);
 };
+
+
+/**
+ * Look for a tldr by its url
+ * Signature for cb: err, tldr
+ */
+TldrSchema.statics.findOneByUrl = function (url, cb) {
+  var callback = cb || function () {};
+  Tldr.findOne({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+}
+
+
+/**
+ * A new redirection/canonicalization was found, register it
+ * @param {String} from The url from which the redirection comes
+ * @param {String} to The url to which the redirection points
+ * @param {Function} cb Optional callback
+ */
+TldrSchema.statics.registerRedirection = function (from, to, cb) {
+  var fromN = customUtils.normalizeUrl(from)
+    , toN = customUtils.normalizeUrl(to)
+    , callback = cb || function () {}
+    ;
+
+  Tldr.findOneByUrl(toN, function (err, tldr) {
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      tldr.possibleUrls.addToSet(fromN);
+      tldr.save(callback);
+    }
+  });
+}
 
 
 /**

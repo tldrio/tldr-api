@@ -36,7 +36,7 @@ function searchTldrsByBatch (req, res, next) {
   if (batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
 
   //Search by batch
-  Tldr.find({ url: { $in: batch } })
+  Tldr.find({ possibleUrls: { $in: batch } })
     .populate('creator', 'username twitterHandle')
     .exec( function (err, docs) {
       if (err) {
