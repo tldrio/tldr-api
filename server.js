@@ -254,7 +254,6 @@ app.stopServer = function (cb) {
  */
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
-  notificator.init();
 }
 
 

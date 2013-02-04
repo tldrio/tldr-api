@@ -31,7 +31,6 @@ function wait (millis, cb) {
   setTimeout(cb, millis);
 }
 
-notificator.init();
 
 /**
  * Tests

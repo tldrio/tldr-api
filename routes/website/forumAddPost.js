@@ -23,7 +23,7 @@ module.exports = function (req, res, next) {
         req.renderingValues.userInput = req.body;
         return next();
       } else {
-        mqClient.emit('forum.post', { from: req.user
+        mqClient.emit('forum.post', { creator: req.user
                                     , topic: topic
                                     , post: post
                                     });
