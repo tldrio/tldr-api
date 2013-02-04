@@ -841,6 +841,8 @@ describe('Tldr', function () {
         theTldr.summaryBullets[1].should.equal('Bloup');
         theTldr.resourceAuthor.should.equal('NFA Crew');
         theTldr.imageUrl.should.equal('http://google.fr/bloup.png');
+        theTldr.possibleUrls.length.should.equal(1);
+        theTldr.possibleUrls[0].should.equal('http://needforair.com/nutcrackers');
 
         done();
       });

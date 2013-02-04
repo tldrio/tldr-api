@@ -133,6 +133,8 @@ TldrSchema = new Schema(
   }
 , { strict: true });
 
+TldrSchema.path('possibleUrls').index({ unique: true });
+
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
