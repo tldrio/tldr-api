@@ -16,7 +16,6 @@ var should = require('chai').should()
   , async = require('async')
   , Tldr = models.Tldr
   , User = models.User
-  , Notification = models.Notification
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
   , request = require('request')
@@ -50,25 +49,11 @@ function logUserOut(cb) {
 function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? {} : null); }); }
 function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? null : {}); }); }
 
-// Check for population of a tldr's history (here the tldr #2)
-function tldrHistoryCheck (shouldWork, cb) {
-  var uri = rootUrl + '/tldrs/' + tldr2._id.toString() + '/admin';
-
-  request.get({ headers: {"Accept": "application/json"}, uri: uri }, function (err, res, body) {
-    var obj = JSON.parse(res.body);
-
-    if (shouldWork) {
-      res.statusCode.should.equal(200);
-      obj.url.should.equal('http://avc.com/mba-monday');
-      assert.isDefined(obj.history.versions);
-    } else {
-      res.statusCode.should.equal(401);
-      assert.isUndefined(obj.url);   // obj is not a tldr here
-    }
-    cb();
-  });
+// Version of setTimeout usable with async.apply
+// Used to integration test parts using the message queue
+function wait (millis, cb) {
+  setTimeout(cb, millis);
 }
-
 
 
 /**
@@ -119,7 +104,6 @@ describe('Webserver', function () {
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
     , async.apply(theRemove, Topic)
-    , async.apply(theRemove, Notification)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
            user1 = user;
@@ -182,23 +166,6 @@ describe('Webserver', function () {
       });
     });
 
-    it('shouldnt return a tldrs admin version if nobody or a non admin is logged in', function (done) {
-      async.waterfall([
-        async.apply(logUserOut)
-      , async.apply(tldrHistoryCheck, false )
-      , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, false )
-      ], done);
-    });
-
-    it('should return a tldrs admin version if asked by an admin', function (done) {
-      async.waterfall([
-        async.apply(logUserOut)
-      , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
-      , async.apply(tldrHistoryCheck, true )
-      ], done);
-    });
-
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
 
       request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/invalidId'}, function (err, res, body) {
@@ -207,30 +174,6 @@ describe('Webserver', function () {
         assert.isNotNull(obj._id);
         done();
       });
-
-    });
-
-    it('should increment the readcount with search, getbyId (json), and tldr page calls', function (done) {
-      var prevReadCount;
-			Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
-				prevReadCount = tldr.readCount;
-				request.get({ headers: {"Accept": "application/json"}
-										, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent(tldr1.url) }, function (error, response, body) {
-					JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 1);
-					request.get({ headers: {"Accept": "application/json"}
-											, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
-						JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 2);
-						request.get( { headers: {"Accept": "text/html"}
-                         , uri: rootUrl + '/tldrs/' + tldr1._id + '/' + tldr1.slug }
-                       , function (error, response, body) {
-							Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
-								tldr.readCount.should.be.equal(prevReadCount + 3);
-								done();
-							});
-						});
-					});
-				});
-			});
 
     });
 
@@ -486,6 +429,7 @@ describe('Webserver', function () {
 
     });
 
+    // No need to use wait here, requests seems to be much slower than Redis anyway
     it('Should redirect to correct tldr-page "slug url" if queried with the wrong one or the former url type', function (done) {
       var previousReadCount;
 
@@ -1589,88 +1533,6 @@ describe('Webserver', function () {
       });
     });
   });   // ==== End of 'Password reset' ==== //
-
-
-  describe('Notifications', function() {
-    it('Only the to user should able to change the notif status', function (done) {
-
-      var notifData = { from: '507eda94cb0c70d81100000c'
-                  , to : user1._id
-                  , tldr: '507edb3fcb0c70d81100006a'
-                  , type: 'read'
-                  }
-        , notifData2 = { from: '507eda94cb0c70d81100000c'
-                  , to: '507edb3fcb0c70d81100006a'
-                  , tldr: '507edb3fcb0c70d81100006a'
-                  , type: 'read'
-                  };
-
-      logUserIn('user1@nfa.com', 'supersecret', function () {
-        Notification.createAndSaveInstance(notifData, function(err, notif) {
-          Notification.createAndSaveInstance(notifData2, function(err, notif2) {
-            notif.unseen.should.equal.true;
-
-            request.put({ headers: {"Accept": "application/json"}
-                        , json: { unseen: false }
-                        , uri: rootUrl + '/notifications/' + notif2._id }, function (error, response, body) {
-              response.statusCode.should.equal(401);
-
-              request.put({ headers: {"Accept": "application/json"}
-                          , json: { unseen: false }
-                          , uri: rootUrl + '/notifications/' + notif._id }, function (error, response, body) {
-                response.statusCode.should.equal(200);
-                body.unseen.should.equal.false;
-                done();
-              });
-            });
-          });
-        });
-      });
-    });
-
-    it('One should be able to unsubscribe in one click from the notification emails', function (done) {
-      User.findOne({ _id: user1._id },  function (err, user) {
-        var expiration = new Date().setDate(new Date().getDate() + 2)
-          , dataForUnsubscribe;
-
-        user.notificationsSettings.read.should.be.true;
-        expiration = new Date().setDate(new Date().getDate() + 2);
-        dataForUnsubscribe = customUtils.createDataForUnsubscribeLink(user1._id + '/', expiration);
-
-        // This request is bad (signature)
-        request.get({ headers: {"Accept": "text/html"}
-                    , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ dataForUnsubscribe.expiration+'&signature='+dataForUnsubscribe.signature }, function (error, response, body) {
-          body.should.contain('alert-error');
-          User.findOne({ _id: user1._id },  function (err, user) {
-            user.notificationsSettings.read.should.be.true;
-
-            expiration = new Date().setDate(new Date().getDate() - 1);
-            dataForUnsubscribe = customUtils.createDataForUnsubscribeLink(user1._id, expiration);
-            // This request is bad too (expiration)
-            request.get({ headers: {"Accept": "text/html"}
-                        , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ dataForUnsubscribe.expiration+'&signature='+dataForUnsubscribe.signature }, function (error, response, body) {
-              body.should.contain('alert-error');
-              User.findOne({ _id: user1._id },  function (err, user) {
-                user.notificationsSettings.read.should.be.true;
-
-                expiration = new Date().setDate(new Date().getDate() + 2);
-                dataForUnsubscribe = customUtils.createDataForUnsubscribeLink(user1._id, expiration);
-
-                request.get({ headers: {"Accept": "text/html"}
-                            , uri: rootUrl + '/notifications/unsubscribe?id='+ user1._id+ '&type=read&expiration='+ dataForUnsubscribe.expiration+'&signature='+dataForUnsubscribe.signature }, function (error, response, body) {
-                    User.findOne({ _id: user1._id },  function (err, user) {
-                      user.notificationsSettings.read.should.be.false;
-                      done();
-                    });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
-
-  });   // ==== End of 'Notifications' ==== //
 
 
   describe('PUT topic', function () {

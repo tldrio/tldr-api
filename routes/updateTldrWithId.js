@@ -19,8 +19,6 @@ var bunyan = require('../lib/logger').bunyan
  */
 
 function updateTldrWithId (req, res, next) {
-  bunyan.incrementMetric('tldrs.updateById.routeCalled');
-
   var id = req.params.id;
 
   if (!req.body) {
@@ -30,7 +28,7 @@ function updateTldrWithId (req, res, next) {
   // Increment readcount if body contains the key `incrementReadCount`
   // Usefull for increment readCOunt on hover in the extension
   if (req.body.incrementReadCount) {
-    Tldr.findAndIncrementReadCount({ _id: id }, req.user, function (err, tldr) {
+    Tldr.findOneById(id, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }

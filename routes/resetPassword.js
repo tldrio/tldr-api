@@ -14,8 +14,6 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function resetPassword (req, res, next) {
-  bunyan.incrementMetric('users.resetPassword.doIt.routeCalled');
-
   if ( ! req.body || ! req.body.email || req.body.email.length === 0 || ! req.body.resetPasswordToken ) {
     return next({ statusCode: 403, body: { message: i18n.wrongTokenOrEmail } });
   }
@@ -47,8 +45,6 @@ function resetPassword (req, res, next) {
                          , to: user.email
                          , values: { user: user }
                          });
-
-        bunyan.incrementMetric('users.resetPassword.doIt.success');
 
         res.json(200, { message: i18n.passwordResetSuccessfully });
       }

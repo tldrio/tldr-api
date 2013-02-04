@@ -20,17 +20,21 @@ var should = require('chai').should()
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , url = require('url')
-  , async = require('async');
+  , async = require('async')
+  , notificator = require('../lib/notificator')
+  ;
 
 
-
+// Version of setTimeout usable with async.apply
+// Used to integration test parts using the message queue
+function wait (millis, cb) {
+  setTimeout(cb, millis);
+}
 
 
 /**
  * Tests
  */
-
-
 describe('Tldr', function () {
   var user;
 
@@ -45,7 +49,7 @@ describe('Tldr', function () {
   beforeEach(function (done) {
     User.remove({}, function(err) {
       Tldr.remove({}, function (err) {
-        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
           user = _user;
           done();
         });
@@ -588,6 +592,73 @@ describe('Tldr', function () {
       });
     });
 
+    it('findOneByUrl should populate the creator\'s username and twitterHandle', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
+          tldr._id.toString().should.equal(id.toString());
+          tldr.creator.username.should.equal('eeee');
+          tldr.creator.twitterHandle.should.equal('zetwit');
+          done();
+        });
+      });
+    });
+
+    it('findOneByUrl and findOneById called should result in an increase of the weekly and total read counts', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      , prevReadCount, prevWeeklyReadCount
+      ;
+
+      async.waterfall([
+        function (cb) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            id = tldr._id;
+            prevReadCount = tldr.readCount;
+            prevWeeklyReadCount = tldr.readCountThisWeek;
+            cb();
+          });
+        }
+      , function (cb) {
+          Tldr.findOneByUrl('http://needforair.com', function () { cb(); })
+        }
+      , async.apply(wait, 20)   // Give time for the message queue to do its job
+      , function (cb) {
+          Tldr.findOne({ _id: id }, function (err, tldr) {
+            tldr.readCount.should.equal(prevReadCount + 1);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 1);
+            cb();
+          });
+        }
+      , function (cb) {
+          Tldr.findOneById(id, function () { cb(); })
+        }
+      , async.apply(wait, 20)   // Give time for the message queue to do its job
+      , function (cb) {
+          Tldr.findOne({ _id: id }, function (err, tldr) {
+            tldr.readCount.should.equal(prevReadCount + 2);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 2);
+            cb();
+          });
+        }
+      ], done);
+    });
+
+
   });   // ==== End of 'find by url' ==== //
 
 
@@ -615,32 +686,6 @@ describe('Tldr', function () {
     });
 
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
-
-
-  describe('#findAndIncrementReadCount', function () {
-
-    it('Should increment read count when finding a tldr', function (done) {
-      var tldrData = { title: 'Blog NFA',
-                      summaryBullets: ['Awesome Blog'],
-                      resourceAuthor: 'NFA Crew',
-                      url: 'http://needforair.com'}
-        , prevReadCount, prevId;
-
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        prevReadCount = tldr.readCount;
-        prevId = tldr._id;
-
-        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
-
-          _tldr.readCount.should.equal(prevReadCount + 1);
-          _tldr._id.toString().should.equal(prevId.toString());
-          done();
-        });
-      });
-    });
-
-  });   // ==== End of '#findAndIncrementReadCount' ==== //
 
 
   describe('discoverable and moderated', function () {

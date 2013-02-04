@@ -15,8 +15,6 @@ function confirmUserEmail (req, res, next) {
   var confirmEmailToken = req.body.confirmEmailToken
     , email = req.body.email;
 
-  bunyan.incrementMetric('users.confirmEmail.routeCalled');
-
   if (!confirmEmailToken || !email) {
     return next({ statusCode: 403, body: { message: i18n.confirmTokenOrEmailInvalid} } );
   }
@@ -47,8 +45,6 @@ function confirmUserEmail (req, res, next) {
         if (err) {
           return next({ statusCode: 500, body: { message: i18n.mongoInternErrSaveConfirmUser} } );
         }
-
-        bunyan.incrementMetric('users.confirmEmail.newConfirmationSuccess');
 
         return res.json(200, {message: i18n.emailIsConfirmed});
       });

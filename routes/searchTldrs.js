@@ -30,15 +30,11 @@ function searchTldrs (req, res, next) {
     , startat = query.startat || 0
     , olderthan = query.olderthan;
 
-  bunyan.incrementMetric('tldrs.search.routeCalled');
-
   // If we have a url specified we don't need to go further just grab the
   // corresponding tldr
   if (url) {
-    bunyan.incrementMetric('tldrs.search.byUrl');
-
     url = normalizeUrl(url);
-    Tldr.findAndIncrementReadCount({ possibleUrls: url }, req.user, function (err, tldr) {
+    Tldr.findOneByUrl(url, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }
@@ -58,15 +54,11 @@ function searchTldrs (req, res, next) {
       }
 
       // Success
-      bunyan.incrementMetric('tldrs.get.json');
       return res.json(200, tldr);
     });
 
     return;
   }
-
-
-  bunyan.incrementMetric('tldrs.search.latest');
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
   if (isNaN(limit)) { limit = defaultLimit; }
@@ -102,11 +94,8 @@ function searchTldrs (req, res, next) {
      .skip(startat)
      .populate('creator', 'username twitterHandle')
      .exec(function(err, docs) {
-       if (err) {
-         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
-       }
-       // Example of how the function is used
-       bunyan.incrementMetric('latestCalled', req);
+       if (err) { return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} }); }
+
        res.json(200, docs);
      });
   }

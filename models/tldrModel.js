@@ -9,7 +9,7 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
-  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
+  , mqClient = require('../lib/message-queue')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -124,6 +124,7 @@ TldrSchema = new Schema(
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
   , readCount: { type: Number, default: 1 }
+  , readCountThisWeek: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
@@ -220,12 +221,32 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 
 
 /**
- * Look for a tldr by its url
+ * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
 TldrSchema.statics.findOneByUrl = function (url, cb) {
+  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+};
+
+TldrSchema.statics.findOneById = function (id, cb) {
+  findOneInternal({ _id: id }, cb);
+};
+
+function findOneInternal (selector, cb) {
   var callback = cb || function () {};
-  Tldr.findOne({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+
+  Tldr.findOne(selector)
+      .populate('creator', 'username twitterHandle')
+      .exec(function (err, tldr) {
+
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      mqClient.emit('tldr.read', { tldr: tldr });
+    }
+
+    callback(null, tldr);
+  });
 };
 
 
@@ -251,36 +272,6 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
   });
 };
 
-
-/**
- * Find a tldr with query obj. Increment readcount
- * @param {Object} selector Selector for Query
- * @param {Object} user User who made the request
- * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
- * @return {void}
- */
-TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
-
-  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
-                  .populate('creator', 'username twitterHandle');
-  // If the user has the admin role, populate history
-  if (user && user.isAdmin) {
-    query.populate('history');
-  }
-
-  query.exec( function (err, tldr) {
-    if (!err && tldr) {
-      // Send Notif
-      rqClient.emit('tldr.read', { from: user
-                                 , tldr: tldr
-                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                                 , to: tldr.creator
-                                 });
-    }
-    callback(err,tldr);
-  });
-
-};
 
 /**
  * Update tldr object.

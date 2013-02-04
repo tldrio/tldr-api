@@ -14,8 +14,6 @@ var models = require('../../lib/models')
 
 
 module.exports = function (req, res, next) {
-  bunyan.incrementMetric('users.publicProfile.routeCalled');
-
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {}
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';

@@ -9,7 +9,7 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
-  , config = require('../lib/config')
+  , rqConfig = { port: 6379, scope: 'bloup' }
   , RedisQueue = require('../lib/redis-queue')
   ;
 
@@ -17,33 +17,29 @@ var should = require('chai').should()
 describe('Redis Queue', function () {
 
   it('Should send and receive standard messages correctly', function (done) {
-    var rq1 = new RedisQueue(config.redisQueue)
-      , rq2 = new RedisQueue(config.redisQueue)
-      ;
+    var rq = new RedisQueue(rqConfig);
 
-    rq1.on('un test', function (data) {
+    rq.on('un test', function (data) {
       data.first.should.equal('First message');
       data.second.should.equal('Second message');
       done();
     }
     , function () {
-        rq2.emit('un test', { first: 'First message'
+        rq.emit('un test', { first: 'First message'
                             , second: 'Second message' });
       });
   });
 
   it('Should receive pattern messages correctly', function (done) {
-    var rq1 = new RedisQueue(config.redisQueue)
-      , rq2 = new RedisQueue(config.redisQueue)
-      ;
+    var rq = new RedisQueue(rqConfig);
 
-    rq1.on('test:*', function (data) {
+    rq.on('test:*', function (data) {
       data.first.should.equal('First message');
       data.second.should.equal('Second message');
       done();
     }
     , function () {
-        rq2.emit('test:created', { first: 'First message'
+        rq.emit('test:created', { first: 'First message'
                             , second: 'Second message' });
       });
   });

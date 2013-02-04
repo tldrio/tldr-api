@@ -13,8 +13,6 @@ var bunyan = require('../lib/logger').bunyan
  * Returns the tldrs created by the logged user. If nobody is logged, returns a 401.
  */
 function getCreatedTldrs(req, res, next) {
-  bunyan.incrementMetric('users.getCreatedTldrs.routeCalled');
-
   if (req.user) {
     req.user.getCreatedTldrs(function(err, tldrs) {
       return res.json(200, tldrs);

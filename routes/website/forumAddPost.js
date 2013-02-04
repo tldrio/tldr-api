@@ -2,9 +2,7 @@ var models = require('../../lib/models')
   , Topic = models.Topic
   , _ = require('underscore')
   , config = require('../../lib/config')
-  , mailer = require('../../lib/mailer')
-  , RedisQueue = require('../../lib/redis-queue')
-  , rqClient = new RedisQueue(config.redisQueue)
+  , mqClient = require('../../lib/message-queue')
   ;
 
 module.exports = function (req, res, next) {
@@ -23,7 +21,7 @@ module.exports = function (req, res, next) {
         req.renderingValues.userInput = req.body;
         return next();
       } else {
-        rqClient.emit('forum.post', { from: req.user
+        mqClient.emit('forum.post', { creator: req.user
                                     , topic: topic
                                     , post: post
                                     });
