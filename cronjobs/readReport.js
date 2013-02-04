@@ -10,7 +10,6 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , models = require('../lib/models')
   , mailer = require('../lib/mailer')
-  , Notification = models.Notification
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
   , User = models.User
@@ -21,98 +20,63 @@ h4e.setup({ extension: 'mustache'
           , baseDir: process.env.TLDR_API_DIR + '/templates'
           , toCompile: ['emails'] });
 
-function sendReadReport (previousFlush) {
-  var notifsByUser
-    , userIds
-    , emailsSent = 0;
+function sendReadReport (cb) {
+  User.find({})
+      .populate('tldrsCreated')
+      .exec(function (err, users) {
+    users.forEach(function(user) {
+      var totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; })
+                                           , function (memo, n) { return memo + n; }
+                                           , 0)
+        , totalReadCount = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCount; })
+                                   , function (memo, n) { return memo + n; }
+                                   , 0)
+        , bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } )
+        , bestTldr = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCount; } )
+        ;
 
+      if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) { return; }   // Read counts are too low, this is ridiculous
 
-  Notification.find({})
-   .where('createdAt').gte(previousFlush)
-   .where('type').equals('read')
-   .exec(function(err, docs) {
-     if (err) {
-       console.log('Fatal error, couldnt retrieve the docs');
-       process.exit(1);
-     }
-     // Group Notifs by Tldr
-     notifsByUser = _.groupBy(docs, function(doc) { return doc.to.toString();});
-     userIds = _.keys(notifsByUser);
+      values = { totalReadCountThisWeek: totalReadCountThisWeek
+               , totalReadCount: totalReadCount
+               , bestTldrThisWeek: bestTldrThisWeek
+               , bestTldr: bestTldr
+               , user: user
+               , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
+               };
 
-     // Retrieve the users conerned by notifications
-     User.find({ _id: { $in: userIds } }, function (err, users) {
-       async.forEach(users, function (user, callback) {
-         var tldrsRead
-           , dataForUnsubscribe
-           , totalViewsThisWeek // total notif count this week
-           , totalViewsForAllTldrs //total readCount for all tldrs created
-           , topTldrThisWeek = {} // top tldr this week
-           , notifsForTopTldrThisWeek // all notifs regarding the most read tldr this week
-           , topTldrOfAllTime // top tldr of all time
-           , values; // Object containing the values needed for templating
+      mailer.sendEmail({ type: 'readReport'
+                       , development: true
+                       , values: values
+                       , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                       })
 
-         if (user.notificationsSettings.read) {
+                       console.log("===========");
+    });
 
-           // Group by tldr read
-           tldrsRead = _.groupBy(notifsByUser[user._id], function(doc) { return doc.tldr.toString();});
-           // Find the most read tldr this week
-           notifsForTopTldrThisWeek = _.max(tldrsRead, function(tldr) { return tldr.length;});
-           topTldrThisWeek = { _id: notifsForTopTldrThisWeek[0].tldr.toString(), readCountWeek: notifsForTopTldrThisWeek.length};
+    cb();
+  });
+}
 
-           // total notif count this week
-           totalViewsThisWeek = notifsByUser[user._id].length;
-
-           // This is all the tldrs from the given user
-           Tldr.find({ _id: { $in: user.tldrsCreated } }, function (err, tldrs) {
-
-             topTldrOfAllTime = _.max(tldrs, function(tldr) { return tldr.readCount;});
-             // populate top tldr of this week
-             topTldrThisWeek.tldr = _.find(tldrs, function(tldr) {return tldr._id.toString() === topTldrThisWeek._id;});
-             //total readCount for all tldrs created
-             totalViewsForAllTldrs = _.reduce(tldrs, function(memo, tldr){ return memo + tldr.readCount; }, 0);
-
-             dataForUnsubscribe = customUtils.createDataForUnsubscribeLink(user._id);
-             values = { topTldrThisWeek: topTldrThisWeek
-                      , topTldrOfAllTime: topTldrOfAllTime
-                      , totalViewsForAllTldrs: totalViewsForAllTldrs
-                      , totalViewsThisWeek: totalViewsThisWeek
-                      , user: user
-                      , dataForUnsubscribe: dataForUnsubscribe
-                      };
-
-             emailsSent += 1;
-             if (totalViewsThisWeek >= thresholdSendMail) {
-               mailer.sendEmail({ type: 'readReport'
-                                , development: true
-                                , values: values
-                                , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                                }, function () {
-                                  bunyan.info('Report sent to ' + user.email);
-                                  callback(null);
-                                });
-             }
-           });
-          } else {
-            callback(null);
-          }
-       }, function (err) {
-				 if (err) {
-					 bunyan.err('Error executing ReadReport');
-					 process.exit(1);
-				 }
-
-				 bunyan.info('ReadReport successfully executed. '+ emailsSent + ' emails sent');
-				 process.exit(0);
-			 });
-
-     });
-   });
+function resetWeeklyReadCount(cb) {
+  Tldr.find({}, function (err, tldrs) {
+    var i = 0;
+    async.whilst(
+      function () { return i < tldrs.length; }
+    , function (_cb) {
+        tldrs[i].readCountThisWeek = 0;
+        tldrs[i].save(function () {
+          i += 1;
+          _cb();
+        });
+      }
+    , cb);
+  });
 }
 
 db.connectToDatabase(function() {
-  previousFlush = new Date();
-	// We send the report for the notifs of the past 7 days
-  previousFlush.setDate( previousFlush.getDate() - 7 );
-  sendReadReport(previousFlush);
+  async.waterfall([
+    sendReadReport
+  ],function () { process.exit(0); });
 });
 

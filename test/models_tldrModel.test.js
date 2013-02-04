@@ -613,7 +613,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('findOneByUrl called should result in an increase of the read count', function (done) {
+    it('findOneByUrl and findOneById called should result in an increase of the weekly and total read counts', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
@@ -621,7 +621,7 @@ describe('Tldr', function () {
         url: 'http://needforair.com',
       }
       , id
-      , prevReadCount
+      , prevReadCount, prevWeeklyReadCount
       ;
 
       async.waterfall([
@@ -629,6 +629,7 @@ describe('Tldr', function () {
           Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
             id = tldr._id;
             prevReadCount = tldr.readCount;
+            prevWeeklyReadCount = tldr.readCountThisWeek;
             cb();
           });
         }
@@ -639,6 +640,18 @@ describe('Tldr', function () {
       , function (cb) {
           Tldr.findOne({ _id: id }, function (err, tldr) {
             tldr.readCount.should.equal(prevReadCount + 1);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 1);
+            cb();
+          });
+        }
+      , function (cb) {
+          Tldr.findOneById(id, function () { cb(); })
+        }
+      , async.apply(wait, 20)   // Give time for the message queue to do its job
+      , function (cb) {
+          Tldr.findOne({ _id: id }, function (err, tldr) {
+            tldr.readCount.should.equal(prevReadCount + 2);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 2);
             cb();
           });
         }

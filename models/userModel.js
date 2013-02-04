@@ -427,7 +427,7 @@ UserSchema = new Schema(
               , required: true
               , validate: [validatePassword, i18n.validateUserPwd]
               }
-  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
+  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
   , username: { type: String
               , required: true
               // Validation is done below because we need two different validators
