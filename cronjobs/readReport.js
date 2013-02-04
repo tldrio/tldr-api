@@ -24,37 +24,43 @@ function sendReadReport (cb) {
   User.find({})
       .populate('tldrsCreated')
       .exec(function (err, users) {
-    users.forEach(function(user) {
-      var totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; })
-                                           , function (memo, n) { return memo + n; }
-                                           , 0)
-        , totalReadCount = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCount; })
-                                   , function (memo, n) { return memo + n; }
-                                   , 0)
-        , bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } )
-        , bestTldr = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCount; } )
-        ;
+    var i = 0;
 
-      if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) { return; }   // Read counts are too low, this is ridiculous
+    async.whilst(
+      function () { return i < users.length; }
+    , function (_cb) {
+        var user = users[i]
+          , totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; })
+                                             , function (memo, n) { return memo + n; }
+                                             , 0)
+          , totalReadCount = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCount; })
+                                     , function (memo, n) { return memo + n; }
+                                     , 0)
+          , bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } )
+          , bestTldr = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCount; } )
+          ;
 
-      values = { totalReadCountThisWeek: totalReadCountThisWeek
-               , totalReadCount: totalReadCount
-               , bestTldrThisWeek: bestTldrThisWeek
-               , bestTldr: bestTldr
-               , user: user
-               , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
-               };
+        i += 1;
 
-      mailer.sendEmail({ type: 'readReport'
-                       , development: true
-                       , values: values
-                       , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                       })
+        if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) { return _cb(); }   // Read counts are too low, this is ridiculous
 
-                       console.log("===========");
-    });
+        values = { totalReadCountThisWeek: totalReadCountThisWeek
+                 , totalReadCount: totalReadCount
+                 , bestTldrThisWeek: bestTldrThisWeek
+                 , bestTldr: bestTldr
+                 , user: user
+                 , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
+                 };
 
-    cb();
+        console.log("Send mail to user " + user._id);
+
+        mailer.sendEmail({ type: 'readReport'
+                         , development: true
+                         , values: values
+                         , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                         }, _cb)
+      }
+    , cb);
   });
 }
 
@@ -77,6 +83,7 @@ function resetWeeklyReadCount(cb) {
 db.connectToDatabase(function() {
   async.waterfall([
     sendReadReport
+  , resetWeeklyReadCount
   ],function () { process.exit(0); });
 });
 
