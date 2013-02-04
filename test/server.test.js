@@ -49,6 +49,11 @@ function logUserOut(cb) {
 function tldrShouldExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? {} : null); }); }
 function tldrShouldNotExist(id, cb) { Tldr.find({ _id: id }, function(err, docs) { cb(docs.length === 0 ? null : {}); }); }
 
+// Version of setTimeout usable with async.apply
+// Used to integration test parts using the message queue
+function wait (millis, cb) {
+  setTimeout(cb, millis);
+}
 
 
 /**
@@ -169,30 +174,6 @@ describe('Webserver', function () {
         assert.isNotNull(obj._id);
         done();
       });
-
-    });
-
-    it('should increment the readcount with search, getbyId (json), and tldr page calls', function (done) {
-      var prevReadCount;
-			Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
-				prevReadCount = tldr.readCount;
-				request.get({ headers: {"Accept": "application/json"}
-										, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent(tldr1.url) }, function (error, response, body) {
-					JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 1);
-					request.get({ headers: {"Accept": "application/json"}
-											, uri: rootUrl + '/tldrs/' + tldr1._id }, function (error, response, body) {
-						JSON.parse(response.body).readCount.should.be.equal(prevReadCount + 2);
-						request.get( { headers: {"Accept": "text/html"}
-                         , uri: rootUrl + '/tldrs/' + tldr1._id + '/' + tldr1.slug }
-                       , function (error, response, body) {
-							Tldr.findOne({ _id: tldr1._id}, function (err, tldr) {
-								tldr.readCount.should.be.equal(prevReadCount + 3);
-								done();
-							});
-						});
-					});
-				});
-			});
 
     });
 
@@ -448,6 +429,7 @@ describe('Webserver', function () {
 
     });
 
+    // No need to use wait here, requests seems to be much slower than Redis anyway
     it('Should redirect to correct tldr-page "slug url" if queried with the wrong one or the former url type', function (done) {
       var previousReadCount;
 

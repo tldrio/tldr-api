@@ -220,12 +220,32 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 
 
 /**
- * Look for a tldr by its url
+ * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
 TldrSchema.statics.findOneByUrl = function (url, cb) {
+  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+};
+
+TldrSchema.statics.findOneById = function (id, cb) {
+  findOneInternal({ _id: id }, cb);
+};
+
+function findOneInternal (selector, cb) {
   var callback = cb || function () {};
-  Tldr.findOne({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+
+  Tldr.findOne(selector)
+      .populate('creator', 'username twitterHandle')
+      .exec(function (err, tldr) {
+
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      mqClient.emit('tldr.read', { tldr: tldr });
+    }
+
+    callback(null, tldr);
+  });
 };
 
 
@@ -251,30 +271,6 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
   });
 };
 
-
-/**
- * Find a tldr with query obj. Increment readcount
- * @param {Object} selector Selector for Query
- * @param {Function} cb - Callback to execute after find. Signature err, tldr
- * @return {void}
- */
-TldrSchema.statics.findAndIncrementReadCount = function (selector, callback) {
-
-  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
-                  .populate('creator', 'username twitterHandle');
-
-  query.exec( function (err, tldr) {
-    if (!err && tldr) {
-      // Send Notif
-      mqClient.emit('tldr.read', { tldr: tldr
-                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                                 , to: tldr.creator
-                                 });
-    }
-    callback(err,tldr);
-  });
-
-};
 
 /**
  * Update tldr object.

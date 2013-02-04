@@ -34,7 +34,7 @@ function searchTldrs (req, res, next) {
   // corresponding tldr
   if (url) {
     url = normalizeUrl(url);
-    Tldr.findAndIncrementReadCount({ possibleUrls: url }, function (err, tldr) {
+    Tldr.findOneByUrl(url, function (err, tldr) {
       if (err) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } );
       }

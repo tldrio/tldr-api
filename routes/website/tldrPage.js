@@ -18,7 +18,7 @@ module.exports = function (req, res, next) {
   partials.content = '{{>website/pages/tldrPage}}';
   partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
-  Tldr.findAndIncrementReadCount({ _id: req.params.id }, function (err, tldr) {
+  Tldr.findOneById(req.params.id, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
     // Redirect to the correct url if the slug is not the right one. Will result in partial double counting

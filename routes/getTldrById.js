@@ -19,7 +19,7 @@ function getTldrById (req, res, next) {
 
   var id = req.params.id;
 
-  Tldr.findAndIncrementReadCount({ _id: id }, function (err, tldr) {
+  Tldr.findOneById(id, function (err, tldr) {
     if (err) {
       // If err.message is 'Invalid ObjectId', its not an unknown internal error but the ObjectId is badly formed (most probably it doesn't have 24 characters)
       // This API may change (though unlikely) with new version of mongoose. Currently, this Error is thrown by:
