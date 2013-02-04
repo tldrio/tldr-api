@@ -625,7 +625,7 @@ describe('Webserver', function () {
             var tldr;
             docs.length.should.equal(numberOfTldrs + 1);
 
-            Tldr.find({url: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
+            Tldr.find({possibleUrls: 'http://yetanotherunusedurl.com/somepage'}, function(err, docs) {
               tldr = docs[0];
               tldr.summaryBullets.should.include('A summary');
 
@@ -647,7 +647,7 @@ describe('Webserver', function () {
 
         request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(204);
-          Tldr.find({url: 'http://needforair.com/nutcrackers'}, function(err, docs) {
+          Tldr.find({possibleUrls: 'http://needforair.com/nutcrackers'}, function(err, docs) {
             var tldr = docs[0];
             tldr.summaryBullets.should.include('Best Blog Ever');
             tldr.title.should.equal('Nutcrackers article');
@@ -738,7 +738,7 @@ describe('Webserver', function () {
             var tldr;
             docs.length.should.equal(numberOfTldrs);
 
-            Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            Tldr.find({possibleUrls: 'http://avc.com/mba-monday'}, function(err, docs) {
               tldr = docs[0];
               tldr.summaryBullets.should.include('A new summary');
 
@@ -776,7 +776,7 @@ describe('Webserver', function () {
             var tldr;
             docs.length.should.equal(numberOfTldrs);
 
-            Tldr.find({url: 'http://avc.com/mba-monday'}, function(err, docs) {
+            Tldr.find({possibleUrls: 'http://avc.com/mba-monday'}, function(err, docs) {
               tldr = docs[0];
               tldr.summaryBullets.should.include('Fred Wilson is my God');
 
@@ -1256,7 +1256,7 @@ describe('Webserver', function () {
                        , uri: rootUrl + '/tldrs'
                        , json: tldrData1 }, function (error, response, body) {
 
-            Tldr.findOne({url: 'http://myfile.com/movie'}, function(err, tldr) {
+            Tldr.findOne({possibleUrls: 'http://myfile.com/movie'}, function(err, tldr) {
 
               request.post({ headers: {"Accept": "application/json"}
                            , uri: rootUrl + '/users/login'

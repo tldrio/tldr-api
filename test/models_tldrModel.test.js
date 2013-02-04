@@ -421,7 +421,7 @@ describe('Tldr', function () {
 
         Tldr.createAndSaveInstance(tldr, user, function (err) {
             if (err) { return done(err); }
-            Tldr.find({url: tldr.url}, function (err,docs) {
+            Tldr.find({possibleUrls: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
               Tldr.createAndSaveInstance(tldr, user, function (err) {
@@ -474,7 +474,7 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
-        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].hostname.should.equal('needforair.com');
           done();
@@ -532,7 +532,7 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
         tldr.slug.should.equal('blog-nfa');
-        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].slug.should.equal('blog-nfa');
           done();
@@ -804,9 +804,9 @@ describe('Tldr', function () {
             Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
               if (err) { return done(err); }
               num.should.equal(2);
-              Tldr.find({ url: tldrData1.url }, function (err, tldr) {
+              Tldr.find({ possibleUrls: tldrData1.url }, function (err, tldr) {
                 tldr[0].readCount.should.equal(prevReadCount1 + 1);
-                Tldr.find({ url: tldrData2.url }, function (err, tldr) {
+                Tldr.find({ possibleUrls: tldrData2.url }, function (err, tldr) {
                   tldr[0].readCount.should.equal(prevReadCount2 + 1);
                   done();
                 });

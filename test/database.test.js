@@ -89,7 +89,7 @@ describe('Database', function () {
 
     var url = 'http://needforair.com/nutcrackers';
 
-    Tldr.find( {url: url}, function (err, docs) {
+    Tldr.find( {possibleUrls: url}, function (err, docs) {
       if (err) { return done(err); }
       var tldr = docs[0];
       tldr.title.should.equal('nutcrackers');
