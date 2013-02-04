@@ -39,7 +39,7 @@ async.waterfall([
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          console.log('Adding moderated to: ' + tldrs[i]._id);
+          console.log('Adding readCountThisWeek to: ' + tldrs[i]._id);
 
           tldrs[i].readCountThisWeek = 0;
           tldrs[i].save(function(err) {
