@@ -503,7 +503,7 @@ UserSchema.statics.validateUsername = validateUsername;
 UserSchema.statics.validatePassword = validatePassword;
 
 
-// Define user model
+// Define User model
 User = mongoose.model('user', UserSchema);
 
 // Export User

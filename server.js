@@ -139,6 +139,40 @@ app.options('*', function (req, res, next) {
 });
 
 
+// Redirect the user to Google for authentication.  When complete, Google
+// will redirect the user back to the application at
+//     /auth/google/return
+app.get('/auth/google', passport.authenticate('google'));
+
+// Google will redirect the user to this URL after authentication.  Finish
+// the process by verifying the assertion.  If valid, the user will be
+// logged in.  Otherwise, authentication has failed.
+app.get('/auth/google/return', 
+  passport.authenticate('google', { successRedirect: '/latest-summaries',
+                                    failureRedirect: '/login' }));
+
+
+//app.get( 'http://localhost:8888/auth/openid/return'
+       //, passport.authenticate('openid', { failureRedirect: '/login' })
+       //, function (req, res, next) {
+           //console.log("OOO Success");
+           //res.send(200, 'Booyah');
+         //});
+
+//app.get('/auth/openid',
+  //passport.authenticate('openid'),
+  //function(req, res){
+    //// The request will be redirected to the user's OpenID provider for
+    //// authentication, so this function will not be called.
+  //});
+
+
+//app.get('/oauth2callback', function (req, res, next) {
+  //console.log(req);
+  //res.json(200, {});
+//});
+
+
 // Only hybrid for retrocompatibility
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
