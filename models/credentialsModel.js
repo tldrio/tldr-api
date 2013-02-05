@@ -49,7 +49,21 @@ CredentialsSchema = new Schema({
 , password: { type: String
             , validate: [validatePassword, i18n.validateUserPwd]
             }
+, owner: { type: ObjectId, ref: 'user' }
 });
+
+
+/**
+ * Prepare a 'basic' Credentials object for creation
+ *
+ */
+CredentialsSchema.statics.prepareBasicCredentialsForCreation = function (bcData) {
+  bcData.login = bcData.login || '';
+  bcData.password = bcData.password || '';
+  bcData.type = 'basic';
+
+  return new Credentials(bcData);
+};
 
 
 /**
@@ -58,18 +72,15 @@ CredentialsSchema = new Schema({
  * @param {Object} data login, password
  * @param {Function} cb Optional callback, signature: err, Credentials
  */
-CredentialsSchema.statics.createBasicCredentials = function (data, cb) {
+CredentialsSchema.statics.createBasicCredentials = function (bcData, cb) {
   var callback = cb || function () {}
-    , instance;
-
-  data.type = 'basic';
-  instance = new Credentials(data)
+    , instance = Credentials.prepareBasicCredentialsForCreation(bcData);
 
   instance.validate(function (err) {
     if (err) { return callback(err); }
 
     bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-      bcrypt.hash(data.password, salt, function (err, hash) {
+      bcrypt.hash(bcData.password, salt, function (err, hash) {
         instance.password = hash;
         instance.save(callback);
       });

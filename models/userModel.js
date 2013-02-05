@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
   , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
+  , Credentials = require('./credentialsModel')
   , bcrypt = require('bcrypt')
   , crypto = require('crypto')
   , config = require('../lib/config')
@@ -21,7 +22,9 @@ var mongoose = require('mongoose')
   , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
-  , reservedUsernames;
+  , reservedUsernames
+  , async = require('async')
+  ;
 
 
 // All reserved usernames. For now these are all the one-step
@@ -91,17 +94,6 @@ function usernameNotReserved (value) {
 }
 
 
-// password should be non empty and longer than 6 characters
-function validatePassword (value) {
-  try {
-    check(value).len(6);
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-
-
 // bio should be less than 500 characters
 function validateBio (value) {
   if (! value || value.length <= 500) {
@@ -132,6 +124,95 @@ function setTwitterHandle (value) {
 
   return handle;
 }
+
+
+/**
+ * Schema
+ *
+ */
+UserSchema = new Schema(
+  { confirmedEmail: { type: Boolean
+                    , default: false
+                    }
+  , confirmEmailToken: { type: String
+                  }
+  , createdAt: { type: Date
+               , default: Date.now
+               }
+  , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
+           , unique: true
+           , required: true
+           , validate: [validateEmail, i18n.validateUserEmail]
+           , set: customUtils.sanitizeAndNormalizeEmail
+           }
+  , lastActive: { type: Date
+                , default: Date.now
+                }
+  , notificationsSettings: { read: { type: Boolean, default: true}
+                           , congratsTldrViews: { type: Boolean, default: true}
+                           , postForum: { type: Boolean, default: true}
+                           , newsletter: { type: Boolean, default: true}
+                           , serviceUpdates: { type: Boolean, default: true}
+                           }
+  , notifications: [{ type: ObjectId, ref: 'notification' }]
+  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
+  // No need to store the salt, bcrypt already stores it in the hash
+  //, password: { type: String
+              //, required: true
+              //, validate: [validatePassword, i18n.validateUserPwd]
+              //}
+  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
+  , username: { type: String
+              , required: true
+              // Validation is done below because we need two different validators
+              , set: customUtils.sanitizeInput
+              }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
+  , usernameLowerCased: { type: String
+                        , required: true
+                        , unique: true
+                        , set: customUtils.sanitizeInput
+                        }
+  , resetPasswordToken: { type: String }
+  , resetPasswordTokenExpiration: { type: Date }
+  , history: { type: ObjectId, ref: 'userHistory', required: true }
+  , gravatar: { email: { type: String
+                       , set: customUtils.sanitizeAndNormalizeEmail }
+              , url: { type: String }
+              }
+  , bio: { type: String
+         , validate: [validateBio, i18n.validateUserBio]
+         , set: customUtils.sanitizeInput}
+  , twitterHandle: { type: String
+                   , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
+                   , set: setTwitterHandle }
+  , credentials: [{ type: ObjectId, ref: 'credentials' }]
+  }
+, { strict: true });
+
+/** Keep a virtual 'isAdmin' attribute
+ *  isAdmin is true when user is an admin, false otherwise (of course ...)
+ */
+UserSchema.virtual('isAdmin').get(function () {
+  var adminEmails = { "louis.chatriot@gmail.com": true , "louis.chatrio.t@gmail.com": true , "lo.uis.chatriot@gmail.com": true , "louis.cha.triot@gmail.com": true , "loui.s.chatriot@gmail.com": true , "l.ouis.chatriot@gmail.com": true
+                    , "charles.miglietti@gmail.com": true , "charles@tldr.io": true , "charles@needforair.com": true , "c.harlesmiglietti@gmail.com": true , "ch.arlesmiglietti@gmail.com": true , "cha.rlesmiglietti@gmail.com": true
+                    , "char.lesmiglietti@gmail.com": true , "charl.esmiglietti@gmail.com": true , "charle.smiglietti@gmail.com": true , "charlesm.iglietti@gmail.com": true , "charlesmi.glietti@gmail.com": true , "c.harles.miglietti@gmail.com": true
+                    , "ch.arles.miglietti@gmail.com": true , "cha.rles.miglietti@gmail.com": true , "char.les.miglietti@gmail.com": true , "charle.s.miglietti@gmail.com": true , "stanislas.marion@gmail.com": true , "stan@tldr.io": true
+                    , "s.tanislas.marion@gmail.com": true , "st.anislas.marion@gmail.com": true , "sta.nislas.marion@gmail.com": true , "stan.islas.marion@gmail.com": true };
+
+  return adminEmails[this.email] ? true : false;
+});
+
+// Send virtual attributes along with real ones
+UserSchema.set('toJSON', {
+   virtuals: true
+});
+
+// Validate username
+UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
+UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
 
 
 
@@ -289,41 +370,61 @@ function getGravatarUrlFromEmail (email) {
  */
 function createAndSaveInstance(userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance
+    , instance, errors
+    , bcData = { login: validFields.email, password: validFields.password }
     , history = new UserHistory();
 
-  // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
-  // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
-  // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
-  // The bcryptRounds parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
-  if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-      bcrypt.hash(validFields.password, salt, function (err, hash) {
-        // First, create the UserHistory for this user by saving his first action (the creation of his account)
-        history.saveAction("accountCreation", "Account was created", function(err, _history) {
-          validFields.password = hash;
-          validFields.confirmedEmail = false;
-          validFields.confirmEmailToken = customUtils.uid(13);
-          validFields.usernameLowerCased = validFields.username.toLowerCase();
-          instance = new User(validFields);
+  // Prepare the User instance
+  validFields.confirmedEmail = false;
+  validFields.confirmEmailToken = customUtils.uid(13);
+  validFields.usernameLowerCased = validFields.username.toLowerCase();
+  instance = new User(validFields);
+  instance.history = '111111111111111111111111';   // Dummy ObjectId, cannot be persisted
+  instance.gravatar = { email: instance.email
+                      , url: getGravatarUrlFromEmail(instance.email) };
 
+  Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
+    instance.validate(function (uerr) {
+      // This is a bit verbose but needed to respect the usual errors signature
+      if ((uerr && uerr.errors) || (bcerr && bcerr.errors)) {
+        errors = { name: 'ValidationError'
+                 , message: 'Validation failed'
+                 , errors: _.extend( uerr && uerr.errors ? uerr.errors : {}
+                                   , bcerr && bcerr.errors ? bcerr.errors : {} ) };
+
+        return callback(errors);
+      }
+
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        if (err) { return callback(err); }
+
+        history.saveAction("accountCreation", "Account was created", function(err, _history) {
           instance.history = _history._id;
-          instance.gravatar = { email: instance.email
-                              , url: getGravatarUrlFromEmail(instance.email) };
-          instance.save(callback);
+          instance.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
         });
       });
     });
-  } else {
-    // Set required path with valid data
-    // So the only validation error that will be
-    // triggered is the one for the password
-    validFields.username = 'nfadeploy';
-    validFields.usernameLowerCased = 'nfadeploy';
-    instance = new User(validFields);
-    instance.save(callback);
-  }
+  });
 }
+
+
+/**
+ * Attach credentials to this user profile
+ * @param {Credentials} creds
+ * @param {Function} cb Optional callback, signature: err, user
+ */
+UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
+  var callback = cb || function () {}
+    , self = this;
+
+  creds.owner = self._id;
+  creds.save(function (err) {
+    if (err) { return callback(err); }   // Shouldn't happen
+    self.credentials.push(creds._id);
+    self.save(callback);
+  });
+}
+
 
 
 /**
@@ -392,93 +493,6 @@ function updateGravatarEmail(gravatarEmail, callback) {
 
 
 
-/**
- * Schema
- *
- */
-UserSchema = new Schema(
-  { confirmedEmail: { type: Boolean
-                    , default: false
-                    }
-  , confirmEmailToken: { type: String
-                  }
-  , createdAt: { type: Date
-               , default: Date.now
-               }
-  , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
-           , unique: true
-           , required: true
-           , validate: [validateEmail, i18n.validateUserEmail]
-           , set: customUtils.sanitizeAndNormalizeEmail
-           }
-  , lastActive: { type: Date
-                , default: Date.now
-                }
-  , notificationsSettings: { read: { type: Boolean, default: true}
-                           , congratsTldrViews: { type: Boolean, default: true}
-                           , postForum: { type: Boolean, default: true}
-                           , newsletter: { type: Boolean, default: true}
-                           , serviceUpdates: { type: Boolean, default: true}
-                           }
-  , notifications: [{ type: ObjectId, ref: 'notification' }]
-  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
-  // No need to store the salt, bcrypt already stores it in the hash
-  , password: { type: String
-              , required: true
-              , validate: [validatePassword, i18n.validateUserPwd]
-              }
-  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
-  , username: { type: String
-              , required: true
-              // Validation is done below because we need two different validators
-              , set: customUtils.sanitizeInput
-              }
-  , updatedAt: { type: Date
-               , default: Date.now
-               }
-  , usernameLowerCased: { type: String
-                        , required: true
-                        , unique: true
-                        , set: customUtils.sanitizeInput
-                        }
-  , resetPasswordToken: { type: String }
-  , resetPasswordTokenExpiration: { type: Date }
-  , history: { type: ObjectId, ref: 'userHistory', required: true }
-  , gravatar: { email: { type: String
-                       , set: customUtils.sanitizeAndNormalizeEmail }
-              , url: { type: String }
-              }
-  , bio: { type: String
-         , validate: [validateBio, i18n.validateUserBio]
-         , set: customUtils.sanitizeInput}
-  , twitterHandle: { type: String
-                   , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
-                   , set: setTwitterHandle }
-  }
-, { strict: true });
-
-/** Keep a virtual 'isAdmin' attribute
- *  isAdmin is true when user is an admin, false otherwise (of course ...)
- */
-UserSchema.virtual('isAdmin').get(function () {
-  var adminEmails = { "louis.chatriot@gmail.com": true , "louis.chatrio.t@gmail.com": true , "lo.uis.chatriot@gmail.com": true , "louis.cha.triot@gmail.com": true , "loui.s.chatriot@gmail.com": true , "l.ouis.chatriot@gmail.com": true
-                    , "charles.miglietti@gmail.com": true , "charles@tldr.io": true , "charles@needforair.com": true , "c.harlesmiglietti@gmail.com": true , "ch.arlesmiglietti@gmail.com": true , "cha.rlesmiglietti@gmail.com": true
-                    , "char.lesmiglietti@gmail.com": true , "charl.esmiglietti@gmail.com": true , "charle.smiglietti@gmail.com": true , "charlesm.iglietti@gmail.com": true , "charlesmi.glietti@gmail.com": true , "c.harles.miglietti@gmail.com": true
-                    , "ch.arles.miglietti@gmail.com": true , "cha.rles.miglietti@gmail.com": true , "char.les.miglietti@gmail.com": true , "charle.s.miglietti@gmail.com": true , "stanislas.marion@gmail.com": true , "stan@tldr.io": true
-                    , "s.tanislas.marion@gmail.com": true , "st.anislas.marion@gmail.com": true , "sta.nislas.marion@gmail.com": true , "stan.islas.marion@gmail.com": true };
-
-  return adminEmails[this.email] ? true : false;
-});
-
-// Send virtual attributes along with real ones
-UserSchema.set('toJSON', {
-   virtuals: true
-});
-
-
-// Validate username
-UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
-UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
 
 
 /**
@@ -500,7 +514,6 @@ UserSchema.methods.updatePassword = updatePassword;
 UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
-UserSchema.statics.validatePassword = validatePassword;
 
 
 // Define User model

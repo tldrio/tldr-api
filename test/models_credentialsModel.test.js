@@ -30,7 +30,7 @@ var should = require('chai').should()
  */
 
 
-describe.only('Credentials', function () {
+describe('Credentials', function () {
 
   before(function (done) {
     db.connectToDatabase(done);

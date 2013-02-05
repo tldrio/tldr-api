@@ -13,6 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , ObjectId = mongoose.Schema.ObjectId
   , models = require('../lib/models')
+  , Credentials = models.Credentials
   , User = models.User
   , UserHistory = models.UserHistory
   , notificator = require('../lib/notificator')
@@ -59,7 +60,8 @@ describe('User', function () {
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
-      async.apply(theRemove, User)
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
     , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
     , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
@@ -87,24 +89,6 @@ describe('User', function () {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         _.keys(err.errors).length.should.equal(1);
         valErr.email.should.equal('required');
-        done();
-      });
-    });
-
-    it('should not save a user that has no password', function (done) {
-      var user = new User({ email: 'email@email.com'
-                           , username: 'NFADeploy'
-                           , usernameLowerCased: 'nfadeploy'
-                           , history: '111111111111111111111111'   // Dummy history since it is required
-                           })
-        , valErr;
-
-      user.save(function(err) {
-        err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(1);
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal('required');
         done();
       });
     });
@@ -233,33 +217,10 @@ describe('User', function () {
       });
     });
 
-    it('should not validate a user whose password is too short', function (done) {
-      var user = new User({ email: 'email@email.com'
-                               , password: 'secre'
-                               , username: 'NFADeploy'
-                               , usernameLowerCased: 'nfadeploy'
-                               , history: '111111111111111111111111'   // Dummy history since it is required
-                               })
-        , valErr;
-
-      //Unit test the rule
-      assert.isFalse(User.validatePassword('secre'));
-
-      // Check integration into Mongoose
-      user.save(function(err) {
-        err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(1);
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal(i18n.validateUserPwd);
-        done();
-      });
-    });
   });   // ==== End of '#validators' ==== //
 
 
-
-  describe('#createAndSaveInstance', function () {
+  describe.only('#createAndSaveInstance', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
       var userData = { username: 'NFADeploy'
@@ -270,11 +231,9 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal(i18n.validateUserPwd);
-        assert.isDefined(valErr.history);   // History set only if password is valid
         done();
       });
     });
@@ -300,7 +259,7 @@ describe('User', function () {
       });
     });
 
-    it('should save a user whose password is valid and set default validationStatus', function (done) {
+    it('should save a user whose password is valid and set default fields', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -314,12 +273,6 @@ describe('User', function () {
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
-
-          // compareSync used here since these are tests. Do not use in production
-          bcrypt.compareSync('notTOshort', docs[0].password).should.equal(false);
-          bcrypt.compareSync('notTOOshort', docs[0].password).should.equal(true);
-          bcrypt.compareSync('notTOOOshort', docs[0].password).should.equal(false);
-
           docs[0].username.should.equal("NFADeploy");
 
           done();
@@ -435,7 +388,53 @@ describe('User', function () {
       });
     });
 
+    it('the basic credentials created with the user profile should be attached to it', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        Credentials.findOne({ login: user.email }, function(err, bc) {
+          bc.owner.toString().should.equal(user._id.toString());
+          user.credentials.length.should.equal(1);
+          user.credentials[0].toString().should.equal(bc._id.toString());
+          done();
+        });
+      });
+    });
+
   });   // ==== End of '#createAndSaveInstance' ==== //
+
+
+  describe('#attachCredentialsToProfile', function () {
+
+    it('Should work as expected, no error possible', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#attachCredentialsToProfile' ==== //
 
 
   describe('#getCreatedTldrs', function() {
