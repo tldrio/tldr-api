@@ -43,13 +43,15 @@ CredentialsSchema = new Schema({
   type: { type: String   // One of 'basic', 'google'. We may add more later
         , required: true
         }
+, owner: { type: ObjectId, ref: 'user' }
 , login: { type: String
          , index: { unique: true, sparse: true }
          }
 , password: { type: String
             , validate: [validatePassword, i18n.validateUserPwd]
             }
-, owner: { type: ObjectId, ref: 'user' }
+, resetPasswordToken: { type: String }
+, resetPasswordTokenExpiration: { type: Date }
 });
 
 
@@ -92,8 +94,64 @@ CredentialsSchema.statics.createBasicCredentials = function (bcData, cb) {
 /**
  * Update password
  * Requires the current password for security purposes
+ */
+CredentialsSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
+  var self = this
+    , error = {};
+
+  if (! currentPassword || ! newPassword) { return callback({ oldPassword: i18n.oldPwdMismatch }); }
+  if (! validatePassword(newPassword)) { return callback({ newPassword: i18n.validateUserPwd }); }
+
+  bcrypt.compare(currentPassword, self.password, function(err, valid) {
+    if (err) { return callback(err); }
+    if (! valid) { return callback({ oldPassword: i18n.oldPwdMismatch }); }
+
+    bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
+      bcrypt.hash(newPassword, salt, function (err, hash) {
+        self.password = hash;
+        self.save(callback);
+      });
+    });
+  });
+};
+
+
+/**
+ * Reset password procedure
  *
  */
+CredentialsSchema.methods.createResetPasswordToken = function (callback) {
+  var expiration = new Date();
+  expiration.setTime(expiration.getTime() + 3600000);   // Token will expire in an hour
+
+  this.resetPasswordToken = customUtils.uid(13);
+  this.resetPasswordTokenExpiration = expiration;
+  this.save(callback);
+}
+
+CredentialsSchema.methods.resetPassword = function (token, newPassword, callback) {
+  var self = this;
+
+  if ( token === this.resetPasswordToken && this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
+    if (validatePassword(newPassword)) {
+      bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
+        bcrypt.hash(newPassword, salt, function (err, hash) {
+          self.password = hash;
+          self.resetPasswordToken = null;   // Token cannot be used twice
+          self.resetPasswordTokenExpiration = null;
+          self.save(callback);
+        });
+      });
+    } else {
+      this.password = newPassword;   // Will fail validation
+      this.save(callback);
+    }
+  } else {
+    callback( { tokenInvalidOrExpired: true } );   // No need to give too much information to a potential attacker
+  }
+}
+
+
 
 
 // Define and export Credentials model

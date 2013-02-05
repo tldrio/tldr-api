@@ -175,8 +175,8 @@ UserSchema = new Schema(
                         , unique: true
                         , set: customUtils.sanitizeInput
                         }
-  , resetPasswordToken: { type: String }
-  , resetPasswordTokenExpiration: { type: Date }
+  //, resetPasswordToken: { type: String }
+  //, resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
   , gravatar: { email: { type: String
                        , set: customUtils.sanitizeAndNormalizeEmail }
@@ -235,41 +235,26 @@ function createConfirmToken (callback) {
 /*
  * Prepare to reset password by creating a reset password token and sending it to the user
  */
-function createResetPasswordToken (callback) {
-  var expiration = new Date();
+UserSchema.methods.createResetPasswordToken = function (callback) {
+  this.getBasicCredentials(function (err, bc) {
+    if (err) { return callback(err); }
+    if (! bc) { return callback({ noBasicCredentials: true }); }
 
-  expiration.setTime(expiration.getTime() + 3600000);   // Token will expire in an hour
-
-  this.resetPasswordToken = customUtils.uid(13);
-  this.resetPasswordTokenExpiration = expiration;
-  this.save(callback);
+    bc.createResetPasswordToken(callback);
+  });
 }
 
 
 /*
  * Reset password if token is corrected and not expired
  */
-function resetPassword (token, newPassword, callback) {
-  var self = this;
+UserSchema.methods.resetPassword = function (token, newPassword, callback) {
+  this.getBasicCredentials(function (err, bc) {
+    if (err) { return callback(err); }
+    if (! bc) { return callback({ noBasicCredentials: true }); }
 
-  if ( token === this.resetPasswordToken && this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
-    if (validatePassword(newPassword)) {
-      // Token and password are valid
-      bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-        bcrypt.hash(newPassword, salt, function (err, hash) {
-          self.password = hash;
-          self.resetPasswordToken = null;   // Token cannot be used twice
-          self.resetPasswordTokenExpiration = null;
-          self.save(callback);
-        });
-      });
-    } else {
-      this.password = newPassword;   // Will fail validation
-      this.save(callback);
-    }
-  } else {
-    callback( {tokenInvalidOrExpired: true} );   // No need to give too much information to a potential attacker
-  }
+    bc.resetPassword(token, newPassword, callback);
+  });
 }
 
 
@@ -442,9 +427,30 @@ UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
 }
 
 
+/**
+ * Get a user's basic credentials, if he has any
+ *
+ */
+UserSchema.methods.getBasicCredentials = function (callback) {
+  Credentials.find({ _id: { $in: this.credentials } }, function (err, credsSet) {
+    var found = false;
+    if (err) { return callback(err); }
+
+    credsSet.forEach(function (creds) {
+      if (creds.type === 'basic' && ! found) {   // Only one basic credentials possible
+        found = true;
+        return callback(null, creds);
+      }
+    });
+
+    if (!found) { return callback(null, null); }   // No basic credentials attached
+  });
+}
+
+
 
 /**
- * Update a user password
+ * Update a user password, if the user has any basic credentials attached
  * @param {String} currentPassword supplied by user for checking purposes
  * @param {String} newPassword chosen by user
  */
@@ -452,30 +458,8 @@ function updatePassword (currentPassword, newPassword, callback) {
   var self = this
     , errors = {};
 
-  if (! currentPassword || ! newPassword) { throw { message: i18n.missingArgUpdatePwd}; }
-
-  if (! validatePassword(newPassword)) { errors.newPassword = i18n.validateUserPwd; }
-
-  bcrypt.compare(currentPassword, self.password, function(err, valid) {
-    if (err) {throw err;}
-
-    if (valid) {
-      if ( ! errors.newPassword) {
-        // currentPassword is correct and newPassword is valid: we can change
-        bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-          bcrypt.hash(newPassword, salt, function (err, hash) {
-            self.password = hash;
-            self.updatedAt = new Date();
-            self.save(callback);
-          });
-        });
-        return;  // Stop executing here to avoid calling the callback twice
-      }
-    } else {
-      errors.oldPassword = i18n.oldPwdMismatch;
-    }
-
-    callback(errors);
+  self.getBasicCredentials(function (err, creds) {
+    if (creds) { creds.updatePassword(currentPassword, newPassword, callback); }
   });
 }
 
@@ -517,10 +501,8 @@ function updateGravatarEmail(gravatarEmail, callback) {
  */
 
 UserSchema.methods.createConfirmToken = createConfirmToken;
-UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;
 UserSchema.methods.updateGravatarEmail = updateGravatarEmail;

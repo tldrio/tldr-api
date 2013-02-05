@@ -30,7 +30,7 @@ var should = require('chai').should()
  */
 
 
-describe.only('Credentials', function () {
+describe('Credentials', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -71,6 +71,42 @@ describe.only('Credentials', function () {
         done();
       });
     });
+
+    it('Dont change the password if user supplies a wrong or no current password', function (done) {
+      var bcData = { login: 'bloups@email.com', password: 'longenough' };
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        bc.updatePassword(undefined, 'newpwdyeah', function(err) {
+          err.oldPassword.should.equal(i18n.oldPwdMismatch);
+
+          bc.updatePassword('abadpassword', 'newpwdyeah', function(err) {
+            err.oldPassword.should.equal(i18n.oldPwdMismatch);
+            done();
+          });
+        });
+      });
+    });
+
+    it('Dont change the password if new password is not valid', function (done) {
+      var bcData = { login: 'bloups@email.com', password: 'longenough' };
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        bc.updatePassword('longenough', 'small', function(err) {
+          err.newPassword.should.equal(i18n.validateUserPwd);
+          done();
+        });
+      });
+    });
+
+    it('Can change the password if the parameters are correct', function (done) {
+      var bcData = { login: 'bloups@email.com', password: 'longenough' };
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        bc.updatePassword('longenough', 'coolnewpwd', function(err, bc) {
+          assert.isNull(err);
+          bcrypt.compareSync('coolnewpwd', bc.password).should.equal(true);
+          done();
+        });
+      });
+    });
+
 
   });
 
