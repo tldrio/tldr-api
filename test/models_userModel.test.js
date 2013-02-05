@@ -220,7 +220,7 @@ describe('User', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe.only('#createAndSaveInstance', function () {
+  describe('#createAndSaveInstance', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
       var userData = { username: 'NFADeploy'
@@ -649,7 +649,6 @@ describe('User', function () {
         user.username.should.equal("NFADeploy");
         user.email.should.equal("valid@email.com");
         user.notificationsSettings.read.should.be.true;
-        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
@@ -657,14 +656,44 @@ describe('User', function () {
           user2.notificationsSettings.read.should.be.false;
           user2.bio.should.equal("Another bio !!");
           user2.twitterHandle.should.equal('tldrio');
-          bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
         });
       });
     });
 
-    it('should all @ from a twitter handle if there are some', function (done) {
+    it('If the email changes, the corresponding basic credentials should be updated', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     , bio: 'first bio'
+                     }
+        , newData = { username: 'NFAMasterDeploy'
+                    , password: 'anothergood'
+                    , notificationsSettings: { read: false, like: true, edit: false }
+                    , email: 'another@valid.com'
+                    , bio: 'Another bio !!'
+                    , twitterHandle: 'tldrio'
+                    }
+        , bcid;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        Credentials.findOne({ login: user.email }, function (err, bc) {
+          bc.login.should.equal(userData.email);
+          bcid = bc._id;
+
+          user.updateValidFields(newData, function(err, user2) {
+          Credentials.findOne({ _id: bcid }, function (err, bc) {
+            bc.login.should.equal(newData.email);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('should remove all @ from a twitter handle if there are some', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'

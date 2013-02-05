@@ -89,6 +89,13 @@ CredentialsSchema.statics.createBasicCredentials = function (bcData, cb) {
 };
 
 
+/**
+ * Update password
+ * Requires the current password for security purposes
+ *
+ */
+
+
 // Define and export Credentials model
 Credentials = mongoose.model('credentials', CredentialsSchema);
 module.exports = Credentials;
