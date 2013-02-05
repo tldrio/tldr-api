@@ -9,13 +9,12 @@ var _ = require('underscore')
   , i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
-  , RedisQueue = require('../lib/redis-queue'), rqClient = new RedisQueue(config.redisQueue)
+  , mqClient = require('../lib/message-queue')
   , mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
-  , TldrSchema
-  , Tldr
+  , TldrSchema, Tldr
   , url = require('url')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
@@ -27,14 +26,10 @@ var _ = require('underscore')
   ;
 
 
-
-
-
 /**
  * Validators
  *
  */
-
 
 //url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
@@ -89,12 +84,13 @@ function validateAuthor (value) {
  */
 
 TldrSchema = new Schema(
-  { url: { type: String
+  { url: { type: String   // The canonical url
          , unique: true
          , required: true
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
                  , set: customUtils.sanitizeInput
@@ -128,13 +124,15 @@ TldrSchema = new Schema(
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
   , readCount: { type: Number, default: 1 }
+  , readCountThisWeek: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , discoverable: { type: Boolean   // A tldr is discoverable if a user can stumble upon it on tldr.io, for example on the /tldrs page
-                  , default: true   // Undiscoverable means it still exists (e.g. the BM can show it), but we don't show it actively on the website
-                  }
+  , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
+  , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
+
+
 
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
@@ -161,6 +159,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , history = new TldrHistory();
 
   instance.originalUrl = validFields.url;
+  if (instance.url) { instance.possibleUrls.push(instance.url); }
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
@@ -195,7 +194,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
  */
 TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
   var callback = cb || function () {};
-  return this.update({ url: { $in: batch } }, updateQuery, { multi: true }, callback);
+  return this.update({ possibleUrls: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
 
 
@@ -206,40 +205,73 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
  */
 TldrSchema.statics.makeUndiscoverable = function (id, cb) {
   var callback = cb || function () {};
-
   this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
 };
 
 
 /**
- * Find a tldr with query obj. Increment readcount
- * @param {Object} selector Selector for Query
- * @param {Object} user User who made the request
- * @param {Function} cb - Callback to execute after find. Signature function(err, tldr)
- * @return {void}
+ * Mark a tldr as moderated, meaning it's an accurate summary of the resource
+ * @param {String} id id of the tldr to moderate
+ * @param {Function} cb Optional callback, signature is err, numAffected
  */
-TldrSchema.statics.findAndIncrementReadCount = function (selector, user, callback) {
-
-  var query = Tldr.findOneAndUpdate(selector, { $inc: { readCount: 1 } })
-                  .populate('creator', 'username twitterHandle');
-  // If the user has the admin role, populate history
-  if (user && user.isAdmin) {
-    query.populate('history');
-  }
-
-  query.exec( function (err, tldr) {
-    if (!err && tldr) {
-      // Send Notif
-      rqClient.emit('tldr.read', { from: user
-                                 , tldr: tldr
-                                 // all contributors instead of creator only ?? we keep creator for now as there a very few edits
-                                 , to: tldr.creator
-                                 });
-    }
-    callback(err,tldr);
-  });
-
+TldrSchema.statics.moderateTldr = function (id, cb) {
+  var callback = cb || function () {};
+  this.update({ _id: id }, { $set: { moderated: true } }, { multi: false }, callback);
 };
+
+
+/**
+ * Look for a tldr from within a client (website, extension etc.)
+ * Signature for cb: err, tldr
+ */
+function findOneInternal (selector, cb) {
+  var callback = cb || function () {};
+
+  Tldr.findOne(selector)
+      .populate('creator', 'username twitterHandle')
+      .exec(function (err, tldr) {
+
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      mqClient.emit('tldr.read', { tldr: tldr });
+    }
+
+    callback(null, tldr);
+  });
+}
+
+TldrSchema.statics.findOneByUrl = function (url, cb) {
+  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+};
+
+TldrSchema.statics.findOneById = function (id, cb) {
+  findOneInternal({ _id: id }, cb);
+};
+
+
+/**
+ * A new redirection/canonicalization was found, register it
+ * @param {String} from The url from which the redirection comes
+ * @param {String} to The url to which the redirection points
+ * @param {Function} cb Optional callback
+ */
+TldrSchema.statics.registerRedirection = function (from, to, cb) {
+  var fromN = customUtils.normalizeUrl(from)
+    , toN = customUtils.normalizeUrl(to)
+    , callback = cb || function () {}
+    ;
+
+  Tldr.findOneByUrl(toN, function (err, tldr) {
+    if (err) { return callback(err); }
+
+    if (tldr) {
+      tldr.possibleUrls.addToSet(fromN);
+      tldr.save(callback);
+    }
+  });
+};
+
 
 /**
  * Update tldr object.

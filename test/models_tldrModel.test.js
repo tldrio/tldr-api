@@ -20,17 +20,21 @@ var should = require('chai').should()
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , url = require('url')
-  , async = require('async');
+  , async = require('async')
+  , notificator = require('../lib/notificator')
+  ;
 
 
-
+// Version of setTimeout usable with async.apply
+// Used to integration test parts using the message queue
+function wait (millis, cb) {
+  setTimeout(cb, millis);
+}
 
 
 /**
  * Tests
  */
-
-
 describe('Tldr', function () {
   var user;
 
@@ -45,7 +49,7 @@ describe('Tldr', function () {
   beforeEach(function (done) {
     User.remove({}, function(err) {
       Tldr.remove({}, function (err) {
-        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
           user = _user;
           done();
         });
@@ -327,6 +331,29 @@ describe('Tldr', function () {
         });
     });
 
+    it('Should initialize the array of possible urls by the url used for creating this tldr', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://www.mydomain.com/bloup/'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          if (err) { return done(err); }
+          Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
+            if (err) { return done(err); }
+
+            var tldr = docs[0];
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls[0].should.equal(tldr.url);
+
+            done();
+          });
+        });
+    });
+
     it('should initialize a new tldr\'s history with the first version of the data', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
@@ -398,7 +425,7 @@ describe('Tldr', function () {
 
         Tldr.createAndSaveInstance(tldr, user, function (err) {
             if (err) { return done(err); }
-            Tldr.find({url: tldr.url}, function (err,docs) {
+            Tldr.find({possibleUrls: tldr.url}, function (err,docs) {
               if (err) { return done(err); }
 
               Tldr.createAndSaveInstance(tldr, user, function (err) {
@@ -451,7 +478,7 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
-        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].hostname.should.equal('needforair.com');
           done();
@@ -506,10 +533,10 @@ describe('Tldr', function () {
       }
       , valErr;
 
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
         tldr.slug.should.equal('blog-nfa');
-        Tldr.find({'url':  'http://needforair.com/'}, function (err, docs) {
+        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].slug.should.equal('blog-nfa');
           done();
@@ -521,33 +548,147 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
-  describe('#findAndIncrementReadCount', function () {
+  describe('find by url', function () {
 
-    it('Should increment read count when finding a tldr', function (done) {
-      var tldrData = { title: 'Blog NFA',
-                      summaryBullets: ['Awesome Blog'],
-                      resourceAuthor: 'NFA Crew',
-                      url: 'http://needforair.com'}
-        , prevReadCount, prevId;
+    it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
 
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        prevReadCount = tldr.readCount;
-        prevId = tldr._id;
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        async.waterfall([
+          function (cb) {
+            Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb();
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://www.needforair.com', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              tldr.possibleUrls.push('http://bloup.com/bim');
+              tldr.save(function (err, tldr) { cb(); });
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://bloup.com/bim', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb();
+            });
+          }
+        , function (cb) {
+            Tldr.findOneByUrl('http://www.bloup.com/bim', function (err, tldr) {
+              tldr._id.toString().should.equal(id.toString());
+              cb();
+            });
+          }
+        ], done);
+      });
+    });
 
-        Tldr.findAndIncrementReadCount({ _id: tldr._id }, false, function (err, _tldr) {
+    it('findOneByUrl should populate the creator\'s username and twitterHandle', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
 
-          _tldr.readCount.should.equal(prevReadCount + 1);
-          _tldr._id.toString().should.equal(prevId.toString());
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
+          tldr._id.toString().should.equal(id.toString());
+          tldr.creator.username.should.equal('eeee');
+          tldr.creator.twitterHandle.should.equal('zetwit');
           done();
         });
       });
     });
 
-  });   // ==== End of '#findAndIncrementReadCount' ==== //
+    it('findOneByUrl and findOneById called should result in an increase of the weekly and total read counts', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      , prevReadCount, prevWeeklyReadCount
+      ;
+
+      async.waterfall([
+        function (cb) {
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+            id = tldr._id;
+            prevReadCount = tldr.readCount;
+            prevWeeklyReadCount = tldr.readCountThisWeek;
+            cb();
+          });
+        }
+      , function (cb) {
+          Tldr.findOneByUrl('http://needforair.com', function () { cb(); });
+        }
+      , async.apply(wait, 20)   // Give time for the message queue to do its job
+      , function (cb) {
+          Tldr.findOne({ _id: id }, function (err, tldr) {
+            tldr.readCount.should.equal(prevReadCount + 1);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 1);
+            cb();
+          });
+        }
+      , function (cb) {
+          Tldr.findOneById(id, function () { cb(); });
+        }
+      , async.apply(wait, 20)   // Give time for the message queue to do its job
+      , function (cb) {
+          Tldr.findOne({ _id: id }, function (err, tldr) {
+            tldr.readCount.should.equal(prevReadCount + 2);
+            tldr.readCountThisWeek.should.equal(prevWeeklyReadCount + 2);
+            cb();
+          });
+        }
+      ], done);
+    });
 
 
-  describe('#makeUndiscoverable', function () {
+  });   // ==== End of 'find by url' ==== //
+
+
+  describe('Redirection and canonicalization handling', function () {
+
+    it('If a tldr exist with the to url, redirection should add the from as a possible url', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.registerRedirection('http://bloups.com/bam', 'http://needforair.com', function () {
+          Tldr.findOneByUrl('http://bloups.com/bam', function (err, tldr) {
+            tldr._id.toString().should.equal(id.toString());
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'Redirection and canonicalization handling' ==== //
+
+
+  describe('discoverable and moderated', function () {
 
     it('Should make a tldr undiscoverable', function (done) {
       var tldrData = {
@@ -573,7 +714,31 @@ describe('Tldr', function () {
       });
     });
 
-  });   // ==== End of '#makeUndiscoverable' ==== //
+    it('Should moderate a tldr', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        if (err) { return done(err); }
+        tldr.moderated.should.equal(false);
+
+        Tldr.moderateTldr(tldr._id, function (err, numAffected) {
+          numAffected.should.equal(1);
+
+          Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
+            theTldr.moderated.should.equal(true);
+
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'discoverable and moderated' ==== //
 
 
   describe('#updateValidFields', function () {
@@ -684,9 +849,9 @@ describe('Tldr', function () {
             Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
               if (err) { return done(err); }
               num.should.equal(2);
-              Tldr.find({ url: tldrData1.url }, function (err, tldr) {
+              Tldr.find({ possibleUrls: tldrData1.url }, function (err, tldr) {
                 tldr[0].readCount.should.equal(prevReadCount1 + 1);
-                Tldr.find({ url: tldrData2.url }, function (err, tldr) {
+                Tldr.find({ possibleUrls: tldrData2.url }, function (err, tldr) {
                   tldr[0].readCount.should.equal(prevReadCount2 + 1);
                   done();
                 });
@@ -721,6 +886,8 @@ describe('Tldr', function () {
         theTldr.summaryBullets[1].should.equal('Bloup');
         theTldr.resourceAuthor.should.equal('NFA Crew');
         theTldr.imageUrl.should.equal('http://google.fr/bloup.png');
+        theTldr.possibleUrls.length.should.equal(1);
+        theTldr.possibleUrls[0].should.equal('http://needforair.com/nutcrackers');
 
         done();
       });

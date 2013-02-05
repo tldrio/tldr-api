@@ -103,7 +103,6 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
-app.put('/users/you/notifications/markAllAsSeen', routes.markAllNotificationsAsSeen);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
@@ -116,9 +115,6 @@ app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
-// Notifications
-app.put('/notifications/:id', routes.updateNotification);
-
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
@@ -128,6 +124,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
+app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -199,12 +196,11 @@ app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingV
 app.get('/forum/posts/:id/edit', middleware.attachRenderingValues, routes.website_editPost);
 app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
+// Moderation
+app.get('/moderation', middleware.attachRenderingValues, middleware.adminOnly, routes.website_moderation);
+
 // User profiles, leaderboard ...
 app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
-
-// Unsubscribe Notifications
-app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
-
 
 
 /*
@@ -258,7 +254,6 @@ app.stopServer = function (cb) {
  */
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
-  notificator.init();
 }
 
 

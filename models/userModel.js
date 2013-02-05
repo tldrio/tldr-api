@@ -12,7 +12,6 @@ var mongoose = require('mongoose')
   , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
-  , Notification = require('./notificationModel')
   , bcrypt = require('bcrypt')
   , crypto = require('crypto')
   , config = require('../lib/config')
@@ -21,7 +20,7 @@ var mongoose = require('mongoose')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
   , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
-  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle']         // Fields that can be sent to the user
+  , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
   , reservedUsernames;
 
 
@@ -40,6 +39,7 @@ reservedUsernames = {
   , 'index': true
   , 'login': true
   , 'logout': true
+  , 'moderation': true
   , 'notifications': true
   , 'resendconfirmtoken': true   // Useless due to the 16-chars max rule but lets keep it anyway, the rule may change
   , 'resetpassword': true
@@ -222,40 +222,6 @@ function getCreatedTldrs (callback) {
       if (err) { return callback(err); }
       callback(null, tldrs);
     });
-}
-
-/**
- * Get the notifications of the user
- * @param {Integer} _limit Optional. Maximum number of notifications to return. No limit if omitted or set to 0.
- * @param {Function} _callback Signature: err, [notifications]
- */
-function getNotifications (_limit, _callback) {
-  var limit, callback;
-
-  if (typeof _limit === 'function') {    // No limit was provided
-    limit = 0;
-    callback = _limit;
-  } else {
-    limit = _limit;
-    callback = _callback;
-  }
-
-  User.findOne({ _id: this._id })
-    .populate('notifications', null, null, { sort: [[ 'createdAt', -1 ]], limit: limit })
-    .exec(function(err, user) {
-      if (err) { return callback(err); }
-      callback(null, user.notifications);
-    });
-}
-
-/**
- * Mark this user's notification as seen
- * @param {Function} cb Optional callback
- */
-function markAllNotificationsAsSeen (cb) {
-  var callback = cb ? cb : function () {};
-
-  Notification.update({ to: this._id, unseen: true }, { unseen: false }, { multi: true }, callback);
 }
 
 
@@ -461,7 +427,7 @@ UserSchema = new Schema(
               , required: true
               , validate: [validatePassword, i18n.validateUserPwd]
               }
-  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]   // See mongoose doc - populate
+  , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
   , username: { type: String
               , required: true
               // Validation is done below because we need two different validators
@@ -523,9 +489,7 @@ UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameN
 UserSchema.methods.createConfirmToken = createConfirmToken;
 UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
 UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
-UserSchema.methods.getNotifications = getNotifications;
 UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.markAllNotificationsAsSeen = markAllNotificationsAsSeen;
 UserSchema.methods.resetPassword = resetPassword;
 UserSchema.methods.saveAction = saveAction;
 UserSchema.methods.updateValidFields = updateValidFields;

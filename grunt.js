@@ -35,6 +35,7 @@ module.exports = function(grunt) {
                , module: true
                , process: true
                , require: true
+               , setTimeout: true
                }
     }
 

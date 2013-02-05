@@ -1,5 +1,5 @@
 /**
- * /tldrs page of the website
+ * Moderate all new tldrs
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
 */
@@ -16,17 +16,13 @@ module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {};
 
-  values.tldrs = true;
-  values.rssFeedPromotionLink = true;
-  values.title = "Latest summaries" + config.titles.branding + config.titles.shortDescription;
-  values.description = "Latest summaries contributed by the community. Get the most popular directly in your Twitter feed.";
-  partials.content = '{{>website/pages/tldrs}}';
+  values.title = "Tldrs to be moderated";
+  partials.content = '{{>website/pages/moderation}}';
 
   async.waterfall(
   [
-    function (cb) {   // Only populate the latest tldrs the user created, in a specific object
-      Tldr.find({ discoverable: true })
-        .limit(10)
+    function (cb) {
+      Tldr.find({ discoverable: true, moderated: false })
         .sort('-createdAt')
         .populate('creator', 'username')
         .exec(function (err, tldrs) {
@@ -43,4 +39,5 @@ module.exports = function (req, res, next) {
                                        });
   });
 }
+
 

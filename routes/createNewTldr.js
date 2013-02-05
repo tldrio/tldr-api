@@ -24,8 +24,6 @@ var bunyan = require('../lib/logger').bunyan
  */
 
 function createNewTldr (req, res, next) {
-
-  bunyan.incrementMetric('tldrs.creation.routeCalled');
   var tldrToSend
     , url;
 
@@ -39,15 +37,13 @@ function createNewTldr (req, res, next) {
 
   Tldr.createAndSaveInstance(req.body, req.user, function (err, tldr) {
     if (err) {
-      bunyan.incrementMetric('tldrs.creation.creationError');
-
       if (err.errors) {
         return next({ statusCode: 403, body: models.getAllValidationErrorsWithExplanations(err.errors)} );
       } else if (err.code === 11000 || err.code === 11001) {   // code 1100x is for duplicate key in a mongodb index
 
         // POST on existing resource so we act as if it's an update
         url = normalizeUrl(req.body.url);
-        Tldr.find({url: url}, function (err, docs) {
+        Tldr.find({ possibleUrls: url }, function (err, docs) {
           helpers.updateCallback(err, docs, req, res, next);
         });
 
@@ -56,27 +52,20 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
-      bunyan.incrementMetric('tldrs.creation.creationSuccess');
-
-      if (req.user.isAdmin) {
-        mailer.sendEmail({ type: 'adminTldrWasCreatedByAdmin'
+      mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
                        , development: false
-                       , values: { user: req.user, tldr: tldr }
+                       , values: { user: req.user
+                                 , tldr: tldr
+                                 , type: 'Created'
+                                 , message: req.user.isAdmin ? 'Please cockslap Charles' : 'A tldr was created' }
                        });
-      }
-      else {
-        mailer.sendEmail({ type: 'adminTldrWasCreatedByUser'
-                       , development: false
-                       , values: { user: req.user, tldr: tldr }
-                       });
-      }
 
       // If this is the creator's first tldr, send him a congratulory email
       if (req.user.tldrsCreated.length === 1) {
         // Send congratulory email
         mailer.sendEmail({ type: 'congratulationsFirstTldr'
                          , to: req.user.email
-                         , development: true
+                         , development: false
                          , values: { tldr: tldr, user: req.user }
                          });
       }

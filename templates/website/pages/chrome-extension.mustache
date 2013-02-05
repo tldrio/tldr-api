@@ -4,7 +4,7 @@
     <h1 class="featurette-heading" style="text-shadow:0px 1px 0px white;color:#999;"><span style="font-weight:bold">t</span>oo <span style="font-weight:bold">l</span>ong; <span style="font-weight:bold">d</span>idn't <span style="font-weight:bold">r</span>ead</h1>
     <section class="container tldr-base-unit-2">
     <div class="featurette">
-      <div class="featurette-image pull-right first-featurette">
+      <div class="featurette-image pull-right first-featurette tldr-present">
         tldr
       </div>
       <h2 class="featurette-heading">Read human written summaries. <span class="muted">Save time and energy.</span></h2>
@@ -15,7 +15,7 @@
           <img  src="assets/img/onboarding1.png" alt="Article which has been summarized">
         </div>
         <div class="span4 click-screenshot">
-          <img  src="assets/img/onboarding2.png" alt="Zoom on tldr green page action">
+          <img  class="screenshot-chrome" src="assets/img/onboarding2.png" alt="Zoom on tldr green page action">
         </div>
         <div class="span4">
           <img  src="assets/img/onboarding3.png" alt="Summary for the page">
@@ -36,7 +36,7 @@
 
     {{#installed}}
       <div class="call-to-action">
-        <a href="http://www.motherjones.com/environment/2013/01/lead-crime-link-gasoline" target="_blank" class="btn btn-primary btn-large" id="install-extension">Try it!</a>
+        <a href="http://www.motherjones.com/environment/2013/01/lead-crime-link-gasoline" target="_blank" class="btn btn-primary btn-large" id="crx-try-read">Try it!</a>
       </div>
     {{/installed}}
     {{^installed}}
@@ -46,7 +46,7 @@
     <hr class="soften">
 
     <div class="featurette" id="contribute-tldrs">
-      <div class="featurette-image pull-left second-featurette">
+      <div class="featurette-image pull-left second-featurette tldr-missing">
         tldr
       </div>
       <h2 class="featurette-heading">Read something interesting? <span class="muted">Summarize it for posterity!</span></h2>
@@ -58,7 +58,7 @@
           <img  src="assets/img/onboarding4.png" alt="Article to be summarized">
         </div>
         <div class="span4 click-screenshot">
-          <img  src="assets/img/onboarding5.png" alt="Red Page Action to create summary">
+          <img  class="screenshot-chrome" src="assets/img/onboarding5.png" alt="Red Page Action to create summary">
         </div>
         <div class="span4">
           <img  src="assets/img/onboarding6.png" alt="Form to create a summary for the page">
@@ -79,7 +79,7 @@
 
     {{#installed}}
       <div class="call-to-action">
-        <a href="http://en.wikipedia.org/wiki/Special:Randompage" target="_blank" class="btn btn-primary btn-large" id="install-extension">Summarize your first article!</a>
+        <a href="http://en.wikipedia.org/wiki/Special:Randompage" target="_blank" class="btn btn-primary btn-large" id="crx-try-read">Summarize your first article!</a>
       </div>
     {{/installed}}
     {{^installed}}
@@ -262,11 +262,11 @@
   </div>
   </div>
 
-  {{#installed}}
-    <div class="call-to-action">
-      <a href="http://news.ycombinator.com" target="_blank" class="btn btn-primary btn-large" id="install-extension">Put on your X-rays glasses</a>
-    </div>
-  {{/installed}}
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://news.ycombinator.com" target="_blank" class="btn btn-primary btn-large" id="crx-try-hn">Put on your X-rays glasses</a>
+      </div>
+    {{/installed}}
   {{^installed}}
     {{>website/addToChrome}}
   {{/installed}}

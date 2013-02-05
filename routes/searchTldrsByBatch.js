@@ -24,8 +24,6 @@ function searchTldrsByBatch (req, res, next) {
     , maxBatchSize = 50
     ;
 
-  bunyan.incrementMetric('tldrs.search.routeCalled');
-
   // We normalize the urls
   _.each(req.body.batch, function (url) {
     var normalizedUrl = normalizeUrl(url);
@@ -36,7 +34,7 @@ function searchTldrsByBatch (req, res, next) {
   if (batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
 
   //Search by batch
-  Tldr.find({ url: { $in: batch } })
+  Tldr.find({ possibleUrls: { $in: batch } })
     .populate('creator', 'username twitterHandle')
     .exec( function (err, docs) {
       if (err) {

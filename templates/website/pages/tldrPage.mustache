@@ -4,7 +4,7 @@
       <div class="tldr-tldr">
         <div class="tldr-header">
           <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{tldr.hostname}}" alt="Favicon for {{tldr.hostname}}">
-          <h1 class="tldr-title tldr-page-title"><a target="_blank" href="{{tldr.url}}">{{tldr.title}}</a></h1>
+          <h1 class="tldr-title tldr-page-title"><a target="_blank" href="{{tldr.originalUrl}}">{{tldr.title}}</a></h1>
           <span class="tldr-hostname">({{tldr.hostname}})</span>
         </div>
 
@@ -16,6 +16,12 @@
           </span>
         </div>
 
+        {{#tldr.imageUrl}}
+        <div class="tldr-image">
+          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+        </div>
+        {{/tldr.imageUrl}}
+
         <div class="tldr-summary">
           <ul>
             {{#tldr.summaryBullets}}
@@ -26,16 +32,27 @@
             {{/tldr.summaryBullets}}
           </ul>
         </div>
+
+        <!-- just in case the image is taller than the summary -->
+        {{#tldr.imageUrl}}
+        <div class="clearfix"> </div>
+        {{/tldr.imageUrl}}
       </div>
 
       <div class="tldr-tldr">
         <div class="sub-tldr">
-          <a href="{{tldr.url}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
+          <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
           <div class="sharing-container">
-            <button class="btn btn-inverse dropdown-toggle" data-toggle="dropdown">
-              <i class="icon-white icon-share-alt"></i>
-              Share
-            </button>
+            <div class="btn-group dropup">
+              <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+                Share tl;dr
+              </button>
+            </div>
+            <div class="btn-group dropup">
+              <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+                Save full article for later
+              </button>
+            </div>
           </div>
         </div>
       </div>

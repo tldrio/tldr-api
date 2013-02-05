@@ -15,7 +15,6 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , User = models.User
   , UserHistory = models.UserHistory
-  , Notification = models.Notification
   , notificator = require('../lib/notificator')
   , Tldr = models.Tldr
   , config = require('../lib/config')
@@ -62,7 +61,6 @@ describe('User', function () {
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
-    , async.apply(theRemove, Notification)
     , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
     , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
     , function (cb) { Tldr.createAndSaveInstance(tldrData1, user1, function (err, t1) { tldr1 = t1; cb(); }); }
@@ -1102,104 +1100,6 @@ describe('User', function () {
 
 
   });   // ==== End of 'Admin role' ==== //
-
-
-  describe('Notifications', function () {
-
-    it('Should be able to get a users notifs', function (done) {
-      function publish (options, cb) {
-        notificator.receiveNotification(options, function () { cb(); });
-      }
-
-      async.waterfall([
-        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
-      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
-      , function (cb) {
-          user1.getNotifications(function (err, notifs) {
-            notifs.length.should.equal(3);
-            notifs[0].unseen.should.equal(true);
-            notifs[1].unseen.should.equal(true);
-            notifs[2].unseen.should.equal(true);
-            user2.getNotifications(function (err, notifs) {
-              notifs.length.should.equal(1);
-              notifs[0].unseen.should.equal(true);
-              cb();
-            });
-          });
-        }
-      ], done);
-    });
-
-    it('Should be able to mark all unseen notifs as seen', function (done) {
-      function publish (options, cb) {
-        notificator.receiveNotification(options, function () { cb(); });
-      }
-
-      async.waterfall([
-        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
-      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
-      , function (cb) {
-          user2.markAllNotificationsAsSeen(function (err, numAffected) {
-            numAffected.should.equal(1);
-            user2.getNotifications(function(err, notifs) {
-              notifs[0].unseen.should.equal(false);
-              cb();
-            });
-          });
-        }
-      , function (cb) {
-          user1.getNotifications(function (err, notifs) {
-            notifs[1].markAsSeen(function (err, notif) {
-              notif.unseen.should.equal(false);
-
-              user1.markAllNotificationsAsSeen(function (err, numAffected) {
-                numAffected.should.equal(2);
-
-                user1.getNotifications(function (err, notifs) {
-                  notifs[0].unseen.should.equal(false);
-                  notifs[1].unseen.should.equal(false);
-                  notifs[2].unseen.should.equal(false);
-
-                  cb();
-                });
-              });
-            });
-          });
-        }
-      ], done);
-    });
-
-    it('Should be able to get only some of the users notifs', function (done) {
-      function publish (options, cb) {
-        notificator.receiveNotification(options, function () { cb(); });
-      }
-
-      async.waterfall([
-        async.apply(publish, { type: 'read', from: user2, tldr: tldr1, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr2, to: user1 })
-      , async.apply(publish, { type: 'read', from: user2, tldr: tldr3, to: user1 })
-      , async.apply(publish, { type: 'read', from: user1, tldr: tldr1, to: user2 })
-      , function (cb) {
-          user1.getNotifications(2, function (err, notifs) {
-            notifs.length.should.equal(2);
-            notifs[0].unseen.should.equal(true);
-            notifs[1].unseen.should.equal(true);
-            user2.getNotifications(0, function (err, notifs) {
-              notifs.length.should.equal(1);
-              notifs[0].unseen.should.equal(true);
-              cb();
-            });
-          });
-        }
-      ], done);
-    });
-
-  });   // ==== End of 'Notifications' ==== //
-
 
 
 });
