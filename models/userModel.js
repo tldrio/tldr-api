@@ -140,7 +140,6 @@ UserSchema = new Schema(
                , default: Date.now
                }
   , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
-           , unique: true
            , required: true
            , validate: [validateEmail, i18n.validateUserEmail]
            , set: customUtils.sanitizeAndNormalizeEmail
@@ -294,6 +293,38 @@ UserSchema.methods.updateLastActive = function (callback) {
 };
 
 
+/**
+ * Update a profile's email.
+ * Do it only if email is not already taken by a basic cred
+ * And update the corresponding basic cred if user has one
+ */
+UserSchema.methods.updateEmail = function (newEmail, callback) {
+  var self = this;
+
+  Credentials.findOne({ login: newEmail }, function (err, bc) {
+    if (err) { return callback(err); }
+    if (bc) { return callback({ code: 11001, conflictingCredentials: bc }); }
+
+    self.email = newEmail;
+    self.save(function (err, user) {
+      if (err) { return callback(err); }
+
+      user.getBasicCredentials(function (err, bc) {
+        if (err) { return callback(err); }
+
+        if (!bc) { return callback(null, user); }
+
+        bc.login = newEmail;
+        bc.save(function (err) {
+          if (err) { return callback(err); }
+          return callback(null, user);
+        });
+      });
+    });
+  });
+};
+
+
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
  */
@@ -409,8 +440,6 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 };
 
 
-
-
 /**
  * Attach credentials to this user profile
  * @param {Credentials} creds
@@ -430,16 +459,16 @@ UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
 
 
 /**
- * Get a user's basic credentials, if he has any
+ * Get a user's basic or google credentials, if he has any
  *
  */
-UserSchema.methods.getBasicCredentials = function (callback) {
+UserSchema.methods.getCredentialsInternal = function (type, callback) {
   Credentials.find({ _id: { $in: this.credentials } }, function (err, credsSet) {
     var found = false;
     if (err) { return callback(err); }
 
     credsSet.forEach(function (creds) {
-      if (creds.type === 'basic' && ! found) {   // Only one basic credentials possible
+      if (creds.type === type && ! found) {   // Only one basic credentials possible
         found = true;
         return callback(null, creds);
       }
@@ -449,6 +478,13 @@ UserSchema.methods.getBasicCredentials = function (callback) {
   });
 };
 
+UserSchema.methods.getBasicCredentials = function (callback) {
+  this.getCredentialsInternal('basic', callback);
+}
+
+UserSchema.methods.getGoogleCredentials = function (callback) {
+  this.getCredentialsInternal('google', callback);
+}
 
 
 /**

@@ -425,6 +425,53 @@ describe('User', function () {
   });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
 
 
+  describe('Get specific credentials', function () {
+
+    it('Returns with no error even if no basic creds were found', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(0);
+        user.getBasicCredentials(function(err, bc) {
+          assert.isNull(err);
+          assert.isNull(bc);
+
+          done();
+        });
+      });
+    });
+
+    it('Get the correct basic creds if user has both types of creds', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(2);
+            user.getBasicCredentials(function (err, bc) {
+              assert.isNull(err);
+              bc.type.should.equal('basic');
+              bc.login.should.equal('valid@email.com');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+  });
+
+
   describe('#attachCredentialsToProfile', function () {
 
     it('Should work as expected, no error possible', function (done) {
@@ -828,6 +875,147 @@ describe('User', function () {
     });
 
   });   // ==== End of 'should update the user updatable fields' ==== //
+
+
+  describe('Update email', function () {
+
+    it('Should be able to update the email of a bare profile', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(0);
+        user.updateEmail('anothergood@great.com', function(err, user) {
+          assert.isNull(err);
+          user.email.should.equal('anothergood@great.com');
+
+          done();
+        });
+      });
+    });
+
+    it('Shouldnt update email if there are validation errors', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(0);
+        user.updateEmail('anothergoodgreat.com', function(err, user) {
+          var valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          _.keys(valErr).length.should.equal(1);
+          assert.isDefined(valErr.email);
+
+          done();
+        });
+      });
+    });
+
+    it('Should be able to update a user who has basic credentials only', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+        user.updateEmail('anothergood@great.com', function(err, user) {
+          assert.isNull(err);
+          user.email.should.equal('anothergood@great.com');
+
+          user.getBasicCredentials(function (err, bc) {
+            bc.login.should.equal('anothergood@great.com');
+            done();
+          });
+        });
+      });
+    });
+
+    it('Cant update profiles email if the target email belongs to a basic credential for a different owner', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     }
+        , id;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        id = user._id
+        user.credentials.length.should.equal(1);
+        user.updateEmail(user1.email, function(err, user) {   // user1 has basic creds
+          err.code.should.equal(11001);
+
+          User.findOne({ _id: id }, function (err, user) {
+            user.email.should.equal('valid@email.com');
+            user.getBasicCredentials(function (err, bc) {
+              bc.login.should.equal('valid@email.com');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update email for a user with only a google credentials', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(1);
+            user.updateEmail('anothergood@great.com', function(err, user) {
+              assert.isNull(err);
+              user.email.should.equal('anothergood@great.com');
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update email for a user with both basic and google creds', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(2);
+            user.updateEmail('anothergood@great.com', function(err, user) {
+              assert.isNull(err);
+              user.email.should.equal('anothergood@great.com');
+
+              user.getBasicCredentials(function (err, bc) {
+                bc.login.should.equal('anothergood@great.com');
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+
+  });   // ==== End of 'Update email' ==== //
 
 
   describe('Reset password functions', function() {
