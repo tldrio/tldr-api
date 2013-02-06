@@ -350,7 +350,6 @@ UserSchema.methods.updateValidFields = function (data, callback) {
 UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   var instance = prepareBareProfile(userInput)
     , bcData = { login: instance.email, password: userInput.password }
-    , history = new UserHistory()
     ;
 
   Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
@@ -361,9 +360,10 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
       Credentials.createBasicCredentials(bcData, function (err, bc) {
         if (err) { return callback(err); }
 
-        history.saveAction("accountCreation", "Account was created", function(err, _history) {
-          instance.history = _history._id;
-          instance.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
+        User.createAndSaveBareProfile(userInput, function (err, user) {
+          if (err) { return callback(err); }
+
+          user.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
         });
       });
     });
