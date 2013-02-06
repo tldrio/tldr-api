@@ -1,7 +1,7 @@
 test:
 	@echo "TLDR - Launching tests. Setting environment to test"
 	@ NODE_ENV='test' node db_analysis/resetTestDb.js
-	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec
+	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec -t 10000
 	@echo "Tests finished, setting environment back to development"
 
 testMail:
@@ -12,7 +12,7 @@ testMail:
 test-jenkins:
 	@echo "TLDR - Launching tests. Setting environmentment to test"
 	@ NODE_ENV='test' node db_analysis/resetTestDb.js
-	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap
+	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap -t 10000
 	@echo "Tests finished, setting environment back to development"
 
 COVDIR=$(TLDR_API_DIR)/../api-cov
