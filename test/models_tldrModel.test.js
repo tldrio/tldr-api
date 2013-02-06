@@ -14,6 +14,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , Tldr = models.Tldr
+  , Credentials = models.Credentials
   , User = models.User
   , TldrHistory = models.TldrHistory
   , config = require('../lib/config')
@@ -47,13 +48,14 @@ describe('Tldr', function () {
   });
 
   beforeEach(function (done) {
-    User.remove({}, function(err) {
-      Tldr.remove({}, function (err) {
-        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
-          user = _user;
-          done();
+    Credentials.remove({}, function(err) {
+      User.remove({}, function(err) {
+        Tldr.remove({}, function (err) {
+          User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
+            user = _user;
+            done();
+          });
         });
-
       });
     });
   });

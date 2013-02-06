@@ -11,6 +11,7 @@ var should = require('chai').should()
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../lib/models')
+  , Credentials = models.Credentials
   , User = models.User
   , Post = models.Post
   , Topic = models.Topic
@@ -32,14 +33,16 @@ describe('Post', function () {
   });
 
   beforeEach(function (done) {
-    User.remove({}, function (err) {
-      Topic.remove({}, function (err) {
-        Post.remove({}, function (err) {
-          User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
-            user = _user;
-            Topic.createAndSaveInstance({ title: 'Hello you' }, user, function (err, _topic) {
-              topic = _topic;
-              done();
+    Credentials.remove({}, function (err) {
+      User.remove({}, function (err) {
+        Topic.remove({}, function (err) {
+          Post.remove({}, function (err) {
+            User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com" }, function(err, _user) {
+              user = _user;
+              Topic.createAndSaveInstance({ title: 'Hello you' }, user, function (err, _topic) {
+                topic = _topic;
+                done();
+              });
             });
           });
         });

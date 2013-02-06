@@ -308,14 +308,14 @@ function updateLastActive (callback) {
 function updateValidFields (data, callback) {
   var self = this
     , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields)
-    , oldEmail;   // If we use this it means the user is trying to change his email
+    , emailChanged = false;
 
   // user wants to change it's email so we update the confirm status
   // and generate new validation code
   if (self.email !== data.email) {
     self.confirmEmailToken = customUtils.uid(13);
     self.confirmedEmail = false;
-    oldEmail = self.email;
+    emailChanged = true;
   }
 
   // Manually set usernameLowerCased in case of updates
@@ -332,18 +332,20 @@ function updateValidFields (data, callback) {
   self.updatedAt = new Date();
 
   async.waterfall([
-    function (cb) {
-      if (oldEmail) {
-        Credentials.findOne({ login: oldEmail }, function (err, bc) {
-          if (err || !bc) { return cb(); }
-
-          bc.login = self.email;
-          bc.save(function () { cb(); });
-        });
-      } else { cb(); }
+    function (cb) {   // Try to save the user
+      self.save(function (err, user) {
+        cb(err, user);
+      });
     }
-  , function (cb) {
-      self.save(cb);
+  , function (user, cb) {   // If no problem in the above step, update credentials if needed
+      if (! emailChanged) { return cb(null, user); }
+
+      self.getBasicCredentials(function (err, bc) {
+        if (err || !bc) { return cb(); }
+
+        bc.login = self.email;
+        bc.save(function () { cb(null, user); });
+      });
     }
   ], callback);
 }

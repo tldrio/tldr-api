@@ -15,6 +15,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose')
   , async = require('async')
   , Tldr = models.Tldr
+  , Credentials = models.Credentials
   , User = models.User
   , rootUrl = 'http://localhost:8686'
   , bcrypt = require('bcrypt')
@@ -101,7 +102,8 @@ describe('Webserver', function () {
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
-      async.apply(theRemove, User)
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
     , async.apply(theRemove, Topic)
     ], function(err) {
@@ -1046,7 +1048,7 @@ describe('Webserver', function () {
                        , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
 
             response.statusCode.should.equal(409);
-            body.duplicateField.should.equal("email");
+            body.duplicateField.should.equal("login");
 
             User.find({}, function (err, users) {
               users.length.should.equal(userNumber + 1);   // Only one user is created
@@ -1425,10 +1427,12 @@ describe('Webserver', function () {
                            , json: { email: "user1@nfa.com" } }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
-                  User.findOne({ email: "user1@nfa.com" }, function(err, user) {
-                    assert.isDefined(user.resetPasswordToken);
+                User.findOne({ email: "user1@nfa.com" }, function(err, user) {
+                  user.getBasicCredentials(function (err, bc) {
+                    assert.isDefined(bc.resetPasswordToken);
                     done();
                   });
+                });
                });
             });
           });
@@ -1478,18 +1482,17 @@ describe('Webserver', function () {
                    , json: { email: "user1@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(200);
 
-        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
-          //console.log(user);
+        User.findOne({ email: 'user1@nfa.com' }).populate('credentials').exec(function(err, user) {
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/user/resetPassword'
-                       , json: { email: "BAD@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+                       , json: { email: "BAD@nfa.com", resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
             response.body.message.should.equal(i18n.wrongTokenOrEmail);
 
-              request.post({ headers: {"Accept": "application/json"}
+            request.post({ headers: {"Accept": "application/json"}
                            , uri: rootUrl + '/user/resetPassword'
-                           , json: { email: user.email, resetPasswordToken: user.resetPasswordToken, newPassword: "BAD" } }, function (error, response, body) {
+                           , json: { email: user.email, resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "BAD" } }, function (error, response, body) {
 
                 response.statusCode.should.equal(403);
                 response.body.password.should.equal(i18n.validateUserPwd);
@@ -1515,16 +1518,16 @@ describe('Webserver', function () {
                    , json: { email: "user1@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(200);
 
-        User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
+        User.findOne({ email: 'user1@nfa.com' }).populate('credentials').exec(function(err, user) {
           request.post({ headers: {"Accept": "application/json"}
                        , uri: rootUrl + '/user/resetPassword'
-                       , json: { email: "user1@nfa.com", resetPasswordToken: user.resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
+                       , json: { email: "user1@nfa.com", resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
 
             response.statusCode.should.equal(200);
             response.body.message.should.equal(i18n.passwordResetSuccessfully);
-            User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
-              bcrypt.compareSync('goodpassword', user.password).should.equal(true);
-              bcrypt.compareSync('supersecret', user.password).should.equal(false);
+            User.findOne({ email: 'user1@nfa.com' }).populate('credentials').exec(function(err, user) {
+              bcrypt.compareSync('goodpassword', user.credentials[0].password).should.equal(true);
+              bcrypt.compareSync('supersecret', user.credentials[0].password).should.equal(false);
 
               done();
             });

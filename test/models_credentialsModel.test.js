@@ -72,6 +72,16 @@ describe('Credentials', function () {
       });
     });
 
+    it('Login should be normalized and lowercased', function (done) {
+      var bcData = { login: '  bloUPS@email.com', password: 'longenough' };
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        bc.password.should.not.equal(bcData.password);
+        bc.type.should.equal('basic');
+        bc.login.should.equal('bloups@email.com');
+        done();
+      });
+    });
+
     it('Dont change the password if user supplies a wrong or no current password', function (done) {
       var bcData = { login: 'bloups@email.com', password: 'longenough' };
       Credentials.createBasicCredentials(bcData, function (err, bc) {

@@ -11,6 +11,7 @@ var should = require('chai').should()
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose')
   , models = require('../lib/models')
+  , Credentials = models.Credentials
   , User = models.User
   , TldrHistory = models.TldrHistory
   , config = require('../lib/config')
@@ -42,6 +43,7 @@ describe('TldrHistory', function () {
 
     async.waterfall([
       async.apply(theRemove, User)
+    , async.apply(theRemove, Credentials)
     , async.apply(theRemove, TldrHistory)
     ], done);
   });

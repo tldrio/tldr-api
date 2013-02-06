@@ -34,6 +34,22 @@ function validatePassword (value) {
   }
 }
 
+// Only two possible types of credentials for now, 'basic' and 'google'
+function validateType (value) {
+  var possibleTypes = { basic: true, google: true };
+  return possibleTypes[value];
+}
+
+// Email regex comes from node-validator and can be used by clients
+function validateEmail (value) {
+  try {
+    check(value).isEmail();
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
 
 /**
  * Schema definition
@@ -42,10 +58,13 @@ function validatePassword (value) {
 CredentialsSchema = new Schema({
   type: { type: String   // One of 'basic', 'google'. We may add more later
         , required: true
+        , validate: [validateType, i18n.validateCredentialsType]
         }
 , owner: { type: ObjectId, ref: 'user' }
 , login: { type: String
          , index: { unique: true, sparse: true }
+         , validate: [validateEmail, i18n.validateUserEmail]
+         , set: customUtils.sanitizeAndNormalizeEmail
          }
 , password: { type: String
             , validate: [validatePassword, i18n.validateUserPwd]
