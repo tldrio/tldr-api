@@ -117,8 +117,35 @@ describe('Credentials', function () {
       });
     });
 
+  });   // ==== End of 'BasicCredentials' ==== //
 
-  });
+
+  describe('GoogleCredentials', function () {
+
+    it('Should be able to create a google cred with any type of openID', function (done) {
+      var gcData = { openID: 'http://openid.google.com/tldrio' };
+      Credentials.createGoogleCredentials(gcData, function (err, gc) {
+        gc.openID.should.equal(gcData.openID);
+        gc.type.should.equal('google');
+        done();
+      });
+    });
+
+    it('Should be able to create several google credentials with no indexing problem (sparse index)', function (done) {
+      var gcData = { openID: 'http://openid.google.com/tldrio' }
+        , gcData2 = { openID: 'http://openid.google.com/needforair' }
+        ;
+
+      Credentials.createGoogleCredentials(gcData, function (err, gc) {
+        assert.isUndefined(gc.login);
+        Credentials.createGoogleCredentials(gcData2, function (err, gc2) {
+          assert.isUndefined(gc2.login);
+          done();
+        });
+      });
+    });
+
+  });   // ==== End of 'GoogleCredentials' ==== //
 
 });
 

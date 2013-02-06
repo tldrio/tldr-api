@@ -1,5 +1,6 @@
 test:
 	@echo "TLDR - Launching tests. Setting environment to test"
+	@ NODE_ENV='test' node db_analysis/resetTestDb.js
 	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec
 	@echo "Tests finished, setting environment back to development"
 
@@ -8,18 +9,9 @@ testMail:
 	@ NODE_ENV="testMail" ./node_modules/.bin/mocha --reporter spec -t 10000 test/mails.test.js
 	@echo "Tests finished, setting environment back to development"
 
-testPretty:
-	@echo "TLDR - Launching tests. Setting environment to test"
-	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec | ./node_modules/.bin/bunyan -o simple
-	@echo "Tests finished, setting environment back to development"
-
-testSlow:
-	@echo "TLDR - Launching tests. Setting environment to test"
-	@ NODE_ENV="test" ./node_modules/.bin/mocha --reporter spec --timeout 10000
-	@echo "Tests finished, setting environment back to development"
-
 test-jenkins:
 	@echo "TLDR - Launching tests. Setting environmentment to test"
+	@ NODE_ENV='test' node db_analysis/resetTestDb.js
 	@ NODE_ENV="test" ./node_modules/.bin/mocha -R tap
 	@echo "Tests finished, setting environment back to development"
 

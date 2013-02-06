@@ -66,6 +66,9 @@ CredentialsSchema = new Schema({
          , validate: [validateEmail, i18n.validateUserEmail]
          , set: customUtils.sanitizeAndNormalizeEmail
          }
+, openID: { type: String
+          , index: { unique: true, sparse: true }
+          }
 , password: { type: String
             , validate: [validatePassword, i18n.validateUserPwd]
             }
@@ -90,7 +93,7 @@ CredentialsSchema.statics.prepareBasicCredentialsForCreation = function (bcData)
 /**
  * Create a new 'basic' Credentials, with a login (the user's email) and a
  * password to be bcrypt-ed
- * @param {Object} data login, password
+ * @param {Object} bcData login, password
  * @param {Function} cb Optional callback, signature: err, Credentials
  */
 CredentialsSchema.statics.createBasicCredentials = function (bcData, cb) {
@@ -170,6 +173,20 @@ CredentialsSchema.methods.resetPassword = function (token, newPassword, callback
   }
 }
 
+
+/**
+ * Create a new 'google' Credentials, with an openId (Google's)
+ * @param {Object} gcData openID
+ * @param {Function} cb Optional callback, signature: err, Credentials
+ */
+CredentialsSchema.statics.createGoogleCredentials = function (gcData, cb) {
+  var callback = cb || function () {}
+    , instance;
+
+  gcData.type = 'google';
+  instance = new Credentials(gcData);
+  instance.save(callback);
+};
 
 
 

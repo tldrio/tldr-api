@@ -155,12 +155,6 @@ UserSchema = new Schema(
                            , serviceUpdates: { type: Boolean, default: true}
                            }
   , notifications: [{ type: ObjectId, ref: 'notification' }]
-  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
-  // No need to store the salt, bcrypt already stores it in the hash
-  //, password: { type: String
-              //, required: true
-              //, validate: [validatePassword, i18n.validateUserPwd]
-              //}
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
   , username: { type: String
               , required: true
@@ -175,8 +169,6 @@ UserSchema = new Schema(
                         , unique: true
                         , set: customUtils.sanitizeInput
                         }
-  //, resetPasswordToken: { type: String }
-  //, resetPasswordTokenExpiration: { type: Date }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
   , gravatar: { email: { type: String
                        , set: customUtils.sanitizeAndNormalizeEmail }
