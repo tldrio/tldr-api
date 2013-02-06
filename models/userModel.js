@@ -20,7 +20,7 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
-  , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
+  , userUpdatableFields = ['username', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
   , reservedUsernames
   , async = require('async')
@@ -326,20 +326,12 @@ UserSchema.methods.updateEmail = function (newEmail, callback) {
 
 
 /*
- * Update a user profile (only updates the user updatable fields, and not the password)
+ * Update a user profile
+ * Can still update a user's email but we should clearly separate the two
  */
 UserSchema.methods.updateValidFields = function (data, callback) {
   var self = this
-    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields)
-    , emailChanged = false;
-
-  // user wants to change it's email so we update the confirm status
-  // and generate new validation code
-  if (self.email !== data.email) {
-    self.confirmEmailToken = customUtils.uid(13);
-    self.confirmedEmail = false;
-    emailChanged = true;
-  }
+    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
 
   // Manually set usernameLowerCased in case of updates
   if (self.username !== data.username) {
@@ -349,28 +341,10 @@ UserSchema.methods.updateValidFields = function (data, callback) {
   // Update profile info on Mailchimp
   mailchimpSync.syncSettings(self, data);
 
-  _.each(validUpdateFields, function(field) {
-    self[field] = data[field];
-  });
+  _.each(validUpdateFields, function(field) { self[field] = data[field]; });
   self.updatedAt = new Date();
 
-  async.waterfall([
-    function (cb) {   // Try to save the user
-      self.save(function (err, user) {
-        cb(err, user);
-      });
-    }
-  , function (user, cb) {   // If no problem in the above step, update credentials if needed
-      if (! emailChanged) { return cb(null, user); }
-
-      self.getBasicCredentials(function (err, bc) {
-        if (err || !bc) { return cb(); }
-
-        bc.login = self.email;
-        bc.save(function () { cb(null, user); });
-      });
-    }
-  ], callback);
+  self.save(callback);
 };
 
 

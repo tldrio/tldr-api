@@ -696,76 +696,12 @@ describe('User', function () {
 
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
-          user2.email.should.equal("another@valid.com");
+          user2.email.should.equal("valid@email.com");
           user2.notificationsSettings.read.should.be.false;
           user2.bio.should.equal("Another bio !!");
           user2.twitterHandle.should.equal('tldrio');
 
           done();
-        });
-      });
-    });
-
-    it('If the email changes, the corresponding basic credentials should be updated', function (done) {
-      var userData = { username: 'NFADeploy'
-                     , password: 'notTOOshort'
-                     , email: 'valid@email.com'
-                     , bio: 'first bio'
-                     }
-        , newData = { username: 'NFAMasterDeploy'
-                    , password: 'anothergood'
-                    , notificationsSettings: { read: false, like: true, edit: false }
-                    , email: 'another@valid.com'
-                    , bio: 'Another bio !!'
-                    , twitterHandle: 'tldrio'
-                    }
-        , bcid;
-
-      User.createAndSaveInstance(userData, function(err, user) {
-        Credentials.findOne({ login: user.email }, function (err, bc) {
-          bc.login.should.equal(userData.email);
-          bcid = bc._id;
-
-          user.updateValidFields(newData, function(err, user2) {
-          Credentials.findOne({ _id: bcid }, function (err, bc) {
-            bc.login.should.equal(newData.email);
-
-              done();
-            });
-          });
-        });
-      });
-    });
-
-    it('If we want to change to an invalid email, the credentials should not be updated', function (done) {
-      var userData = { username: 'NFADeploy'
-                     , password: 'notTOOshort'
-                     , email: 'valid@email.com'
-                     , bio: 'first bio'
-                     }
-        , newData = { username: 'NFAMasterDeploy'
-                    , password: 'anothergood'
-                    , notificationsSettings: { read: false, like: true, edit: false }
-                    , email: 'invalid@email'
-                    , bio: 'Another bio !!'
-                    , twitterHandle: 'tldrio'
-                    }
-        , bcid;
-
-      User.createAndSaveInstance(userData, function(err, user) {
-        Credentials.findOne({ login: user.email }, function (err, bc) {
-          bc.login.should.equal(userData.email);
-          bcid = bc._id;
-
-          user.updateValidFields(newData, function(err, user2) {
-          assert.isNotNull(err);
-          assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).email);
-          Credentials.findOne({ _id: bcid }, function (err, bc) {
-            bc.login.should.equal(userData.email);   // No change
-
-              done();
-            });
-          });
         });
       });
     });
@@ -807,7 +743,7 @@ describe('User', function () {
                      }
         , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
           , password: 'anothergood'
-          , email: 'anothervalid'
+          , email: 'anothervalid useless since email is updated with another function'
           , bio: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
           , twitterHandle: 'nopenope'
           };
@@ -821,8 +757,8 @@ describe('User', function () {
 
         user.updateValidFields(newData, function(err, user3) {
           assert.isDefined(err.errors.username);
-          assert.isDefined(err.errors.email);
           assert.isDefined(err.errors.bio);
+          _.keys(err.errors).length.should.equal(2);
 
           newData.twitterHandle = 'dlskgjlsdkfgjlwaaaaaaaytoolong';
           user.updateValidFields(newData, function (err, user4) {
@@ -862,12 +798,7 @@ describe('User', function () {
             newData.username = "ANOTher";
             user.updateValidFields(newData, function(err, user5) {
               err.code.should.equal(11001);   // Duplicate key while updating
-              newData.username = "UntakenUsersame";
-              newData.email = "again@email.com";
-              user.updateValidFields(newData, function(err, user5) {
-                err.code.should.equal(11001);   // Duplicate key while updating
-                done();
-              });
+              done();
             });
           });
         });
@@ -1225,7 +1156,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
         user.updateValidFields(userInput, function (err, theUser) {
-          theUser.email.should.equal('email@email.com');
+          theUser.email.should.equal('blip@email.com');
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');

@@ -812,7 +812,7 @@ describe('Webserver', function () {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
-            obj.email.should.equal("bloup@nfa.com");
+            obj.email.should.equal("user1@nfa.com");   // Email not part of the profile anymore
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
             obj.twitterHandle.should.equal("fuckyeah");   // Leading @ was automatically removed
@@ -842,7 +842,7 @@ describe('Webserver', function () {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
-            obj.email.should.equal("user1@nfa.com");
+            obj.username.should.equal(user1.username);
 
             done();
            });
@@ -913,14 +913,12 @@ describe('Webserver', function () {
 
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
-                     , json: { email: "bloup@nfacom"
-                             , password: "abad"
+                     , json: { password: "abad"
                              , twitterHandle: 'BjashkgfshdfgjhasgfdadhgfAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
 
           response.statusCode.should.equal(403);
           assert.isDefined(body.username);
-          assert.isDefined(body.email);
           assert.isDefined(body.twitterHandle);
 
         request.put({ headers: {"Accept": "application/json"}
