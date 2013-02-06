@@ -26,7 +26,7 @@
           "version": "0.7.2",
           "dependencies": {
             "hiredis": {
-               "version": "0.1.14"
+              "version": "0.1.14"
             }
           }
         },
@@ -213,7 +213,23 @@
       "version": "0.8.2"
     },
     "hiredis": {
-       "version": "0.1.14"
+      "version": "0.1.14"
+    },
+    "passport-google": {
+      "version": "0.2.0",
+      "dependencies": {
+        "pkginfo": {
+          "version": "0.2.3"
+        },
+        "passport-openid": {
+          "version": "0.2.3",
+          "dependencies": {
+            "openid": {
+              "version": "0.4.2"
+            }
+          }
+        }
+      }
     },
     "sinon": {
       "version": "1.3.4"
