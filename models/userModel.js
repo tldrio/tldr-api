@@ -213,7 +213,7 @@ UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameN
  *
  */
 
-function createConfirmToken (callback) {
+UserSchema.methods.createConfirmToken = function (callback) {
   var newToken = customUtils.uid(13);
 
   User.findOne({ email: this.email }, function (err, doc) {
@@ -221,7 +221,7 @@ function createConfirmToken (callback) {
     doc.confirmEmailToken = newToken;
     doc.save(callback);
   });
-}
+};
 
 
 /*
@@ -234,7 +234,7 @@ UserSchema.methods.createResetPasswordToken = function (callback) {
 
     bc.createResetPasswordToken(callback);
   });
-}
+};
 
 
 /*
@@ -247,13 +247,13 @@ UserSchema.methods.resetPassword = function (token, newPassword, callback) {
 
     bc.resetPassword(token, newPassword, callback);
   });
-}
+};
 
 
 /*
  * Return the part of a user's data that we may need to use in a client
  */
-function getAuthorizedFields() {
+UserSchema.methods.getAuthorizedFields = function () {
   // this is the selected User, so this._doc contains the actual data
   var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
     , res = {}, self = this;
@@ -265,14 +265,14 @@ function getAuthorizedFields() {
   });
 
   return res;
-}
+};
 
 
 /**
  * Get all tldrs created by the user
  * @param {Function} callback Signature: err, [tldrs]
  */
-function getCreatedTldrs (callback) {
+UserSchema.methods.getCreatedTldrs = function (callback) {
   Tldr.find({'creator': this._id})
     .sort('url')
     .populate('creator', 'username')
@@ -280,24 +280,24 @@ function getCreatedTldrs (callback) {
       if (err) { return callback(err); }
       callback(null, tldrs);
     });
-}
+};
 
 
 /*
  * Update lastActive field
  */
-function updateLastActive (callback) {
+UserSchema.methods.updateLastActive = function (callback) {
   this.lastActive = new Date ();
   this.save(function () {
     callback();
   });
-}
+};
 
 
 /*
  * Update a user profile (only updates the user updatable fields, and not the password)
  */
-function updateValidFields (data, callback) {
+UserSchema.methods.updateValidFields = function (data, callback) {
   var self = this
     , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields)
     , emailChanged = false;
@@ -340,7 +340,7 @@ function updateValidFields (data, callback) {
       });
     }
   ], callback);
-}
+};
 
 
 /**
@@ -359,11 +359,9 @@ function getGravatarUrlFromEmail (email) {
 
 /*
  * Create a User instance and save it to the database
- * All defaults are located here instead of in the schema or in setters
- * Part of the password's validation has to occur here as Mongoose's setters are called before the
- * validator, so using the standard way any password would be considered valid
+ * Create his basic credentials at the same time and attach them to him
  */
-function createAndSaveInstance(userInput, callback) {
+UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   var validFields = _.pick(userInput, userSetableFields)
     , instance, errors
     , bcData = { login: validFields.email, password: validFields.password }
@@ -400,7 +398,7 @@ function createAndSaveInstance(userInput, callback) {
       });
     });
   });
-}
+};
 
 
 /**
@@ -448,14 +446,14 @@ UserSchema.methods.getBasicCredentials = function (callback) {
  * @param {String} currentPassword supplied by user for checking purposes
  * @param {String} newPassword chosen by user
  */
-function updatePassword (currentPassword, newPassword, callback) {
+UserSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
   var self = this
     , errors = {};
 
   self.getBasicCredentials(function (err, creds) {
     if (creds) { creds.updatePassword(currentPassword, newPassword, callback); }
   });
-}
+};
 
 
 /**
@@ -464,11 +462,11 @@ function updatePassword (currentPassword, newPassword, callback) {
  * @param {String} data Action data, see UserHistory.saveAction
  * @param {Function} cb Optional callback (signature: err, history)
  */
-function saveAction (type, data, cb) {
+UserSchema.methods.saveAction = function (type, data, cb) {
   UserHistory.findOne({ _id: this.history }, function (err, history) {
     history.saveAction(type, data, cb);
   });
-}
+};
 
 
 
@@ -478,32 +476,20 @@ function saveAction (type, data, cb) {
  * @param {Function} callback To be called after having set the Gravatar url
  * @return {void}
  */
-function updateGravatarEmail(gravatarEmail, callback) {
+UserSchema.methods.updateGravatarEmail = function (gravatarEmail, callback) {
   this.gravatar = {};
   this.gravatar.email = gravatarEmail ? gravatarEmail : '';
   this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
-}
+};
 
 
 
 
 
 /**
- * Bind methods, statics, middleware
- *
+ * Bind validators to schema
  */
-
-UserSchema.methods.createConfirmToken = createConfirmToken;
-UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
-UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.saveAction = saveAction;
-UserSchema.methods.updateValidFields = updateValidFields;
-UserSchema.methods.updateGravatarEmail = updateGravatarEmail;
-UserSchema.methods.updateLastActive = updateLastActive;
-UserSchema.methods.updatePassword = updatePassword;
-
-UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
 UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
 
