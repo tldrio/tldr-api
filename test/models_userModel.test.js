@@ -1163,8 +1163,43 @@ describe('User', function () {
       ], done);
     });
 
-
   });   // ==== End of 'Admin role' ==== //
+
+
+  describe('#findAvailableUsername', function () {
+
+    it('Should find an available username as is', function (done) {
+      User.findAvailableUsername('availABLe', function (err, username) {
+        username.should.equal('availABLe');
+        done();
+      });
+    });
+
+    it('Should find a suitable username when tentative username is taken', function (done) {
+      User.findAvailableUsername('usertest1', function (err, username) {
+        username.should.equal('usertest11');
+        done();
+      });
+    });
+
+    it('Find a good placeholder if no tentative username given, or too short', function (done) {
+      User.findAvailableUsername(undefined, function (err, username) {
+        username.should.equal('NewUser');
+        User.findAvailableUsername('o', function (err, username) {
+          username.should.equal('NewUser');
+          done();
+        });
+      });
+    });
+
+    it('Should cut the username if too long', function (done) {
+        User.findAvailableUsername('bloupbloupbloupbloup', function (err, username) {
+          username.should.equal('bloupbloupblo');
+          done();
+        });
+    });
+
+  });   // ==== End of '#findAvailableUsername' ==== //
 
 
 });

@@ -492,6 +492,24 @@ UserSchema.methods.updateGravatarEmail = function (gravatarEmail, callback) {
 };
 
 
+/**
+ * Given a string, create an available username
+ */
+UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback) {
+  tentativeUsername = tentativeUsername || 'NewUser';
+  tentativeUsername = tentativeUsername.replace(/[^A-Za-z0-9]/g, '');
+  if (tentativeUsername.length > 13) { tentativeUsername = tentativeUsername.substring(0, 13); }
+  if (tentativeUsername.length < 3) { tentativeUsername = 'NewUser'; }
+
+  // Wtf ?? find then .length is actually faster than count ...
+  User.find({ usernameLowerCased: new RegExp('^' + tentativeUsername.toLowerCase() + '[0-9]*$') })
+      .exec(function (err, users) {
+    if (err) { return callback(err); }
+    var suffix = users.length === 0 ? '' : users.length
+    return callback(null, tentativeUsername + suffix);
+  });
+};
+
 
 
 
