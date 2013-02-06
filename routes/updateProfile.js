@@ -29,23 +29,23 @@ function updateProfile(req, res, next) {
 	}
 
 	async.waterfall([
-	  function (cb) {   // Try to update profile
+    function (cb) {   // Try to update profile
 			req.user.updateValidFields(req.body, function (err, user) { cb(err, user); });
-	  }
+    }
 	, function (user, cb) {   // Try to update email
 			if (req.body.email === req.user.email) { return cb(null, user); }
 
 			req.user.updateEmail(req.body.email, function (err, user) {
 				if (!err) {
 					mailer.sendEmail({ type: 'emailConfirmationToken'
-													 , to: user.email
-													 , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
-													 });
+                           , to: user.email
+                           , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
+                           });
 				}
 
 				return cb(err, user);
 			});
-	  }
+     }
 	], function (err, user) {
 		if (err) {
 			if (err.errors) {

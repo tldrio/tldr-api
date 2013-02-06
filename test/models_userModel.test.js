@@ -886,7 +886,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        id = user._id
+        id = user._id;
         user.credentials.length.should.equal(1);
         user.updateEmail(user1.email, function(err, user) {   // user1 has basic creds
           err.code.should.equal(11001);

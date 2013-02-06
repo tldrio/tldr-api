@@ -458,11 +458,11 @@ UserSchema.methods.getCredentialsInternal = function (type, callback) {
 
 UserSchema.methods.getBasicCredentials = function (callback) {
   this.getCredentialsInternal('basic', callback);
-}
+};
 
 UserSchema.methods.getGoogleCredentials = function (callback) {
   this.getCredentialsInternal('google', callback);
-}
+};
 
 
 /**

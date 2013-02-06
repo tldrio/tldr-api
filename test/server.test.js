@@ -802,8 +802,7 @@ describe('Webserver', function () {
 
         request.put({ headers: {"Accept": "application/json"}
                      , uri: rootUrl + '/users/you'
-                     , json: { email: "bloup@nfa.com"
-                             , username: "yepyep"
+                     , json: { username: "yepyep"
                              , email: 'yadoo@bl.com'
                              , twitterHandle: "@fuckyeah"
                              , bio: "yipee yop" } }, function (error, response, body) {
