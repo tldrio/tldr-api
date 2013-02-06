@@ -297,6 +297,7 @@ UserSchema.methods.updateLastActive = function (callback) {
  * Update a profile's email.
  * Do it only if email is not already taken by a basic cred
  * And update the corresponding basic cred if user has one
+ * Callback signature: err, user
  */
 UserSchema.methods.updateEmail = function (newEmail, callback) {
   var self = this;
@@ -327,7 +328,8 @@ UserSchema.methods.updateEmail = function (newEmail, callback) {
 
 /*
  * Update a user profile
- * Can still update a user's email but we should clearly separate the two
+ * The profile doesn't include the password (if user has basic creds) or email address
+ * Callback signature: err, user
  */
 UserSchema.methods.updateValidFields = function (data, callback) {
   var self = this

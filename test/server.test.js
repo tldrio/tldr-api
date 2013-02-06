@@ -804,6 +804,7 @@ describe('Webserver', function () {
                      , uri: rootUrl + '/users/you'
                      , json: { email: "bloup@nfa.com"
                              , username: "yepyep"
+                             , email: 'yadoo@bl.com'
                              , twitterHandle: "@fuckyeah"
                              , bio: "yipee yop" } }, function (error, response, body) {
 
@@ -812,7 +813,7 @@ describe('Webserver', function () {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
-            obj.email.should.equal("user1@nfa.com");   // Email not part of the profile anymore
+            obj.email.should.equal("yadoo@bl.com");
             obj.username.should.equal("yepyep");
             obj.bio.should.equal("yipee yop");
             obj.twitterHandle.should.equal("fuckyeah");   // Leading @ was automatically removed
