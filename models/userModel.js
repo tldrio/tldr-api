@@ -343,20 +343,6 @@ UserSchema.methods.updateValidFields = function (data, callback) {
 };
 
 
-/**
- * given email, compute md5 hash and assemble gravatar url
- *
- */
-function getGravatarUrlFromEmail (email) {
-  var hash = email ? email.trim().toLowerCase() : ''
-    , md5 = crypto.createHash('md5');
-
-  md5.update(hash, 'utf8');
-
-  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
-}
-
 /*
  * Create a User instance and save it to the database
  * Create his basic credentials at the same time and attach them to him
@@ -374,7 +360,7 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
   instance = new User(validFields);
   instance.history = '111111111111111111111111';   // Dummy ObjectId, cannot be persisted
   instance.gravatar = { email: instance.email
-                      , url: getGravatarUrlFromEmail(instance.email) };
+                      , url: customUtils.getGravatarUrlFromEmail(instance.email) };
 
   Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
     instance.validate(function (uerr) {
@@ -416,7 +402,7 @@ UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
     self.credentials.push(creds._id);
     self.save(callback);
   });
-}
+};
 
 
 /**
@@ -437,7 +423,7 @@ UserSchema.methods.getBasicCredentials = function (callback) {
 
     if (!found) { return callback(null, null); }   // No basic credentials attached
   });
-}
+};
 
 
 
@@ -479,7 +465,7 @@ UserSchema.methods.saveAction = function (type, data, cb) {
 UserSchema.methods.updateGravatarEmail = function (gravatarEmail, callback) {
   this.gravatar = {};
   this.gravatar.email = gravatarEmail ? gravatarEmail : '';
-  this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
+  this.gravatar.url = customUtils.getGravatarUrlFromEmail(gravatarEmail);
   this.save(callback);
 };
 

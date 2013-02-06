@@ -149,7 +149,7 @@ CredentialsSchema.methods.createResetPasswordToken = function (callback) {
   this.resetPasswordToken = customUtils.uid(13);
   this.resetPasswordTokenExpiration = expiration;
   this.save(callback);
-}
+};
 
 CredentialsSchema.methods.resetPassword = function (token, newPassword, callback) {
   var self = this;
@@ -171,7 +171,7 @@ CredentialsSchema.methods.resetPassword = function (token, newPassword, callback
   } else {
     callback( { tokenInvalidOrExpired: true } );   // No need to give too much information to a potential attacker
   }
-}
+};
 
 
 /**
