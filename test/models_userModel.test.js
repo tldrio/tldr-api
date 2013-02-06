@@ -220,7 +220,7 @@ describe('User', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe('#createAndSaveInstance', function () {
+  describe('#createAndSaveInstance and #createAndSaveBareProfile', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
       var userData = { username: 'NFADeploy'
@@ -405,7 +405,24 @@ describe('User', function () {
       });
     });
 
-  });   // ==== End of '#createAndSaveInstance' ==== //
+    it('should save a bare profile and set default fields', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.confirmedEmail.should.be.false;
+        assert.isUndefined(user.bio);
+        user.credentials.length.should.equal(0);
+
+        done();
+      });
+    });
+
+
+  });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
 
 
   describe('#attachCredentialsToProfile', function () {
