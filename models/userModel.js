@@ -348,31 +348,15 @@ UserSchema.methods.updateValidFields = function (data, callback) {
  * Create his basic credentials at the same time and attach them to him
  */
 UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
-  var validFields = _.pick(userInput, userSetableFields)
-    , instance, errors
-    , bcData = { login: validFields.email, password: validFields.password }
-    , history = new UserHistory();
-
-  // Prepare the User instance
-  validFields.confirmedEmail = false;
-  validFields.confirmEmailToken = customUtils.uid(13);
-  validFields.usernameLowerCased = validFields.username.toLowerCase();
-  instance = new User(validFields);
-  instance.history = '111111111111111111111111';   // Dummy ObjectId, cannot be persisted
-  instance.gravatar = { email: instance.email
-                      , url: customUtils.getGravatarUrlFromEmail(instance.email) };
+  var instance = prepareBareProfile(userInput)
+    , bcData = { login: instance.email, password: userInput.password }
+    , history = new UserHistory()
+    ;
 
   Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
     instance.validate(function (uerr) {
-      // This is a bit verbose but needed to respect the usual errors signature
-      if ((uerr && uerr.errors) || (bcerr && bcerr.errors)) {
-        errors = { name: 'ValidationError'
-                 , message: 'Validation failed'
-                 , errors: _.extend( uerr && uerr.errors ? uerr.errors : {}
-                                   , bcerr && bcerr.errors ? bcerr.errors : {} ) };
-
-        return callback(errors);
-      }
+      var errors = customUtils.mergeErrors(bcerr, uerr);
+      if (errors) { return callback(errors); }
 
       Credentials.createBasicCredentials(bcData, function (err, bc) {
         if (err) { return callback(err); }
@@ -388,21 +372,31 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
 
 /*
- * Create a bare profile, with no credentials attached
+ * Prepare a bare profile
  */
-UserSchema.statics.createBareProfile = function (userInput, callback) {
+function prepareBareProfile (userInput) {
   var validFields = _.pick(userInput, userSetableFields)
-    , instance, errors
-    , history = new UserHistory();
+    , instance;
 
-  // Prepare the User instance
+  // Prepare the profile
   validFields.confirmedEmail = false;
   validFields.confirmEmailToken = customUtils.uid(13);
   validFields.usernameLowerCased = validFields.username.toLowerCase();
   instance = new User(validFields);
-  instance.history = '111111111111111111111111';   // Dummy ObjectId, cannot be persisted
+  instance.history = '111111111111111111111111';   // Dummy
   instance.gravatar = { email: instance.email
                       , url: customUtils.getGravatarUrlFromEmail(instance.email) };
+
+  return instance;
+}
+
+
+/*
+ * Create and save a bare profile, with no credentials attached
+ */
+UserSchema.statics.createAndSaveBareProfile = function (userInput, callback) {
+  var instance = prepareBareProfile(userInput)
+    , history = new UserHistory();
 
   instance.validate(function (err) {
     if (err) { return callback(err); }

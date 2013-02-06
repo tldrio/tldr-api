@@ -137,19 +137,12 @@ TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, cre
   var newTopic = prepareTopicForCreation(topicData, creator)
     , firstPost = Post.preparePostForCreation(postData, creator)
     , callback = cb ? cb : function () {}
-    , errors = null;
+    ;
 
   newTopic.validate(function (terr) {
     firstPost.validate(function (perr) {
-      // This is a bit verbose but needed to respect the usual errors signature
-      if ((terr && terr.errors) || (perr && perr.errors)) {
-        errors = { name: 'ValidationError'
-                 , message: 'Validation failed'
-                 , errors: _.extend( terr && terr.errors ? terr.errors : {}
-                                   , perr && perr.errors ? perr.errors : {} ) };
-
-        return callback(errors);
-      }
+			var errors = customUtils.mergeErrors(terr, perr);
+			if (errors) { return callback(errors); }
 
       Topic.createAndSaveInstance(topicData, creator, function (err, topic) {
         if (err) {   // Shouldn't happen, really
