@@ -387,6 +387,34 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 };
 
 
+/*
+ * Create a bare profile, with no credentials attached
+ */
+UserSchema.statics.createBareProfile = function (userInput, callback) {
+  var validFields = _.pick(userInput, userSetableFields)
+    , instance, errors
+    , history = new UserHistory();
+
+  // Prepare the User instance
+  validFields.confirmedEmail = false;
+  validFields.confirmEmailToken = customUtils.uid(13);
+  validFields.usernameLowerCased = validFields.username.toLowerCase();
+  instance = new User(validFields);
+  instance.history = '111111111111111111111111';   // Dummy ObjectId, cannot be persisted
+  instance.gravatar = { email: instance.email
+                      , url: customUtils.getGravatarUrlFromEmail(instance.email) };
+
+  instance.validate(function (err) {
+    if (err) { return callback(err); }
+
+    history.saveAction("accountCreation", "Account was created", function(err, _history) {
+      instance.history = _history._id;
+      instance.save(callback);
+    });
+  });
+};
+
+
 /**
  * Attach credentials to this user profile
  * @param {Credentials} creds
