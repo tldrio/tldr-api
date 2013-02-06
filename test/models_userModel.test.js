@@ -847,7 +847,7 @@ describe('User', function () {
       });
     });
 
-    it('Should be able to update a user who has basic credentials only', function (done) {
+    it('Should be able to update a user who has basic credentials only and recreate the email confirmation token', function (done) {
       var userData = { username: 'NFADeploy'
                      , email: 'valid@email.com'
                      , password: 'supersecret'
@@ -857,13 +857,20 @@ describe('User', function () {
       User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
         user.credentials.length.should.equal(1);
-        user.updateEmail('anothergood@great.com', function(err, user) {
-          assert.isNull(err);
-          user.email.should.equal('anothergood@great.com');
 
-          user.getBasicCredentials(function (err, bc) {
-            bc.login.should.equal('anothergood@great.com');
-            done();
+        user.confirmedEmail = true;   // Artificially confirm email
+        user.save(function (err, user) {
+          user.confirmedEmail.should.equal(true);
+          user.updateEmail('anothergood@great.com', function(err, user) {
+            assert.isNull(err);
+            user.confirmedEmail.should.equal(false);
+            assert.isDefined(user.confirmEmailToken);
+            user.email.should.equal('anothergood@great.com');
+
+            user.getBasicCredentials(function (err, bc) {
+              bc.login.should.equal('anothergood@great.com');
+              done();
+            });
           });
         });
       });
@@ -944,7 +951,6 @@ describe('User', function () {
         });
       });
     });
-
 
   });   // ==== End of 'Update email' ==== //
 

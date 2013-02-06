@@ -304,9 +304,11 @@ UserSchema.methods.updateEmail = function (newEmail, callback) {
 
   Credentials.findOne({ login: newEmail }, function (err, bc) {
     if (err) { return callback(err); }
-    if (bc) { return callback({ code: 11001, conflictingCredentials: bc }); }
+    if (bc) { return callback({ code: 11001, err: '.$email_' }); }   // Mimicking Mongo's useless messages
 
     self.email = newEmail;
+    self.confirmEmailToken = customUtils.uid(13);
+    self.confirmedEmail = false;
     self.save(function (err, user) {
       if (err) { return callback(err); }
 
