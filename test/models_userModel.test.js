@@ -1175,9 +1175,16 @@ describe('User', function () {
       });
     });
 
-    it('Should find a suitable username when tentative username is taken', function (done) {
-      User.findAvailableUsername('usertest1', function (err, username) {
-        username.should.equal('usertest11');
+    it('Should remove all non alphanumerical characters', function (done) {
+      User.findAvailableUsername(' .gr/`ea_@@t', function (err, username) {
+        username.should.equal('great');
+        done();
+      });
+    });
+
+    it('Should find a suitable username when tentative username is taken (comparisons done lower case)', function (done) {
+      User.findAvailableUsername('useRTEst1', function (err, username) {
+        username.should.equal('useRTEst11');
         done();
       });
     });

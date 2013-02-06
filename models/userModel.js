@@ -344,34 +344,6 @@ UserSchema.methods.updateValidFields = function (data, callback) {
 
 
 /*
- * Create a User instance and save it to the database
- * Create his basic credentials at the same time and attach them to him
- */
-UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
-  var instance = prepareBareProfile(userInput)
-    , bcData = { login: instance.email, password: userInput.password }
-    ;
-
-  Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
-    instance.validate(function (uerr) {
-      var errors = customUtils.mergeErrors(bcerr, uerr);
-      if (errors) { return callback(errors); }
-
-      Credentials.createBasicCredentials(bcData, function (err, bc) {
-        if (err) { return callback(err); }
-
-        User.createAndSaveBareProfile(userInput, function (err, user) {
-          if (err) { return callback(err); }
-
-          user.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
-        });
-      });
-    });
-  });
-};
-
-
-/*
  * Prepare a bare profile
  */
 function prepareBareProfile (userInput) {
@@ -407,6 +379,36 @@ UserSchema.statics.createAndSaveBareProfile = function (userInput, callback) {
     });
   });
 };
+
+
+/*
+ * Create a User instance and save it to the database
+ * Create his basic credentials at the same time and attach them to him
+ */
+UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
+  var instance = prepareBareProfile(userInput)
+    , bcData = { login: instance.email, password: userInput.password }
+    ;
+
+  Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
+    instance.validate(function (uerr) {
+      var errors = customUtils.mergeErrors(bcerr, uerr);
+      if (errors) { return callback(errors); }
+
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        if (err) { return callback(err); }
+
+        User.createAndSaveBareProfile(userInput, function (err, user) {
+          if (err) { return callback(err); }
+
+          user.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
+        });
+      });
+    });
+  });
+};
+
+
 
 
 /**
@@ -505,7 +507,7 @@ UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback
   User.find({ usernameLowerCased: new RegExp('^' + tentativeUsername.toLowerCase() + '[0-9]*$') })
       .exec(function (err, users) {
     if (err) { return callback(err); }
-    var suffix = users.length === 0 ? '' : users.length
+    var suffix = users.length === 0 ? '' : users.length;
     return callback(null, tentativeUsername + suffix);
   });
 };
