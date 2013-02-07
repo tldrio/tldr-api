@@ -710,6 +710,7 @@ describe('Tldr', function () {
 
         Tldr.updateDistributionChannels(tldr._id, null, function () {
           Tldr.findOneById(tldr._id, function (err, tldr) {
+            checkDefaultModerationStatus(tldr);   // No change
             Tldr.updateDistributionChannels(tldr._id, {}, function () {
               Tldr.findOneById(tldr._id, function (err, tldr) {
                 checkDefaultModerationStatus(tldr);   // No change
@@ -718,6 +719,36 @@ describe('Tldr', function () {
             });
           });
         });
+      });
+    });
+
+    it('Should update the given fields and no other', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        checkDefaultModerationStatus(tldr);
+
+        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: false, latestTldrsRSSFeed: true }, function () {
+          Tldr.findOneById(tldr._id, function (err, tldr) {
+            tldr.distributionChannels.latestTldrs.should.equal(false);
+            tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: true }, function () {
+              Tldr.findOneById(tldr._id, function (err, tldr) {
+                tldr.distributionChannels.latestTldrs.should.equal(true);
+                tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+                done();
+              });
+            });
+          });
+        });
+
       });
     });
 
