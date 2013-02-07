@@ -177,20 +177,7 @@ app.get('/login', routes.website_login);
 
 // 3rd party auth with Google
 app.get('/third-party-auth/google', passport.authenticate('google'));
-
-app.get('/third-party-auth/google/return',
-  function (req, res, next) {
-    passport.authenticate('google', function (err, user, info) {
-      if (err) { return next(err); }
-
-      if (!user) { return res.redirect(302, '/login'); }
-
-      req.logIn(user, function (err) {
-        if (err) { return next(err); }
-        res.redirect(302, info.userWasJustCreated ? '/chrome-extension' : '/latest-summaries');
-      });
-    })(req, res, next);
-  });
+app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
 
 // Email confirmation, password recovery
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
