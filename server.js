@@ -176,7 +176,7 @@ app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); 
 app.get('/login', routes.website_login);
 
 // 3rd party auth with Google
-app.get('/third-party-auth/google', passport.authenticate('google'));
+app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
 
 // Email confirmation, password recovery
