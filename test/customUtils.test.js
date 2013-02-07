@@ -17,7 +17,7 @@ var should = require('chai').should()
 describe.only('Custom utils', function () {
 
   describe('#timeago', function () {
-    it('Should return just ago if span is under a minute', function (done) {
+    it('Should return just ago if span is under a minute', function () {
       var test;
 
       test = new Date((new Date()).getTime() - 10);
@@ -25,11 +25,9 @@ describe.only('Custom utils', function () {
 
       test = new Date((new Date()).getTime() - 900);
       customUtils.timeago(test).should.equal('just now');
-
-      done();
     });
 
-    it('Should return a nicely formatted timeago', function (done) {
+    it('Should return a nicely formatted timeago', function () {
       var test;
 
       test = new Date((new Date()).getTime() - 1000 * 60 * 4);
@@ -40,8 +38,6 @@ describe.only('Custom utils', function () {
 
       test = new Date((new Date()).getTime() - 1000 * 60 * 60 * 24 * 12);
       customUtils.timeago(test).should.equal('12 days ago');
-
-      done();
     });
 
 
@@ -49,17 +45,15 @@ describe.only('Custom utils', function () {
 
   describe('#normalizeUrl', function() {
 
-    it('Should keep correctly formatted urls unchanged', function (done) {
+    it('Should keep correctly formatted urls unchanged', function () {
       var theUrl = "http://domain.tld/path/file.extension";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
       theUrl = "https://domain.tld/path/file.extension";
       normalizeUrl(theUrl).should.equal("https://domain.tld/path/file.extension");
-
-      done();
     });
 
-    it('Should remove leading www subdomain, if any', function (done) {
+    it('Should remove leading www subdomain, if any', function () {
       var theUrl = "http://domain.tld/path/file.extension";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
@@ -72,12 +66,10 @@ describe.only('Custom utils', function () {
       // No problem with hostnames less than 4 characters
       theUrl = "http://d.t/path/file.extension";
       normalizeUrl(theUrl).should.equal("http://d.t/path/file.extension");
-
-      done();
     });
 
 
-    it('Should remove the querystring for non whitelisted websites', function (done) {
+    it('Should remove the querystring for non whitelisted websites', function () {
       var theUrl = "http://domain.tld/?aRg=valuEEe";
       normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
@@ -86,11 +78,9 @@ describe.only('Custom utils', function () {
 
       theUrl = "http://subdomain.domain.tld/bloup/blap?arg=value";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/bloup/blap");
-
-      done();
     });
 
-    it('Should keep querystring for whitelisted domains but remove the utm ones and sort the remaining arguments', function (done) {
+    it('Should keep querystring for whitelisted domains but remove the utm ones and sort the remaining arguments', function () {
       var theUrl = "http://youtube.com/?aRg=valuEEe";
       normalizeUrl(theUrl).should.equal("http://youtube.com/?aRg=valuEEe");
 
@@ -99,11 +89,9 @@ describe.only('Custom utils', function () {
 
       theUrl = "http://youtube.com/?aRg=valuEEe&bloup=blap&utm_grok=big";
       normalizeUrl(theUrl).should.equal("http://youtube.com/?aRg=valuEEe&bloup=blap");
-
-      done();
     });
 
-    it('Should keep correctly formatted urls with only domain/subdomain, adding a forgotten trailing slash', function (done) {
+    it('Should keep correctly formatted urls with only domain/subdomain, adding a forgotten trailing slash', function () {
       var theUrl = "http://domain.tld/";
       normalizeUrl(theUrl).should.equal("http://domain.tld/");
 
@@ -115,11 +103,9 @@ describe.only('Custom utils', function () {
 
       theUrl = "http://subdomain.domain.tld";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
-
-      done();
     });
 
-    it('Should remove a trailing hash with its fragment except if it a #!', function (done) {
+    it('Should remove a trailing hash with its fragment except if it a #!', function () {
       var theUrl = "http://domain.tld/path/file.extension/#";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
@@ -155,38 +141,30 @@ describe.only('Custom utils', function () {
 
       theUrl = "http://domain.tld/path/file/#!bloup";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file#!bloup");
-
-      done();
     });
 
-    it('Should lowercase the DNS part and keep the given path case', function (done) {
+    it('Should lowercase the DNS part and keep the given path case', function () {
       var theUrl = "hTTp://subdOMaiN.dOmaIn.tLD/path/fiLE.exTENsion/";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/fiLE.exTENsion");
-
-      done();
     });
 
-    it('Should remove the port if it is 80, keep it otherwise', function (done) {
+    it('Should remove the port if it is 80, keep it otherwise', function () {
       var theUrl = "http://subdomain.domain.tld:80/path/file.extension/";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
 
       theUrl = "http://subdomain.domain.tld:99/path/file.extension/";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld:99/path/file.extension");
-
-      done();
     });
 
-    it('Remove a querystring if there are no arguments - it is only a "?"', function (done) {
+    it('Remove a querystring if there are no arguments - it is only a "?"', function () {
       var theUrl = "http://subdomain.domain.tld/path/file.extension/?";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/path/file.extension");
 
       theUrl = "http://subdomain.domain.tld?";
       normalizeUrl(theUrl).should.equal("http://subdomain.domain.tld/");
-
-      done();
     });
 
-    it('Sort the arguments of a querystring and remove the useless ones for the querystring-fucking domains', function (done) {
+    it('Sort the arguments of a querystring and remove the useless ones for the querystring-fucking domains', function () {
       var theUrl = "http://youtube.com/path/file.extension/?arg=value&rtf=yto";
       normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?arg=value&rtf=yto");
 
@@ -206,21 +184,40 @@ describe.only('Custom utils', function () {
       // Work well with non-www subdomains
       theUrl = "http://news.ycombinator.com/path/file.extension?caee=value&c5=yto";
       normalizeUrl(theUrl).should.equal("http://news.ycombinator.com/path/file.extension?c5=yto&caee=value");
-
-      done();
     });
 
-    it('Remove a trailing slash if there is a path', function (done) {
+    it('Remove a trailing slash if there is a path', function () {
       var theUrl = "http://youtube.com/path/file.extension/?arg=value&rtf=yto";
       normalizeUrl(theUrl).should.equal("http://youtube.com/path/file.extension?arg=value&rtf=yto");
 
       theUrl = "http://youtube.com/path/file/";
       normalizeUrl(theUrl).should.equal("http://youtube.com/path/file");
-
-      done();
     });
 
-    it('The normalize function should be idempotent', function (done) {
+    it('Should remove slug from slug offending urls', function () {
+      var theUrl = "http://stackoverflow.com/about/me/test";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/about/me/test");
+
+      theUrl = "http://stackoverflow.com/questions/meh/slug";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/meh/slug");
+
+      theUrl = "http://stackoverflow.com/questions/641203483/slug";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
+
+      theUrl = "http://stackoverflow.com/questions/641203483/slug/";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
+
+      theUrl = "http://stackoverflow.com/questions/641203483/slug/again";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
+
+      theUrl = "http://stackoverflow.com/questions/641203483/";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
+
+      theUrl = "http://stackoverflow.com/questions/641203483";
+      normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
+    });
+
+    it('The normalize function should be idempotent', function () {
       var urlsToTest = [];
 
       // All the target urls in the tests above
@@ -264,44 +261,35 @@ describe.only('Custom utils', function () {
       _.each(urlsToTest, function (theUrl) {
         normalizeUrl(theUrl).should.equal(theUrl);
       });
-
-      done();
     });
-
 
   });   // ==== End of '#normalizeUrl' ==== //
 
 
   describe('Slugification', function () {
 
-    it('Should lowercase all upper case letter', function (done) {
+    it('Should lowercase all upper case letter', function () {
       var input;
 
       input = "SalUT";
       customUtils.slugify(input).should.equal("salut");
-
-      done();
     });
 
-    it('Should replace non English characters by English ones', function (done) {
+    it('Should replace non English characters by English ones', function () {
       var input;
 
       input = "ééèêëẽáàâäãúùûüũíìîïĩóòôöõýỳŷÿỹ";
       customUtils.slugify(input).should.equal("eeeeeeaaaaauuuuuiiiiioooooyyyyy");
-
-      done();
     });
 
-    it('Should use only a dash as delimiter', function (done) {
+    it('Should use only a dash as delimiter', function () {
       var input;
 
       input = "Salut/ca\\farte_fourte-firte";
       customUtils.slugify(input).should.equal("salut-ca-farte-fourte-firte");
-
-      done();
     });
 
-    it('Should remove all unexpected characters', function (done) {
+    it('Should remove all unexpected characters', function () {
       var input;
 
       input = "Salut ca farte??? 145 fois";
@@ -309,17 +297,13 @@ describe.only('Custom utils', function () {
 
       input = "lemonde.fr et,la;ca va";
       customUtils.slugify(input).should.equal("lemonde-fr-et-la-ca-va");
-
-      done();
     });
 
-    it('Should collapse multiple successive dash into only one', function (done) {
+    it('Should collapse multiple successive dash into only one', function () {
       var input;
 
       input = "Salut   ca farte - hn.com";
       customUtils.slugify(input).should.equal("salut-ca-farte-hn-com");
-
-      done();
     });
 
 
@@ -328,12 +312,11 @@ describe.only('Custom utils', function () {
 
   describe('#arrayify', function () {
 
-    it('Should return an empty array if given an empty object', function (done) {
+    it('Should return an empty array if given an empty object', function () {
       customUtils.arrayify({}).length.should.equal(0);
-      done();
     });
 
-    it('Should transform an object in an array of { key, value } and preserve types', function (done) {
+    it('Should transform an object in an array of { key, value } and preserve types', function () {
       var obj = { bloup: 'blap'
                 , clic: 5
                 , grass: false }
@@ -346,8 +329,6 @@ describe.only('Custom utils', function () {
       res[0].value.should.equal('blap');
       res[1].value.should.equal(5);
       res[2].value.should.equal(false);
-
-      done();
     });
 
   });   // ==== End of '#arrayify' ==== //
@@ -355,7 +336,7 @@ describe.only('Custom utils', function () {
 
   describe('#upsertKVInArray', function () {
 
-    it('Should not touch the array if key or value is missing', function (done) {
+    it('Should not touch the array if key or value is missing', function () {
       var a = [
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
@@ -377,11 +358,9 @@ describe.only('Custom utils', function () {
       a[0].value.should.equal('v1');
       a[1].value.should.equal('v2');
       a[2].value.should.equal('v3');
-
-      done();
     });
 
-    it('Should update the key if it exists', function (done) {
+    it('Should update the key if it exists', function () {
       var a = [
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
@@ -395,11 +374,9 @@ describe.only('Custom utils', function () {
       a[0].value.should.equal('v1');
       a[1].value.should.equal('bloup');
       a[2].value.should.equal('v3');
-
-      done();
     });
 
-    it('Should add the key if it doesnt exist', function (done) {
+    it('Should add the key if it doesnt exist', function () {
       var a = [
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
@@ -415,11 +392,9 @@ describe.only('Custom utils', function () {
       a[1].value.should.equal('v2');
       a[2].value.should.equal('v3');
       a[3].value.should.equal('bloup');
-
-      done();
     });
 
-    it('An empty string is not an empty value', function (done) {
+    it('An empty string is not an empty value', function () {
       var a = [
                 { key: 'k1', value: 'v1' }
               , { key: 'k2', value: 'v2' }
@@ -435,8 +410,6 @@ describe.only('Custom utils', function () {
       a[1].value.should.equal('v2');
       a[2].value.should.equal('v3');
       a[3].value.should.equal('');
-
-      done();
     });
 
   });   // ==== End of '#upsertKVInArray' ==== //
