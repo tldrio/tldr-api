@@ -127,7 +127,9 @@ TldrSchema = new Schema(
   , readCountThisWeek: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
+  , distributionChannels: { latestTldrs: { type: Boolean, default: true }
+                          , latestTldrsRSSFeed: { type: Boolean, default: false }
+                          }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
