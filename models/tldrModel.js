@@ -211,6 +211,23 @@ TldrSchema.statics.makeUndiscoverable = function (id, cb) {
 };
 
 
+
+
+TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
+  var callback = cb || function () {}
+    , query = {};
+
+  channels = channels || {};
+  _.keys(channels).forEach(function (channel) {
+    query['distributionChannels.' + channel] = channels[channel];
+  });
+
+  this.update({ _id: id }, { $set: query }, { multi: false }, callback);
+};
+
+
+
+
 /**
  * Mark a tldr as moderated, meaning it's an accurate summary of the resource
  * @param {String} id id of the tldr to moderate

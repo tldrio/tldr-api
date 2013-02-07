@@ -488,21 +488,6 @@ describe('Tldr', function () {
       });
     });
 
-    it('Should set discoverable to true automatically', function (done) {
-      var tldrData = {
-        title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
-        resourceAuthor: 'NFA Crew',
-        url: 'http://needforair.com',
-      };
-
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        tldr.discoverable.should.equal(true);
-        done();
-      });
-    });
-
     it('Should not crash because no title was provided', function (done) {
       var tldrData1 = {
             summaryBullets: ['Awesome Blog'],
@@ -690,9 +675,15 @@ describe('Tldr', function () {
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
-  describe('discoverable and moderated', function () {
+  describe.only('Moderation', function () {
 
-    it('Should make a tldr undiscoverable', function (done) {
+    function checkDefaultModerationStatus (tldr) {
+      tldr.distributionChannels.latestTldrs.should.equal(true);
+      tldr.distributionChannels.latestTldrsRSSFeed.should.equal(false);
+      tldr.moderated.should.equal(false);
+    }
+
+    it('Tldr must have correct moderation default upon creation', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
@@ -701,16 +692,30 @@ describe('Tldr', function () {
       };
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        tldr.discoverable.should.equal(true);
+        checkDefaultModerationStatus(tldr);
+        done();
+      });
+    });
 
-        Tldr.makeUndiscoverable(tldr._id, function (err, numAffected) {
-          numAffected.should.equal(1);
+    it('Null, undefined or empty object shouldnt change distrib channels', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
 
-          Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
-            theTldr.discoverable.should.equal(false);
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        checkDefaultModerationStatus(tldr);
 
-            done();
+        Tldr.updateDistributionChannels(tldr._id, null, function () {
+          Tldr.findOneById(tldr._id, function (err, tldr) {
+            Tldr.updateDistributionChannels(tldr._id, {}, function () {
+              Tldr.findOneById(tldr._id, function (err, tldr) {
+                checkDefaultModerationStatus(tldr);   // No change
+                done();
+              });
+            });
           });
         });
       });
@@ -740,7 +745,7 @@ describe('Tldr', function () {
       });
     });
 
-  });   // ==== End of 'discoverable and moderated' ==== //
+  });   // ==== End of 'Moderation' ==== //
 
 
   describe('#updateValidFields', function () {
