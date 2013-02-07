@@ -176,9 +176,9 @@ app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); 
 app.get('/login', routes.website_login);
 
 // 3rd party auth with Google
-app.get('/auth/google', passport.authenticate('google'));
+app.get('/third-party-auth/google', passport.authenticate('google'));
 
-app.get('/auth/google/return',
+app.get('/third-party-auth/google/return',
   passport.authenticate('google', { successRedirect: '/latest-summaries',
                                     failureRedirect: '/login' }));
 
