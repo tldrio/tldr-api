@@ -105,7 +105,7 @@ app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 
 // User login/logout
-app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
+app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
 app.get('/users/logout', routes.logout);
 
 // Tldrs
@@ -179,8 +179,18 @@ app.get('/login', routes.website_login);
 app.get('/third-party-auth/google', passport.authenticate('google'));
 
 app.get('/third-party-auth/google/return',
-  passport.authenticate('google', { successRedirect: '/latest-summaries',
-                                    failureRedirect: '/login' }));
+  function (req, res, next) {
+    passport.authenticate('google', function (err, user, info) {
+      if (err) { return next(err); }
+
+      if (!user) { return res.redirect(302, '/login'); }
+
+      req.logIn(user, function (err) {
+        if (err) { return next(err); }
+        res.redirect(302, info.userWasJustCreated ? '/chrome-extension' : '/latest-summaries');
+      });
+    })(req, res, next);
+  });
 
 // Email confirmation, password recovery
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
