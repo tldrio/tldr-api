@@ -12,6 +12,7 @@ var mongoose = require('mongoose')
   , mailchimpSync = require('../lib/mailchimpSync')
   , UserSchema, User
   , UserHistory = require('./userHistoryModel')
+  , Credentials = require('./credentialsModel')
   , bcrypt = require('bcrypt')
   , crypto = require('crypto')
   , config = require('../lib/config')
@@ -19,9 +20,11 @@ var mongoose = require('mongoose')
   , Tldr = require('./tldrModel')
   , check = require('validator').check
   , userSetableFields = ['email', 'username', 'password', 'twitterHandle']      // Setable fields by user at creation
-  , userUpdatableFields = ['username', 'email', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
+  , userUpdatableFields = ['username', 'notificationsSettings', 'bio', 'twitterHandle']                // Updatabe fields by user (password not included here as it is a special case)
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
-  , reservedUsernames;
+  , reservedUsernames
+  , async = require('async')
+  ;
 
 
 // All reserved usernames. For now these are all the one-step
@@ -91,17 +94,6 @@ function usernameNotReserved (value) {
 }
 
 
-// password should be non empty and longer than 6 characters
-function validatePassword (value) {
-  try {
-    check(value).len(6);
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
-
-
 // bio should be less than 500 characters
 function validateBio (value) {
   if (! value || value.length <= 500) {
@@ -134,264 +126,6 @@ function setTwitterHandle (value) {
 }
 
 
-
-/**
- * Statics and Methods
- *
- */
-
-function createConfirmToken (callback) {
-  var newToken = customUtils.uid(13);
-
-  User.findOne({ email: this.email }, function (err, doc) {
-
-    doc.confirmEmailToken = newToken;
-    doc.save(callback);
-  });
-}
-
-
-/*
- * Prepare to reset password by creating a reset password token and sending it to the user
- */
-function createResetPasswordToken (callback) {
-  var expiration = new Date();
-
-  expiration.setTime(expiration.getTime() + 3600000);   // Token will expire in an hour
-
-  this.resetPasswordToken = customUtils.uid(13);
-  this.resetPasswordTokenExpiration = expiration;
-  this.save(callback);
-}
-
-
-/*
- * Reset password if token is corrected and not expired
- */
-function resetPassword (token, newPassword, callback) {
-  var self = this;
-
-  if ( token === this.resetPasswordToken && this.resetPasswordTokenExpiration - Date.now() >= 0 ) {
-    if (validatePassword(newPassword)) {
-      // Token and password are valid
-      bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-        bcrypt.hash(newPassword, salt, function (err, hash) {
-          self.password = hash;
-          self.resetPasswordToken = null;   // Token cannot be used twice
-          self.resetPasswordTokenExpiration = null;
-          self.save(callback);
-        });
-      });
-    } else {
-      this.password = newPassword;   // Will fail validation
-      this.save(callback);
-    }
-  } else {
-    callback( {tokenInvalidOrExpired: true} );   // No need to give too much information to a potential attacker
-  }
-}
-
-
-/*
- * Return the part of a user's data that we may need to use in a client
- */
-function getAuthorizedFields() {
-  // this is the selected User, so this._doc contains the actual data
-  var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
-    , res = {}, self = this;
-
-    usableKeys.push('isAdmin');   // isAdmin was not included since it's a virtual
-
-  _.each( usableKeys, function (key) {
-    res[key] = self[key];
-  });
-
-  return res;
-}
-
-
-/**
- * Get all tldrs created by the user
- * @param {Function} callback Signature: err, [tldrs]
- */
-function getCreatedTldrs (callback) {
-  Tldr.find({'creator': this._id})
-    .sort('url')
-    .populate('creator', 'username')
-    .exec(function(err, tldrs) {
-      if (err) { return callback(err); }
-      callback(null, tldrs);
-    });
-}
-
-
-/*
- * Update lastActive field
- */
-function updateLastActive (callback) {
-  this.lastActive = new Date ();
-  this.save(function () {
-    callback();
-  });
-}
-
-
-/*
- * Update a user profile (only updates the user updatable fields, and not the password)
- */
-function updateValidFields (data, callback) {
-  var self = this
-    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
-
-  // user wants to change it's email so we update the confirm status
-  // and generate new validation code
-  if (self.email !== data.email) {
-    self.confirmEmailToken = customUtils.uid(13);
-    self.confirmedEmail = false;
-  }
-
-  // Manually set usernameLowerCased in case of updates
-  if (self.username !== data.username) {
-    self.usernameLowerCased = data.username.toLowerCase();
-  }
-
-  // Update profile info on Mailchimp
-  mailchimpSync.syncSettings(self, data);
-
-  _.each(validUpdateFields, function(field) {
-    self[field] = data[field];
-  });
-  self.updatedAt = new Date();
-
-  self.save(callback);
-}
-
-
-/**
- * given email, compute md5 hash and assemble gravatar url
- *
- */
-function getGravatarUrlFromEmail (email) {
-  var hash = email ? email.trim().toLowerCase() : ''
-    , md5 = crypto.createHash('md5');
-
-  md5.update(hash, 'utf8');
-
-  // If user has no avatar linked to this email, the cartoonish mystery-man will be used
-  return 'https://secure.gravatar.com/avatar/' + md5.digest('hex') + '?d=wavatar';
-}
-
-/*
- * Create a User instance and save it to the database
- * All defaults are located here instead of in the schema or in setters
- * Part of the password's validation has to occur here as Mongoose's setters are called before the
- * validator, so using the standard way any password would be considered valid
- */
-function createAndSaveInstance(userInput, callback) {
-  var validFields = _.pick(userInput, userSetableFields)
-    , instance
-    , history = new UserHistory();
-
-  // Password is salted and hashed ONLY IF it is valid. If it is not, then it is left intact, and so will fail validation
-  // when Mongoose tries to save it. This way we get a nice and comprehensive errors object.
-  // bcrypt is (intentionally) a CPU-heavy function. The load is greatly reduced when used in an async way
-  // The bcryptRounds parameter to genSalt determines the strength (i.e. the computation time) of bcrypt. 10 is already very secure.
-  if (validatePassword(validFields.password)) {
-    bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-      bcrypt.hash(validFields.password, salt, function (err, hash) {
-        // First, create the UserHistory for this user by saving his first action (the creation of his account)
-        history.saveAction("accountCreation", "Account was created", function(err, _history) {
-          validFields.password = hash;
-          validFields.confirmedEmail = false;
-          validFields.confirmEmailToken = customUtils.uid(13);
-          validFields.usernameLowerCased = validFields.username.toLowerCase();
-          instance = new User(validFields);
-
-          instance.history = _history._id;
-          instance.gravatar = { email: instance.email
-                              , url: getGravatarUrlFromEmail(instance.email) };
-          instance.save(callback);
-        });
-      });
-    });
-  } else {
-    // Set required path with valid data
-    // So the only validation error that will be
-    // triggered is the one for the password
-    validFields.username = 'nfadeploy';
-    validFields.usernameLowerCased = 'nfadeploy';
-    instance = new User(validFields);
-    instance.save(callback);
-  }
-}
-
-
-/**
- * Update a user password
- * @param {String} currentPassword supplied by user for checking purposes
- * @param {String} newPassword chosen by user
- */
-function updatePassword (currentPassword, newPassword, callback) {
-  var self = this
-    , errors = {};
-
-  if (! currentPassword || ! newPassword) { throw { message: i18n.missingArgUpdatePwd}; }
-
-  if (! validatePassword(newPassword)) { errors.newPassword = i18n.validateUserPwd; }
-
-  bcrypt.compare(currentPassword, self.password, function(err, valid) {
-    if (err) {throw err;}
-
-    if (valid) {
-      if ( ! errors.newPassword) {
-        // currentPassword is correct and newPassword is valid: we can change
-        bcrypt.genSalt(config.bcryptRounds, function(err, salt) {
-          bcrypt.hash(newPassword, salt, function (err, hash) {
-            self.password = hash;
-            self.updatedAt = new Date();
-            self.save(callback);
-          });
-        });
-        return;  // Stop executing here to avoid calling the callback twice
-      }
-    } else {
-      errors.oldPassword = i18n.oldPwdMismatch;
-    }
-
-    callback(errors);
-  });
-}
-
-
-/**
- * Wrapper around UserHistory.saveAction to be used in tldr creation and update
- * @param {String} type Type of action, see UserHistory.saveAction
- * @param {String} data Action data, see UserHistory.saveAction
- * @param {Function} cb Optional callback (signature: err, history)
- */
-function saveAction (type, data, cb) {
-  UserHistory.findOne({ _id: this.history }, function (err, history) {
-    history.saveAction(type, data, cb);
-  });
-}
-
-
-
-/**
- * Sets the URL to this user's gravatar
- * @param {String} gravatarEmail Email to be linked to the Gravatar account
- * @param {Function} callback To be called after having set the Gravatar url
- * @return {void}
- */
-function updateGravatarEmail(gravatarEmail, callback) {
-  this.gravatar = {};
-  this.gravatar.email = gravatarEmail ? gravatarEmail : '';
-  this.gravatar.url = getGravatarUrlFromEmail(gravatarEmail);
-  this.save(callback);
-}
-
-
-
 /**
  * Schema
  *
@@ -406,7 +140,6 @@ UserSchema = new Schema(
                , default: Date.now
                }
   , email: { type: String   // Should be the user's email. Not defined as a Mongoose type email to be able to use the same regex on client side easily
-           , unique: true
            , required: true
            , validate: [validateEmail, i18n.validateUserEmail]
            , set: customUtils.sanitizeAndNormalizeEmail
@@ -421,28 +154,22 @@ UserSchema = new Schema(
                            , serviceUpdates: { type: Boolean, default: true}
                            }
   , notifications: [{ type: ObjectId, ref: 'notification' }]
-  // The actual password is not stored, only a hash. Still, a Mongoose validator will be used, see createAndSaveInstance
-  // No need to store the salt, bcrypt already stores it in the hash
-  , password: { type: String
-              , required: true
-              , validate: [validatePassword, i18n.validateUserPwd]
-              }
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
   , username: { type: String
               , required: true
               // Validation is done below because we need two different validators
               , set: customUtils.sanitizeInput
               }
-  , updatedAt: { type: Date
-               , default: Date.now
-               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
                         , set: customUtils.sanitizeInput
                         }
-  , resetPasswordToken: { type: String }
-  , resetPasswordTokenExpiration: { type: Date }
+  , firstName: { type: String }
+  , lastName: { type: String }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
   , gravatar: { email: { type: String
                        , set: customUtils.sanitizeAndNormalizeEmail }
@@ -454,6 +181,7 @@ UserSchema = new Schema(
   , twitterHandle: { type: String
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
                    , set: setTwitterHandle }
+  , credentials: [{ type: ObjectId, ref: 'credentials' }]
   }
 , { strict: true });
 
@@ -475,35 +203,342 @@ UserSchema.set('toJSON', {
    virtuals: true
 });
 
-
 // Validate username
 UserSchema.path('username').validate(validateUsername, i18n.validateUserName);
 UserSchema.path('username').validate(usernameNotReserved, i18n.validateUserNameNotReserved);
 
 
+
 /**
- * Bind methods, statics, middleware
+ * Statics and Methods
  *
  */
 
-UserSchema.methods.createConfirmToken = createConfirmToken;
-UserSchema.methods.createResetPasswordToken = createResetPasswordToken;
-UserSchema.methods.getCreatedTldrs = getCreatedTldrs;
-UserSchema.methods.getAuthorizedFields = getAuthorizedFields;
-UserSchema.methods.resetPassword = resetPassword;
-UserSchema.methods.saveAction = saveAction;
-UserSchema.methods.updateValidFields = updateValidFields;
-UserSchema.methods.updateGravatarEmail = updateGravatarEmail;
-UserSchema.methods.updateLastActive = updateLastActive;
-UserSchema.methods.updatePassword = updatePassword;
+UserSchema.methods.createConfirmToken = function (callback) {
+  var newToken = customUtils.uid(13);
 
-UserSchema.statics.createAndSaveInstance = createAndSaveInstance;
+  User.findOne({ email: this.email }, function (err, doc) {
+
+    doc.confirmEmailToken = newToken;
+    doc.save(callback);
+  });
+};
+
+
+/*
+ * Prepare to reset password by creating a reset password token and sending it to the user
+ */
+UserSchema.methods.createResetPasswordToken = function (callback) {
+  this.getBasicCredentials(function (err, bc) {
+    if (err) { return callback(err); }
+    if (! bc) { return callback({ noBasicCredentials: true }); }
+
+    bc.createResetPasswordToken(callback);
+  });
+};
+
+
+/*
+ * Reset password if token is corrected and not expired
+ */
+UserSchema.methods.resetPassword = function (token, newPassword, callback) {
+  this.getBasicCredentials(function (err, bc) {
+    if (err) { return callback(err); }
+    if (! bc) { return callback({ noBasicCredentials: true }); }
+
+    bc.resetPassword(token, newPassword, callback);
+  });
+};
+
+
+/*
+ * Return the part of a user's data that we may need to use in a client
+ */
+UserSchema.methods.getAuthorizedFields = function () {
+  // this is the selected User, so this._doc contains the actual data
+  var usableKeys = _.intersection(_.keys(this._doc), authorizedFields)
+    , res = {}, self = this;
+
+    usableKeys.push('isAdmin');   // isAdmin was not included since it's a virtual
+
+  _.each( usableKeys, function (key) {
+    res[key] = self[key];
+  });
+
+  return res;
+};
+
+
+/**
+ * Get all tldrs created by the user
+ * @param {Function} callback Signature: err, [tldrs]
+ */
+UserSchema.methods.getCreatedTldrs = function (callback) {
+  Tldr.find({'creator': this._id})
+    .sort('url')
+    .populate('creator', 'username')
+    .exec(function(err, tldrs) {
+      if (err) { return callback(err); }
+      callback(null, tldrs);
+    });
+};
+
+
+/*
+ * Update lastActive field
+ */
+UserSchema.methods.updateLastActive = function (callback) {
+  this.lastActive = new Date ();
+  this.save(function () {
+    callback();
+  });
+};
+
+
+/**
+ * Update a profile's email.
+ * Do it only if email is not already taken by a basic cred
+ * And update the corresponding basic cred if user has one
+ * Callback signature: err, user
+ */
+UserSchema.methods.updateEmail = function (newEmail, callback) {
+  var self = this;
+
+  Credentials.findOne({ login: newEmail }, function (err, bc) {
+    if (err) { return callback(err); }
+    if (bc) { return callback({ code: 11001, err: '.$email_' }); }   // Mimicking Mongo's useless messages
+
+    self.email = newEmail;
+    self.confirmEmailToken = customUtils.uid(13);
+    self.confirmedEmail = false;
+    self.save(function (err, user) {
+      if (err) { return callback(err); }
+
+      user.getBasicCredentials(function (err, bc) {
+        if (err) { return callback(err); }
+
+        if (!bc) { return callback(null, user); }
+
+        bc.login = newEmail;
+        bc.save(function (err) {
+          if (err) { return callback(err); }
+          return callback(null, user);
+        });
+      });
+    });
+  });
+};
+
+
+/*
+ * Update a user profile
+ * The profile doesn't include the password (if user has basic creds) or email address
+ * Callback signature: err, user
+ */
+UserSchema.methods.updateValidFields = function (data, callback) {
+  var self = this
+    , validUpdateFields = _.intersection(_.keys(data), userUpdatableFields);
+
+  // Manually set usernameLowerCased in case of updates
+  if (self.username !== data.username) {
+    self.usernameLowerCased = data.username.toLowerCase();
+  }
+
+  // Update profile info on Mailchimp
+  mailchimpSync.syncSettings(self, data);
+
+  _.each(validUpdateFields, function(field) { self[field] = data[field]; });
+  self.updatedAt = new Date();
+
+  self.save(callback);
+};
+
+
+/*
+ * Prepare a bare profile
+ */
+function prepareBareProfile (userInput) {
+  var validFields = _.pick(userInput, userSetableFields)
+    , instance;
+
+  // Prepare the profile
+  validFields.confirmedEmail = false;
+  validFields.confirmEmailToken = customUtils.uid(13);
+  validFields.usernameLowerCased = validFields.username.toLowerCase();
+  instance = new User(validFields);
+  instance.history = '111111111111111111111111';   // Dummy
+  instance.gravatar = { email: instance.email
+                      , url: customUtils.getGravatarUrlFromEmail(instance.email) };
+
+  return instance;
+}
+
+
+/*
+ * Create and save a bare profile, with no credentials attached
+ */
+UserSchema.statics.createAndSaveBareProfile = function (userInput, callback) {
+  var instance = prepareBareProfile(userInput)
+    , history = new UserHistory();
+
+  instance.validate(function (err) {
+    if (err) { return callback(err); }
+
+    history.saveAction("accountCreation", "Account was created", function(err, _history) {
+      instance.history = _history._id;
+      instance.save(callback);
+    });
+  });
+};
+
+
+/*
+ * Create a User instance and save it to the database
+ * Create his basic credentials at the same time and attach them to him
+ */
+UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
+  var instance = prepareBareProfile(userInput)
+    , bcData = { login: instance.email, password: userInput.password }
+    ;
+
+  Credentials.prepareBasicCredentialsForCreation(bcData).validate(function (bcerr) {
+    instance.validate(function (uerr) {
+      var errors = customUtils.mergeErrors(bcerr, uerr);
+      if (errors) { return callback(errors); }
+
+      Credentials.createBasicCredentials(bcData, function (err, bc) {
+        if (err) { return callback(err); }
+
+        User.createAndSaveBareProfile(userInput, function (err, user) {
+          if (err) { return callback(err); }
+
+          user.attachCredentialsToProfile(bc, callback);   // Saving of User Profile happens here
+        });
+      });
+    });
+  });
+};
+
+
+/**
+ * Attach credentials to this user profile
+ * @param {Credentials} creds
+ * @param {Function} cb Optional callback, signature: err, user
+ */
+UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
+  var callback = cb || function () {}
+    , self = this;
+
+  creds.owner = self._id;
+  creds.save(function (err) {
+    if (err) { return callback(err); }   // Shouldn't happen
+    self.credentials.push(creds._id);
+    self.save(callback);
+  });
+};
+
+
+/**
+ * Get a user's basic or google credentials, if he has any
+ *
+ */
+UserSchema.methods.getCredentialsInternal = function (type, callback) {
+  Credentials.find({ _id: { $in: this.credentials } }, function (err, credsSet) {
+    var found = false;
+    if (err) { return callback(err); }
+
+    credsSet.forEach(function (creds) {
+      if (creds.type === type && ! found) {   // Only one basic credentials possible
+        found = true;
+        return callback(null, creds);
+      }
+    });
+
+    if (!found) { return callback(null, null); }   // No basic credentials attached
+  });
+};
+
+UserSchema.methods.getBasicCredentials = function (callback) {
+  this.getCredentialsInternal('basic', callback);
+};
+
+UserSchema.methods.getGoogleCredentials = function (callback) {
+  this.getCredentialsInternal('google', callback);
+};
+
+
+/**
+ * Update a user password, if the user has any basic credentials attached
+ * @param {String} currentPassword supplied by user for checking purposes
+ * @param {String} newPassword chosen by user
+ */
+UserSchema.methods.updatePassword = function (currentPassword, newPassword, callback) {
+  var self = this
+    , errors = {};
+
+  self.getBasicCredentials(function (err, creds) {
+    if (creds) { creds.updatePassword(currentPassword, newPassword, callback); }
+  });
+};
+
+
+/**
+ * Wrapper around UserHistory.saveAction to be used in tldr creation and update
+ * @param {String} type Type of action, see UserHistory.saveAction
+ * @param {String} data Action data, see UserHistory.saveAction
+ * @param {Function} cb Optional callback (signature: err, history)
+ */
+UserSchema.methods.saveAction = function (type, data, cb) {
+  UserHistory.findOne({ _id: this.history }, function (err, history) {
+    history.saveAction(type, data, cb);
+  });
+};
+
+
+
+/**
+ * Sets the URL to this user's gravatar
+ * @param {String} gravatarEmail Email to be linked to the Gravatar account
+ * @param {Function} callback To be called after having set the Gravatar url
+ * @return {void}
+ */
+UserSchema.methods.updateGravatarEmail = function (gravatarEmail, callback) {
+  this.gravatar = {};
+  this.gravatar.email = gravatarEmail ? gravatarEmail : '';
+  this.gravatar.url = customUtils.getGravatarUrlFromEmail(gravatarEmail);
+  this.save(callback);
+};
+
+
+/**
+ * Given a string, create an available username
+ */
+UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback) {
+  tentativeUsername = tentativeUsername || 'NewUser';
+  tentativeUsername = tentativeUsername.replace(/[^A-Za-z0-9]/g, '');
+  if (tentativeUsername.length > 13) { tentativeUsername = tentativeUsername.substring(0, 13); }
+  if (tentativeUsername.length < 3) { tentativeUsername = 'NewUser'; }
+
+  // Wtf ?? find then .length is actually faster than count ...
+  User.find({ usernameLowerCased: new RegExp('^' + tentativeUsername.toLowerCase() + '[0-9]*$') })
+      .exec(function (err, users) {
+    if (err) { return callback(err); }
+    var suffix = users.length === 0 ? '' : users.length;
+    return callback(null, tentativeUsername + suffix);
+  });
+};
+
+
+
+
+/**
+ * Bind validators to schema
+ */
 UserSchema.statics.validateEmail = validateEmail;
 UserSchema.statics.validateUsername = validateUsername;
-UserSchema.statics.validatePassword = validatePassword;
 
 
-// Define user model
+// Define User model
 User = mongoose.model('user', UserSchema);
 
 // Export User

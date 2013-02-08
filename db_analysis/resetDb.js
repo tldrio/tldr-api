@@ -6,6 +6,7 @@
 
 var async = require('async')
   , APIClient = require('../models/apiClientModel')
+  , User = require('../models/userModel')
   , mongoose = require('mongoose')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
@@ -41,6 +42,21 @@ async.waterfall([
     APIClient.createAndSaveInstance(bmLocal, function (err, apic) {
       APIClient.createAndSaveInstance(crxLocal, function (err, apic) {
         cb();
+      });
+    });
+  }
+, function (cb) {
+    var louis = { username: 'Louis', email: 'louis.chatriot@gmail.com', password: 'internet' }
+      , stan = { username: 'Stan', email: 'stanislas.marion@gmail.com', password: 'internet' }
+      , charles = { username: 'Charles', email: 'charles.miglietti@gmail.com', password: 'internet' }
+      ;
+
+    console.log("Recreating three fake accounts");
+    User.createAndSaveInstance(louis, function () {
+      User.createAndSaveInstance(stan, function () {
+        User.createAndSaveInstance(charles, function () {
+          cb();
+        });
       });
     });
   }

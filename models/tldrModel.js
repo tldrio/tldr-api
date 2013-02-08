@@ -127,8 +127,11 @@ TldrSchema = new Schema(
   , readCountThisWeek: { type: Number, default: 1 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , discoverable: { type: Boolean , default: true }  // Can it be stumbled upon (e.g. on the tldr page, in the RSS feed etc.)
+  , distributionChannels: { latestTldrs: { type: Boolean, default: true }
+                          , latestTldrsRSSFeed: { type: Boolean, default: false }
+                          }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
+  , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
 
@@ -198,16 +201,25 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
 };
 
 
-/**
- * Make the tldr undiscoverable
- * @param {String} id id of the tldr to make undiscoverable
- * @param {Function} cb Optional callback, signature is err, numAffected
- */
-TldrSchema.statics.makeUndiscoverable = function (id, cb) {
-  var callback = cb || function () {};
-  this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
+TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
+  var callback = cb || function () {}
+    , query = {};
+
+  channels = channels || {};
+  _.keys(channels).forEach(function (channel) {
+    query['distributionChannels.' + channel] = (channels[channel].toString() === 'true') ? true : false;
+  });
+
+  this.update({ _id: id }, { $set: query }, { multi: false }, callback);
 };
 
+
+/**
+ * Prevent a tldr from being distributed on any channel (but don't mark it as moderated)
+ */
+TldrSchema.statics.cockblockTldr = function (id, cb) {
+  this.updateDistributionChannels(id, { latestTldrs: false, latestTldrsRSSFeed: false }, cb);
+};
 
 /**
  * Mark a tldr as moderated, meaning it's an accurate summary of the resource

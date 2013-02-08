@@ -30,7 +30,7 @@ function sendResetPasswordEmail (req, res, next) {
                          , values: {}
                          });
       } else {
-        user.createResetPasswordToken(function(err) {
+        user.createResetPasswordToken(function(err, bc) {
           if (! err) {
             // Send the same message, whether a user was found or not
             // Don't wait for email to be sent successfully to send the response to the client
@@ -39,14 +39,13 @@ function sendResetPasswordEmail (req, res, next) {
             // Send reset password email
             mailer.sendEmail({ type: 'resetPassword'
                              , to: user.email
-                             , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(user.resetPasswordToken) }
+                             , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(bc.resetPasswordToken) }
                              });
           }
         });
       }
     });
   }
-
 }
 
 

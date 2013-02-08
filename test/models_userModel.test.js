@@ -13,6 +13,7 @@ var should = require('chai').should()
   , mongoose = require('mongoose') // ODM for Mongo
   , ObjectId = mongoose.Schema.ObjectId
   , models = require('../lib/models')
+  , Credentials = models.Credentials
   , User = models.User
   , UserHistory = models.UserHistory
   , notificator = require('../lib/notificator')
@@ -59,7 +60,8 @@ describe('User', function () {
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
 
     async.waterfall([
-      async.apply(theRemove, User)
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
     , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
     , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
@@ -87,24 +89,6 @@ describe('User', function () {
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         _.keys(err.errors).length.should.equal(1);
         valErr.email.should.equal('required');
-        done();
-      });
-    });
-
-    it('should not save a user that has no password', function (done) {
-      var user = new User({ email: 'email@email.com'
-                           , username: 'NFADeploy'
-                           , usernameLowerCased: 'nfadeploy'
-                           , history: '111111111111111111111111'   // Dummy history since it is required
-                           })
-        , valErr;
-
-      user.save(function(err) {
-        err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(1);
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal('required');
         done();
       });
     });
@@ -233,33 +217,10 @@ describe('User', function () {
       });
     });
 
-    it('should not validate a user whose password is too short', function (done) {
-      var user = new User({ email: 'email@email.com'
-                               , password: 'secre'
-                               , username: 'NFADeploy'
-                               , usernameLowerCased: 'nfadeploy'
-                               , history: '111111111111111111111111'   // Dummy history since it is required
-                               })
-        , valErr;
-
-      //Unit test the rule
-      assert.isFalse(User.validatePassword('secre'));
-
-      // Check integration into Mongoose
-      user.save(function(err) {
-        err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(1);
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.password.should.equal(i18n.validateUserPwd);
-        done();
-      });
-    });
   });   // ==== End of '#validators' ==== //
 
 
-
-  describe('#createAndSaveInstance', function () {
+  describe('#createAndSaveInstance and #createAndSaveBareProfile', function () {
 
     it('should not be able to save a user whose password is not valid', function (done) {
       var userData = { username: 'NFADeploy'
@@ -270,11 +231,9 @@ describe('User', function () {
 
       User.createAndSaveInstance(userData, function(err) {
         err.name.should.equal('ValidationError');
-
-        _.keys(err.errors).length.should.equal(2);
+        _.keys(err.errors).length.should.equal(1);
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.password.should.equal(i18n.validateUserPwd);
-        assert.isDefined(valErr.history);   // History set only if password is valid
         done();
       });
     });
@@ -300,7 +259,7 @@ describe('User', function () {
       });
     });
 
-    it('should save a user whose password is valid and set default validationStatus', function (done) {
+    it('should save a user whose password is valid and set default fields', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -314,12 +273,6 @@ describe('User', function () {
 
         User.find({email: 'valid@email.com'}, function(err, docs) {
           docs.should.have.length(1);
-
-          // compareSync used here since these are tests. Do not use in production
-          bcrypt.compareSync('notTOshort', docs[0].password).should.equal(false);
-          bcrypt.compareSync('notTOOshort', docs[0].password).should.equal(true);
-          bcrypt.compareSync('notTOOOshort', docs[0].password).should.equal(false);
-
           docs[0].username.should.equal("NFADeploy");
 
           done();
@@ -435,7 +388,117 @@ describe('User', function () {
       });
     });
 
-  });   // ==== End of '#createAndSaveInstance' ==== //
+    it('the basic credentials created with the user profile should be attached to it', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        Credentials.findOne({ login: user.email }, function(err, bc) {
+          bc.owner.toString().should.equal(user._id.toString());
+          user.credentials.length.should.equal(1);
+          user.credentials[0].toString().should.equal(bc._id.toString());
+          done();
+        });
+      });
+    });
+
+    it('should save a bare profile and set default fields', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.confirmedEmail.should.be.false;
+        assert.isUndefined(user.bio);
+        user.credentials.length.should.equal(0);
+
+        done();
+      });
+    });
+
+
+  });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
+
+
+  describe('Get specific credentials', function () {
+
+    it('Returns with no error even if no basic creds were found', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(0);
+        user.getBasicCredentials(function(err, bc) {
+          assert.isNull(err);
+          assert.isNull(bc);
+
+          done();
+        });
+      });
+    });
+
+    it('Get the correct basic creds if user has both types of creds', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(2);
+            user.getBasicCredentials(function (err, bc) {
+              assert.isNull(err);
+              bc.type.should.equal('basic');
+              bc.login.should.equal('valid@email.com');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+  });
+
+
+  describe('#attachCredentialsToProfile', function () {
+
+    it('Should work as expected, no error possible', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#attachCredentialsToProfile' ==== //
 
 
   describe('#getCreatedTldrs', function() {
@@ -508,32 +571,13 @@ describe('User', function () {
             assert.isDefined(err.newPassword);
 
             user.updatePassword('badpw', 'badpw', function(err) {
-              assert.isDefined(err.oldPassword);
+              assert.isUndefined(err.oldPassword);
               assert.isDefined(err.newPassword);
 
               done();
             });
           });
         });
-      });
-    });
-
-    it('should throw if one or both parameters are missing', function (done) {
-      var userData = { username: 'NFADeploy'
-                     , password: 'notTOOshort'
-                     , email: 'valid@email.com'
-                     };
-
-      User.createAndSaveInstance(userData, function(err, user) {
-        assert.isNull(err);
-
-        function testFunc1 () {user.updatePassword(null, 'aaaaaa');}
-        function testFunc2 () {user.updatePassword('aaaaaa');}
-        function testFunc3 () {user.updatePassword();}
-        testFunc1.should.throw();
-        testFunc2.should.throw();
-        testFunc3.should.throw();
-        done();
       });
     });
 
@@ -548,8 +592,6 @@ describe('User', function () {
 
         user.updatePassword('notTOOshort', 'goodpassword', function(err) {
           assert.isNull(err);
-          bcrypt.compareSync('goodpassword', user.password).should.equal(true);
-          bcrypt.compareSync('notTOOshort', user.password).should.equal(false);
 
           done();
         });
@@ -631,6 +673,7 @@ describe('User', function () {
   });   // ==== End of '#getGravatarUrl' ==== //
 
   describe('should update the user updatable fields', function() {
+
     it('should update the fields if they pass validation', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
@@ -650,22 +693,20 @@ describe('User', function () {
         user.username.should.equal("NFADeploy");
         user.email.should.equal("valid@email.com");
         user.notificationsSettings.read.should.be.true;
-        bcrypt.compareSync('notTOOshort', user.password).should.equal(true);
 
         user.updateValidFields(newData, function(err, user2) {
           user2.username.should.equal("NFAMasterDeploy");
-          user2.email.should.equal("another@valid.com");
+          user2.email.should.equal("valid@email.com");
           user2.notificationsSettings.read.should.be.false;
           user2.bio.should.equal("Another bio !!");
           user2.twitterHandle.should.equal('tldrio');
-          bcrypt.compareSync('notTOOshort', user2.password).should.equal(true);
 
           done();
         });
       });
     });
 
-    it('should all @ from a twitter handle if there are some', function (done) {
+    it('should remove all @ from a twitter handle if there are some', function (done) {
       var userData = { username: 'NFADeploy'
                      , password: 'notTOOshort'
                      , email: 'valid@email.com'
@@ -702,7 +743,7 @@ describe('User', function () {
                      }
         , newData = { username: 'edhdhdshdshsdhsdhdshdfshfsdhfshfshfshfsdhsfdhfshsfdhshsfhsfdhshhfsdhfsdh'
           , password: 'anothergood'
-          , email: 'anothervalid'
+          , email: 'anothervalid useless since email is updated with another function'
           , bio: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
           , twitterHandle: 'nopenope'
           };
@@ -716,8 +757,8 @@ describe('User', function () {
 
         user.updateValidFields(newData, function(err, user3) {
           assert.isDefined(err.errors.username);
-          assert.isDefined(err.errors.email);
           assert.isDefined(err.errors.bio);
+          _.keys(err.errors).length.should.equal(2);
 
           newData.twitterHandle = 'dlskgjlsdkfgjlwaaaaaaaytoolong';
           user.updateValidFields(newData, function (err, user4) {
@@ -757,12 +798,7 @@ describe('User', function () {
             newData.username = "ANOTher";
             user.updateValidFields(newData, function(err, user5) {
               err.code.should.equal(11001);   // Duplicate key while updating
-              newData.username = "UntakenUsersame";
-              newData.email = "again@email.com";
-              user.updateValidFields(newData, function(err, user5) {
-                err.code.should.equal(11001);   // Duplicate key while updating
-                done();
-              });
+              done();
             });
           });
         });
@@ -772,60 +808,173 @@ describe('User', function () {
   });   // ==== End of 'should update the user updatable fields' ==== //
 
 
-  describe('Reset password functions', function() {
-    it('Should create a reset password token that expires within one hour', function (done) {
-      var user = new User({ email: 'email@email.com'
-                               , password: 'supersecret!'
-                               , username: 'Stevie_sTarAc1'
-                               , usernameLowerCased: 'stevie_starac1'
-                               , history: '111111111111111111111111'   // Dummy history since it is required
-                               });
+  describe('Update email', function () {
 
-      user.save(function(err) {
+    it('Should be able to update the email of a bare profile', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
         assert.isNull(err);
-        assert.isUndefined(user.resetPasswordToken);
-        assert.isUndefined(user.resetPasswordTokenExpiration);
-
-        user.createResetPasswordToken(function(err) {
+        user.credentials.length.should.equal(0);
+        user.updateEmail('anothergood@great.com', function(err, user) {
           assert.isNull(err);
-
-          assert.isDefined(user.resetPasswordToken);
-          assert.isDefined(user.resetPasswordTokenExpiration);
-
-          // The token should expire within an hour, we test that with a tolerance of 5 seconds
-          assert.isTrue(user.resetPasswordTokenExpiration - new Date() >= 3595000);
-          assert.isTrue(user.resetPasswordTokenExpiration - new Date() <= 3600000);
+          user.email.should.equal('anothergood@great.com');
 
           done();
         });
       });
     });
 
-    it('Should create a different token every time', function (done) {
-      var user = new User({ email: 'email@email.com'
+    it('Shouldnt update email if there are validation errors', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(0);
+        user.updateEmail('anothergoodgreat.com', function(err, user) {
+          var valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          _.keys(valErr).length.should.equal(1);
+          assert.isDefined(valErr.email);
+
+          done();
+        });
+      });
+    });
+
+    it('Should be able to update a user who has basic credentials only and recreate the email confirmation token', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        user.confirmedEmail = true;   // Artificially confirm email
+        user.save(function (err, user) {
+          user.confirmedEmail.should.equal(true);
+          user.updateEmail('anothergood@great.com', function(err, user) {
+            assert.isNull(err);
+            user.confirmedEmail.should.equal(false);
+            assert.isDefined(user.confirmEmailToken);
+            user.email.should.equal('anothergood@great.com');
+
+            user.getBasicCredentials(function (err, bc) {
+              bc.login.should.equal('anothergood@great.com');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Cant update profiles email if the target email belongs to a basic credential for a different owner', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     }
+        , id;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        id = user._id;
+        user.credentials.length.should.equal(1);
+        user.updateEmail(user1.email, function(err, user) {   // user1 has basic creds
+          err.code.should.equal(11001);
+
+          User.findOne({ _id: id }, function (err, user) {
+            user.email.should.equal('valid@email.com');
+            user.getBasicCredentials(function (err, bc) {
+              bc.login.should.equal('valid@email.com');
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update email for a user with only a google credentials', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveBareProfile(userData, function(err, user) {
+        assert.isNull(err);
+
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(1);
+            user.updateEmail('anothergood@great.com', function(err, user) {
+              assert.isNull(err);
+              user.email.should.equal('anothergood@great.com');
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update email for a user with both basic and google creds', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , bio: 'already a bio'
+                     };
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+
+        Credentials.createGoogleCredentials({ openID: 'http://google.com/tldrio' }, function (err, gc) {
+          user.attachCredentialsToProfile(gc, function (err, user) {
+            user.credentials.length.should.equal(2);
+            user.updateEmail('anothergood@great.com', function(err, user) {
+              assert.isNull(err);
+              user.email.should.equal('anothergood@great.com');
+
+              user.getBasicCredentials(function (err, bc) {
+                bc.login.should.equal('anothergood@great.com');
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'Update email' ==== //
+
+
+  describe('Reset password functions', function() {
+    it('Should create a reset password token that expires within one hour', function (done) {
+      var userData = { email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
-                               , history: '111111111111111111111111'   // Dummy history since it is required
-                               })
-               , token;
+                               };
 
-      user.save(function(err) {
+      User.createAndSaveInstance(userData, function(err, user) {
         assert.isNull(err);
-        assert.isUndefined(user.resetPasswordToken);
-        assert.isUndefined(user.resetPasswordTokenExpiration);
 
         user.createResetPasswordToken(function(err) {
           assert.isNull(err);
+          user.getBasicCredentials(function (err, bc) {
+            assert.isDefined(bc.resetPasswordToken);
+            assert.isDefined(bc.resetPasswordTokenExpiration);
 
-          assert.isDefined(user.resetPasswordToken);
-          token = user.resetPasswordToken;
-
-          user.createResetPasswordToken(function(err) {
-            assert.isNull(err);
-
-            assert.isDefined(user.resetPasswordToken);
-            user.resetPasswordToken.should.not.equal(token);
+            // The token should expire within an hour, we test that with a tolerance of 5 seconds
+            assert.isTrue(bc.resetPasswordTokenExpiration - new Date() >= 3595000);
+            assert.isTrue(bc.resetPasswordTokenExpiration - new Date() <= 3600000);
 
             done();
           });
@@ -833,15 +982,49 @@ describe('User', function () {
       });
     });
 
-    it('Should not reset password if token is invalid', function (done) {
-      var user = new User({ email: 'email@email.com'
+    it('Should create a different token every time', function (done) {
+      var userData = { email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
                                , history: '111111111111111111111111'   // Dummy history since it is required
-                               });
+                               }
+               , token;
 
-      user.save(function(err) {
+      User.createAndSaveInstance(userData, function (err, user) {
+        assert.isNull(err);
+
+        user.createResetPasswordToken(function(err) {
+          assert.isNull(err);
+
+          user.getBasicCredentials(function (err, bc) {
+            assert.isDefined(bc.resetPasswordToken);
+            token = bc.resetPasswordToken;
+
+            user.createResetPasswordToken(function(err) {
+              assert.isNull(err);
+
+              user.getBasicCredentials(function (err, bc) {
+                assert.isDefined(bc.resetPasswordToken);
+                bc.resetPasswordToken.should.not.equal(token);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should not reset password if token is invalid', function (done) {
+      var userData = { email: 'email@email.com'
+                               , password: 'supersecret!'
+                               , username: 'Stevie_sTarAc1'
+                               , usernameLowerCased: 'stevie_starac1'
+                               , history: '111111111111111111111111'   // Dummy history since it is required
+                               };
+
+      User.createAndSaveInstance(userData, function (err, user) {
         assert.isNull(err);
 
         user.createResetPasswordToken(function(err) {
@@ -854,25 +1037,26 @@ describe('User', function () {
     });
 
     it('Should not reset password if token is expired', function (done) {
-      var user = new User({ email: 'email@email.com'
+      var userData = { email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
                                , history: '111111111111111111111111'   // Dummy history since it is required
-                               });
+                               };
 
-      user.save(function(err) {
+      User.createAndSaveInstance(userData, function (err, user) {
         assert.isNull(err);
 
         user.createResetPasswordToken(function(err) {
-          // Fast-forward time a bit ...
-          user.resetPasswordTokenExpiration.setTime(user.resetPasswordTokenExpiration.getTime() - 3605000);
-          user.save(function(err) {
-            assert.isNull(err);
+          user.getBasicCredentials(function (err, bc) {
+            bc.resetPasswordTokenExpiration.setTime(bc.resetPasswordTokenExpiration.getTime() - 3605000);
+            bc.save(function(err) {
+              assert.isNull(err);
 
-            user.resetPassword(user.resetPasswordToken, 'perfectlygoodpassword', function(err) {
-              err.tokenInvalidOrExpired.should.equal(true);
-              done();
+              user.resetPassword(user.resetPasswordToken, 'perfectlygoodpassword', function(err) {
+                err.tokenInvalidOrExpired.should.equal(true);
+                done();
+              });
             });
           });
         });
@@ -880,50 +1064,56 @@ describe('User', function () {
     });
 
     it('Should not reset password if new password is invalid', function (done) {
-      var user = new User({ email: 'email@email.com'
+      var userData = { email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
                                , history: '111111111111111111111111'   // Dummy history since it is required
-                               });
+                               };
 
-      user.save(function(err) {
+      User.createAndSaveInstance(userData, function (err, user) {
         assert.isNull(err);
 
         user.createResetPasswordToken(function(err) {
           assert.isNull(err);
 
-          user.resetPassword(user.resetPasswordToken, 'bad', function(err) {
-            assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).password);
-            done();
+          user.getBasicCredentials(function (err, bc) {
+            user.resetPassword(bc.resetPasswordToken, 'bad', function(err) {
+              assert.isDefined(models.getAllValidationErrorsWithExplanations(err.errors).password);
+              done();
+            });
           });
         });
       });
     });
 
     it('Should reset password if token and new password are valid', function (done) {
-      var user = new User({ email: 'email@email.com'
+      var userData = { email: 'email@email.com'
                                , password: 'supersecret!'
                                , username: 'Stevie_sTarAc1'
                                , usernameLowerCased: 'stevie_starac1'
                                , history: '111111111111111111111111'   // Dummy history since it is required
-                               });
+                               };
 
-      user.save(function(err) {
+      User.createAndSaveInstance(userData, function (err, user) {
         assert.isNull(err);
 
         user.createResetPasswordToken(function(err) {
           assert.isNull(err);
 
-          user.resetPassword(user.resetPasswordToken, 'goodpassword', function(err) {
-            assert.isNull(err);
+          user.getBasicCredentials(function (err, bc) {
+            user.resetPassword(bc.resetPasswordToken, 'goodpassword', function(err) {
+              assert.isNull(err);
 
-            // Token is reinitialized
-            assert.isNull(user.resetPasswordToken);
-            assert.isNull(user.resetPasswordTokenExpiration);
-            bcrypt.compareSync('supersecret!', user.password).should.equal(false);
-            bcrypt.compareSync('goodpassword', user.password).should.equal(true);
-            done();
+              user.getBasicCredentials(function (err, bc) {
+                // Token is reinitialized
+                assert.isNull(bc.resetPasswordToken);
+                assert.isNull(bc.resetPasswordTokenExpiration);
+                bcrypt.compareSync('supersecret!', bc.password).should.equal(false);
+                bcrypt.compareSync('goodpassword', bc.password).should.equal(true);
+                done();
+              });
+            });
           });
         });
       });
@@ -972,7 +1162,7 @@ describe('User', function () {
 
       User.createAndSaveInstance(goodUserInput, function(err, user) {
         user.updateValidFields(userInput, function (err, theUser) {
-          theUser.email.should.equal('email@email.com');
+          theUser.email.should.equal('blip@email.com');
           theUser.username.should.equal('Stevie_sTarAc1');
           theUser.usernameLowerCased.should.equal('stevie_starac1');
           theUser.bio.should.equal('something not cool like a  is here');
@@ -1098,8 +1288,50 @@ describe('User', function () {
       ], done);
     });
 
-
   });   // ==== End of 'Admin role' ==== //
+
+
+  describe('#findAvailableUsername', function () {
+
+    it('Should find an available username as is', function (done) {
+      User.findAvailableUsername('availABLe', function (err, username) {
+        username.should.equal('availABLe');
+        done();
+      });
+    });
+
+    it('Should remove all non alphanumerical characters', function (done) {
+      User.findAvailableUsername(' .gr/`ea_@@t', function (err, username) {
+        username.should.equal('great');
+        done();
+      });
+    });
+
+    it('Should find a suitable username when tentative username is taken (comparisons done lower case)', function (done) {
+      User.findAvailableUsername('useRTEst1', function (err, username) {
+        username.should.equal('useRTEst11');
+        done();
+      });
+    });
+
+    it('Find a good placeholder if no tentative username given, or too short', function (done) {
+      User.findAvailableUsername(undefined, function (err, username) {
+        username.should.equal('NewUser');
+        User.findAvailableUsername('o', function (err, username) {
+          username.should.equal('NewUser');
+          done();
+        });
+      });
+    });
+
+    it('Should cut the username if too long', function (done) {
+        User.findAvailableUsername('bloupbloupbloupbloup', function (err, username) {
+          username.should.equal('bloupbloupblo');
+          done();
+        });
+    });
+
+  });   // ==== End of '#findAvailableUsername' ==== //
 
 
 });

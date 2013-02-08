@@ -105,7 +105,7 @@ app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 
 // User login/logout
-app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
+app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
 app.get('/users/logout', routes.logout);
 
 // Tldrs
@@ -113,6 +113,7 @@ app.get('/tldrs/search', routes.searchTldrs);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
+app.get('/tldrs/latest', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 
 // routes for emails gathered during a product launch
@@ -120,11 +121,12 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 
 // Admin only routes
-app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
-app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
-app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
-app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
+app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
+app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
+app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
+app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
+app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -138,7 +140,6 @@ app.options('*', function (req, res, next) {
   res.send(200);
 });
 
-
 // Only hybrid for retrocompatibility
 app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
 
@@ -148,59 +149,65 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
  *
  */
 // General pages
-app.get('/about', middleware.attachRenderingValues, routes.website_about);
-app.get('/', middleware.attachRenderingValues     // Routing for this page depends on the logged in status
+app.get('/about', middleware.websiteRoute, routes.website_about);
+app.get('/', middleware.websiteRoute     // Routing for this page depends on the logged in status
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
                                       , ifNotLogged: routes. website_index }));
-app.get('/signup', middleware.attachRenderingValues
+app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
 
-app.get('/latest-summaries', middleware.attachRenderingValues, routes.website_tldrs);
+app.get('/latest-summaries', middleware.websiteRoute, routes.website_tldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
 
-app.get('/what-is-tldr', middleware.attachRenderingValues, routes.website_whatisit);
+app.get('/what-is-tldr', middleware.websiteRoute, routes.website_whatisit);
 app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
 
-app.get('/chrome-extension', middleware.attachRenderingValues, routes.website_chrome_extension);
+app.get('/chrome-extension', middleware.websiteRoute, routes.website_chrome_extension);
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-app.get('/api-documentation', middleware.attachRenderingValues, routes.website_apiDoc);
+app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
 
 
 // Tldr page
-app.get('/tldrs/:id/:slug', middleware.attachRenderingValues, routes.website_tldrPage);
+app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website_tldrPage);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
 app.get('/login', routes.website_login);
 
+// 3rd party auth with Google
+app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
+app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
+app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
+
 // Email confirmation, password recovery
-app.get('/confirmEmail', middleware.attachRenderingValues, routes.website_confirmEmail);
-app.get('/forgotPassword', middleware.attachRenderingValues, routes.website_forgotPassword);
-app.get('/resetPassword', middleware.attachRenderingValues, routes.website_resetPassword);
+app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
+app.get('/forgotPassword', middleware.websiteRoute, routes.website_forgotPassword);
+app.get('/resetPassword', middleware.websiteRoute, routes.website_resetPassword);
 
 // Private pages
-app.get('/account', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_account);
-app.get('/tldrscreated', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_tldrscreated);
-app.get('/notifications', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_notifications);
+app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
+app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
+app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
 
 // Forum
-app.get('/forum/topics', middleware.attachRenderingValues, routes.website_forum);
-app.get('/forum/topics/:id/:slug', middleware.attachRenderingValues, routes.website_forumShowTopic);   // Show a whole topic
-app.get('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumShowTopic);   // For retrocompatibility
-app.post('/forum/topics/:id', middleware.attachRenderingValues, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
-app.get('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumNewTopic);    // Display the newTopic form
-app.post('/forum/newTopic', middleware.loggedInOnly, middleware.attachRenderingValues, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
-app.get('/forum/posts/:id/edit', middleware.attachRenderingValues, routes.website_editPost);
+app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
+app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumShowTopic);   // Show a whole topic
+app.get('/forum/topics/:id', middleware.websiteRoute, routes.website_forumShowTopic);   // For retrocompatibility
+app.post('/forum/topics/:id', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
+app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewTopic);    // Display the newTopic form
+app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
+app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website_editPost);
 app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
 // Moderation
-app.get('/moderation', middleware.attachRenderingValues, middleware.adminOnly, routes.website_moderation);
+app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
 
 // User profiles, leaderboard ...
-app.get('/:username', middleware.attachRenderingValues, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 
 /*

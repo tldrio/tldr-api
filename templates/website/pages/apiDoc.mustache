@@ -39,11 +39,14 @@
     <li><code>imageUrl</code> <em class="muted">(String)</em> Link to the Open Graph image of the corresponding webpage, if there is one</li>
     <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
     <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
+    <li><code>moderated</code> <em class="muted">(Boolean)</em> True if a moderator has reviewed this tldr and deemed it accurate</li>
+    <li><code>distributionChannels</code> <em class="muted">(Object)</em> Some channels do not distribute all tldrs. This object tells
+        where this tldr will be distributed. For now the two channels are 'latestTldrs' (the latest tldrs page as well as the results from
+        GET /tldrs/latest) and 'latestTldrsRSSFeed'.</li>
   </ul><br>
 
   <strong>Not so useful (if you disagree please tell us!)</strong>
   <ul>
-    <li><code>discoverable</code> <em class="muted">(Boolean)</em> Can article be included in results from <code>/tldrs/latest/:number</code>?</li>
     <li><code>versionDisplayed</code> <em class="muted">(Integer)</em> If edits were made, what is the public version. Most of the time at 0 (= 'latest')</li>
     <li><code>slug</code> <em class="muted">(String)</em> Slug of the title used in the website's url for the tldr</li>
     <li><code>history</code> <em class="muted">(ObjectId)</em> Pointer to the tldr's history (not public)</li>
@@ -65,7 +68,7 @@
   Search the tldrs for a batch of urls, not just one as in the route above.<br>
   The body of the request must be a JSON object of the form <code>{ batch: [url1, url2, ...] }</code><br>
   The response will be of the form <code>{ tldrs: [tldr1, tldr2, ...] }.</code><br><br>
-  This route can only return up to 30 tldrs, if your batch contains more than 50 urls the response will be a 403 error.
+  This route can only return up to 50 tldrs, if your batch contains more than 50 urls the response will be a 403 error.
 
   <hr class="soften">
 

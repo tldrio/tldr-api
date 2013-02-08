@@ -1,7 +1,9 @@
 user-agent: *
 disallow: /account
+disallow: /moderation
 disallow: /tldrscreated
 disallow: /forum/newTopic
 disallow: /forum/posts/
+disallow: /third-party-auth/
 
 sitemap: http://tldr.io/sitemaps/sitemap.xml
