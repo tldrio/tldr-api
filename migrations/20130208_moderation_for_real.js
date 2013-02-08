@@ -39,9 +39,9 @@ async.waterfall([
       , function (cb) {
           console.log('New moderation for: ' + tldrs[i]._id);
 
-          tldrs[i].distributionChannels = {};
-          tldrs[i].distributionChannels.latestTldrs = tldrs[i].discoverable;
-          tldrs[i].distributionChannels.latestTldrsRSSFeed = tldrs[i].discoverable && tldrs[i].moderated;
+          tldrs[i].distributionChannels = { latestTldrs: tldrs[i].discoverable
+                                          , latestTldrsRSSFeed: tldrs[i].discoverable && tldrs[i].moderated
+                                          };
 
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }

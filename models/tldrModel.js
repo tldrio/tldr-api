@@ -131,6 +131,7 @@ TldrSchema = new Schema(
                           , latestTldrsRSSFeed: { type: Boolean, default: false }
                           }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
+  , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   }
 , { strict: true });
 
