@@ -178,6 +178,8 @@ app.get('/login', routes.website_login);
 // 3rd party auth with Google
 app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
+app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
 
 // Email confirmation, password recovery
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
