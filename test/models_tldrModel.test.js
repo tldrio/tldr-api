@@ -675,7 +675,7 @@ describe('Tldr', function () {
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
-  describe.only('Moderation', function () {
+  describe('Moderation', function () {
 
     function checkDefaultModerationStatus (tldr) {
       tldr.distributionChannels.latestTldrs.should.equal(true);
