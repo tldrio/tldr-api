@@ -179,7 +179,7 @@ describe('Webserver', function () {
 
     });
 
-    it.skip('Get latest tldrs', function (done) {
+    it('Get latest tldrs', function (done) {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date()
@@ -282,8 +282,8 @@ describe('Webserver', function () {
                             obj = JSON.parse(res.body);
                             obj.length.should.equal(0);
 
-                            // Convenience route for latest tldrs should force the handler to return defaultstartat and olderthan objects, and no return non discoverable tldrs
-                            Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { discoverable: false } }, { multi: false }, function (err, n) {
+                            // Shouldn't return tldrs that are not in the 'latestTldrs' distribution channel
+                            Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { 'distributionChannels.latestTldrs': false } }, { multi: false }, function (err, n) {
                               request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/7'}, function (err, res, body) {
                                 obj = JSON.parse(res.body);
                                 obj.length.should.equal(7);

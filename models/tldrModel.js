@@ -200,19 +200,6 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
 };
 
 
-/**
- * Make the tldr undiscoverable
- * @param {String} id id of the tldr to make undiscoverable
- * @param {Function} cb Optional callback, signature is err, numAffected
- */
-TldrSchema.statics.makeUndiscoverable = function (id, cb) {
-  var callback = cb || function () {};
-  this.update({ _id: id }, { $set: { discoverable: false } }, { multi: false }, callback);
-};
-
-
-
-
 TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
   var callback = cb || function () {}
     , query = {};
@@ -224,8 +211,6 @@ TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
 
   this.update({ _id: id }, { $set: query }, { multi: false }, callback);
 };
-
-
 
 
 /**

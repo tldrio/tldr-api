@@ -124,7 +124,6 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
 app.get('/tldrs/beatricetonusisfuckinggorgeousnigga/:id', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
-app.get('/tldrs/cockblock/:id', middleware.adminOnly, routes.makeTldrUndiscoverable);   // Make tldr undiscoverable
 app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
 

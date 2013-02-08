@@ -22,7 +22,7 @@ module.exports = function (req, res, next) {
   async.waterfall(
   [
     function (cb) {
-      Tldr.find({ discoverable: true, moderated: false })
+      Tldr.find({ moderated: false })
         .sort('-createdAt')
         .populate('creator', 'username')
         .exec(function (err, tldrs) {

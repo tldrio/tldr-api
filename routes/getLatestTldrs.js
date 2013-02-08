@@ -20,7 +20,8 @@ function getLatestTldrs (req, res, next) {
   if (isNaN(startat)) { startat = 0; }
   startat = Math.max(0, startat);
 
-  Tldr.find({ discoverable: true })
+  Tldr.find({ 'distributionChannels.latestTldrs': true })
+  //Tldr.find({})
    .sort('-updatedAt')
    .limit(limit)
    .skip(startat)

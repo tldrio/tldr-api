@@ -1,10 +1,3 @@
-/**
- * Admin route to make a tldr undiscoverable
- * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
- * Proprietary License
-*/
-
-
 var Tldr = require('../lib/models').Tldr
   , i18n = require('../lib/i18n');
 
