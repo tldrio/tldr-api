@@ -21,7 +21,6 @@ function getLatestTldrs (req, res, next) {
   startat = Math.max(0, startat);
 
   Tldr.find({ 'distributionChannels.latestTldrs': true })
-  //Tldr.find({})
    .sort('-updatedAt')
    .limit(limit)
    .skip(startat)
