@@ -25,7 +25,8 @@ module.exports = function (req, res, next) {
   async.waterfall(
   [
     function (cb) {   // Only populate the latest tldrs the user created, in a specific object
-      Tldr.find({ 'distributionChannels.latestTldrs': true })
+      //Tldr.find({ 'distributionChannels.latestTldrs': true })
+      Tldr.find({})
         .limit(10)
         .sort('-createdAt')
         .populate('creator', 'username')
