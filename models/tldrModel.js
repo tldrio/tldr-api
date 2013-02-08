@@ -206,7 +206,7 @@ TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
 
   channels = channels || {};
   _.keys(channels).forEach(function (channel) {
-    query['distributionChannels.' + channel] = channels[channel];
+    query['distributionChannels.' + channel] = (channels[channel].toString() === 'true') ? true : false;
   });
 
   this.update({ _id: id }, { $set: query }, { multi: false }, callback);
