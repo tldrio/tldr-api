@@ -215,6 +215,13 @@ TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
 
 
 /**
+ * Prevent a tldr from being distributed on any channel (but don't mark it as moderated)
+ */
+TldrSchema.statics.cockblockTldr = function (id, cb) {
+  this.updateDistributionChannels(id, { latestTldrs: false, latestTldrsRSSFeed: false }, cb);
+};
+
+/**
  * Mark a tldr as moderated, meaning it's an accurate summary of the resource
  * @param {String} id id of the tldr to moderate
  * @param {Function} cb Optional callback, signature is err, numAffected

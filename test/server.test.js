@@ -458,7 +458,7 @@ describe('Webserver', function () {
 
   describe('DELETE tldrs - through the use of GET', function() {
     function deleteTldr(id, expectedCode, cb) {
-      request.get({ uri: rootUrl + '/tldrs/beatricetonusisfuckinggorgeousnigga/' + id}, function (err, res, body) {
+      request.get({ uri: rootUrl + '/tldrs/' + id + '/delete'}, function (err, res, body) {
         res.statusCode.should.equal(expectedCode);
         cb();
       });
