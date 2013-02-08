@@ -121,10 +121,10 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 
 // Admin only routes
-app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
+app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
-app.get('/tldrs/moderate/:id', middleware.adminOnly, routes.moderateTldr);
+app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
 app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
