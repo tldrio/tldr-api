@@ -31,17 +31,18 @@ async.waterfall([
 , function (cb) {
     var i = 0;
 
-    console.log("Adding missing moderated to tldrs");
-
     Tldr.find({ }, function(err, tldrs) {
       if (err) { return cb(err); }
 
       async.whilst(
         function () { return i < tldrs.length; }
       , function (cb) {
-          console.log('Adding moderated to: ' + tldrs[i]._id);
+          console.log('New moderation for: ' + tldrs[i]._id);
 
-          tldrs[i].moderated = tldrs[i].discoverable;
+          tldrs[i].distributionChannels = {};
+          tldrs[i].distributionChannels.latestTldrs = tldrs[i].discoverable;
+          tldrs[i].distributionChannels.latestTldrsRSSFeed = tldrs[i].discoverable && tldrs[i].moderated;
+
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 
@@ -57,15 +58,9 @@ async.waterfall([
       console.log('Something unexpected occured, stopped migration. ', err);
     }
 
-    Tldr.find({ accepted: { $exists: false } }, function (err, tldrs) {
-      if (tldrs.length > 0) {
-        console.log("All tldrs weren't updatedm that's strange");
-      }
-
-      db.closeDatabaseConnection(function () {
-        console.log("Closed connection to database");
-        process.exit(0);
-      });
+    db.closeDatabaseConnection(function () {
+      console.log("Closed connection to database");
+      process.exit(0);
     });
   }
 );
