@@ -1,4 +1,5 @@
-var Tldr = require('../lib/models').Tldr;
+var Tldr = require('../lib/models').Tldr
+  , i18n = require('../lib/i18n');
 
 /**
  * Convenience route for latest tldrs
