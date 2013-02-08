@@ -105,7 +105,7 @@ app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 
 // User login/logout
-app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);// Handles a user connection and credentials check.
+app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
 app.get('/users/logout', routes.logout);
 
 // Tldrs
@@ -178,11 +178,10 @@ app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); 
 app.get('/login', routes.website_login);
 
 // 3rd party auth with Google
-app.get('/auth/google', passport.authenticate('google'));
-
-app.get('/auth/google/return',
-  passport.authenticate('google', { successRedirect: '/latest-summaries',
-                                    failureRedirect: '/login' }));
+app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
+app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
+app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
 
 // Email confirmation, password recovery
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
