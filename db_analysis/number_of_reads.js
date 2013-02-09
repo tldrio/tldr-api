@@ -1,3 +1,5 @@
+#!/usr/local/bin/node
+
 /*
  * Calculate the total number of reads
  *
