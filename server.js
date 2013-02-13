@@ -115,6 +115,8 @@ app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
+// IN EXPERIMENT
+app.put('/tldrs/thank/:id', routes.thankContributor);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);

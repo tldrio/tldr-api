@@ -889,6 +889,41 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
+  describe.only('#thank', function () {
+
+    it('should not be able to thank if no "thanker"', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'};
+
+      Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
+        tldr.thank(null, function (err, tldr) {
+          assert.isDefined(err.thanker);
+          done();
+        });
+      });
+    });
+
+    it('should be able to thank with a "thanker"', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/'
+                     , summaryBullets: ['coin']
+                     , resourceAuthor: 'bloup'};
+
+      Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
+        tldr.thank(user, function (err, tldr) {
+          tldr.thanks.should.include(user._id.toString());
+          tldr.thank(user, function (err, tldr) {
+            tldr.thanks.length.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
+
+  }); // ==== End of '#thank' ==== //
+
   describe('#updateBatch', function () {
 
     it('should proceed to a batch update giving an array of url', function (done) {

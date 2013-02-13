@@ -132,6 +132,7 @@ TldrSchema = new Schema(
                           }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
+  , thanks: [{ type: ObjectId }]
   }
 , { strict: true });
 
@@ -285,6 +286,7 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
 };
 
 
+
 /**
  * Update tldr object.
  * Only fields in userUpdatableFields are handled
@@ -336,6 +338,28 @@ TldrSchema.methods.serialize = function () {
   });
 
   return JSON.stringify(jsonVersion);
+};
+
+/**
+ * Thank the author of the tldr
+ * @param {User} voter User who thanked
+ * @param {Function} cb Optional callback. Signature: err, tldr
+ */
+TldrSchema.methods.thank = function (thanker , cb) {
+  var callback = cb ? cb : function () {};
+
+  if (! thanker || ! thanker._id) {
+    return callback({ thanker: "required" });
+  }
+
+  // The user managed to thank twice -> dont do anything
+  if (this.thanks.indexOf(thanker._id) !== -1) {
+    return callback(null, this);
+  }
+
+  this.thanks.addToSet(thanker._id);
+
+  this.save(callback);
 };
 
 
