@@ -675,7 +675,7 @@ describe('Tldr', function () {
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
-  describe('Moderation', function () {
+  describe.only('Moderation', function () {
 
     function checkDefaultModerationStatus (tldr) {
       tldr.distributionChannels.latestTldrs.should.equal(true);
@@ -804,6 +804,55 @@ describe('Tldr', function () {
         });
       });
     });
+
+		it('Should remove a tldr completely', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                      , url: 'http://mydomain.com'
+                      , summaryBullets: ['coin']
+                      , resourceAuthor: 'bloup'
+                      }
+        , tldrData2 = { title: 'Blog NFA2'
+                      , url: 'http://mydomain.com2'
+                      , summaryBullets: ['coin2']
+                      , resourceAuthor: 'bloup2'
+                      }
+        , tldrData3 = { title: 'Blog NFA3'
+                      , url: 'http://mydomain.com3'
+                      , summaryBullets: ['coin3']
+                      , resourceAuthor: 'bloup3'
+                      }
+			  , tldrId, userId = user._id
+        ;
+
+				Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+					Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+						tldrId = tldr2._id;
+						Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr3) {
+							User.findOne({ _id: userId }, function (err, user) {
+								user.tldrsCreated.length.should.equal(3);
+								user.tldrsCreated[0].toString().should.equal(tldr1._id.toString());
+								user.tldrsCreated[1].toString().should.equal(tldr2._id.toString());
+								user.tldrsCreated[2].toString().should.equal(tldr3._id.toString());
+
+								Tldr.removeTldr(tldr2._id, function (err) {
+									assert.isNull(err);
+									User.findOne({ _id: userId }, function (err, user) {
+										user.tldrsCreated.length.should.equal(2);
+										user.tldrsCreated[0].toString().should.equal(tldr1._id.toString());
+										user.tldrsCreated[1].toString().should.equal(tldr3._id.toString());
+
+										Tldr.findOne({ _id: tldrId }, function (err, tldr2) {
+											assert.isNull(err);
+											assert.isNull(tldr2);
+											done();
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+		});
 
   });   // ==== End of 'Moderation' ==== //
 
