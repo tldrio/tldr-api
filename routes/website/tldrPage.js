@@ -33,14 +33,14 @@ module.exports = function (req, res, next) {
                    (tldr.title.length > 60 ? '..."' : '"') +
                    config.titles.branding + config.titles.shortDescription;
     // Warning: don't use double quotes in the meta description tag
-    tldr.creator && values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'";
+    if (tldr.creator) { values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'"; }
 
     // Specific metatags for the tldr page
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'article');
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug);
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
-    tldr.creator && values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || '');   // Ensure tldrCreatorTwitterHandle gets populated
+    if (tldr.creator) {values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || ''); }
     if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
 
     return res.render('website/basicLayout', { values: values , partials: partials });
