@@ -675,7 +675,7 @@ describe('Tldr', function () {
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
-  describe.only('Moderation', function () {
+  describe('Moderation', function () {
 
     function checkDefaultModerationStatus (tldr) {
       tldr.distributionChannels.latestTldrs.should.equal(true);
@@ -821,7 +821,7 @@ describe('Tldr', function () {
                       , summaryBullets: ['coin3']
                       , resourceAuthor: 'bloup3'
                       }
-			  , tldrId, userId = user._id
+        , tldrId, userId = user._id
         ;
 
 				Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
