@@ -21,7 +21,7 @@ var fs = require('fs')
   ;
 
 console.log("Rebuilding the sitemap: " + new Date());
-process.chdir(process.env.TLDR_API_ROOT);
+process.chdir(process.env.TLDR_API_DIR);
 
 writeStream = fs.createWriteStream('./robots/sitemaps/sitemap.xml')
 before = fs.readFileSync('./robots/sitemap.before.xml', 'utf8')
