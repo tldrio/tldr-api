@@ -889,7 +889,7 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
-  describe.only('#thank', function () {
+  describe('#thank', function () {
 
     it('should not be able to thank if no "thanker"', function (done) {
       var tldrData = { title: 'Blog NFA'
