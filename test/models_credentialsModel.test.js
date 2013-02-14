@@ -123,10 +123,11 @@ describe('Credentials', function () {
   describe('GoogleCredentials', function () {
 
     it('Should be able to create a google cred with any type of openID', function (done) {
-      var gcData = { openID: 'http://openid.google.com/tldrio' };
+      var gcData = { openID: 'http://openid.google.com/tldrio', googleEmail: 'louis@nfa.tldr' };
       Credentials.createGoogleCredentials(gcData, function (err, gc) {
         gc.openID.should.equal(gcData.openID);
         gc.type.should.equal('google');
+        gc.googleEmail.should.equal('louis@nfa.tldr');
         done();
       });
     });
