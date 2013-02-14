@@ -37,8 +37,9 @@ async.waterfall([
         function () { return i < creds.length; }
       , function (cb) {
           console.log('Google email for: ' + creds[i]._id);
-
-          creds[i].googleEmail = creds[i].owner.email;
+          if (creds[i].owner) {
+            creds[i].googleEmail = creds[i].owner.email;
+          }
 
           creds[i].save(function(err) {
             if (err) { return cb(err); }
