@@ -234,6 +234,29 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 
 
 /**
+ * Remove a tldr completely, meaning it won't show up in its creator's list of tldr
+ */
+TldrSchema.statics.removeTldr = function (id, callback) {
+	var creator;
+
+	Tldr.findOne({ _id: id })
+      .populate('creator')
+      .exec(function (err, tldr) {
+		if (err) { return callback(err); }
+		if (!tldr) { return callback('Tldr not found'); }
+    creator = tldr.creator;
+
+		tldr.remove(function (err) {
+			if (err) { return callback(err); }
+
+			creator.tldrsCreated = _.filter(creator.tldrsCreated, function (tid) { return tid.toString() !== id.toString(); });
+			creator.save(callback);
+		});
+	});
+};
+
+
+/**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */

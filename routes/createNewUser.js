@@ -11,7 +11,9 @@ var bunyan = require('../lib/logger').bunyan
   , mailchimpSync = require('../lib/mailchimpSync')
   , mailer = require('../lib/mailer')
   , models = require('../lib/models')
-  , User = models.User;
+  , User = models.User
+  , mqClient = require('../lib/message-queue')
+  ;
 
 
 /*
@@ -30,29 +32,11 @@ function createNewUser(req, res, next) {
     }
 
     mailchimpSync.subscribeNewUser({ email: user.email, username: user.username });
-
-    // Send the link by email
-    mailer.sendEmail({ type: 'welcome'
-                     , development: true
-                     , to: user.email
-                     , values: { email: encodeURIComponent(user.email), user: user }
-                     });
+    mqClient.emit('user.created', { user: user });
 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
       if (err) { return next(err); }
-
-      mailer.sendEmail({ type: 'emailConfirmationToken'
-                       , development: false
-                       , to: user.email
-                       , values: { email: encodeURIComponent(user.email), token: encodeURIComponent(user.confirmEmailToken), user: user }
-                       });
-
-      // Advertise user creation to admins
-      mailer.sendEmail({ type: 'adminUserCreated'
-                       , development: false
-                       , values: { user: user }
-                       });
 
       return res.json(201, user.getAuthorizedFields());
     });
