@@ -72,6 +72,7 @@ CredentialsSchema = new Schema({
 , password: { type: String
             , validate: [validatePassword, i18n.validateUserPwd]
             }
+, googleEmail: { type: String }
 , resetPasswordToken: { type: String }
 , resetPasswordTokenExpiration: { type: Date }
 });

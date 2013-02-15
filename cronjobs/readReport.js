@@ -42,6 +42,7 @@ function sendReadReport (cb) {
 
         i += 1;
 
+        if (user.tldrsCreated.length === 0) { return _cb(); }
         if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) { return _cb(); }   // Read counts are too low, this is ridiculous
 
         values = { totalReadCountThisWeek: totalReadCountThisWeek

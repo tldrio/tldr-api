@@ -16,8 +16,12 @@
             <span class="tldr-hostname tldr-hostname-list">
               ({{hostname}})
             </span>
-            <button style="float: right; margin-left: 8px;" class="btn btn-danger btn-mini badTldr" type="button">Hide</button>
-            <button style="float: right; margin-left: 8px;" class="btn btn-success btn-mini goodTldr" type="button">Show in RSS/latest</button>
+
+            <button style="float: right; margin-left: 8px;" class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
+            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrsRSSFeed}}btn-success{{/distributionChannels.latestTldrsRSSFeed}}
+                    {{^distributionChannels.latestTldrsRSSFeed}}btn-danger{{/distributionChannels.latestTldrsRSSFeed}} btn-mini latestRSS" type="button">RSS</button>
+            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrs}}btn-success{{/distributionChannels.latestTldrs}}
+                    {{^distributionChannels.latestTldrs}}btn-danger{{/distributionChannels.latestTldrs}} btn-mini latest" type="button">Latest</button>
           </div>
           <div class="tldr-metadata-tldrs">
             <span class="tldr-creator">

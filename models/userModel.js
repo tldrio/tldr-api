@@ -160,14 +160,16 @@ UserSchema = new Schema(
               // Validation is done below because we need two different validators
               , set: customUtils.sanitizeInput
               }
-  , updatedAt: { type: Date
-               , default: Date.now
-               }
   , usernameLowerCased: { type: String
                         , required: true
                         , unique: true
                         , set: customUtils.sanitizeInput
                         }
+  , firstName: { type: String }
+  , lastName: { type: String }
+  , updatedAt: { type: Date
+               , default: Date.now
+               }
   , history: { type: ObjectId, ref: 'userHistory', required: true }
   , gravatar: { email: { type: String
                        , set: customUtils.sanitizeAndNormalizeEmail }

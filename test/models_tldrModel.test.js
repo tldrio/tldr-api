@@ -488,21 +488,6 @@ describe('Tldr', function () {
       });
     });
 
-    it('Should set discoverable to true automatically', function (done) {
-      var tldrData = {
-        title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
-        resourceAuthor: 'NFA Crew',
-        url: 'http://needforair.com',
-      };
-
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        tldr.discoverable.should.equal(true);
-        done();
-      });
-    });
-
     it('Should not crash because no title was provided', function (done) {
       var tldrData1 = {
             summaryBullets: ['Awesome Blog'],
@@ -690,9 +675,15 @@ describe('Tldr', function () {
   });   // ==== End of 'Redirection and canonicalization handling' ==== //
 
 
-  describe('discoverable and moderated', function () {
+  describe('Moderation', function () {
 
-    it('Should make a tldr undiscoverable', function (done) {
+    function checkDefaultModerationStatus (tldr) {
+      tldr.distributionChannels.latestTldrs.should.equal(true);
+      tldr.distributionChannels.latestTldrsRSSFeed.should.equal(false);
+      tldr.moderated.should.equal(false);
+    }
+
+    it('Tldr must have correct moderation default upon creation', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
@@ -701,20 +692,94 @@ describe('Tldr', function () {
       };
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        tldr.discoverable.should.equal(true);
+        checkDefaultModerationStatus(tldr);
+        done();
+      });
+    });
 
-        Tldr.makeUndiscoverable(tldr._id, function (err, numAffected) {
-          numAffected.should.equal(1);
+    it('Null, undefined or empty object shouldnt change distrib channels', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
 
-          Tldr.findOne({ _id: tldr._id }, function (err, theTldr) {
-            theTldr.discoverable.should.equal(false);
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        checkDefaultModerationStatus(tldr);
 
-            done();
+        Tldr.updateDistributionChannels(tldr._id, null, function () {
+          Tldr.findOneById(tldr._id, function (err, tldr) {
+            checkDefaultModerationStatus(tldr);   // No change
+            Tldr.updateDistributionChannels(tldr._id, {}, function () {
+              Tldr.findOneById(tldr._id, function (err, tldr) {
+                checkDefaultModerationStatus(tldr);   // No change
+                done();
+              });
+            });
           });
         });
       });
     });
+
+    it('Should update the given fields and no other', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        checkDefaultModerationStatus(tldr);
+
+        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: false, latestTldrsRSSFeed: true }, function () {
+          Tldr.findOneById(tldr._id, function (err, tldr) {
+            tldr.distributionChannels.latestTldrs.should.equal(false);
+            tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: true }, function () {
+              Tldr.findOneById(tldr._id, function (err, tldr) {
+                tldr.distributionChannels.latestTldrs.should.equal(true);
+                tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should update the given fields and no other - even if we use strings instead of booleans', function (done) {
+      var tldrData = {
+        title: 'Blog NFA',
+        summaryBullets: ['Awesome Blog'],
+        resourceAuthor: 'NFA Crew',
+        url: 'http://needforair.com',
+      };
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        checkDefaultModerationStatus(tldr);
+
+        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'false', latestTldrsRSSFeed: 'true' }, function () {
+          Tldr.findOneById(tldr._id, function (err, tldr) {
+            tldr.distributionChannels.latestTldrs.should.equal(false);
+            tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'true' }, function () {
+              Tldr.findOneById(tldr._id, function (err, tldr) {
+                tldr.distributionChannels.latestTldrs.should.equal(true);
+                tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
 
     it('Should moderate a tldr', function (done) {
       var tldrData = {
@@ -740,7 +805,56 @@ describe('Tldr', function () {
       });
     });
 
-  });   // ==== End of 'discoverable and moderated' ==== //
+		it('Should remove a tldr completely', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                      , url: 'http://mydomain.com'
+                      , summaryBullets: ['coin']
+                      , resourceAuthor: 'bloup'
+                      }
+        , tldrData2 = { title: 'Blog NFA2'
+                      , url: 'http://mydomain.com2'
+                      , summaryBullets: ['coin2']
+                      , resourceAuthor: 'bloup2'
+                      }
+        , tldrData3 = { title: 'Blog NFA3'
+                      , url: 'http://mydomain.com3'
+                      , summaryBullets: ['coin3']
+                      , resourceAuthor: 'bloup3'
+                      }
+        , tldrId, userId = user._id
+        ;
+
+				Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+					Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+						tldrId = tldr2._id;
+						Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr3) {
+							User.findOne({ _id: userId }, function (err, user) {
+								user.tldrsCreated.length.should.equal(3);
+								user.tldrsCreated[0].toString().should.equal(tldr1._id.toString());
+								user.tldrsCreated[1].toString().should.equal(tldr2._id.toString());
+								user.tldrsCreated[2].toString().should.equal(tldr3._id.toString());
+
+								Tldr.removeTldr(tldr2._id, function (err) {
+									assert.isNull(err);
+									User.findOne({ _id: userId }, function (err, user) {
+										user.tldrsCreated.length.should.equal(2);
+										user.tldrsCreated[0].toString().should.equal(tldr1._id.toString());
+										user.tldrsCreated[1].toString().should.equal(tldr3._id.toString());
+
+										Tldr.findOne({ _id: tldrId }, function (err, tldr2) {
+											assert.isNull(err);
+											assert.isNull(tldr2);
+											done();
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+		});
+
+  });   // ==== End of 'Moderation' ==== //
 
 
   describe('#updateValidFields', function () {

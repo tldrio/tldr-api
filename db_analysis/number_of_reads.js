@@ -1,3 +1,5 @@
+#!/usr/local/bin/node
+
 /*
  * Calculate the total number of reads
  *
@@ -23,7 +25,7 @@ db.connectToDatabase(function () {
       result += tldr.readCount;
     });
 
-    console.log("Total read count: " + result);
+    console.log("=== We are " + new Date() + " and the read count is: " + result);
     process.exit(0);
   });
 });

@@ -42,7 +42,7 @@ async.waterfall([
     db.connectToDatabase(cb);
   }
 , function (cb) {   // Add tldr pages
-    Tldr.find({ moderated: true, discoverable: true })
+    Tldr.find({ moderated: true, 'distributionChannels.latestTldrsRSSFeed': true })
         .sort('-createdAt')
         .limit(50)
         .populate('creator', 'username')
