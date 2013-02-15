@@ -132,7 +132,7 @@ TldrSchema = new Schema(
                           }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
-  , thanks: [{ type: ObjectId }]
+  , thankedBy: [{ type: ObjectId }]
   }
 , { strict: true });
 
@@ -365,7 +365,7 @@ TldrSchema.methods.serialize = function () {
 
 /**
  * Thank the author of the tldr
- * @param {User} voter User who thanked
+ * @param {User} thanker User who thanked
  * @param {Function} cb Optional callback. Signature: err, tldr
  */
 TldrSchema.methods.thank = function (thanker , cb) {
@@ -376,11 +376,11 @@ TldrSchema.methods.thank = function (thanker , cb) {
   }
 
   // The user managed to thank twice -> dont do anything
-  if (this.thanks.indexOf(thanker._id) !== -1) {
+  if (this.thankedBy.indexOf(thanker._id) !== -1) {
     return callback(null, this);
   }
 
-  this.thanks.addToSet(thanker._id);
+  this.thankedBy.addToSet(thanker._id);
 
   this.save(callback);
 };

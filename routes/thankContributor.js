@@ -26,7 +26,6 @@ function thankContributor (req, res, next) {
       if (err) { return next(i18n.se_thanking); }
       mailer.sendEmail({ type: 'adminContributorThanked'
                        , development: true
-                       , to: 'hello+test@tldr.io'
                        , values: { user: req.user, tldr: tldr }
                        });
 

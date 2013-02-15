@@ -954,7 +954,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should be able to thank with a "thanker"', function (done) {
+    it('should be able to thank with a "thanker" and not include him twice in the thankedBy set', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com/'
                      , summaryBullets: ['coin']
@@ -962,9 +962,9 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
         tldr.thank(user, function (err, tldr) {
-          tldr.thanks.should.include(user._id.toString());
+          tldr.thankedBy.should.include(user._id.toString());
           tldr.thank(user, function (err, tldr) {
-            tldr.thanks.length.should.equal(1);
+            tldr.thankedBy.length.should.equal(1);
             done();
           });
         });
