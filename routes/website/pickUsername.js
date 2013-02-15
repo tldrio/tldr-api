@@ -24,8 +24,7 @@ function displayForm (req, res, next) {
 function changeUsername (req, res, next) {
   if (! req.user) { return res.redirect(302, '/'); }   // Nobody should be here by chance anyway, so no explanation
 
-  req.user.username = req.body.username;
-  req.user.save(function (err) {
+  req.user.updateValidFields({ username: req.body.username }, function (err) {
     if (err) {
       req.renderingValues.displayValidationErrors = true;
       req.renderingValues.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
