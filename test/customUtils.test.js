@@ -217,6 +217,20 @@ describe('Custom utils', function () {
       normalizeUrl(theUrl).should.equal("http://stackoverflow.com/questions/641203483");
     });
 
+    it('Should use only one tld for blogsport urls', function () {
+      var theUrl = "http://bloup.blogspot.com/about/me";
+      normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
+
+      theUrl = "http://bloup.blogspot.fr/about/me";
+      normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
+
+      theUrl = "http://bloup.blogspot.co.uk/about/me";
+      normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
+
+      theUrl = "http://bloup.blogspot.com.au/about/me";
+      normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
+    });
+
     it('The normalize function should be idempotent', function () {
       var urlsToTest = [];
 
