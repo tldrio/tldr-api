@@ -11,7 +11,7 @@ var should = require('chai').should()
   ;
 
 
-describe.only('Total read count', function () {
+describe('Total read count', function () {
 
   beforeEach(function (done) {
     redisClient.select(config.redisDb, function () {
