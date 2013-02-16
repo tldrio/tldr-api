@@ -263,6 +263,5 @@ if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
 }
 
-
 // exports
 module.exports = app;
