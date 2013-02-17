@@ -154,7 +154,7 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
 app.get('/about', middleware.websiteRoute, routes.website_about);
 app.get('/', middleware.websiteRoute     // Routing for this page depends on the logged in status
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
-                                      , ifNotLogged: routes. website_index }));
+                                      , ifNotLogged: routes.website_index }));
 app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
