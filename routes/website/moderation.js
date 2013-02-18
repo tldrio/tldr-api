@@ -19,8 +19,6 @@ module.exports = function (req, res, next) {
     , socialProfiles = bufferapp.getCachedProfiles()
     ;
 
-    console.log(socialProfiles[0]);
-
   values.title = "Tldrs to be moderated";
   values.socialProfiles = socialProfiles;
   partials.content = '{{>website/pages/moderation}}';
