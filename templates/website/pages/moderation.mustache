@@ -6,10 +6,13 @@
         {{#tldrs}}
         <li>
           <!-- Channels -->
-          <div style="width: 25%; background-color: #f00000; float: right;">
-fffds dfd fsd ksdk sdksdfk 
-fffds dfd fsd ksdk sdksdfk 
-
+          <div style="width: 25%; float: right;">
+            {{#socialProfiles}}
+              <label class="checkbox">
+                <input type="checkbox">
+                {{service_username}} <span style="color: #999;">({{formatted_service}})</span>
+              </label>
+            {{/socialProfiles}}
           </div>
 
           <!-- Tldr -->
@@ -41,38 +44,6 @@ fffds dfd fsd ksdk sdksdfk
           </div>
 
           <hr style="clear: both; height: 1px; background-color: #333; border: none;">
-        </li>
-
-        <li>
-          <div class="tldr-icon">
-          </div>
-          <div class="tldr-title-wrapper">
-            <p class="tldr-title-ellipsis">
-              <a href="{{url}}" target="_blank">{{title}}</a>
-            </p>
-            {{>website/tldrBadge}}
-            {{>website/powertip}}
-            <span class="tldr-hostname tldr-hostname-list">
-              ({{hostname}})
-            </span>
-
-            <button style="float: right; margin-left: 8px;" class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
-            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrsRSSFeed}}btn-success{{/distributionChannels.latestTldrsRSSFeed}}
-                    {{^distributionChannels.latestTldrsRSSFeed}}btn-danger{{/distributionChannels.latestTldrsRSSFeed}} btn-mini latestRSS" type="button">RSS</button>
-            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrs}}btn-success{{/distributionChannels.latestTldrs}}
-                    {{^distributionChannels.latestTldrs}}btn-danger{{/distributionChannels.latestTldrs}} btn-mini latest" type="button">Latest</button>
-          </div>
-          <div class="tldr-metadata-tldrs">
-            <span class="tldr-creator">
-              contributed by
-              <a href="/{{creator.username}}" target="_blank">
-                <em>{{creator.username}}</em>
-              </a>
-            </span>
-            <span class="tldr-readcount">
-              &middot; read {{readCount}} times
-            </span>
-          </div>
         </li>
         {{/tldrs}}
       </ul>
