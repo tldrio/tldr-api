@@ -115,6 +115,8 @@ app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
+// IN EXPERIMENT
+app.put('/tldrs/:id/thank', routes.thankContributor);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
@@ -126,6 +128,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
+app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
 app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
 // Vote for/against a topic
@@ -152,7 +155,7 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
 app.get('/about', middleware.websiteRoute, routes.website_about);
 app.get('/', middleware.websiteRoute     // Routing for this page depends on the logged in status
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
-                                      , ifNotLogged: routes. website_index }));
+                                      , ifNotLogged: routes.website_index }));
 app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
@@ -262,6 +265,8 @@ app.stopServer = function (cb) {
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
 }
+
+
 
 // exports
 module.exports = app;
