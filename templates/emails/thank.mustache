@@ -1,0 +1,48 @@
+<strong>Hey {{user.username}},</strong> <br>
+
+{{thanker.username}} just thanked you for your tl;dr <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a>. <br> <br>
+
+<br>
+<br>
+
+<div class="tldr-base-unit page-tldr-container" style="background: whiteSmoke; border: 1px solid gainsboro; box-shadow: 1px 1px 27px rgba(0, 0, 0, 0.2); width:550px; padding: 20px; margin: 0 auto; font-family: Arial; color: #505050; font-size: 14px; line-height: 150%; text-align: left;">
+  <div class="tldr-read-container" style="color: #505050; font-family: Arial; font-size: 14px; line-height: 150%; text-align: left;">
+    <div class="tldr-tldr" style="color: #505050; font-family: Arial; font-size: 14px; line-height: 150%; text-align: left;">
+      <div class="tldr-header" style="color: #505050; font-family: Arial; font-size: 14px; line-height: 22px; text-align: left;">
+        <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain=philosophically.com" style="border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; display: inline; float: left; margin-top: 3px; margin-right: 5px;" />
+        <p class="tldr-title" style="font-size: 17px; font-weight: bold; margin-bottom: 0;">
+          <a href="http://philosophically.com/why-were-pivoting-from-mobile-first-to-web-first" target="_blank" style="color: black; font-weight: normal; text-decoration: none;">{{tldr.title}}</a></p>
+      </div>
+      <div class="tldr-metadata" style="color: #666; font-family: Arial; font-size: 12px; line-height: 18px; text-align: left; font-weight: 300;">
+        <span>tl;dr by <span><a href="{{websiteUrl}}/{{user.username}}" target="_blank" style="color: #336699; font-weight: normal; text-decoration: underline;"><em>{{user.username}}</em></a></span> </span></div>
+      <div class="tldr-summary" style="color: #505050; font-family: Arial; font-size: 15px; line-height: 20px; text-align: left;">
+        <ul style="list-style: none;">
+          {{#tldr.summaryBullets}}
+          <li class="tldr-bullet" style="font-size: 15px; line-height: 20px; margin-top: 11px;"> ◼ {{.}}</li>
+          {{/tldr.summaryBullets}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br>
+<br>
+Learn more about {{thanker.username}} and the tl;drs she contributed. Maybe you'll find a reason to thank her back!
+<br>
+<br>
+<br>
+
+<div style="margin:0 auto;width:200px;">
+<a style="text-decoration: none; padding: 10px 28px 10px 28px; font-size: 16px; font-weight: bold; font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif; color: #ffffff;background-color: #006DCC;border-radius: 24px" 
+  href="{{websiteUrl}}/{{thanker.username}}">
+  View {{thanker.username}}'s profile
+</a>
+</div>
+
+<br>
+<br>
+<br>
+--
+<br>
+You can <a href="{{websiteUrl}}/notifications/unsubscribe?id={{user._id}}&type=read&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">unsubscribe</a> in one click from these notifications.

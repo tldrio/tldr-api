@@ -18,15 +18,21 @@ function thankContributor (req, res, next) {
     return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
   }
 
-  Tldr.findOne( { _id: id }, function (err, tldr) {
+	Tldr.findOne({ _id: id })
+      .populate('creator')
+      .exec(function (err, tldr) {
     if (err) {
       return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
     }
     tldr.thank( req.user, function (err, tldr) {
       if (err) { return next(i18n.se_thanking); }
       mailer.sendEmail({ type: 'adminContributorThanked'
+                       , values: { thanker: req.user, tldr: tldr , user:tldr.creator}
+                       });
+      mailer.sendEmail({ type: 'thank'
                        , development: true
-                       , values: { user: req.user, tldr: tldr }
+                       , to: tldr.creator.email
+                       , values: { thanker: req.user, tldr: tldr , user:tldr.creator}
                        });
 
       return res.json(200, tldr);
