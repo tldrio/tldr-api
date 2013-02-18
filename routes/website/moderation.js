@@ -10,11 +10,14 @@ var models = require('../../lib/models')
   , async = require('async')
   , _ = require('underscore')
   , config = require('../../lib/config')
+  , bufferapp = require('../../lib/bufferapp')
   ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
-    , partials = req.renderingPartials || {};
+    , partials = req.renderingPartials || {}
+    , socialProfiles = bufferapp.getCachedProfiles()
+    ;
 
   values.title = "Tldrs to be moderated";
   partials.content = '{{>website/pages/moderation}}';
@@ -26,8 +29,8 @@ module.exports = function (req, res, next) {
         .sort('-createdAt')
         .populate('creator', 'username')
         .exec(function (err, tldrs) {
-          values.latestTldrs = tldrs;
-          _.each(values.latestTldrs, function (tldr) {
+          values.tldrs = tldrs;
+          _.each(values.tldrs, function (tldr) {
             tldr.linkToTldrPage = true;
           });
           cb(null);
