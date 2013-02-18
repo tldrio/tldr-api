@@ -21,6 +21,9 @@ module.exports = function (req, res, next) {
     }
 
     tweetText += ": http://tldr.io/tldrs/" + tldr._id + "/" + tldr.slug;
+
+console.log(tweetText);
+
     bufferapp.createUpdate(tweetText, req.body.profile_ids);
   });
 
