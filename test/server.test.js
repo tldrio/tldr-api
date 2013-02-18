@@ -795,6 +795,8 @@ describe('Webserver', function () {
     it('should be able to update the logged user\'s profile', function (done) {
       var obj;
 
+      done({ some: 'error'});
+
       request.post({ headers: {"Accept": "application/json"}
                    , uri: rootUrl + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
