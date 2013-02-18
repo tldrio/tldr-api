@@ -128,6 +128,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
+app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
 app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
 // Vote for/against a topic
