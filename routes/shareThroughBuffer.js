@@ -28,4 +28,4 @@ console.log(tweetText);
   });
 
   res.send(200);   // Don't wait before acknowledging request is being treated
-}
+};
