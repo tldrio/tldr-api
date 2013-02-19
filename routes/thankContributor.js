@@ -8,6 +8,7 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , mailer = require('../lib/mailer')
+  , mqClient = require('../lib/message-queue')
   , i18n = require('../lib/i18n');
 
 
@@ -18,17 +19,16 @@ function thankContributor (req, res, next) {
     return next({ statusCode: 401, body: { message: i18n.needToBeLogged} } );
   }
 
-  Tldr.findOne( { _id: id }, function (err, tldr) {
+	Tldr.findOne({ _id: id })
+      .populate('creator')
+      .exec(function (err, tldr) {
     if (err) {
       return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
     }
     tldr.thank( req.user, function (err, tldr) {
       if (err) { return next(i18n.se_thanking); }
-      mailer.sendEmail({ type: 'adminContributorThanked'
-                       , development: true
-                       , values: { user: req.user, tldr: tldr }
-                       });
 
+      mqClient.emit('tldr.thank', { thanker: req.user, id: id });
       return res.json(200, tldr);
     });
   }) ;

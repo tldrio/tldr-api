@@ -152,6 +152,7 @@ UserSchema = new Schema(
                            , postForum: { type: Boolean, default: true}
                            , newsletter: { type: Boolean, default: true}
                            , serviceUpdates: { type: Boolean, default: true}
+                           , thank: { type: Boolean, default: true}
                            }
   , notifications: [{ type: ObjectId, ref: 'notification' }]
   , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
