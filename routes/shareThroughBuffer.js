@@ -26,5 +26,5 @@ module.exports = function (req, res, next) {
   });
 
 
-  res.send(200)   // Don't wait before acknowledging request is being treated
+  res.send(200);   // Don't wait before acknowledging request is being treated
 };
