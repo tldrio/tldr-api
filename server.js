@@ -186,10 +186,11 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
 app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
 
-// Email confirmation, password recovery
+// Email confirmation, password recovery, unsubscribe route
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
 app.get('/forgotPassword', middleware.websiteRoute, routes.website_forgotPassword);
 app.get('/resetPassword', middleware.websiteRoute, routes.website_resetPassword);
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
 
 // Private pages
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
