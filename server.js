@@ -172,6 +172,8 @@ app.get('/extension', function (req, res, next) { return res.redirect(301, '/chr
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
 
+app.get('/elad', middleware.websiteRoute, routes.website_elad);
+
 
 // Tldr page
 app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website_tldrPage);
