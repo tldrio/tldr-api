@@ -8,6 +8,7 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , mailer = require('../lib/mailer')
+  , mqClient = require('../lib/message-queue')
   , i18n = require('../lib/i18n');
 
 
@@ -26,15 +27,8 @@ function thankContributor (req, res, next) {
     }
     tldr.thank( req.user, function (err, tldr) {
       if (err) { return next(i18n.se_thanking); }
-      mailer.sendEmail({ type: 'adminContributorThanked'
-                       , values: { thanker: req.user, tldr: tldr , user:tldr.creator}
-                       });
-      mailer.sendEmail({ type: 'thank'
-                       , development: true
-                       , to: tldr.creator.email
-                       , values: { thanker: req.user, tldr: tldr , user:tldr.creator}
-                       });
 
+      mqClient.emit('tldr.thank', { thanker: req.user, id: id });
       return res.json(200, tldr);
     });
   }) ;
