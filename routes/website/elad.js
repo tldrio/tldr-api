@@ -23,6 +23,7 @@ module.exports = function (req, res, next) {
 
   Tldr.find({ hostname: 'blog.eladgil.com' })
       .populate('creator')
+      .sort('title')
       .exec(function (err, tldrs) {
         values.tldrs = tldrs;
 
