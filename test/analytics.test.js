@@ -14,7 +14,7 @@ var should = require('chai').should()
   , Tldr = models.Tldr
   , Credentials = models.Credentials
   , Event = models.Event
-  , TldrEvent = models.TldrEvent
+  , TldrAnalytics = models.TldrAnalytics
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
@@ -62,8 +62,8 @@ describe.only('Analytics', function () {
     , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
     , async.apply(theRemove, Event)
-    , async.apply(theRemove, TldrEvent.daily)
-    , async.apply(theRemove, TldrEvent.monthly)
+    , async.apply(theRemove, TldrAnalytics.daily)
+    , async.apply(theRemove, TldrAnalytics.monthly)
     , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
     , function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
     , function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
@@ -75,12 +75,12 @@ describe.only('Analytics', function () {
     done();
   });
 
-  describe('TldrEvent.daily', function () {
+  describe('TldrAnalytics.daily', function () {
 
     it('should add events to the daily collection if they dont exist', function (done) {
-      TldrEvent.daily.addEvent(tldr1, function (err) {
+      TldrAnalytics.daily.addEvent(tldr1, function (err) {
         assert.isNull(err);
-        TldrEvent.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
+        TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
           tldrEventD.readCount.should.equal(1);
           // TODO: test with the tldr's wordsReadCount
           done();
@@ -89,17 +89,17 @@ describe.only('Analytics', function () {
     });
 
     it('if multiple events are added the same day for the same tldr, they should be aggregated', function (done) {
-      TldrEvent.daily.addEvent(tldr1, function (err) {
+      TldrAnalytics.daily.addEvent(tldr1, function (err) {
         clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrEvent.daily.addEvent(tldr1, function (err) {
-          TldrEvent.daily.find({}, function (err, tldrEventDs) {
+        TldrAnalytics.daily.addEvent(tldr1, function (err) {
+          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
             tldrEventDs.length.should.equal(1);
             tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
             tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
             tldrEventDs[0].readCount.should.equal(2);
             clock.tick(2 * 3600 * 1000);   // Fast forward 2 hours
-            TldrEvent.daily.addEvent(tldr1, function (err) {
-              TldrEvent.daily.find({}, function (err, tldrEventDs) {
+            TldrAnalytics.daily.addEvent(tldr1, function (err) {
+              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
                 tldrEventDs.length.should.equal(1);
                 tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
                 tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
@@ -114,25 +114,25 @@ describe.only('Analytics', function () {
     });
 
     it('Events that are added in a different day are aggregated in a different document', function (done) {
-      TldrEvent.daily.addEvent(tldr1, function (err) {
+      TldrAnalytics.daily.addEvent(tldr1, function (err) {
         clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrEvent.daily.addEvent(tldr1, function (err) {
-          TldrEvent.daily.find({}, function (err, tldrEventDs) {
+        TldrAnalytics.daily.addEvent(tldr1, function (err) {
+          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
             tldrEventDs.length.should.equal(1);
             tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
             tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
             tldrEventDs[0].readCount.should.equal(2);
             clock.tick(12 * 3600 * 1000);   // Fast forward 2 hours
-            TldrEvent.daily.addEvent(tldr1, function (err) {
-              TldrEvent.daily.find({}, function (err, tldrEventDs) {
+            TldrAnalytics.daily.addEvent(tldr1, function (err) {
+              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
                 tldrEventDs.length.should.equal(2);
 
-                TldrEvent.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
+                TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
                   tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
                   tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
                   tldrEventD.readCount.should.equal(2);
 
-                  TldrEvent.daily.findOne({ tldr: tldr1._id, timestamp: tomorrow }, function (err, tldrEventD) {
+                  TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: tomorrow }, function (err, tldrEventD) {
                     tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
                     tldrEventD.timestamp.getTime().should.equal(tomorrow.getTime());
                     tldrEventD.readCount.should.equal(1);
@@ -148,25 +148,25 @@ describe.only('Analytics', function () {
     });
 
     it('Events that are added the same day but for different tldrs are aggregated in a different document', function (done) {
-      TldrEvent.daily.addEvent(tldr1, function (err) {
+      TldrAnalytics.daily.addEvent(tldr1, function (err) {
         clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrEvent.daily.addEvent(tldr1, function (err) {
-          TldrEvent.daily.find({}, function (err, tldrEventDs) {
+        TldrAnalytics.daily.addEvent(tldr1, function (err) {
+          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
             tldrEventDs.length.should.equal(1);
             tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
             tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
             tldrEventDs[0].readCount.should.equal(2);
             clock.tick(2 * 3600 * 1000);   // Fast forward 2 hours
-            TldrEvent.daily.addEvent(tldr2, function (err) {
-              TldrEvent.daily.find({}, function (err, tldrEventDs) {
+            TldrAnalytics.daily.addEvent(tldr2, function (err) {
+              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
                 tldrEventDs.length.should.equal(2);
 
-                TldrEvent.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
+                TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
                   tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
                   tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
                   tldrEventD.readCount.should.equal(2);
 
-                  TldrEvent.daily.findOne({ tldr: tldr2._id, timestamp: dayNow }, function (err, tldrEventD) {
+                  TldrAnalytics.daily.findOne({ tldr: tldr2._id, timestamp: dayNow }, function (err, tldrEventD) {
                     tldrEventD.tldr.toString().should.equal(tldr2._id.toString());
                     tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
                     tldrEventD.readCount.should.equal(1);
@@ -181,6 +181,6 @@ describe.only('Analytics', function () {
       });
     });
 
-  });   // ==== End of 'TldrEvent' ==== //
+  });   // ==== End of 'TldrAnalytics' ==== //
 
 });
