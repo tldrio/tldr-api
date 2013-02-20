@@ -429,6 +429,24 @@ describe('Custom utils', function () {
   });   // ==== End of '#upsertKVInArray' ==== //
 
 
+  describe('Decrease date resolution', function () {
+
+    it('To the day', function () {
+      var date;
+
+      date = new Date(1985, 07, 20, 20, 00, 5, 938);
+      customUtils.getDayResolution(date).getTime().should.equal((new Date(1985, 07, 20)).getTime());
+    });
+
+    it('To the month', function () {
+      var date;
+
+      date = new Date(1985, 07, 20, 20, 00, 5, 938);
+      customUtils.getMonthResolution(date).getTime().should.equal((new Date(1985, 07, 1)).getTime());
+    });
+
+  });   // ==== End of 'Decrease date resolution' ==== //
+
 
 });
 
