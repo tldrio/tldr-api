@@ -10,6 +10,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , EventSchema, Event
   , TldrEventSchemaData
+  , TldrEventSchema = {}
   , TldrEvent = {}
   ;
 
@@ -31,9 +32,8 @@ EventSchema = new Schema({
 
 , user: { type: ObjectId, ref: 'user' }
 , thanks: { type: Number }
-});
+}, { collection: 'event' });
 
-Event = mongoose.model('event', EventSchema);
 
 
 /**
@@ -42,14 +42,35 @@ Event = mongoose.model('event', EventSchema);
  */
 TldrEventSchemaData = {
   timestamp: { type: Date, required: true }
-, tldr: { type: ObjectId, ref: 'tldr'}
+, tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
 , wordsReadCount: { type: Number }
 };
+TldrEventSchema.daily = new Schema(TldrEventSchemaData, { collection: 'tldrevent.daily' });
+TldrEventSchema.monthly = new Schema(TldrEventSchemaData, { collection: 'tldrevent.monthly' });
+// TODO add compound indexes on timestamp + tldr
 
-TldrEvent.daily = mongoose.model('tldrevent.daily', new Schema(TldrEventSchemaData, { collection: 'tldrevent.daily' }));
-TldrEvent.weekly = mongoose.model('tldrevent.weekly', new Schema(TldrEventSchemaData, { collection: 'tldrevent.weekly' }));
+/**
+ * Add an event to the tldr projections
+ * @param {Tldr} tldr
+ * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
+ */
+TldrEventSchema.daily.statics.addEvent = function (tldr, cb) {
+  var callback = cb || function () {}
 
+  // TODO: replace 999 by actual wordsReadCount when we have it
+  TldrEvent.update( { timestamp: customUtils.getDayResolution(new Date), tldr: tldr._id }
+                  , { $inc: { readCount: 1, wordsReadCount: 999 } }
+                  , { upsert: true, multi: false }
+                  , callback
+                  );
+};
+
+
+// Define the models
+Event = mongoose.model('event', EventSchema);
+TldrEvent.daily = mongoose.model('tldrevent.daily', TldrEventSchema.daily);
+TldrEvent.monthly = mongoose.model('tldrevent.weekly', TldrEventSchema.monthly);
 
 
 
