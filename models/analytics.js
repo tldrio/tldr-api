@@ -46,8 +46,8 @@ TldrAnalyticsSchemaData = {
 , readCount: { type: Number }
 , wordsReadCount: { type: Number }
 };
-TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldrevent.daily' });
-TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldrevent.monthly' });
+TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
+TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
 // TODO add compound indexes on timestamp + tldr
 
 
@@ -58,7 +58,7 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
  * @param {Tldr} tldr
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-function addEvent (Model, resolution, tldr, cb) {
+function addRead (Model, resolution, tldr, cb) {
   var callback = cb || function () {}
 
   // TODO: replace 999 by actual wordsReadCount when we have it
@@ -69,19 +69,19 @@ function addEvent (Model, resolution, tldr, cb) {
                         );
 }
 
-TldrAnalyticsSchema.daily.statics.addEvent = function (tldr, cb) {
-  addEvent(TldrAnalytics.daily, customUtils.getDayResolution, tldr, cb);
+TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
+  addRead(TldrAnalytics.daily, customUtils.getDayResolution, tldr, cb);
 };
 
-TldrAnalyticsSchema.monthly.statics.addEvent = function (tldr, cb) {
-  addEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, tldr, cb);
+TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
+  addRead(TldrAnalytics.monthly, customUtils.getMonthResolution, tldr, cb);
 };
 
 
 // Define the models
 Event = mongoose.model('event', EventSchema);
-TldrAnalytics.daily = mongoose.model('tldrevent.daily', TldrAnalyticsSchema.daily);
-TldrAnalytics.monthly = mongoose.model('tldrevent.weekly', TldrAnalyticsSchema.monthly);
+TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.daily);
+TldrAnalytics.monthly = mongoose.model('tldranalytics.weekly', TldrAnalyticsSchema.monthly);
 
 
 
