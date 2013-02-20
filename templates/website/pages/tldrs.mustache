@@ -20,6 +20,15 @@
             </span>
           </div>
           <div class="tldr-metadata-tldrs">
+            {{#anonymous}}
+            <span class="tldr-creator">
+              contributed anonymously
+            </span>
+            <span class="tldr-readcount">
+              &middot; read {{readCount}} times
+            </span>
+            {{/anonymous}}
+            {{^anonymous}}
             <span class="tldr-creator">
               contributed by
               <a href="/{{creator.username}}" target="_blank">
@@ -29,6 +38,7 @@
             <span class="tldr-readcount">
               &middot; read {{readCount}} times
             </span>
+            {{/anonymous}}
           </div>
         </li>
         {{/latestTldrs}}
@@ -38,8 +48,8 @@
 </section>
 <section class="marketing marketing-tip">
   <h2>Get the most popular summaries in your Twitter feed</h2>
-<a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-lang="en" data-size="large" >Follow @tldrio</a>
-<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+  <a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-lang="en" data-size="large" >Follow @tldrio</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </section>
 
 

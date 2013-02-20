@@ -8,12 +8,17 @@
           <span class="tldr-hostname">({{tldr.hostname}})</span>
         </div>
 
+
         <div class="tldr-metadata">
+          tl;dr 
+          {{^tldr.anonymous}}
           <span>
-            tl;dr by
-              <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
-              - read {{tldr.readCount}} times
+            by
+            <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
+            - 
           </span>
+          {{/tldr.anonymous}}
+          read {{tldr.readCount}} times
         </div>
 
         {{#tldr.imageUrl}}
@@ -27,7 +32,7 @@
             {{#tldr.summaryBullets}}
             <li class="tldr-bullet">
               <i class="icon-stop"></i>
-                    {{.}}
+              {{.}}
             </li>
             {{/tldr.summaryBullets}}
           </ul>
