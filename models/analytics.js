@@ -50,20 +50,31 @@ TldrEventSchema.daily = new Schema(TldrEventSchemaData, { collection: 'tldrevent
 TldrEventSchema.monthly = new Schema(TldrEventSchemaData, { collection: 'tldrevent.monthly' });
 // TODO add compound indexes on timestamp + tldr
 
+
 /**
  * Add an event to the tldr projections
+ * The same internal function is used for both (daily and monthly versions)
+ * Here is the signature of the external facing functions:
  * @param {Tldr} tldr
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-TldrEventSchema.daily.statics.addEvent = function (tldr, cb) {
+function addEvent (Model, resolution, tldr, cb) {
   var callback = cb || function () {}
 
   // TODO: replace 999 by actual wordsReadCount when we have it
-  TldrEvent.daily.update( { timestamp: customUtils.getDayResolution(new Date), tldr: tldr._id }
+  Model.update( { timestamp: resolution(new Date), tldr: tldr._id }
                         , { $inc: { readCount: 1, wordsReadCount: 999 } }
                         , { upsert: true, multi: false }
                         , callback
                         );
+}
+
+TldrEventSchema.daily.statics.addEvent = function (tldr, cb) {
+  addEvent(TldrEvent.daily, customUtils.getDayResolution, tldr, cb);
+};
+
+TldrEventSchema.monthly.statics.addEvent = function (tldr, cb) {
+  addEvent(TldrEvent.monthly, customUtils.getMonthResolution, tldr, cb);
 };
 
 
