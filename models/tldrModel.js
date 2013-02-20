@@ -16,7 +16,7 @@ var _ = require('underscore')
   , Schema = mongoose.Schema
   , TldrSchema, Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
@@ -125,6 +125,10 @@ TldrSchema = new Schema(
   , creator: { type: ObjectId, ref: 'user', required: true }
   , readCount: { type: Number, default: 1 }
   , readCountThisWeek: { type: Number, default: 1 }
+  , articleWordCount: { type: Number   // Number I made up after a bit of Googling
+                      , default: 863
+                      , set: customUtils.sanitizeNumber
+                      }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , distributionChannels: { latestTldrs: { type: Boolean, default: true }

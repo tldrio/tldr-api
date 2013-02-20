@@ -64,7 +64,7 @@ TldrAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
-, wordsReadCount: { type: Number }
+, wordsCount: { type: Number }
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -113,7 +113,7 @@ UserAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , user: { type: ObjectId, ref: 'user', required: true }
 , readCount: { type: Number }
-, wordsReadCount: { type: Number }
+, wordsCount: { type: Number }
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });

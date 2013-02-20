@@ -220,7 +220,6 @@ describe('Tldr', function () {
 
 
     it('should reject tldrs whose summary is an empty array', function (done) {
-
       var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
@@ -236,12 +235,10 @@ describe('Tldr', function () {
         err.name.should.equal('ValidationError');
         done();
       });
-
     });
 
 
     it('should reject tldrs whose summary contains empty bullets', function (done) {
-
       var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
@@ -257,7 +254,6 @@ describe('Tldr', function () {
         err.name.should.equal('ValidationError');
         done();
       });
-
     });
 
 
@@ -305,15 +301,16 @@ describe('Tldr', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe('#createAndSaveInstance', function () {
+  describe.only('#createAndSaveInstance', function () {
 
-    it('should allow user to set url, title, summary, resourceAuthor and imageUrl only', function (done) {
+    it('should allow user to set url, title, summary, resourceAuthor, imageUrl and articleWordCount only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
@@ -326,8 +323,27 @@ describe('Tldr', function () {
             tldr.summaryBullets.should.include('coin');
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://google.com/image.png');
+            tldr.articleWordCount.should.equal(437);
             tldr.createdAt.should.not.equal('2012');
 
+            done();
+          });
+        });
+    });
+
+    it('Should use default value if articleWordCount given is not parsable (potential XSS)', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 'document.write'   // Clearly unparsable
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          Tldr.findOne({resourceAuthor: 'bloup'}, function (err, tldr) {
+            tldr.articleWordCount.should.equal(863);
             done();
           });
         });

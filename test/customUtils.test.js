@@ -40,8 +40,8 @@ describe('Custom utils', function () {
       customUtils.timeago(test).should.equal('12 days ago');
     });
 
-
   });   // ==== End of '#timeago' ==== //
+
 
   describe('#normalizeUrl', function() {
 
@@ -427,6 +427,23 @@ describe('Custom utils', function () {
     });
 
   });   // ==== End of '#upsertKVInArray' ==== //
+
+
+  describe('sanitize number', function () {
+
+    it('If its parsable, parse it', function () {
+      customUtils.sanitizeNumber(412).should.equal(412);
+      customUtils.sanitizeNumber("412redd").should.equal(412);
+    });
+
+    it('If its not parsable, return undefined', function () {
+      assert.isUndefined(customUtils.sanitizeNumber(null));
+      assert.isUndefined(customUtils.sanitizeNumber(undefined));
+      assert.isUndefined(customUtils.sanitizeNumber("ddd412redd"));
+      assert.isUndefined(customUtils.sanitizeNumber("document.write("));
+    });
+
+  });   // ==== End of 'sanitize number' ==== //
 
 
   describe('Decrease date resolution', function () {

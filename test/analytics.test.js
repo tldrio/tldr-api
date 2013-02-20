@@ -35,7 +35,7 @@ function wait (millis, cb) {
 }
 
 
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {
@@ -108,7 +108,7 @@ describe.only('Analytics', function () {
         assert.isNull(err);
         TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
           tldrEventD.readCount.should.equal(1);
-          // TODO: test with the tldr's wordsReadCount
+          // TODO: test with the tldr's wordsCount
           done();
         });
       });
@@ -217,7 +217,7 @@ describe.only('Analytics', function () {
         assert.isNull(err);
         TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr1._id }, function (err, tldrEventD) {
           tldrEventD.readCount.should.equal(1);
-          // TODO: test with the tldr's wordsReadCount
+          // TODO: test with the tldr's wordsCount
           done();
         });
       });
