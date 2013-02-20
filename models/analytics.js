@@ -77,27 +77,29 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
 /**
  * Add an event to the tldr projections
  * The same internal function is used for both (daily and monthly versions)
- * Here is the signature of the external facing functions:
+ * @param {Model} Model Model to use, i.e. daily or monthly
+ * @param {Function} resolution Resolution to use, i.e. to day or to month
+ * @param {Object} updateObject What fields to increment and how
  * @param {Tldr} tldr
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-function addRead (Model, resolution, tldr, cb) {
+function addRead (Model, resolution, updateObject, tldr, cb) {
   var callback = cb || function () {}
 
   // TODO: replace 999 by actual wordsReadCount when we have it
   Model.update( { timestamp: resolution(new Date), tldr: tldr._id }
-              , { $inc: { readCount: 1, wordsReadCount: 999 } }
+              , { $inc: updateObject }
               , { upsert: true, multi: false }
               , callback
               );
 }
 
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addRead(TldrAnalytics.daily, customUtils.getDayResolution, tldr, cb);
+  addRead(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addRead(TldrAnalytics.monthly, customUtils.getMonthResolution, tldr, cb);
+  addRead(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
 };
 
 
