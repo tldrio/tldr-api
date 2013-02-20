@@ -24,6 +24,7 @@ var should = require('chai').should()
   , dayNow = new Date(2005, 6, 15)
   , tomorrow = new Date(2005, 6, 16)
   , monthNow = new Date(2005, 6, 1)
+  , nextMonth = new Date(2005, 7, 1)
   ;
 
 
@@ -150,7 +151,7 @@ describe.only('Analytics', function () {
             tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
             tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
             tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(12 * 3600 * 1000);   // Fast forward 2 hours
+            clock.tick(12 * 3600 * 1000);   // Fast forward 12 hours
             TldrAnalytics.daily.addRead(tldr1, function (err) {
               TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
                 tldrEventDs.length.should.equal(2);
@@ -209,6 +210,116 @@ describe.only('Analytics', function () {
       });
     });
 
-  });   // ==== End of 'TldrAnalytics' ==== //
+  });   // ==== End of 'TldrAnalytics.daily' ==== //
+
+
+  describe('TldrAnalytics.monthly - Copy of .daily whose purpose is mainly to test that code is correctly modularized', function () {
+
+    it('should add events to the monthly collection if they dont exist', function (done) {
+      TldrAnalytics.monthly.addRead(tldr1, function (err) {
+        assert.isNull(err);
+        TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr1._id }, function (err, tldrEventD) {
+          tldrEventD.readCount.should.equal(1);
+          // TODO: test with the tldr's wordsReadCount
+          done();
+        });
+      });
+    });
+
+    it('if multiple events are added the same month for the same tldr, they should be aggregated', function (done) {
+      TldrAnalytics.monthly.addRead(tldr1, function (err) {
+        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
+        TldrAnalytics.monthly.addRead(tldr1, function (err) {
+          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+            tldrEventDs.length.should.equal(1);
+            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
+            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
+            tldrEventDs[0].readCount.should.equal(2);
+            clock.tick(2 * 24 * 3600 * 1000);   // Fast forward 2 more days
+            TldrAnalytics.monthly.addRead(tldr1, function (err) {
+              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+                tldrEventDs.length.should.equal(1);
+                tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
+                tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
+                tldrEventDs[0].readCount.should.equal(3);
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Events that are added in a different month are aggregated in a different document', function (done) {
+      TldrAnalytics.monthly.addRead(tldr1, function (err) {
+        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
+        TldrAnalytics.monthly.addRead(tldr1, function (err) {
+          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+            tldrEventDs.length.should.equal(1);
+            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
+            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
+            tldrEventDs[0].readCount.should.equal(2);
+            clock.tick(20 * 24 * 3600 * 1000);   // Fast forward 20 days
+            TldrAnalytics.monthly.addRead(tldr1, function (err) {
+              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+                tldrEventDs.length.should.equal(2);
+
+                TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: monthNow }, function (err, tldrEventD) {
+                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
+                  tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
+                  tldrEventD.readCount.should.equal(2);
+
+                  TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: nextMonth }, function (err, tldrEventD) {
+                    tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
+                    tldrEventD.timestamp.getTime().should.equal(nextMonth.getTime());
+                    tldrEventD.readCount.should.equal(1);
+
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Events that are added the same month but for different tldrs are aggregated in a different document', function (done) {
+      TldrAnalytics.monthly.addRead(tldr1, function (err) {
+        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
+        TldrAnalytics.monthly.addRead(tldr1, function (err) {
+          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+            tldrEventDs.length.should.equal(1);
+            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
+            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
+            tldrEventDs[0].readCount.should.equal(2);
+            clock.tick(2 * 24 * 3600 * 1000);   // Fast forward 2 days
+            TldrAnalytics.monthly.addRead(tldr2, function (err) {
+              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
+                tldrEventDs.length.should.equal(2);
+
+                TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: monthNow }, function (err, tldrEventD) {
+                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
+                  tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
+                  tldrEventD.readCount.should.equal(2);
+
+                  TldrAnalytics.monthly.findOne({ tldr: tldr2._id, timestamp: monthNow }, function (err, tldrEventD) {
+                    tldrEventD.tldr.toString().should.equal(tldr2._id.toString());
+                    tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
+                    tldrEventD.readCount.should.equal(1);
+
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+
+  });   // ==== End of 'TldrAnalytics.monthly' ==== //
 
 });
