@@ -83,7 +83,7 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
  * @param {Tldr} tldr
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-function addRead (Model, resolution, updateObject, tldr, cb) {
+function addTldrEvent (Model, resolution, updateObject, tldr, cb) {
   var callback = cb || function () {}
 
   // TODO: replace 999 by actual wordsReadCount when we have it
@@ -95,11 +95,11 @@ function addRead (Model, resolution, updateObject, tldr, cb) {
 }
 
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addRead(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
+  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addRead(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
+  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
 };
 
 
