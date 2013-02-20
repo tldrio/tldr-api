@@ -160,7 +160,7 @@ app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
 
-app.get('/latest-summaries', middleware.websiteRoute, routes.website_tldrs);
+app.get('/latest-summaries', middleware.websiteRoute, routes.website_latestTldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
 
 app.get('/what-is-tldr', middleware.websiteRoute, routes.website_whatisit);
