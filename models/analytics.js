@@ -16,7 +16,9 @@ var mongoose = require('mongoose')
 
 
 /**
+ * ==============================
  * === Event model definition ===
+ * ==============================
  * Most of the fields are undefined because types only use
  * a subset of those. For example, a 'tldr.read' event only concerns
  * a tldr, its readCount, its wordsReadCount and its creator
@@ -34,10 +36,31 @@ EventSchema = new Schema({
 , thanks: { type: Number }
 }, { collection: 'event' });
 
+/**
+ * Add a read event to the backup event collection
+ * @param {Tldr} tldr
+ * @param {Function} cb Optional callback, signature: err, event
+ */
+EventSchema.statics.addRead = function (tldr, cb) {
+  var event = new Event({ type: 'tldr.read'
+                        , timestamp: new Date()
+                        , tldr: tldr._id
+                        , readCount: 1
+                        , wordsReadCount: 999   // TODO: replace by the actual one
+                        , creator: tldr.creator
+                        })
+    , callback = cb || function () {}
+    ;
+
+  event.save(callback);
+}
+
 
 
 /**
+ * =======================================
  * === TldrAnalytics models definition ===
+ * =======================================
  * The same schema data will be used for both, the difference being in the resolution
  */
 TldrAnalyticsSchemaData = {
@@ -63,10 +86,10 @@ function addRead (Model, resolution, tldr, cb) {
 
   // TODO: replace 999 by actual wordsReadCount when we have it
   Model.update( { timestamp: resolution(new Date), tldr: tldr._id }
-                        , { $inc: { readCount: 1, wordsReadCount: 999 } }
-                        , { upsert: true, multi: false }
-                        , callback
-                        );
+              , { $inc: { readCount: 1, wordsReadCount: 999 } }
+              , { upsert: true, multi: false }
+              , callback
+              );
 }
 
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {

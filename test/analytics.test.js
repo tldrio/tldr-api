@@ -75,6 +75,34 @@ describe.only('Analytics', function () {
     done();
   });
 
+
+  describe('Event model', function () {
+
+    it('Can add read events that have the expected form and are all different', function (done) {
+      Event.addRead(tldr1, function (err, event) {
+        event.type.should.equal('tldr.read');
+        event.timestamp.getTime().should.equal(fakeNow.getTime());
+        event.tldr.toString().should.equal(tldr1._id.toString());
+        event.readCount.should.equal(1);
+        event.creator.toString().should.equal(user._id.toString());
+
+        clock.tick(2300);   // 2.3s forward
+        Event.addRead(tldr1, function (err, event) {
+          event.type.should.equal('tldr.read');
+          event.timestamp.getTime().should.equal(fakeNow.getTime() + 2300);
+          event.tldr.toString().should.equal(tldr1._id.toString());
+
+          Event.find({}, function (err, events) {
+            events.length.should.equal(2);
+            done();
+          });
+        });
+      });
+    });
+
+  });   // === End of 'Event model' ==== //
+
+
   describe('TldrAnalytics.daily', function () {
 
     it('should add events to the daily collection if they dont exist', function (done) {
