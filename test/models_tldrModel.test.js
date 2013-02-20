@@ -301,7 +301,7 @@ describe('Tldr', function () {
   });   // ==== End of '#validators' ==== //
 
 
-  describe.only('#createAndSaveInstance', function () {
+  describe('#createAndSaveInstance', function () {
 
     it('should allow user to set url, title, summary, resourceAuthor, imageUrl and articleWordCount only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
