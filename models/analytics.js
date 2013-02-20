@@ -18,7 +18,7 @@ var mongoose = require('mongoose')
  * ==============================
  * === Event model definition ===
  * ==============================
- * Most of the fields are undefined because types only use
+ * Most of the fields will be undefined because types only use
  * a subset of those. For example, a 'tldr.read' event only concerns
  * a tldr, its readCount, its wordsReadCount and its creator
  */
@@ -30,8 +30,6 @@ EventSchema = new Schema({
 , readCount: { type: Number }
 , wordsReadCount: { type: Number }
 , creator: { type: ObjectId, ref: 'user' }
-
-, user: { type: ObjectId, ref: 'user' }
 , thanks: { type: Number }
 }, { collection: 'event' });
 
@@ -70,7 +68,9 @@ TldrAnalyticsSchemaData = {
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
-// TODO add compound indexes on timestamp + tldr
+
+// Compound indexes on timestamp and tldr (both in ascending order)
+TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
 
 
 /**
@@ -117,7 +117,9 @@ UserAnalyticsSchemaData = {
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
-// TODO add compound indexes on timestamp + user
+
+// Compound indexes on timestamp and user (both in ascending order)
+TldrAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
 
 
 /**
