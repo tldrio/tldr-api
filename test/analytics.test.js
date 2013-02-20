@@ -35,9 +35,6 @@ function wait (millis, cb) {
 }
 
 
-/**
- * Tests
- */
 describe.only('Analytics', function () {
   var user, tldr1, tldr2;
 
@@ -318,7 +315,6 @@ describe.only('Analytics', function () {
         });
       });
     });
-
 
   });   // ==== End of 'TldrAnalytics.monthly' ==== //
 

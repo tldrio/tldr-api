@@ -9,9 +9,8 @@ var mongoose = require('mongoose')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
   , EventSchema, Event
-  , TldrAnalyticsSchemaData
-  , TldrAnalyticsSchema = {}
-  , TldrAnalytics = {}
+  , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
+  , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
   ;
 
 
@@ -103,13 +102,64 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
 };
 
 
+
+/**
+ * =======================================
+ * === UserAnalytics models definition ===
+ * =======================================
+ * The same schema data will be used for both, the difference being in the resolution
+ */
+UserAnalyticsSchemaData = {
+  timestamp: { type: Date, required: true }
+, user: { type: ObjectId, ref: 'user', required: true }
+, readCount: { type: Number }
+, wordsReadCount: { type: Number }
+};
+UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
+UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
+// TODO add compound indexes on timestamp + user
+
+
+/**
+ * Add an event to the user projections
+ * The same internal function is used for both (daily and monthly versions)
+ * @param {Model} Model Model to use, i.e. daily or monthly
+ * @param {Function} resolution Resolution to use, i.e. to day or to month
+ * @param {Object} updateObject What fields to increment and how
+ * @param {User} user
+ * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
+ */
+function addUserEvent (Model, resolution, updateObject, user, cb) {
+  var callback = cb || function () {}
+
+  // TODO: replace 999 by actual wordsReadCount when we have it
+  Model.update( { timestamp: resolution(new Date), user: user._id }
+              , { $inc: updateObject }
+              , { upsert: true, multi: false }
+              , callback
+              );
+}
+
+UserAnalyticsSchema.daily.statics.addRead = function (user, cb) {
+  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+};
+
+UserAnalyticsSchema.monthly.statics.addRead = function (user, cb) {
+  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+};
+
+
+
+
 // Define the models
 Event = mongoose.model('event', EventSchema);
 TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.daily);
 TldrAnalytics.monthly = mongoose.model('tldranalytics.weekly', TldrAnalyticsSchema.monthly);
-
+UserAnalytics.daily = mongoose.model('useranalytics.daily', UserAnalyticsSchema.daily);
+UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSchema.monthly);
 
 
 // Interface
 module.exports.Event = Event;
 module.exports.TldrAnalytics = TldrAnalytics;
+module.exports.UserAnalytics = UserAnalytics;
