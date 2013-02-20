@@ -338,7 +338,7 @@ describe('Webserver', function () {
         , now = new Date();
 
       // Create a batch with 51 urls
-      for (i = 0; i < 51; i += 1) {
+      for (i = 0; i < 101; i += 1) {
         batchTooLarge.push('http://baaad.com/' + i);
       }
 
