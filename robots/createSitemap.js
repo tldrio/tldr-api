@@ -21,7 +21,7 @@ var fs = require('fs')
   ;
 
 console.log("Rebuilding the sitemap: " + new Date());
-process.chdir(process.env.TLDR_API_ROOT);
+process.chdir(process.env.TLDR_API_DIR);
 
 writeStream = fs.createWriteStream('./robots/sitemaps/sitemap.xml')
 before = fs.readFileSync('./robots/sitemap.before.xml', 'utf8')
@@ -47,6 +47,8 @@ async.waterfall([
 , function (cb) {   // Add tldr pages
     Tldr.find({}, function (err, tldrs) {
       _.each(tldrs, function (tldr) {
+console.log(tldr._id + ' - ' + tldr.slug);
+
         addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug, 'monthly', '0.5');
       });
       cb();

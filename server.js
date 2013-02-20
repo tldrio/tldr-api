@@ -115,6 +115,8 @@ app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
+// IN EXPERIMENT
+app.put('/tldrs/:id/thank', routes.thankContributor);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
@@ -126,6 +128,7 @@ app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
 app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
 app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
+app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
 app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
 // Vote for/against a topic
@@ -152,7 +155,7 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
 app.get('/about', middleware.websiteRoute, routes.website_about);
 app.get('/', middleware.websiteRoute     // Routing for this page depends on the logged in status
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
-                                      , ifNotLogged: routes. website_index }));
+                                      , ifNotLogged: routes.website_index }));
 app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
@@ -183,10 +186,11 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
 app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
 
-// Email confirmation, password recovery
+// Email confirmation, password recovery, unsubscribe route
 app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
 app.get('/forgotPassword', middleware.websiteRoute, routes.website_forgotPassword);
 app.get('/resetPassword', middleware.websiteRoute, routes.website_resetPassword);
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
 
 // Private pages
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
@@ -262,19 +266,6 @@ app.stopServer = function (cb) {
 if (module.parent === null) { // Code to execute only when running as main
   app.launchServer();
 }
-
-
-/*
- * If SIGINT is received (from Ctrl+C or from Upstart), gracefully stop the server then exit the process
- * FOR NOW: commented out because browsers use hanging connections so every shutdown actually takes a few seconds (~5) if a browser connected to the server
- *          which makes for a way too long restart
- */
-//process.on('SIGINT', function () {
-  //app.stopServer(function () {
-    //bunyan.info('Exiting process');
-    //process.exit(0);
-  //});
-//});
 
 
 

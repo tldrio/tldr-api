@@ -626,6 +626,17 @@ describe('Webserver', function () {
         });
       });
 
+      it('Should not be able to thank the contributor for a tldr', function (done) {
+
+        request.put({  uri: rootUrl + '/tldrs/'+ tldr2._id + '/thank' }, function (err, res, obj) {
+          res.statusCode.should.equal(401);
+          Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+            tldr.thankedBy.length.should.equal(0);
+            done();
+          });
+        });
+      });
+
       it('Should  be able to increment the read count with /tldrs/:id', function (done) {
         var tldrData = { incrementReadCount: true }
           , prevReadCount;
@@ -707,6 +718,18 @@ describe('Webserver', function () {
 
               done();
             });
+          });
+        });
+      });
+
+      it('Should be able to thank the contributor of a tldr', function (done) {
+        Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
+          tldr.thankedBy.should.not.include(user1._id.toString());
+          request.put( {uri: rootUrl + '/tldrs/' + tldr2._id +'/thank'}, function (err, res, obj) {
+            var tldr = JSON.parse(obj);
+            res.statusCode.should.equal(200);
+            tldr.thankedBy.should.include(user1._id.toString());
+            done();
           });
         });
       });

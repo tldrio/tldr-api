@@ -17,13 +17,13 @@ function deleteTldr (req, res, next) {
 
   var id = req.params.id;
 
-  Tldr.remove({ _id: id }, function (err) {
+	Tldr.removeTldr(id, function (err) {
     if (err) {
       res.send(i18n.deletionFailure);
     } else {
       res.send(i18n.deletionOk);
     }
-  });
+	});
 }
 
 // Module interface

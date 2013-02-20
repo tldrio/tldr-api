@@ -46,6 +46,7 @@ async.waterfall([
             possibleUrls.push(customUtils.normalizeUrl(url));
           });
           tldrs[i].possibleUrls = possibleUrls;
+          tldrs[i].hostname = customUtils.getHostnameFromUrl(tldrs[i].url);
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 

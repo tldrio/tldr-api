@@ -132,6 +132,7 @@ TldrSchema = new Schema(
                           }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
+  , thankedBy: [{ type: ObjectId }]
   }
 , { strict: true });
 
@@ -233,6 +234,29 @@ TldrSchema.statics.moderateTldr = function (id, cb) {
 
 
 /**
+ * Remove a tldr completely, meaning it won't show up in its creator's list of tldr
+ */
+TldrSchema.statics.removeTldr = function (id, callback) {
+	var creator;
+
+	Tldr.findOne({ _id: id })
+      .populate('creator')
+      .exec(function (err, tldr) {
+		if (err) { return callback(err); }
+		if (!tldr) { return callback('Tldr not found'); }
+    creator = tldr.creator;
+
+		tldr.remove(function (err) {
+			if (err) { return callback(err); }
+
+			creator.tldrsCreated = _.filter(creator.tldrsCreated, function (tid) { return tid.toString() !== id.toString(); });
+			creator.save(callback);
+		});
+	});
+};
+
+
+/**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
@@ -283,6 +307,7 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
     }
   });
 };
+
 
 
 /**
@@ -336,6 +361,28 @@ TldrSchema.methods.serialize = function () {
   });
 
   return JSON.stringify(jsonVersion);
+};
+
+/**
+ * Thank the author of the tldr
+ * @param {User} thanker User who thanked
+ * @param {Function} cb Optional callback. Signature: err, tldr
+ */
+TldrSchema.methods.thank = function (thanker , cb) {
+  var callback = cb ? cb : function () {};
+
+  if (! thanker || ! thanker._id) {
+    return callback({ thanker: "required" });
+  }
+
+  // The user managed to thank twice -> dont do anything
+  if (this.thankedBy.indexOf(thanker._id) !== -1) {
+    return callback(null, this);
+  }
+
+  this.thankedBy.addToSet(thanker._id);
+
+  this.save(callback);
 };
 
 

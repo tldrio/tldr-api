@@ -3,44 +3,61 @@
   <div class="tldr-base-unit">
     <div class="latest-tldrs-created">
       <ul class="unstyled">
-        {{#latestTldrs}}
-        <li>
-          <div class="tldr-icon">
+        {{#tldrs}}
+        <li data-tldr-id="{{_id}}">
+          <!-- Channels -->
+          <div style="width: 25%; float: right;">
+            <label class="checkbox"><input kind="channel" channel="latestTldrs" type="checkbox"{{#distributionChannels.latestTldrs}} checked{{/distributionChannels.latestTldrs}}><strong>Latest</strong></label>
+            <label class="checkbox"><input kind="channel" channel="latestTldrsRSSFeed" type="checkbox"{{#distributionChannels.latestTldrsRSSFeed}} checked{{/distributionChannels.latestTldrsRSSFeed}}><strong>RSS</strong></label>
+            {{#socialProfiles}}
+              <label class="checkbox">
+                <input type="checkbox" kind="sharing" bufferid="{{id}}">
+                {{service_username}} <span style="color: #999;">({{formatted_service}})</span>
+              </label>
+            {{/socialProfiles}}
+            <button class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
+            <button class="btn btn-mini cockblockTldr" type="button">Cockblock</button>
+            <button class="btn btn-danger btn-mini deleteTldr" type="button">Delete</button>
           </div>
-          <div class="tldr-title-wrapper">
-            <p class="tldr-title-ellipsis">
-              <a href="{{url}}" target="_blank">{{title}}</a>
-            </p>
-            {{>website/tldrBadge}}
-            {{>website/powertip}}
+
+          <!-- Tldr -->
+          <div style="width: 75%;">
+            <div class="tldr-icon"></div>
+            <a href="{{url}}" target="_blank" style="color: #333; text-decoration: none;">{{title}}</a>
             <span class="tldr-hostname tldr-hostname-list">
               ({{hostname}})
             </span>
+            <div class="tldr-metadata-tldrs">
+              <span class="tldr-creator">
+                contributed by
+                <a href="/{{creator.username}}" target="_blank">
+                  <em>{{creator.username}}</em>
+                </a>
+              </span>
+              <span class="tldr-readcount">
+                &middot; read {{readCount}} times
+              </span>
+              <a href="/tldrs/{{_id}}/{{slug}}"><span class="label">page</span></a>
+              <a href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><span class="label label-info">in DB</span></a>
+            </div>
+            <ul>
+              {{#summaryBullets}}
+              <li style="list-style-type: none;">
+                <i class="icon-stop"></i>
+                {{.}}
+              </li>
+              {{/summaryBullets}}
+            </ul>
+          </div>
 
-            <button style="float: right; margin-left: 8px;" class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
-            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrsRSSFeed}}btn-success{{/distributionChannels.latestTldrsRSSFeed}}
-                    {{^distributionChannels.latestTldrsRSSFeed}}btn-danger{{/distributionChannels.latestTldrsRSSFeed}} btn-mini latestRSS" type="button">RSS</button>
-            <button style="float: right; margin-left: 8px;" class="btn {{#distributionChannels.latestTldrs}}btn-success{{/distributionChannels.latestTldrs}}
-                    {{^distributionChannels.latestTldrs}}btn-danger{{/distributionChannels.latestTldrs}} btn-mini latest" type="button">Latest</button>
-          </div>
-          <div class="tldr-metadata-tldrs">
-            <span class="tldr-creator">
-              contributed by
-              <a href="/{{creator.username}}" target="_blank">
-                <em>{{creator.username}}</em>
-              </a>
-            </span>
-            <span class="tldr-readcount">
-              &middot; read {{readCount}} times
-            </span>
-          </div>
+          <hr style="clear: both; height: 1px; background-color: #333; border: none;">
         </li>
-        {{/latestTldrs}}
+        {{/tldrs}}
       </ul>
 
-      {{^latestTldrs}}
+      {{^tldrs}}
         Woohoo, no tldrs need to be moderated!
-      {{/latestTldrs}}
+      {{/tldrs}}
     </div>
   </div>
 </section>
