@@ -15,7 +15,7 @@ var should = require('chai').should()
   ;
 
 
-describe.only('Redis Queue', function () {
+describe('Redis Queue', function () {
 
   it('Should send and receive standard messages correctly', function (done) {
     var rq = new RedisQueue(rqConfig);
