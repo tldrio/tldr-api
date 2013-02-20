@@ -22,6 +22,7 @@ h4e.setup({ extension: 'mustache'
 function checkForInactivity (limitDateOfInactivity) {
   User.find({})
   .where('lastActive').lte(limitDateOfInactivity)
+  .where('lastActiveMailSent').equals(false)
    .exec(function(err, users) {
      if (err) {
        console.log('Fatal error, couldnt retrieve the docs');
@@ -37,8 +38,11 @@ function checkForInactivity (limitDateOfInactivity) {
                         , values: user
                         , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
                         }, function (err) {
-                          cb(err);
                           bunyan.info('Inactivity email sent to ' + user.email);
+                          user.lastActiveMailSent = true;
+                          user.save(function() {
+                            cb(err);
+                          });
                         });
               }
               , function (err) {
