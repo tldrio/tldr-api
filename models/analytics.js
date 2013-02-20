@@ -59,11 +59,11 @@ TldrEventSchema.daily.statics.addEvent = function (tldr, cb) {
   var callback = cb || function () {}
 
   // TODO: replace 999 by actual wordsReadCount when we have it
-  TldrEvent.update( { timestamp: customUtils.getDayResolution(new Date), tldr: tldr._id }
-                  , { $inc: { readCount: 1, wordsReadCount: 999 } }
-                  , { upsert: true, multi: false }
-                  , callback
-                  );
+  TldrEvent.daily.update( { timestamp: customUtils.getDayResolution(new Date), tldr: tldr._id }
+                        , { $inc: { readCount: 1, wordsReadCount: 999 } }
+                        , { upsert: true, multi: false }
+                        , callback
+                        );
 };
 
 
