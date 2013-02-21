@@ -116,8 +116,8 @@ function getAnalytics (Model, beg, end, tldr, callback) {
 
   if (beg || end) {
     query.timestamp = {};
-    if (beg) { query['$gt'] = beg; }
-    if (end) { query['$lt'] = end; }
+    if (beg) { query.timestamp['$gt'] = beg; }
+    if (end) { query.timestamp['$lt'] = end; }
   }
 
   Model.find(query, callback);

@@ -35,7 +35,7 @@ function wait (millis, cb) {
 }
 
 
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {
@@ -252,7 +252,7 @@ describe.only('Analytics', function () {
       ], done);
     });
 
-    it('Should give you only the analytics corresponding to the dates you want', function (done) {
+    it.only('Should give you only the analytics corresponding to the dates you want', function (done) {
       async.waterfall([
         async.apply(addDailyRead, tldr1)
       , async.apply(asyncClockTick, 24 * 3600 * 1000)
@@ -274,6 +274,22 @@ describe.only('Analytics', function () {
             data[0].readCount.should.equal(1);
             data[1].timestamp.getTime().should.equal(dayNow.getTime() + 1 * 24 * 3600 * 1000);
             data[1].readCount.should.equal(2);
+            cb();
+          });
+        }
+      , function (cb) {
+          TldrAnalytics.daily.getData(new Date(2005, 6, 17, 7), null, tldr1, function (err, data) {
+            data.length.should.equal(1);
+            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 3 * 24 * 3600 * 1000);
+            data[0].readCount.should.equal(3);
+            cb();
+          });
+        }
+      , function (cb) {
+          TldrAnalytics.daily.getData(new Date(2005, 6, 16, 7), new Date(2005, 6, 17, 7), tldr1, function (err, data) {
+            data.length.should.equal(1);
+            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 2 * 24 * 3600 * 1000);
+            data[0].readCount.should.equal(1);
             cb();
           });
         }
