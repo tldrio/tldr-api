@@ -451,15 +451,15 @@ describe('Custom utils', function () {
     it('To the day', function () {
       var date;
 
-      date = new Date(1985, 07, 20, 20, 00, 5, 938);
-      customUtils.getDayResolution(date).getTime().should.equal((new Date(1985, 07, 20)).getTime());
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getDayResolution(date).getTime().should.equal((new Date(1985, 7, 20)).getTime());
     });
 
     it('To the month', function () {
       var date;
 
-      date = new Date(1985, 07, 20, 20, 00, 5, 938);
-      customUtils.getMonthResolution(date).getTime().should.equal((new Date(1985, 07, 1)).getTime());
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getMonthResolution(date).getTime().should.equal((new Date(1985, 7, 1)).getTime());
     });
 
   });   // ==== End of 'Decrease date resolution' ==== //

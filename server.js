@@ -110,12 +110,12 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
+app.get('/tldrs/:id/stats', routes.getStatsForTldr);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.put('/tldrs/:id', routes.updateTldrWithId);
-// IN EXPERIMENT
 app.put('/tldrs/:id/thank', routes.thankContributor);
 
 // routes for emails gathered during a product launch

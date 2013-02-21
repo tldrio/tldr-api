@@ -51,7 +51,7 @@ EventSchema.statics.addRead = function (tldr, cb) {
     ;
 
   event.save(callback);
-}
+};
 
 
 
@@ -88,7 +88,7 @@ function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
   var callback = cb || function () {}
     ;
 
-  Model.update( { timestamp: resolution(new Date), tldr: tldrId }
+  Model.update( { timestamp: resolution(new Date()), tldr: tldrId }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
               , callback
@@ -118,8 +118,8 @@ function getAnalytics (Model, beg, end, tldr, callback) {
 
   if (beg || end) {
     query.timestamp = {};
-    if (beg) { query.timestamp['$gt'] = beg; }
-    if (end) { query.timestamp['$lt'] = end; }
+    if (beg) { query.timestamp.$gt = beg; }
+    if (end) { query.timestamp.$lt = end; }
   }
 
   Model.find(query, callback);
@@ -165,10 +165,10 @@ UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
 function addUserEvent (Model, resolution, updateObject, user, cb) {
-  var callback = cb || function () {}
+  var callback = cb || function () {};
 
   // TODO: replace 999 by actual wordsReadCount when we have it
-  Model.update( { timestamp: resolution(new Date), user: user._id }
+  Model.update( { timestamp: resolution(new Date()), user: user._id }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
               , callback
