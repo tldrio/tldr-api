@@ -6,6 +6,7 @@
 
 var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
+  , mqClient = require('../lib/message-queue')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
   , EventSchema, Event
@@ -189,6 +190,16 @@ TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.
 TldrAnalytics.monthly = mongoose.model('tldranalytics.weekly', TldrAnalyticsSchema.monthly);
 UserAnalytics.daily = mongoose.model('useranalytics.daily', UserAnalyticsSchema.daily);
 UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSchema.monthly);
+
+
+// Handle all events
+mqClient.on('tldr.read', function (data) {
+  Event.addRead(data.tldr);
+  TldrAnalytics.daily.addRead(data.tldr);
+  TldrAnalytics.monthly.addRead(data.tldr);
+  UserAnalytics.daily.addRead(data.tldr);
+  UserAnalytics.monthly.addRead(data.tldr);
+});
 
 
 // Interface
