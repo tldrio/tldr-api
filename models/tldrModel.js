@@ -16,7 +16,7 @@ var _ = require('underscore')
   , Schema = mongoose.Schema
   , TldrSchema, Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount']     // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
@@ -90,6 +90,7 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , anonymous: { type: Boolean, default: false }
   , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true

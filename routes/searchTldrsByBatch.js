@@ -21,7 +21,7 @@ function searchTldrsByBatch (req, res, next) {
   var query = req.query
     , batch = []
     , urls = {}
-    , maxBatchSize = 50
+    , maxBatchSize = 100
     ;
 
   if (!req.body.batch) { req.body.batch = []; }
