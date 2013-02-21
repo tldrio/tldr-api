@@ -15,6 +15,7 @@ var should = require('chai').should()
   , Credentials = models.Credentials
   , Event = models.Event
   , TldrAnalytics = models.TldrAnalytics
+  , UserAnalytics = models.UserAnalytics
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
@@ -62,6 +63,8 @@ describe('Analytics', function () {
     , async.apply(theRemove, Event)
     , async.apply(theRemove, TldrAnalytics.daily)
     , async.apply(theRemove, TldrAnalytics.monthly)
+    , async.apply(theRemove, UserAnalytics.daily)
+    , async.apply(theRemove, UserAnalytics.monthly)
     , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
     , function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
     , function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
@@ -71,6 +74,23 @@ describe('Analytics', function () {
   afterEach(function (done) {
     clock.restore();
     done();
+  });
+
+  // Make sure the start state is well known
+  it('Creating two tldrs for testing should already have created their analytics even if they dont existed before', function (done) {
+    TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
+      tldrEventD.readCount.should.equal(1);
+      TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr2._id }, function (err, tldrEventD) {
+        tldrEventD.readCount.should.equal(1);
+        TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr1._id }, function (err, tldrEventD) {
+          tldrEventD.readCount.should.equal(1);
+          TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr2._id }, function (err, tldrEventD) {
+            tldrEventD.readCount.should.equal(1);
+            done();
+          });
+        });
+      });
+    });
   });
 
 
@@ -101,310 +121,231 @@ describe('Analytics', function () {
   });   // === End of 'Event model' ==== //
 
 
-  describe('TldrAnalytics.daily', function () {
+  describe('TldrAnalytics (both daily and monthly)', function () {
     // Usable with async.apply
-    function addDailyRead (tldr, cb) { TldrAnalytics.daily.addRead(tldr, function(err) { return cb(err); }); }
+    function addRead (Model, tldr, cb) { Model.addRead(tldr, function(err) { return cb(err); }); }
     function asyncClockTick (time, cb) { clock.tick(time); return cb(); }
 
-    it('should add events to the daily collection if they dont exist', function (done) {
-      TldrAnalytics.daily.addRead(tldr1, function (err) {
-        assert.isNull(err);
-        TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
-          tldrEventD.readCount.should.equal(1);
-          // TODO: test with the tldr's wordsCount
-          done();
-        });
-      });
-    });
+    describe('if multiple events are added the same period for the same tldr, they should be aggregated', function () {
+      function doTest (Model, stayInPeriod, resolutionNow, cb) {
+        Model.addRead(tldr1._id, function (err) {
+          clock.tick(2 * stayInPeriod);
+          Model.addRead(tldr1._id, function (err) {
+            Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
+              tldrEvents.length.should.equal(1);
+              tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
+              tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
+              tldrEvents[0].readCount.should.equal(3);
+              clock.tick(stayInPeriod);
+              Model.addRead(tldr1._id, function (err) {
+                Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
+                  tldrEvents.length.should.equal(1);
+                  tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
+                  tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
+                  tldrEvents[0].readCount.should.equal(4);
 
-    it('it also works when selecting by tldr id instead of tldr', function (done) {
-      TldrAnalytics.daily.addRead(tldr1._id, function (err) {
-        assert.isNull(err);
-        TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1 }, function (err, tldrEventD) {
-          tldrEventD.readCount.should.equal(1);
-          done();
-        });
-      });
-    });
-
-    it('if multiple events are added the same day for the same tldr, they should be aggregated', function (done) {
-      TldrAnalytics.daily.addRead(tldr1, function (err) {
-        clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrAnalytics.daily.addRead(tldr1, function (err) {
-          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(2 * 3600 * 1000);   // Fast forward 2 hours
-            TldrAnalytics.daily.addRead(tldr1, function (err) {
-              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(1);
-                tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-                tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
-                tldrEventDs[0].readCount.should.equal(3);
-
-                done();
+                  cb();
+                });
               });
             });
           });
         });
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 2 * 3600 * 1000, dayNow, done);
+      });
+
+      it('monthly', function (done) {
+        doTest(TldrAnalytics.monthly, 2 * 24 * 3600 * 1000, monthNow, done);
       });
     });
 
-    it('Events that are added in a different day are aggregated in a different document', function (done) {
-      TldrAnalytics.daily.addRead(tldr1, function (err) {
-        clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrAnalytics.daily.addRead(tldr1, function (err) {
-          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(12 * 3600 * 1000);   // Fast forward 12 hours
-            TldrAnalytics.daily.addRead(tldr1, function (err) {
-              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(2);
+    describe('Events that are added in a different period are aggregated in a different document', function () {
+      function doTest(Model, stayInPeriod, goToNextPeriod, resolutionNow, resolutionNext, cb) {
+        Model.addRead(tldr1._id, function (err) {
+          clock.tick(stayInPeriod);
+          Model.addRead(tldr1._id, function (err) {
+            Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
+              tldrEvents.length.should.equal(1);
+              tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
+              tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
+              tldrEvents[0].readCount.should.equal(3);
+              clock.tick(goToNextPeriod);
+              Model.addRead(tldr1._id, function (err) {
+                Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
+                  tldrEvents.length.should.equal(2);
 
-                TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
-                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                  tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
-                  tldrEventD.readCount.should.equal(2);
+                  Model.findOne({ tldr: tldr1._id, timestamp: resolutionNow }, function (err, tldrEvent) {
+                    tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
+                    tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
+                    tldrEvent.readCount.should.equal(3);
 
-                  TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: tomorrow }, function (err, tldrEventD) {
-                    tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                    tldrEventD.timestamp.getTime().should.equal(tomorrow.getTime());
-                    tldrEventD.readCount.should.equal(1);
+                    Model.findOne({ tldr: tldr1._id, timestamp: resolutionNext }, function (err, tldrEvent) {
+                      tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
+                      tldrEvent.timestamp.getTime().should.equal(resolutionNext.getTime());
+                      tldrEvent.readCount.should.equal(1);
 
-                    done();
+                      cb();
+                    });
                   });
                 });
               });
             });
           });
         });
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 4 * 3600 * 1000, 12 * 3600 * 1000, dayNow, tomorrow, done);
+      });
+
+      it('monthly', function (done) {
+        doTest(TldrAnalytics.monthly, 4 * 24 * 3600 * 1000, 25 * 24 * 3600 * 1000, monthNow, nextMonth, done);
       });
     });
 
-    it('Events that are added the same day but for different tldrs are aggregated in a different document', function (done) {
-      TldrAnalytics.daily.addRead(tldr1, function (err) {
-        clock.tick(4 * 3600 * 1000);   // Fast forward 4 hours
-        TldrAnalytics.daily.addRead(tldr1, function (err) {
-          TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(dayNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(2 * 3600 * 1000);   // Fast forward 2 hours
-            TldrAnalytics.daily.addRead(tldr2, function (err) {
-              TldrAnalytics.daily.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(2);
+    describe('Events that are added the same day but for different tldrs are aggregated in a different document', function () {
+      function doTest (Model, stayInPeriod, resolutionNow, cb) {
+        Model.addRead(tldr1._id, function (err) {
+          clock.tick(2 * stayInPeriod);
+          Model.addRead(tldr1._id, function (err) {
+            Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
+              tldrEvents.length.should.equal(1);
+              tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
+              tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
+              tldrEvents[0].readCount.should.equal(3);
+              clock.tick(stayInPeriod);
+              Model.addRead(tldr2._id, function (err) {
+                Model.find({}, function (err, tldrEvents) {
+                  tldrEvents.length.should.equal(2);
 
-                TldrAnalytics.daily.findOne({ tldr: tldr1._id, timestamp: dayNow }, function (err, tldrEventD) {
-                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                  tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
-                  tldrEventD.readCount.should.equal(2);
+                  Model.findOne({ tldr: tldr1._id, timestamp: resolutionNow }, function (err, tldrEvent) {
+                    tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
+                    tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
+                    tldrEvent.readCount.should.equal(3);
 
-                  TldrAnalytics.daily.findOne({ tldr: tldr2._id, timestamp: dayNow }, function (err, tldrEventD) {
-                    tldrEventD.tldr.toString().should.equal(tldr2._id.toString());
-                    tldrEventD.timestamp.getTime().should.equal(dayNow.getTime());
-                    tldrEventD.readCount.should.equal(1);
+                    Model.findOne({ tldr: tldr2._id, timestamp: resolutionNow }, function (err, tldrEvent) {
+                      tldrEvent.tldr.toString().should.equal(tldr2._id.toString());
+                      tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
+                      tldrEvent.readCount.should.equal(2);
 
-                    done();
+                      cb();
+                    });
                   });
                 });
               });
             });
           });
         });
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 2 * 3600 * 1000, dayNow, done);
+      });
+
+      it('monthly', function (done) {
+        doTest(TldrAnalytics.monthly, 2 * 24 * 3600 * 1000, monthNow, done);
       });
     });
 
-    it('Should give you all the analytics if you dont give dates', function (done) {
-      async.waterfall([
-        async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr1)
-      , function (cb) {
-          TldrAnalytics.daily.getData(null, null, tldr1, function (err, data) {
-            data.length.should.equal(4);
-            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 0 * 24 * 3600 * 1000);
-            data[0].readCount.should.equal(1);
-            data[1].timestamp.getTime().should.equal(dayNow.getTime() + 1 * 24 * 3600 * 1000);
-            data[1].readCount.should.equal(2);
-            data[2].timestamp.getTime().should.equal(dayNow.getTime() + 2 * 24 * 3600 * 1000);
-            data[2].readCount.should.equal(1);
-            data[3].timestamp.getTime().should.equal(dayNow.getTime() + 3 * 24 * 3600 * 1000);
-            data[3].readCount.should.equal(3);
-            cb();
-          });
-        }
-      ], done);
-    });
-
-    it('Should give you only the analytics corresponding to the dates you want', function (done) {
-      async.waterfall([
-        async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(asyncClockTick, 24 * 3600 * 1000)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr2)
-      , async.apply(addDailyRead, tldr1)
-      , async.apply(addDailyRead, tldr1)
-      , function (cb) {
-          TldrAnalytics.daily.getData(null, new Date(2005, 6, 16, 7), tldr1, function (err, data) {
-            data.length.should.equal(2);
-            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 0 * 24 * 3600 * 1000);
-            data[0].readCount.should.equal(1);
-            data[1].timestamp.getTime().should.equal(dayNow.getTime() + 1 * 24 * 3600 * 1000);
-            data[1].readCount.should.equal(2);
-            cb();
-          });
-        }
-      , function (cb) {
-          TldrAnalytics.daily.getData(new Date(2005, 6, 17, 7), null, tldr1, function (err, data) {
-            data.length.should.equal(1);
-            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 3 * 24 * 3600 * 1000);
-            data[0].readCount.should.equal(3);
-            cb();
-          });
-        }
-      , function (cb) {
-          TldrAnalytics.daily.getData(new Date(2005, 6, 16, 7), new Date(2005, 6, 17, 7), tldr1, function (err, data) {
-            data.length.should.equal(1);
-            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 2 * 24 * 3600 * 1000);
-            data[0].readCount.should.equal(1);
-            cb();
-          });
-        }
-      ], done);
-    });
-
-  });   // ==== End of 'TldrAnalytics.daily' ==== //
-
-
-  describe('TldrAnalytics.monthly - Copy of .daily whose purpose is mainly to test that code is correctly modularized', function () {
-
-    it('should add events to the monthly collection if they dont exist', function (done) {
-      TldrAnalytics.monthly.addRead(tldr1, function (err) {
-        assert.isNull(err);
-        TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr1._id }, function (err, tldrEventD) {
-          tldrEventD.readCount.should.equal(1);
-          // TODO: test with the tldr's wordsCount
-          done();
-        });
-      });
-    });
-
-    it('if multiple events are added the same month for the same tldr, they should be aggregated', function (done) {
-      TldrAnalytics.monthly.addRead(tldr1, function (err) {
-        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
-        TldrAnalytics.monthly.addRead(tldr1, function (err) {
-          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(2 * 24 * 3600 * 1000);   // Fast forward 2 more days
-            TldrAnalytics.monthly.addRead(tldr1, function (err) {
-              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(1);
-                tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-                tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
-                tldrEventDs[0].readCount.should.equal(3);
-
-                done();
-              });
+    describe('Should give you all the analytics if you dont give dates', function () {
+      function doTest (Model, period, resolutions, cb) {
+        async.waterfall([
+          async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr1)
+        , function (_cb) {
+            Model.getData(null, null, tldr1, function (err, data) {
+              data.length.should.equal(4);
+              data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
+              data[0].readCount.should.equal(2);
+              data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
+              data[1].readCount.should.equal(2);
+              data[2].timestamp.getTime().should.equal(resolutions[2].getTime());
+              data[2].readCount.should.equal(1);
+              data[3].timestamp.getTime().should.equal(resolutions[3].getTime());
+              data[3].readCount.should.equal(3);
+              _cb();
             });
-          });
-        });
+          }
+        ], cb);
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 24 * 3600 * 1000, [dayNow, tomorrow, new Date(2005, 6, 17), new Date(2005, 6, 18)], done);
+      });
+
+      it('monhly', function (done) {
+        doTest(TldrAnalytics.monthly, 24 * 30 * 3600 * 1000, [monthNow, nextMonth, new Date(2005, 8, 1), new Date(2005, 9, 1)], done);
       });
     });
 
-    it('Events that are added in a different month are aggregated in a different document', function (done) {
-      TldrAnalytics.monthly.addRead(tldr1, function (err) {
-        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
-        TldrAnalytics.monthly.addRead(tldr1, function (err) {
-          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(20 * 24 * 3600 * 1000);   // Fast forward 20 days
-            TldrAnalytics.monthly.addRead(tldr1, function (err) {
-              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(2);
-
-                TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: monthNow }, function (err, tldrEventD) {
-                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                  tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
-                  tldrEventD.readCount.should.equal(2);
-
-                  TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: nextMonth }, function (err, tldrEventD) {
-                    tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                    tldrEventD.timestamp.getTime().should.equal(nextMonth.getTime());
-                    tldrEventD.readCount.should.equal(1);
-
-                    done();
-                  });
-                });
-              });
+    describe('Should give you only the analytics corresponding to the dates you want', function () {
+      function doTest(Model, period, resolutions, cb) {
+        async.waterfall([
+          async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr2)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr1)
+        , function (_cb) {
+            Model.getData(null, new Date(resolutions[1].getTime() + period / 2), tldr1, function (err, data) {
+              data.length.should.equal(2);
+              data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
+              data[0].readCount.should.equal(2);
+              data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
+              data[1].readCount.should.equal(2);
+              _cb();
             });
-          });
-        });
-      });
-    });
-
-    it('Events that are added the same month but for different tldrs are aggregated in a different document', function (done) {
-      TldrAnalytics.monthly.addRead(tldr1, function (err) {
-        clock.tick(4 * 24 * 3600 * 1000);   // Fast forward 4 days
-        TldrAnalytics.monthly.addRead(tldr1, function (err) {
-          TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-            tldrEventDs.length.should.equal(1);
-            tldrEventDs[0].tldr.toString().should.equal(tldr1._id.toString());
-            tldrEventDs[0].timestamp.getTime().should.equal(monthNow.getTime());
-            tldrEventDs[0].readCount.should.equal(2);
-            clock.tick(2 * 24 * 3600 * 1000);   // Fast forward 2 days
-            TldrAnalytics.monthly.addRead(tldr2, function (err) {
-              TldrAnalytics.monthly.find({}, function (err, tldrEventDs) {
-                tldrEventDs.length.should.equal(2);
-
-                TldrAnalytics.monthly.findOne({ tldr: tldr1._id, timestamp: monthNow }, function (err, tldrEventD) {
-                  tldrEventD.tldr.toString().should.equal(tldr1._id.toString());
-                  tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
-                  tldrEventD.readCount.should.equal(2);
-
-                  TldrAnalytics.monthly.findOne({ tldr: tldr2._id, timestamp: monthNow }, function (err, tldrEventD) {
-                    tldrEventD.tldr.toString().should.equal(tldr2._id.toString());
-                    tldrEventD.timestamp.getTime().should.equal(monthNow.getTime());
-                    tldrEventD.readCount.should.equal(1);
-
-                    done();
-                  });
-                });
-              });
+          }
+        , function (_cb) {
+            Model.getData(new Date(resolutions[2].getTime() + period / 2), null, tldr1, function (err, data) {
+              data.length.should.equal(1);
+              data[0].timestamp.getTime().should.equal(resolutions[3].getTime());
+              data[0].readCount.should.equal(3);
+              _cb();
             });
-          });
-        });
+          }
+        , function (_cb) {
+            Model.getData(new Date(resolutions[1].getTime() + period / 2), new Date(resolutions[2].getTime() + period / 2), tldr1, function (err, data) {
+              data.length.should.equal(1);
+              data[0].timestamp.getTime().should.equal(resolutions[2].getTime());
+              data[0].readCount.should.equal(1);
+              _cb();
+            });
+          }
+        ], cb);
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 24 * 3600 * 1000, [dayNow, tomorrow, new Date(2005, 6, 17), new Date(2005, 6, 18)], done);
+      });
+
+      it('monthly', function (done) {
+        doTest(TldrAnalytics.monthly, 24 * 30 * 3600 * 1000, [monthNow, nextMonth, new Date(2005, 8, 1), new Date(2005, 9, 1)], done);
       });
     });
 
-  });   // ==== End of 'TldrAnalytics.monthly' ==== //
+  });   // ==== End of 'TldrAnalytics' ==== //
+
 
 });

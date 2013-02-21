@@ -80,7 +80,7 @@ TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Function} resolution Resolution to use, i.e. to day or to month
  * @param {Object} updateObject What fields to increment and how
- * @param {ObjectID} tldrId (but passing the tldr itself works too)
+ * @param {ObjectID} tldrId
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
 function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
@@ -95,12 +95,12 @@ function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
 }
 
 // TODO: replace 999 by actual wordsReadCount when we have it
-TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
+TldrAnalyticsSchema.daily.statics.addRead = function (tldrId, cb) {
+  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
 };
 
-TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
+TldrAnalyticsSchema.monthly.statics.addRead = function (tldrId, cb) {
+  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
 };
 
 
@@ -195,8 +195,8 @@ UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSche
 // Handle all events
 mqClient.on('tldr.read', function (data) {
   Event.addRead(data.tldr);
-  TldrAnalytics.daily.addRead(data.tldr);
-  TldrAnalytics.monthly.addRead(data.tldr);
+  TldrAnalytics.daily.addRead(data.tldr._id);
+  TldrAnalytics.monthly.addRead(data.tldr._id);
   UserAnalytics.daily.addRead(data.tldr);
   UserAnalytics.monthly.addRead(data.tldr);
 });
