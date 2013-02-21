@@ -72,6 +72,7 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
 
 // Compound indexes on timestamp and tldr (both in ascending order)
 TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
+TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
 
 
 /**
@@ -150,7 +151,8 @@ UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'u
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
 
 // Compound indexes on timestamp and user (both in ascending order)
-TldrAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
+UserAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
+UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 
 
 /**
