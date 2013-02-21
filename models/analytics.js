@@ -127,8 +127,8 @@ TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldr, callback) 
   getAnalytics(TldrAnalytics.daily, beg, end, tldr, callback);
 };
 
-TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldr, callback) {
-  getAnalytics(TldrAnalytics.daily, beg, end, tldr, callback);
+TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldr, callback) {
+  getAnalytics(TldrAnalytics.monthly, beg, end, tldr, callback);
 };
 
 

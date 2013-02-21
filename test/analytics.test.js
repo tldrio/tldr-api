@@ -252,6 +252,34 @@ describe.only('Analytics', function () {
       ], done);
     });
 
+    it('Should give you only the analytics corresponding to the dates you want', function (done) {
+      async.waterfall([
+        async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr1)
+      , function (cb) {
+          TldrAnalytics.daily.getData(null, new Date(2005, 6, 16, 7), tldr1, function (err, data) {
+            data.length.should.equal(2);
+            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 0 * 24 * 3600 * 1000);
+            data[0].readCount.should.equal(1);
+            data[1].timestamp.getTime().should.equal(dayNow.getTime() + 1 * 24 * 3600 * 1000);
+            data[1].readCount.should.equal(2);
+            cb();
+          });
+        }
+      ], done);
+    });
+
   });   // ==== End of 'TldrAnalytics.daily' ==== //
 
 
