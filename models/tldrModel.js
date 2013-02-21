@@ -124,8 +124,8 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
-  , readCount: { type: Number, default: 1 }
-  , readCountThisWeek: { type: Number, default: 1 }
+  , readCount: { type: Number, default: 0 }
+  , readCountThisWeek: { type: Number, default: 0 }
   , articleWordCount: { type: Number   // Number I made up after a bit of Googling
                       , default: 863
                       , set: customUtils.sanitizeNumber
@@ -177,6 +177,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
+      mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
 
       // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);

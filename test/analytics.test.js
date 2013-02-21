@@ -91,7 +91,7 @@ describe('Analytics', function () {
           event.tldr.toString().should.equal(tldr1._id.toString());
 
           Event.find({}, function (err, events) {
-            events.length.should.equal(2);
+            events.length.should.equal(4);   // 2 events have been created when we created tldr1 and tldr2
             done();
           });
         });
@@ -252,7 +252,7 @@ describe('Analytics', function () {
       ], done);
     });
 
-    it.only('Should give you only the analytics corresponding to the dates you want', function (done) {
+    it('Should give you only the analytics corresponding to the dates you want', function (done) {
       async.waterfall([
         async.apply(addDailyRead, tldr1)
       , async.apply(asyncClockTick, 24 * 3600 * 1000)
