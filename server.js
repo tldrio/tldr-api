@@ -111,10 +111,10 @@ app.get('/users/logout', routes.logout);
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
 app.get('/tldrs/:id/stats', routes.getStatsForTldr);
-app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
-app.post('/tldrs', routes.createNewTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
+app.post('/tldrs', routes.createNewTldr);
+app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 app.put('/tldrs/:id/thank', routes.thankContributor);
 
@@ -209,6 +209,9 @@ app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
 // Moderation
 app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
+
+// Scratchpad to test analytics
+app.get('/scratchpad', middleware.websiteRoute, middleware.adminOnly, routes.website_scratchpad);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
