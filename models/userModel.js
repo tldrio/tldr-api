@@ -147,6 +147,7 @@ UserSchema = new Schema(
   , lastActive: { type: Date
                 , default: Date.now
                 }
+  , lastActiveMailSent: { type: Boolean , default: false }
   , notificationsSettings: { read: { type: Boolean, default: true}
                            , congratsTldrViews: { type: Boolean, default: true}
                            , postForum: { type: Boolean, default: true}
