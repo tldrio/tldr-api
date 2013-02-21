@@ -79,26 +79,56 @@ TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Function} resolution Resolution to use, i.e. to day or to month
  * @param {Object} updateObject What fields to increment and how
- * @param {Tldr} tldr
+ * @param {ObjectID} tldrId (but passing the tldr itself works too)
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-function addTldrEvent (Model, resolution, updateObject, tldr, cb) {
+function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
   var callback = cb || function () {}
+    ;
 
-  // TODO: replace 999 by actual wordsReadCount when we have it
-  Model.update( { timestamp: resolution(new Date), tldr: tldr._id }
+  Model.update( { timestamp: resolution(new Date), tldr: tldrId }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
               , callback
               );
 }
 
+// TODO: replace 999 by actual wordsReadCount when we have it
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
   addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
   addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldr, cb);
+};
+
+
+/**
+ * Return all analytics data concerning one tldr, between beg and end
+ * @param {Model} Model Model to use, i.e. daily or monthly
+ * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
+ * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
+ * @param {Tldr} tldr
+ * @param {Function} callback Siganture: err, array of time data points
+ */
+function getAnalytics (Model, beg, end, tldr, callback) {
+  var query = { tldr: tldr._id };
+
+  if (beg || end) {
+    query.timestamp = {};
+    if (beg) { query['$gt'] = beg; }
+    if (end) { query['$lt'] = end; }
+  }
+
+  Model.find(query, callback);
+}
+
+TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldr, callback) {
+  getAnalytics(TldrAnalytics.daily, beg, end, tldr, callback);
+};
+
+TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldr, callback) {
+  getAnalytics(TldrAnalytics.daily, beg, end, tldr, callback);
 };
 
 

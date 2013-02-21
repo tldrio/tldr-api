@@ -35,7 +35,7 @@ function wait (millis, cb) {
 }
 
 
-describe('Analytics', function () {
+describe.only('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {
@@ -102,6 +102,9 @@ describe('Analytics', function () {
 
 
   describe('TldrAnalytics.daily', function () {
+    // Usable with async.apply
+    function addDailyRead (tldr, cb) { TldrAnalytics.daily.addRead(tldr, function(err) { return cb(err); }); }
+    function asyncClockTick (time, cb) { clock.tick(time); return cb(); }
 
     it('should add events to the daily collection if they dont exist', function (done) {
       TldrAnalytics.daily.addRead(tldr1, function (err) {
@@ -109,6 +112,16 @@ describe('Analytics', function () {
         TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
           tldrEventD.readCount.should.equal(1);
           // TODO: test with the tldr's wordsCount
+          done();
+        });
+      });
+    });
+
+    it('it also works when selecting by tldr id instead of tldr', function (done) {
+      TldrAnalytics.daily.addRead(tldr1._id, function (err) {
+        assert.isNull(err);
+        TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1 }, function (err, tldrEventD) {
+          tldrEventD.readCount.should.equal(1);
           done();
         });
       });
@@ -205,6 +218,38 @@ describe('Analytics', function () {
           });
         });
       });
+    });
+
+    it('Should give you all the analytics if you dont give dates', function (done) {
+      async.waterfall([
+        async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(asyncClockTick, 24 * 3600 * 1000)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr2)
+      , async.apply(addDailyRead, tldr1)
+      , async.apply(addDailyRead, tldr1)
+      , function (cb) {
+          TldrAnalytics.daily.getData(null, null, tldr1, function (err, data) {
+            data.length.should.equal(4);
+            data[0].timestamp.getTime().should.equal(dayNow.getTime() + 0 * 24 * 3600 * 1000);
+            data[0].readCount.should.equal(1);
+            data[1].timestamp.getTime().should.equal(dayNow.getTime() + 1 * 24 * 3600 * 1000);
+            data[1].readCount.should.equal(2);
+            data[2].timestamp.getTime().should.equal(dayNow.getTime() + 2 * 24 * 3600 * 1000);
+            data[2].readCount.should.equal(1);
+            data[3].timestamp.getTime().should.equal(dayNow.getTime() + 3 * 24 * 3600 * 1000);
+            data[3].readCount.should.equal(3);
+            cb();
+          });
+        }
+      ], done);
     });
 
   });   // ==== End of 'TldrAnalytics.daily' ==== //
