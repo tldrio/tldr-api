@@ -110,11 +110,11 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldrId, cb) {
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
  * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
- * @param {Tldr} tldr
+ * @param {ObjectID} tldrId
  * @param {Function} callback Siganture: err, array of time data points
  */
-function getAnalytics (Model, beg, end, tldr, callback) {
-  var query = { tldr: tldr._id };
+function getAnalytics (Model, beg, end, tldrId, callback) {
+  var query = { tldr: tldrId };
 
   if (beg || end) {
     query.timestamp = {};
@@ -122,15 +122,15 @@ function getAnalytics (Model, beg, end, tldr, callback) {
     if (end) { query.timestamp.$lt = end; }
   }
 
-  Model.find(query, callback);
+  Model.find(query).sort('timestamp').exec(callback);
 }
 
-TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldr, callback) {
-  getAnalytics(TldrAnalytics.daily, beg, end, tldr, callback);
+TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldrId, callback) {
+  getAnalytics(TldrAnalytics.daily, beg, end, tldrId, callback);
 };
 
-TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldr, callback) {
-  getAnalytics(TldrAnalytics.monthly, beg, end, tldr, callback);
+TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldrId, callback) {
+  getAnalytics(TldrAnalytics.monthly, beg, end, tldrId, callback);
 };
 
 
