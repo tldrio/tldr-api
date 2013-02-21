@@ -181,6 +181,9 @@
         }
       }
     },
+    "node-redis-pubsub": {
+      "version": "0.1.0"
+    },
     "passport": {
       "version": "0.1.10",
       "dependencies": {
