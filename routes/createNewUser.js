@@ -32,7 +32,7 @@ function createNewUser(req, res, next) {
     }
 
     mailchimpSync.subscribeNewUser({ email: user.email, username: user.username });
-    mqClient.emit('user.created', { user: user });
+    mqClient.emit('user.created', { user: user, source: req.body.source });
 
     // Log user in right away after his creation
     req.logIn(user, function(err) {
