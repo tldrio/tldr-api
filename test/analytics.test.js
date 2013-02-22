@@ -36,7 +36,7 @@ function wait (millis, cb) {
 }
 
 
-describe('Analytics', function () {
+describe.only('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {
