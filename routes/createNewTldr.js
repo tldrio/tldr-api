@@ -53,7 +53,6 @@ function createNewTldr (req, res, next) {
       }
 
     } else {
-      mqClient.emit('tldr.created', {});
       mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
                        , development: false
                        , values: { user: req.user

@@ -36,7 +36,7 @@ function wait (millis, cb) {
 }
 
 
-describe('Analytics', function () {
+describe.skip('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {

@@ -167,7 +167,6 @@ UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 function addUserEvent (Model, resolution, updateObject, user, cb) {
   var callback = cb || function () {};
 
-  // TODO: replace 999 by actual wordsReadCount when we have it
   Model.update( { timestamp: resolution(new Date()), user: user._id }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
@@ -175,6 +174,7 @@ function addUserEvent (Model, resolution, updateObject, user, cb) {
               );
 }
 
+// TODO: replace 999 by actual wordsReadCount when we have it
 UserAnalyticsSchema.daily.statics.addRead = function (user, cb) {
   addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
 };
@@ -195,13 +195,13 @@ UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSche
 
 
 // Handle all events
-mqClient.on('tldr.read', function (data) {
-  Event.addRead(data.tldr);
-  TldrAnalytics.daily.addRead(data.tldr._id);
-  TldrAnalytics.monthly.addRead(data.tldr._id);
-  UserAnalytics.daily.addRead(data.tldr);
-  UserAnalytics.monthly.addRead(data.tldr);
-});
+//mqClient.on('tldr.read', function (data) {
+  //Event.addRead(data.tldr);
+  //TldrAnalytics.daily.addRead(data.tldr._id);
+  //TldrAnalytics.monthly.addRead(data.tldr._id);
+  //UserAnalytics.daily.addRead(data.tldr);
+  //UserAnalytics.monthly.addRead(data.tldr);
+//});
 
 
 // Interface
