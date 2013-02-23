@@ -19,7 +19,7 @@ var i18n = require('../lib/i18n')
  */
 function validateText (value) {
   try {
-    check(value).len(1, 1000);
+    check(value).len(1, 2000);
     return true;
   } catch(e) {
     return false;
