@@ -30,7 +30,7 @@ async.waterfall([
   }
 
 , function (cb) {
-    var i = 0;
+    var i = 0, errorCount = 0;
 
     Tldr.find({ }, function(err, tldrs) {
       if (err) { return cb(err); }
@@ -43,7 +43,14 @@ async.waterfall([
           console.log("==== #" + i);
 
           articleParsing.populateArticleWordCount(tldrs[i], function (err) {
-            if (err) { return cb(err); }
+            if (err) {
+              errorCount += 1;
+              if (errorCount > 10) {
+                return _cb(err);
+              } else {
+                return _cb();
+              }
+            }
 
             i += 1;
             setTimeout(function () { _cb(); }, 4000);   // Dont make the Readability API explode
