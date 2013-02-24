@@ -53,7 +53,7 @@ async.waterfall([
             }
 
             i += 1;
-            setTimeout(function () { _cb(); }, 4000);   // Dont make the Readability API explode
+            setTimeout(function () { _cb(); }, 8000);   // Dont make the Readability API explode
           });
         }
       , cb);
