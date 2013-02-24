@@ -46,7 +46,7 @@ async.waterfall([
             if (err) { return cb(err); }
 
             i += 1;
-            _cb();
+            setTimeout(function () { _cb(); }, 4000);   // Dont make the Readability API explode
           });
         }
       , cb);
