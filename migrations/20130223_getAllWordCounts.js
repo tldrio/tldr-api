@@ -32,8 +32,11 @@ async.waterfall([
 , function (cb) {
     var i = 0, errorCount = 0;
 
-    Tldr.find({ }, function(err, tldrs) {
+    Tldr.find({ articleWordCount: { $exists:false } }, function(err, tldrs) {
       if (err) { return cb(err); }
+
+      console.log("====");
+      console.log(tldrs.length);
 
       async.whilst(
         function () { return i < tldrs.length; }
