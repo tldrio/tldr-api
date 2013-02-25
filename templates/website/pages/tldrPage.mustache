@@ -1,7 +1,7 @@
 <div class="row">
   <div class="tldr-base-unit page-tldr-container">
     <div class="tldr-read-container">
-      <div class="tldr-tldr">
+      <div class="tldr-tldr" data-thanked="{{tldr.thankedBy}}">
         <div class="tldr-header">
           <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{tldr.hostname}}" alt="Favicon for {{tldr.hostname}}">
           <h1 class="tldr-title tldr-page-title"><a target="_blank" href="{{tldr.originalUrl}}">{{tldr.title}}</a></h1>
@@ -44,20 +44,25 @@
         {{/tldr.imageUrl}}
       </div>
 
-      <div class="tldr-tldr">
-        <div class="sub-tldr">
-          <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
-          <div class="sharing-container">
-            <div class="btn-group dropup">
-              <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
-                Share tl;dr
-              </button>
-            </div>
-            <div class="btn-group dropup">
-              <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
-                Save full article for later
-              </button>
-            </div>
+      <div class="sub-tldr">
+        <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
+        <div class="thank-container">
+          <div class="btn-group">
+            <button class="btn btn-link thank" >
+              Thank contributor
+            </button>
+          </div>
+        </div>
+        <div class="sharing-container">
+          <div class="btn-group dropup">
+            <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+              Share tl;dr
+            </button>
+          </div>
+          <div class="btn-group dropup">
+            <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+              Save full article for later
+            </button>
           </div>
         </div>
       </div>
