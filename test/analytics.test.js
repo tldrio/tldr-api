@@ -286,26 +286,18 @@ describe.only('Analytics', function () {
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(2);
               data[0].articleWordCount.should.equal(800);
-              data[0].cumulative.readCount.should.equal(2);
-              data[0].cumulative.articleWordCount.should.equal(800);
 
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
               data[1].articleWordCount.should.equal(800);
-              data[1].cumulative.readCount.should.equal(4);
-              data[1].cumulative.articleWordCount.should.equal(1600);
 
               data[2].timestamp.getTime().should.equal(resolutions[2].getTime());
               data[2].readCount.should.equal(1);
               data[2].articleWordCount.should.equal(400);
-              data[2].cumulative.readCount.should.equal(5);
-              data[2].cumulative.articleWordCount.should.equal(2000);
 
               data[3].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[3].readCount.should.equal(3);
               data[3].articleWordCount.should.equal(1200);
-              data[3].cumulative.readCount.should.equal(8);
-              data[3].cumulative.articleWordCount.should.equal(3200);
               _cb();
             });
           }
@@ -501,9 +493,11 @@ describe.only('Analytics', function () {
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(3);
               data[0].articleWordCount.should.equal(1300);
+
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
               data[1].articleWordCount.should.equal(900);
+
               data[2].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[2].readCount.should.equal(4);
               data[2].articleWordCount.should.equal(1800);
@@ -516,12 +510,15 @@ describe.only('Analytics', function () {
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(1);
               data[0].articleWordCount.should.equal(700);
+
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(1);
               data[1].articleWordCount.should.equal(700);
+
               data[2].timestamp.getTime().should.equal(resolutions[2].getTime());
               data[2].readCount.should.equal(1);
               data[2].articleWordCount.should.equal(700);
+
               data[3].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[3].readCount.should.equal(2);
               data[3].articleWordCount.should.equal(1400);

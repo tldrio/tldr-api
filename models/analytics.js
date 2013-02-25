@@ -7,6 +7,7 @@
 var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , mqClient = require('../lib/message-queue')
+  , _ = require('underscore')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
   , EventSchema, Event
@@ -66,9 +67,9 @@ TldrAnalyticsSchemaData = {
 , tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
-, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
-              , articleWordCount: { type: Number }
-              }
+//, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
+              //, articleWordCount: { type: Number }
+              //}
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -79,48 +80,69 @@ TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
 
 
 /**
- * Add an event to the tldr projections
+ * Add an event to the a projections
  * The same internal function is used for both (daily and monthly versions)
+ * and for both (user and tldr) projections as the signatures are identical
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Function} resolution Resolution to use, i.e. to day or to month
  * @param {Object} updateObject What fields to increment and by how much
- * @param {ObjectID} tldrId
+ * @param {Object} itemSelector Can select a tldr, a user or even several tldrs/users
  * @param {Function} cb Optional callback, signature: err
  */
-function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
+function addEvent (Model, resolution, updateObject, itemSelector, cb) {
   var callback = cb || function () {}
-    , query = { $inc: updateObject }
     , updateKeys = Object.keys(updateObject)
     , timestamp = resolution(new Date())
     ;
 
-  // Also update the cumulative data
-  updateKeys.forEach(function (key) {
-    query.$inc['cumulative.' + key] = updateObject[key];
-  });
-
-  Model.update( { timestamp: timestamp, tldr: tldrId }
+  Model.update( _.extend({ timestamp: timestamp }, itemSelector)
               , { $inc: updateObject }
               , { upsert: true, multi: false }
-              , function(err, numAffected, rawResponse) {
-                  var previousTimestamp, oneTimeUpdate;
-                  if (err) { return callback(err); }
-                  if (rawResponse.updatedExisting) { return callback(); }
-
-                  previousTimestamp = resolution.getPreviousPeriod(timestamp);
-                  Model.findOne({ timestamp: previousTimestamp, tldr: tldrId }, function (err, previousEvent) {
-                    if (err) { return callback(err); }
-
-                    oneTimeUpdate = {};
-                    oneTimeUpdate.$inc = {};
-                    updateKeys.forEach(function (key) {
-                      oneTimeUpdate.$inc['cumulative.' + key] = (previousEvent && previousEvent.cumulative) ? (previousEvent.cumulative[key] || 0) : 0;
-                    });
-                    Model.update({ timestamp: timestamp, tldr: tldrId }, oneTimeUpdate, {}, function (err) { callback(err); });
-                  });
-                }
+              , function(err, numAffected, rawResponse) { return callback(err); }
               );
 }
+// Version that tracked cumulative, but it is too much of a pain
+// As tracking holes is fucking difficult so we will just let clients recalculate
+// the cumulatives
+//function addEvent (Model, resolution, updateObject, itemSelector, cb) {
+  //var callback = cb || function () {}
+    //, update = { $inc: {} }
+    //, updateKeys = Object.keys(updateObject)
+    //, timestamp = resolution(new Date())
+    //;
+
+  //// Also update the cumulative data
+  //updateKeys.forEach(function (key) {
+    //update.$inc[key] = updateObject[key];
+    //update.$inc['cumulative.' + key] = updateObject[key];
+  //});
+
+  //Model.update( _.extend({ timestamp: timestamp }, itemSelector)
+              //, update
+              //, { upsert: true, multi: false }
+              //, function(err, numAffected, rawResponse) {
+                  //var previousTimestamp, oneTimeUpdate;
+                  //if (err) { return callback(err); }
+                  //if (rawResponse.updatedExisting) { return callback(); }
+
+                  //// This can only happen once, when the upsert was in fact an insert
+                  //previousTimestamp = resolution.getPreviousPeriod(timestamp);
+                  //Model.findOne(_.extend({ timestamp: previousTimestamp }, itemSelector), function (err, previousEvent) {
+                    //if (err) { return callback(err); }
+                    //oneTimeUpdate = { $inc: {} };
+                    //updateKeys.forEach(function (key) {
+                      //oneTimeUpdate.$inc['cumulative.' + key] = (previousEvent && previousEvent.cumulative) ? (previousEvent.cumulative[key] || 0) : 0;
+                    //});
+                    //Model.update(_.extend({ timestamp: timestamp }, itemSelector), oneTimeUpdate, {}, function (err) { callback(err); });
+                  //});
+                //}
+              //);
+//}
+
+function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
+  addEvent(Model, resolution, updateObject, { tldr: tldrId }, cb);
+}
+
 
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
   addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
@@ -173,6 +195,9 @@ UserAnalyticsSchemaData = {
 , user: { type: ObjectId, ref: 'user', required: true }
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
+//, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
+              //, articleWordCount: { type: Number }
+              //}
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
@@ -183,22 +208,10 @@ UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 
 
 /**
- * Add an event to the user projections
- * The same internal function is used for both (daily and monthly versions)
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Function} resolution Resolution to use, i.e. to day or to month
- * @param {Object} updateObject What fields to increment and how
- * @param {ObjectId} userId
- * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
+ * Uses addEvent which is defined in the TldrAnalytics section
  */
 function addUserEvent (Model, resolution, updateObject, userId, cb) {
-  var callback = cb || function () {};
-
-  Model.update( { timestamp: resolution(new Date()), user: userId }
-              , { $inc: updateObject }
-              , { upsert: true, multi: false }
-              , callback
-              );
+  addEvent(Model, resolution, updateObject, { user: userId }, cb);
 }
 
 // tldr is the tldr that was read. These functions update its creator's stats
