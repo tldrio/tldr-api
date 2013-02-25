@@ -103,6 +103,7 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
+app.get('/users/:id/stats', routes.getStats.getStatsForUser);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
@@ -110,7 +111,7 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.get('/tldrs/:id/stats', routes.getStatsForTldr);
+app.get('/tldrs/:id/stats', routes.getStats.getStatsForTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.post('/tldrs', routes.createNewTldr);
