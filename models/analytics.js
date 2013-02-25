@@ -66,6 +66,9 @@ TldrAnalyticsSchemaData = {
 , tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
+, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
+              , articleWordCount: { type: Number }
+              }
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -80,18 +83,32 @@ TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
  * The same internal function is used for both (daily and monthly versions)
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Function} resolution Resolution to use, i.e. to day or to month
- * @param {Object} updateObject What fields to increment and how
+ * @param {Object} updateObject What fields to increment and by how much
  * @param {ObjectID} tldrId
- * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
+ * @param {Function} cb Optional callback, signature: err
  */
 function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
   var callback = cb || function () {}
+    , query = { $inc: updateObject }
+    , updateKeys = Object.keys(updateObject)
+    , timestamp = resolution(new Date())
     ;
 
-  Model.update( { timestamp: resolution(new Date()), tldr: tldrId }
+  // Also update the cumulative data
+  updateKeys.forEach(function (key) {
+    query.$inc['cumulative.' + key] = updateObject[key];
+  });
+
+  Model.update( { timestamp: timestamp, tldr: tldrId }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
-              , callback
+              , function(err, numAffected, rawResponse) {
+                  if (err) { return callback(err); }
+                  if (rawResponse.updatedExisting) { return callback(); }
+
+
+                  callback();
+                }
               );
 }
 
