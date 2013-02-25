@@ -65,7 +65,7 @@ TldrAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
-, wordsCount: { type: Number }
+, articleWordCount: { type: Number }
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -95,13 +95,12 @@ function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
               );
 }
 
-// TODO: replace 999 by actual wordsReadCount when we have it
-TldrAnalyticsSchema.daily.statics.addRead = function (tldrId, cb) {
-  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
+TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
+  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
 };
 
-TldrAnalyticsSchema.monthly.statics.addRead = function (tldrId, cb) {
-  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
+TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
+  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
 };
 
 
@@ -197,8 +196,8 @@ UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSche
 // Handle all events
 mqClient.on('tldr.read', function (data) {
   Event.addRead(data.tldr);
-  TldrAnalytics.daily.addRead(data.tldr._id);
-  TldrAnalytics.monthly.addRead(data.tldr._id);
+  TldrAnalytics.daily.addRead(data.tldr);
+  TldrAnalytics.monthly.addRead(data.tldr);
   UserAnalytics.daily.addRead(data.tldr);
   UserAnalytics.monthly.addRead(data.tldr);
 });

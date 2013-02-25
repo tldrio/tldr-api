@@ -36,7 +36,7 @@ function wait (millis, cb) {
 }
 
 
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, tldr1, tldr2;
 
   before(function (done) {
@@ -48,8 +48,8 @@ describe.only('Analytics', function () {
   });
 
   beforeEach(function (done) {
-    var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+    var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
       ;
 
@@ -128,21 +128,23 @@ describe.only('Analytics', function () {
 
     describe('if multiple events are added the same period for the same tldr, they should be aggregated', function () {
       function doTest (Model, stayInPeriod, resolutionNow, cb) {
-        Model.addRead(tldr1._id, function (err) {
+        Model.addRead(tldr1, function (err) {
           clock.tick(2 * stayInPeriod);
-          Model.addRead(tldr1._id, function (err) {
+          Model.addRead(tldr1, function (err) {
             Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
               tldrEvents[0].readCount.should.equal(3);
+              tldrEvents[0].articleWordCount.should.equal(1200);
               clock.tick(stayInPeriod);
-              Model.addRead(tldr1._id, function (err) {
+              Model.addRead(tldr1, function (err) {
                 Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
                   tldrEvents.length.should.equal(1);
                   tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
                   tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
                   tldrEvents[0].readCount.should.equal(4);
+                  tldrEvents[0].articleWordCount.should.equal(1600);
 
                   cb();
                 });
@@ -163,16 +165,17 @@ describe.only('Analytics', function () {
 
     describe('Events that are added in a different period are aggregated in a different document', function () {
       function doTest(Model, stayInPeriod, goToNextPeriod, resolutionNow, resolutionNext, cb) {
-        Model.addRead(tldr1._id, function (err) {
+        Model.addRead(tldr1, function (err) {
           clock.tick(stayInPeriod);
-          Model.addRead(tldr1._id, function (err) {
+          Model.addRead(tldr1, function (err) {
             Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
               tldrEvents[0].readCount.should.equal(3);
+              tldrEvents[0].articleWordCount.should.equal(1200);
               clock.tick(goToNextPeriod);
-              Model.addRead(tldr1._id, function (err) {
+              Model.addRead(tldr1, function (err) {
                 Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
                   tldrEvents.length.should.equal(2);
 
@@ -180,11 +183,13 @@ describe.only('Analytics', function () {
                     tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
                     tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
                     tldrEvent.readCount.should.equal(3);
+                    tldrEvent.articleWordCount.should.equal(1200);
 
                     Model.findOne({ tldr: tldr1._id, timestamp: resolutionNext }, function (err, tldrEvent) {
                       tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
                       tldrEvent.timestamp.getTime().should.equal(resolutionNext.getTime());
                       tldrEvent.readCount.should.equal(1);
+                      tldrEvent.articleWordCount.should.equal(400);
 
                       cb();
                     });
@@ -207,16 +212,17 @@ describe.only('Analytics', function () {
 
     describe('Events that are added the same day but for different tldrs are aggregated in a different document', function () {
       function doTest (Model, stayInPeriod, resolutionNow, cb) {
-        Model.addRead(tldr1._id, function (err) {
+        Model.addRead(tldr1, function (err) {
           clock.tick(2 * stayInPeriod);
-          Model.addRead(tldr1._id, function (err) {
+          Model.addRead(tldr1, function (err) {
             Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
               tldrEvents[0].readCount.should.equal(3);
+              tldrEvents[0].articleWordCount.should.equal(1200);
               clock.tick(stayInPeriod);
-              Model.addRead(tldr2._id, function (err) {
+              Model.addRead(tldr2, function (err) {
                 Model.find({}, function (err, tldrEvents) {
                   tldrEvents.length.should.equal(2);
 
@@ -224,11 +230,13 @@ describe.only('Analytics', function () {
                     tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
                     tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
                     tldrEvent.readCount.should.equal(3);
+                    tldrEvent.articleWordCount.should.equal(1200);
 
                     Model.findOne({ tldr: tldr2._id, timestamp: resolutionNow }, function (err, tldrEvent) {
                       tldrEvent.tldr.toString().should.equal(tldr2._id.toString());
                       tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
                       tldrEvent.readCount.should.equal(2);
+                      tldrEvent.articleWordCount.should.equal(1000);
 
                       cb();
                     });
@@ -270,12 +278,16 @@ describe.only('Analytics', function () {
               data.length.should.equal(4);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(2);
+              data[0].articleWordCount.should.equal(800);
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
+              data[1].articleWordCount.should.equal(800);
               data[2].timestamp.getTime().should.equal(resolutions[2].getTime());
               data[2].readCount.should.equal(1);
+              data[2].articleWordCount.should.equal(400);
               data[3].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[3].readCount.should.equal(3);
+              data[3].articleWordCount.should.equal(1200);
               _cb();
             });
           }
@@ -312,8 +324,10 @@ describe.only('Analytics', function () {
               data.length.should.equal(2);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(2);
+              data[0].articleWordCount.should.equal(800);
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
+              data[1].articleWordCount.should.equal(800);
               _cb();
             });
           }
@@ -322,6 +336,7 @@ describe.only('Analytics', function () {
               data.length.should.equal(1);
               data[0].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[0].readCount.should.equal(3);
+              data[0].articleWordCount.should.equal(1200);
               _cb();
             });
           }
@@ -330,6 +345,7 @@ describe.only('Analytics', function () {
               data.length.should.equal(1);
               data[0].timestamp.getTime().should.equal(resolutions[2].getTime());
               data[0].readCount.should.equal(1);
+              data[0].articleWordCount.should.equal(400);
               _cb();
             });
           }
