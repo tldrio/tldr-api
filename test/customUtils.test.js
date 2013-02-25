@@ -465,7 +465,7 @@ describe('Custom utils', function () {
   });   // ==== End of 'Decrease date resolution' ==== //
 
 
-  describe.only('Get previous period', function () {
+  describe('Get previous period', function () {
 
     it('Get previous day', function () {
       var date;

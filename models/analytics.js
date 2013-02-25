@@ -103,11 +103,21 @@ function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
               , { $inc: updateObject }
               , { upsert: true, multi: false }
               , function(err, numAffected, rawResponse) {
+                  var previousTimestamp, oneTimeUpdate;
                   if (err) { return callback(err); }
                   if (rawResponse.updatedExisting) { return callback(); }
 
+                  previousTimestamp = resolution.getPreviousPeriod(timestamp);
+                  Model.findOne({ timestamp: previousTimestamp, tldr: tldrId }, function (err, previousEvent) {
+                    if (err) { return callback(err); }
 
-                  callback();
+                    oneTimeUpdate = {};
+                    oneTimeUpdate.$inc = {};
+                    updateKeys.forEach(function (key) {
+                      oneTimeUpdate.$inc['cumulative.' + key] = (previousEvent && previousEvent.cumulative) ? (previousEvent.cumulative[key] || 0) : 0;
+                    });
+                    Model.update({ timestamp: timestamp, tldr: tldrId }, oneTimeUpdate, {}, function (err) { callback(err); });
+                  });
                 }
               );
 }
