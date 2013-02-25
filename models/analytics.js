@@ -216,11 +216,11 @@ function addUserEvent (Model, resolution, updateObject, userId, cb) {
 
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator, cb);
+  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator._id || tldr.creator, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator, cb);
+  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator._id || tldr.creator, cb);
 };
 
 
@@ -244,9 +244,9 @@ UserAnalyticsSchema.monthly.statics.getData = function (beg, end, userId, callba
 // Define the models
 Event = mongoose.model('event', EventSchema);
 TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.daily);
-TldrAnalytics.monthly = mongoose.model('tldranalytics.weekly', TldrAnalyticsSchema.monthly);
+TldrAnalytics.monthly = mongoose.model('tldranalytics.monthly', TldrAnalyticsSchema.monthly);
 UserAnalytics.daily = mongoose.model('useranalytics.daily', UserAnalyticsSchema.daily);
-UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSchema.monthly);
+UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSchema.monthly);
 
 
 // Handle all events
