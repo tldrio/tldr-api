@@ -195,13 +195,13 @@ UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSche
 
 
 // Handle all events
-//mqClient.on('tldr.read', function (data) {
-  //Event.addRead(data.tldr);
-  //TldrAnalytics.daily.addRead(data.tldr._id);
-  //TldrAnalytics.monthly.addRead(data.tldr._id);
-  //UserAnalytics.daily.addRead(data.tldr);
-  //UserAnalytics.monthly.addRead(data.tldr);
-//});
+mqClient.on('tldr.read', function (data) {
+  Event.addRead(data.tldr);
+  TldrAnalytics.daily.addRead(data.tldr._id);
+  TldrAnalytics.monthly.addRead(data.tldr._id);
+  UserAnalytics.daily.addRead(data.tldr);
+  UserAnalytics.monthly.addRead(data.tldr);
+});
 
 
 // Interface
