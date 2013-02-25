@@ -29,7 +29,7 @@ EventSchema = new Schema({
 
 , tldr: { type: ObjectId, ref: 'tldr' }
 , readCount: { type: Number }
-, wordsReadCount: { type: Number }
+, articleWordCount: { type: Number }
 , creator: { type: ObjectId, ref: 'user' }
 , thanks: { type: Number }
 }, { collection: 'event' });
@@ -44,7 +44,7 @@ EventSchema.statics.addRead = function (tldr, cb) {
                         , timestamp: new Date()
                         , tldr: tldr._id
                         , readCount: 1
-                        , wordsReadCount: 999   // TODO: replace by the actual one
+                        , articleWordCount: tldr.articleWordCount
                         , creator: tldr.creator
                         })
     , callback = cb || function () {}
@@ -106,14 +106,15 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
 
 /**
  * Return all analytics data concerning one tldr, between beg and end
+ * Used by the TldrAnalytics and the UserAnalytics
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
  * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
- * @param {ObjectID} tldrId
+ * @param {Object} baseQuery Query without selecting by time. Can select by tldr, user or on multiple tldrs
  * @param {Function} callback Siganture: err, array of time data points
  */
-function getAnalytics (Model, beg, end, tldrId, callback) {
-  var query = { tldr: tldrId };
+function getAnalytics (Model, beg, end, baseQuery, callback) {
+  var query = baseQuery;
 
   if (beg || end) {
     query.timestamp = {};
@@ -125,11 +126,11 @@ function getAnalytics (Model, beg, end, tldrId, callback) {
 }
 
 TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.daily, beg, end, tldrId, callback);
+  getAnalytics(TldrAnalytics.daily, beg, end, { tldr: tldrId }, callback);
 };
 
 TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.monthly, beg, end, tldrId, callback);
+  getAnalytics(TldrAnalytics.monthly, beg, end, { tldr: tldrId }, callback);
 };
 
 
@@ -144,7 +145,7 @@ UserAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , user: { type: ObjectId, ref: 'user', required: true }
 , readCount: { type: Number }
-, wordsCount: { type: Number }
+, articleWordCount: { type: Number }
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
@@ -160,27 +161,42 @@ UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Function} resolution Resolution to use, i.e. to day or to month
  * @param {Object} updateObject What fields to increment and how
- * @param {User} user
+ * @param {ObjectId} userId
  * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
  */
-function addUserEvent (Model, resolution, updateObject, user, cb) {
+function addUserEvent (Model, resolution, updateObject, userId, cb) {
   var callback = cb || function () {};
 
-  Model.update( { timestamp: resolution(new Date()), user: user._id }
+  Model.update( { timestamp: resolution(new Date()), user: userId }
               , { $inc: updateObject }
               , { upsert: true, multi: false }
               , callback
               );
 }
 
-// TODO: replace 999 by actual wordsReadCount when we have it
-UserAnalyticsSchema.daily.statics.addRead = function (user, cb) {
-  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+// tldr is the tldr that was read. These functions update its creator's stats
+UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
+  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator, cb);
 };
 
-UserAnalyticsSchema.monthly.statics.addRead = function (user, cb) {
-  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
+  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr.creator, cb);
 };
+
+
+/**
+ * The following two funtions use getAnalytics which is defined in the
+ * TldrAnalytics part since it can be used for both types of analytics
+ */
+
+UserAnalyticsSchema.daily.statics.getData = function (beg, end, userId, callback) {
+  getAnalytics(UserAnalytics.daily, beg, end, { user: userId }, callback);
+};
+
+UserAnalyticsSchema.monthly.statics.getData = function (beg, end, userId, callback) {
+  getAnalytics(UserAnalytics.monthly, beg, end, { user: userId }, callback);
+};
+
 
 
 
