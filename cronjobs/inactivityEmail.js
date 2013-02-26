@@ -31,7 +31,6 @@ function checkForInactivity (limitDateOfInactivity) {
 
     async.each( users
               , function (user, cb) {
-                console.log('Sending for', user.username);
         mailer.sendEmail({ type: 'inactivity'
                         , development: true
                         , from: 'charles@tldr.io'
@@ -50,7 +49,7 @@ function checkForInactivity (limitDateOfInactivity) {
         bunyan.error('Error while sending Inactivity emails', err);
         process.exit(1);
       } else {
-        bunyan.info('Inactivity emails sent ok');
+        bunyan.info(users.length + ' Inactivity emails sent');
         process.exit(0);
       }
     });

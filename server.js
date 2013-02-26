@@ -197,12 +197,13 @@ app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.w
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
+app.get('/badass', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
 
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
 app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumShowTopic);   // Show a whole topic
-app.get('/forum/topics/:id', middleware.websiteRoute, routes.website_forumShowTopic);   // For retrocompatibility
-app.post('/forum/topics/:id', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
+app.get('/forum/topics/:id', routes.website_forumShowTopic);   // For retrocompatibility, redirect to the correct, above url
+app.post('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewTopic);    // Display the newTopic form
 app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website_editPost);
