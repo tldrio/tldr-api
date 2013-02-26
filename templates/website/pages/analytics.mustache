@@ -8,12 +8,16 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="past-30-days">
-        {{>website/userStats}}
-        {{>website/userGraphs}}
+        {{#past30Days}}
+          {{>website/userStats}}
+          {{>website/userGraphs}}
+        {{/past30Days}}
       </div>
       <div class="tab-pane" id="all-time">
-        {{>website/userStats}}
-        {{>website/userGraphs}}
+        {{#allTime}}
+          {{>website/userStats}}
+          {{>website/userGraphs}}
+        {{/allTime}}
       </div>
     </div>
   </div>

@@ -143,9 +143,13 @@ TldrSchema = new Schema(
 
 
 
-// Keep a virtual 'slug' attribute and send it when requested
+// Keep virtual 'slug' and 'wordCount' attributes and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
+});
+
+TldrSchema.virtual('wordCount').get(function () {
+  return customUtils.getWordCount(this.summaryBullets);
 });
 
 TldrSchema.set('toJSON', {

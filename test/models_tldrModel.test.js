@@ -527,10 +527,10 @@ describe('Tldr', function () {
       });
     });
 
-    it('should automatically set virtual slug', function (done) {
+    it('should automatically set virtual slug and wordCount', function (done) {
       var tldrData = {
         title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
+        summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world'],
         resourceAuthor: 'NFA Crew',
         url: 'http://needforair.com',
       }
@@ -542,6 +542,7 @@ describe('Tldr', function () {
         Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].slug.should.equal('blog-nfa');
+          docs[0].wordCount.should.equal(10);
           done();
         });
       });

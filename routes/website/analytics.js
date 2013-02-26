@@ -14,6 +14,11 @@ module.exports = function (req, res, next) {
   partials.content = '{{>website/pages/analytics}}';
   values.title = (values.loggedUser ? values.loggedUser.username : '') + " - How badass are you?" + config.titles.branding;
 
+  values.past30Days = {};
+  value.allTime = {};
+
+
+
   res.render('website/basicLayout', { values: values
                                     , partials: partials
                                     });

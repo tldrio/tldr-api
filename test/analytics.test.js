@@ -31,7 +31,7 @@ var should = require('chai').should()
 
 
 
-describe('Analytics', function () {
+describe.only('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -277,7 +277,7 @@ describe('Analytics', function () {
         , async.apply(addRead, Model, tldr1)
         , async.apply(addRead, Model, tldr1)
         , function (_cb) {
-            Model.getData(null, null, tldr1._id, function (err, data) {
+            Model.getAnalytics(null, null, tldr1._id, function (err, data) {
               data.length.should.equal(4);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(2);
@@ -326,7 +326,7 @@ describe('Analytics', function () {
         , async.apply(addRead, Model, tldr1)
         , async.apply(addRead, Model, tldr1)
         , function (_cb) {
-            Model.getData(null, new Date(resolutions[1].getTime() + period / 2), tldr1._id, function (err, data) {
+            Model.getAnalytics(null, new Date(resolutions[1].getTime() + period / 2), tldr1._id, function (err, data) {
               data.length.should.equal(2);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(2);
@@ -338,7 +338,7 @@ describe('Analytics', function () {
             });
           }
         , function (_cb) {
-            Model.getData(new Date(resolutions[2].getTime() + period / 2), null, tldr1._id, function (err, data) {
+            Model.getAnalytics(new Date(resolutions[2].getTime() + period / 2), null, tldr1._id, function (err, data) {
               data.length.should.equal(1);
               data[0].timestamp.getTime().should.equal(resolutions[3].getTime());
               data[0].readCount.should.equal(3);
@@ -347,7 +347,7 @@ describe('Analytics', function () {
             });
           }
         , function (_cb) {
-            Model.getData(new Date(resolutions[1].getTime() + period / 2), new Date(resolutions[2].getTime() + period / 2), tldr1._id, function (err, data) {
+            Model.getAnalytics(new Date(resolutions[1].getTime() + period / 2), new Date(resolutions[2].getTime() + period / 2), tldr1._id, function (err, data) {
               data.length.should.equal(1);
               data[0].timestamp.getTime().should.equal(resolutions[2].getTime());
               data[0].readCount.should.equal(1);
@@ -484,7 +484,7 @@ describe('Analytics', function () {
         , async.apply(addRead, Model, tldr3)
         , async.apply(addRead, Model, tldr1)
         , function (_cb) {
-            Model.getData(null, null, user._id, function (err, data) {
+            Model.getAnalytics(null, null, user._id, function (err, data) {
               data.length.should.equal(3);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(3);
@@ -501,7 +501,7 @@ describe('Analytics', function () {
             });
           }
         , function (_cb) {
-            Model.getData(null, null, userbis._id, function (err, data) {
+            Model.getAnalytics(null, null, userbis._id, function (err, data) {
               data.length.should.equal(4);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
               data[0].readCount.should.equal(1);

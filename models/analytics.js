@@ -83,6 +83,26 @@ function addEventToProjection (id, updateObject, cb) {
               );
 }
 
+/**
+ * Return all analytics data concerning one tldr, between beg and end
+ * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
+ * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
+ * @param {ObjectId} id id of the object (tldr or user)
+ * @param {Function} callback Siganture: err, array of time data points
+ */
+function getAnalytics (beg, end, id, callback) {
+  var query = this.itemSelector(id);
+
+  if (beg || end) {
+    query.timestamp = {};
+    if (beg) { query.timestamp.$gt = beg; }
+    if (end) { query.timestamp.$lt = end; }
+  }
+
+  this.find(query).sort('timestamp').exec(callback);
+}
+
+
 
 /**
  * =======================================
@@ -117,6 +137,9 @@ TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
 TldrAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
 TldrAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
 
+// Get the analytics
+TldrAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
+TldrAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 
 
 // Add a read
@@ -131,34 +154,7 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
 
 
 
-/**
- * Return all analytics data concerning one tldr, between beg and end
- * Used by the TldrAnalytics and the UserAnalytics
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
- * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
- * @param {Object} baseQuery Query without selecting by time. Can select by tldr, user or on multiple tldrs
- * @param {Function} callback Siganture: err, array of time data points
- */
-function getAnalytics (Model, beg, end, baseQuery, callback) {
-  var query = baseQuery;
 
-  if (beg || end) {
-    query.timestamp = {};
-    if (beg) { query.timestamp.$gt = beg; }
-    if (end) { query.timestamp.$lt = end; }
-  }
-
-  Model.find(query).sort('timestamp').exec(callback);
-}
-
-TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.daily, beg, end, { tldr: tldrId }, callback);
-};
-
-TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.monthly, beg, end, { tldr: tldrId }, callback);
-};
 
 
 
@@ -193,8 +189,13 @@ function getUserSelector (id) { return { user: id }; }
 UserAnalyticsSchema.daily.statics.itemSelector = getUserSelector;
 UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
 
+// Add an event
 UserAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
 UserAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
+
+// Get analytics
+UserAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
+UserAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 
 
 // Add a read
@@ -209,19 +210,6 @@ UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
 
 
 
-
-/**
- * The following two funtions use getAnalytics which is defined in the
- * TldrAnalytics part since it can be used for both types of analytics
- */
-
-UserAnalyticsSchema.daily.statics.getData = function (beg, end, userId, callback) {
-  getAnalytics(UserAnalytics.daily, beg, end, { user: userId }, callback);
-};
-
-UserAnalyticsSchema.monthly.statics.getData = function (beg, end, userId, callback) {
-  getAnalytics(UserAnalytics.monthly, beg, end, { user: userId }, callback);
-};
 
 
 
