@@ -95,13 +95,14 @@ TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
  * and for both (user and tldr) projections as the signatures are identical
  * @param {Model} Model Model to use, i.e. daily or monthly
  * @param {Object} updateObject What fields to increment and by how much
- * @param {Object} itemSelector Can select a tldr, a user or even several tldrs/users
+ * @param {Object} data Data gotten from the events
  * @param {Function} cb Optional callback, signature: err
  */
-function addEvent (Model, updateObject, itemSelector, cb) {
+function addEvent (Model, updateObject, data, cb) {
   var callback = cb || function () {}
     , updateKeys = Object.keys(updateObject)
     , timestamp = Model.resolution(new Date())
+    , itemSelector = Model.itemSelector(data)
     ;
 
   Model.update( _.extend({ timestamp: timestamp }, itemSelector)
@@ -148,26 +149,26 @@ function addEvent (Model, updateObject, itemSelector, cb) {
               //);
 //}
 
-function addTldrEvent (Model, updateObject, tldrId, cb) {
-  addEvent(Model, updateObject, { tldr: tldrId }, cb);
+function addTldrEvent (Model, updateObject, tldr, cb) {
+  addEvent(Model, updateObject, { tldr: tldr }, cb);
 }
 
 // Add a read
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
 };
 
 // Add a thanks
 TldrAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, { thanks: 1 }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.daily, { thanks: 1 }, tldr, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, { thanks: 1 }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.monthly, { thanks: 1 }, tldr, cb);
 };
 
 
@@ -230,35 +231,46 @@ UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 UserAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 UserAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
+// Declare how to get the item selector
+function getUserSelector (data) {
+  var userId;
+
+  if (data.tldr.creator._id) {
+    userId = data.tldr.creator._id;
+  } else {
+    userId = data.tldr.creator;
+  }
+
+  return { user: userId };
+}
+UserAnalyticsSchema.daily.statics.itemSelector = getUserSelector;
+UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
+
 
 /**
  * Uses addEvent which is defined in the TldrAnalytics section
  */
-function addUserEvent (Model, updateObject, userId, cb) {
-  addEvent(Model, updateObject, { user: userId }, cb);
+function addUserEvent (Model, updateObject, tldr, cb) {
+  addEvent(Model, updateObject, { tldr: tldr }, cb);
 }
 
 // Add a read
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
+  addUserEvent(UserAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
+  addUserEvent(UserAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
 };
 
 // Add a thanks
 UserAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
-  var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.daily, { thanks: 1 }, userId, cb);
+  addUserEvent(UserAnalytics.daily, { thanks: 1 }, tldr, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
-  var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.monthly, { thanks: 1 }, userId, cb);
+  addUserEvent(UserAnalytics.monthly, { thanks: 1 }, tldr, cb);
 };
 
 
