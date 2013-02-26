@@ -138,7 +138,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
-  , editors: [{ type: ObjectId }]
+  , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
 
