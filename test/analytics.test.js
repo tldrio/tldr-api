@@ -17,6 +17,7 @@ var should = require('chai').should()
   , TldrAnalytics = models.TldrAnalytics
   , UserAnalytics = models.UserAnalytics
   , config = require('../lib/config')
+  , mqClient = require('../lib/message-queue')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   , async = require('async')
@@ -29,14 +30,8 @@ var should = require('chai').should()
   ;
 
 
-// Version of setTimeout usable with async.apply
-// Used to integration test parts using the message queue
-function wait (millis, cb) {
-  setTimeout(cb, millis);
-}
 
-
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -81,6 +76,7 @@ describe.only('Analytics', function () {
   });
 
   // Make sure the start state is well known
+  // The messages in Redis have had time to have effect when we created the tldrs, no need to add a timeout
   it('Creating two tldrs for testing should already have created their analytics even if they dont existed before', function (done) {
     TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
       tldrEventD.readCount.should.equal(1);
@@ -546,5 +542,99 @@ describe.only('Analytics', function () {
     });
 
   });   // ==== End of 'UserAnalytics' ==== //
+
+});   // ==== End of 'Analytics' ==== //
+
+
+describe.only('Test analytics with events', function () {
+  var user, userbis, tldr1, tldr2, tldr3;
+
+  function sendEventAndWait (event, data, wait, cb) {
+    mqClient.emit(event, data);
+    setTimeout(function () { cb(); }, wait);
+  }
+
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+  beforeEach(function (done) {
+    var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , tldrData3 = {url: 'http://avc.com/mba-monday/tuesday', title:'mba-mondaddy', articleWordCount: 700, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
+      , userbisData = { username: "easdeee", password: "eeeeeeee", email: "validagain@email.com", twitterHandle: 'zetwitkk' }
+      ;
+
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
+
+    async.waterfall([
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
+    , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Event)
+    , async.apply(theRemove, TldrAnalytics.daily)
+    , async.apply(theRemove, TldrAnalytics.monthly)
+    , async.apply(theRemove, UserAnalytics.daily)
+    , async.apply(theRemove, UserAnalytics.monthly)
+    , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
+    , function (cb) { User.createAndSaveInstance(userbisData, function(err, _user) { userbis = _user; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData3, userbis, function(err, _tldr) { tldr3 = _tldr; cb(err); }); }
+    ], done);
+  });
+
+  describe('The tldr.read event updates the tldr and user analytics', function () {
+    function doTest (resolution, done) {
+      async.waterfall([
+        function (cb) {
+          TldrAnalytics[resolution].find({ tldr: tldr1._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].readCount.should.equal(1);
+            analytics[0].articleWordCount.should.equal(400);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].readCount.should.equal(2);
+            analytics[0].articleWordCount.should.equal(900);
+            cb();
+          });
+        }
+      , async.apply(sendEventAndWait, 'tldr.read', { tldr: tldr1 }, 20)
+      , function (cb) {
+          TldrAnalytics[resolution].find({ tldr: tldr1._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].readCount.should.equal(2);
+            analytics[0].articleWordCount.should.equal(800);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].readCount.should.equal(3);
+            analytics[0].articleWordCount.should.equal(1300);
+            cb();
+          });
+        }
+      ], done);
+    }
+
+    it('daily', function (done) {
+      doTest('daily', done);
+    });
+
+    it('monthly', function (done) {
+      doTest('monthly', done);
+    });
+  });
 
 });

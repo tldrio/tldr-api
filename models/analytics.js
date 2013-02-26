@@ -58,6 +58,33 @@ EventSchema.statics.addRead = function (tldr, cb) {
 
 
 /**
+ * =============================
+ * === All-purpose functions ===
+ * =============================
+ */
+
+/**
+ * Add an event to a projection (tldr/user and daily/monthly)
+ * @param {ObjectId} id id of the object (can be a tldr or a user depending on the model)
+ * @param {Object} updateObject What fields to increment and by how much
+ * @param {Function} cb Optional callback, signature: err
+ */
+function addEventToProjection (id, updateObject, cb) {
+  var callback = cb || function () {}
+    , updateKeys = Object.keys(updateObject)
+    , timestamp = this.resolution(new Date())
+    , itemSelector = this.itemSelector(id)
+    ;
+
+  this.update( _.extend({ timestamp: timestamp }, itemSelector)
+              , { $inc: updateObject }
+              , { upsert: true, multi: false }
+              , function(err, numAffected, rawResponse) { return callback(err); }
+              );
+}
+
+
+/**
  * =======================================
  * === TldrAnalytics models definition ===
  * =======================================
@@ -69,9 +96,6 @@ TldrAnalyticsSchemaData = {
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
 , thanks: { type: Number }
-//, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
-              //, articleWordCount: { type: Number }
-              //}
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -89,78 +113,19 @@ function getTldrSelector (id) { return { tldr: id}; }
 TldrAnalyticsSchema.daily.statics.itemSelector = getTldrSelector;
 TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
 
+// Use addEvent to update the analytics
+TldrAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
+TldrAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
 
-/**
- * Add an event to the a projections
- * The same internal function is used for both (daily and monthly versions)
- * and for both (user and tldr) projections as the signatures are identical
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Object} updateObject What fields to increment and by how much
- * @param {Object} data Data gotten from the events
- * @param {Function} cb Optional callback, signature: err
- */
-function addEvent (Model, updateObject, id, cb) {
-  var callback = cb || function () {}
-    , updateKeys = Object.keys(updateObject)
-    , timestamp = Model.resolution(new Date())
-    , itemSelector = Model.itemSelector(id)
-    ;
 
-  Model.update( _.extend({ timestamp: timestamp }, itemSelector)
-              , { $inc: updateObject }
-              , { upsert: true, multi: false }
-              , function(err, numAffected, rawResponse) { return callback(err); }
-              );
-}
-// Version that tracked cumulative, but it is too much of a pain
-// As tracking holes is fucking difficult so we will just let clients recalculate
-// the cumulatives
-//function addEvent (Model, resolution, updateObject, itemSelector, cb) {
-  //var callback = cb || function () {}
-    //, update = { $inc: {} }
-    //, updateKeys = Object.keys(updateObject)
-    //, timestamp = resolution(new Date())
-    //;
-
-  //// Also update the cumulative data
-  //updateKeys.forEach(function (key) {
-    //update.$inc[key] = updateObject[key];
-    //update.$inc['cumulative.' + key] = updateObject[key];
-  //});
-
-  //Model.update( _.extend({ timestamp: timestamp }, itemSelector)
-              //, update
-              //, { upsert: true, multi: false }
-              //, function(err, numAffected, rawResponse) {
-                  //var previousTimestamp, oneTimeUpdate;
-                  //if (err) { return callback(err); }
-                  //if (rawResponse.updatedExisting) { return callback(); }
-
-                  //// This can only happen once, when the upsert was in fact an insert
-                  //previousTimestamp = resolution.getPreviousPeriod(timestamp);
-                  //Model.findOne(_.extend({ timestamp: previousTimestamp }, itemSelector), function (err, previousEvent) {
-                    //if (err) { return callback(err); }
-                    //oneTimeUpdate = { $inc: {} };
-                    //updateKeys.forEach(function (key) {
-                      //oneTimeUpdate.$inc['cumulative.' + key] = (previousEvent && previousEvent.cumulative) ? (previousEvent.cumulative[key] || 0) : 0;
-                    //});
-                    //Model.update(_.extend({ timestamp: timestamp }, itemSelector), oneTimeUpdate, {}, function (err) { callback(err); });
-                  //});
-                //}
-              //);
-//}
-
-function addTldrEvent (Model, updateObject, tldr, cb) {
-  addEvent(Model, updateObject, tldr._id, cb);
-}
 
 // Add a read
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
+  this.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
+  this.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
 // Add a thanks
@@ -237,22 +202,18 @@ function getUserSelector (id) { return { user: id }; }
 UserAnalyticsSchema.daily.statics.itemSelector = getUserSelector;
 UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
 
+UserAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
+UserAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
 
-/**
- * Uses addEvent which is defined in the TldrAnalytics section
- */
-function addUserEvent (Model, updateObject, tldr, cb) {
-  addEvent(Model, updateObject, Tldr.getCreatorId(tldr), cb);
-}
 
 // Add a read
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addUserEvent(UserAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
+  this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addUserEvent(UserAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr, cb);
+  this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
 // Add a thanks
@@ -282,7 +243,6 @@ UserAnalyticsSchema.monthly.statics.getData = function (beg, end, userId, callba
 
 
 
-
 // Define the models
 Event = mongoose.model('event', EventSchema);
 TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.daily);
@@ -293,11 +253,14 @@ UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSch
 
 // Handle all events
 mqClient.on('tldr.read', function (data) {
-  Event.addRead(data.tldr);
-  TldrAnalytics.daily.addRead(data.tldr);
-  TldrAnalytics.monthly.addRead(data.tldr);
-  UserAnalytics.daily.addRead(data.tldr);
-  UserAnalytics.monthly.addRead(data.tldr);
+  var tldr = data.tldr;
+
+  Event.addRead(tldr);
+
+  TldrAnalytics.daily.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
+  TldrAnalytics.monthly.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
 });
 
 
