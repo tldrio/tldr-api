@@ -628,13 +628,47 @@ describe.only('Test analytics with events', function () {
       ], done);
     }
 
-    it('daily', function (done) {
-      doTest('daily', done);
-    });
+    it('daily', function (done) { doTest('daily', done); });
+    it('monthly', function (done) { doTest('monthly', done); });
+  });
 
-    it('monthly', function (done) {
-      doTest('monthly', done);
-    });
+  describe('The tldr.thank event updates the tldr and user analytics', function () {
+    function doTest (resolution, done) {
+      async.waterfall([
+        function (cb) {
+          TldrAnalytics[resolution].find({ tldr: tldr3._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            assert.isUndefined(analytics[0].thanks);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: userbis._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            assert.isUndefined(analytics[0].thanks);
+            cb();
+          });
+        }
+      , async.apply(sendEventAndWait, 'tldr.thank', { thanker: user, tldr: tldr3 }, 20)
+      , function (cb) {
+          TldrAnalytics[resolution].find({ tldr: tldr3._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].thanks.should.equal(1);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: userbis._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].thanks.should.equal(1);
+            cb();
+          });
+        }
+      ], done);
+    }
+
+    it('daily', function (done) { doTest('daily', done); });
+    it('monthly', function (done) { doTest('monthly', done); });
   });
 
 });
