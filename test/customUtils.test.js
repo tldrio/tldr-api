@@ -600,6 +600,30 @@ describe('Custom utils', function () {
       filledData[6].something.should.equal(13);
     });
 
+    it('Add extremes', function () {
+      var data = [ { timestamp: new Date(2004, 2), something: 42 }
+                 , { timestamp: new Date(2004, 5), something: 13 }
+                 , { timestamp: new Date(2004, 4), something: 99 }
+                 ]
+        , extremeData1 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 2), new Date(2004, 5))
+        , extremeData2 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 0), new Date(2004, 5))
+        , extremeData3 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 2), new Date(2004, 6))
+        , extremeData4 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 1), new Date(2004, 7))
+        ;
+
+      extremeData1.length.should.equal(3);
+
+      extremeData2.length.should.equal(4);
+      extremeData2[0].timestamp.getTime().should.equal((new Date(2004, 0)).getTime());
+
+      extremeData3.length.should.equal(4);
+      extremeData3[3].timestamp.getTime().should.equal((new Date(2004, 6)).getTime());
+
+      extremeData4.length.should.equal(5);
+      extremeData4[0].timestamp.getTime().should.equal((new Date(2004, 1)).getTime());
+      extremeData4[4].timestamp.getTime().should.equal((new Date(2004, 7)).getTime());
+    });
+
 
   });   // ==== End of 'Time series treatment' ==== //
 
