@@ -83,6 +83,12 @@ TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
 TldrAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 TldrAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
+// Declare how to get the item selector for both models
+function getTldrSelector (data) { return { tldr: data.tldr._id}; }
+TldrAnalyticsSchema.daily.statics.itemSelector = getTldrSelector;
+TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
+
+
 /**
  * Add an event to the a projections
  * The same internal function is used for both (daily and monthly versions)
