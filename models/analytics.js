@@ -128,14 +128,6 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
   this.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
-// Add a thanks
-TldrAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, { thanks: 1 }, tldr, cb);
-};
-
-TldrAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, { thanks: 1 }, tldr, cb);
-};
 
 
 
@@ -216,14 +208,6 @@ UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
   this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
 
-// Add a thanks
-UserAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
-  addUserEvent(UserAnalytics.daily, { thanks: 1 }, tldr, cb);
-};
-
-UserAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
-  addUserEvent(UserAnalytics.monthly, { thanks: 1 }, tldr, cb);
-};
 
 
 
@@ -261,6 +245,15 @@ mqClient.on('tldr.read', function (data) {
   TldrAnalytics.monthly.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
   UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
   UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
+});
+
+mqClient.on('tldr.thank', function (data) {
+  var tldr = data.tldr;
+
+  TldrAnalytics.daily.addEvent(tldr._id, { thanks: 1 });
+  TldrAnalytics.monthly.addEvent(tldr._id, { thanks: 1 });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
 });
 
 
