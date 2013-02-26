@@ -506,5 +506,103 @@ describe('Custom utils', function () {
   });   // ==== End of '#getWordCount' ==== //
 
 
+  describe.only('Time series treatment', function () {
+
+    it('Can fill daily gaps in time series', function () {
+      var data = [ { timestamp: new Date(2004, 7, 13), something: 42 }
+                 , { timestamp: new Date(2004, 7, 14), something: 13 }
+                 , { timestamp: new Date(2004, 7, 17), something: 99 }
+                 , { timestamp: new Date(2004, 7, 16), something: 9 }
+                 , { timestamp: new Date(2004, 7, 20), something: 1 }
+                 ]
+        , filledData = customUtils.fillGapsInTimeSeries(data)
+        , data2 = [ { timestamp: new Date(2004, 6, 29), something: 42 }
+                  , { timestamp: new Date(2004, 7, 2), something: 1 }
+                  ]
+        , filledData2 = customUtils.fillGapsInTimeSeries(data2)
+        ;
+
+      // Within a a month
+      filledData.length.should.equal(8);
+
+      filledData[0].timestamp.getTime().should.equal((new Date(2004, 7, 13)).getTime());
+      filledData[0].something.should.equal(42);
+
+      filledData[1].timestamp.getTime().should.equal((new Date(2004, 7, 14)).getTime());
+      filledData[1].something.should.equal(13);
+
+      filledData[2].timestamp.getTime().should.equal((new Date(2004, 7, 15)).getTime());
+      assert.isUndefined(filledData[2].something);
+
+      filledData[3].timestamp.getTime().should.equal((new Date(2004, 7, 16)).getTime());
+      filledData[3].something.should.equal(9);
+
+      filledData[4].timestamp.getTime().should.equal((new Date(2004, 7, 17)).getTime());
+      filledData[4].something.should.equal(99);
+
+      filledData[5].timestamp.getTime().should.equal((new Date(2004, 7, 18)).getTime());
+      assert.isUndefined(filledData[5].something);
+
+      filledData[6].timestamp.getTime().should.equal((new Date(2004, 7, 19)).getTime());
+      assert.isUndefined(filledData[6].something);
+
+      filledData[7].timestamp.getTime().should.equal((new Date(2004, 7, 20)).getTime());
+      filledData[7].something.should.equal(1);
+
+      // Across months
+      filledData2.length.should.equal(5);
+      filledData2[0].timestamp.getTime().should.equal((new Date(2004, 6, 29)).getTime());
+      filledData2[0].something.should.equal(42);
+
+      filledData2[1].timestamp.getTime().should.equal((new Date(2004, 6, 30)).getTime());
+      assert.isUndefined(filledData2[1].something);
+
+      filledData2[2].timestamp.getTime().should.equal((new Date(2004, 6, 31)).getTime());
+      assert.isUndefined(filledData2[2].something);
+
+      filledData2[3].timestamp.getTime().should.equal((new Date(2004, 7, 1)).getTime());
+      assert.isUndefined(filledData2[3].something);
+
+      filledData2[4].timestamp.getTime().should.equal((new Date(2004, 7, 2)).getTime());
+      filledData2[4].something.should.equal(1);
+    });
+
+    it('Can fill monthly gaps in time series', function () {
+      var data = [ { timestamp: new Date(2004, 2), something: 42 }
+                 , { timestamp: new Date(2004, 5), something: 13 }
+                 , { timestamp: new Date(2004, 4), something: 99 }
+                 , { timestamp: new Date(2003, 11), something: 9 }
+                 ]
+        , filledData = customUtils.fillGapsInTimeSeries(data, 'monthly')
+        ;
+
+      filledData.length.should.equal(7);
+
+      filledData[0].timestamp.getTime().should.equal((new Date(2003, 11)).getTime());
+      filledData[0].something.should.equal(9);
+
+      filledData[1].timestamp.getTime().should.equal((new Date(2004, 0)).getTime());
+      assert.isUndefined(filledData[1].something);
+
+      filledData[2].timestamp.getTime().should.equal((new Date(2004, 1)).getTime());
+      assert.isUndefined(filledData[2].something);
+
+      filledData[3].timestamp.getTime().should.equal((new Date(2004, 2)).getTime());
+      filledData[3].something.should.equal(42);
+
+      filledData[4].timestamp.getTime().should.equal((new Date(2004, 3)).getTime());
+      assert.isUndefined(filledData[4].something);
+
+      filledData[5].timestamp.getTime().should.equal((new Date(2004, 4)).getTime());
+      filledData[5].something.should.equal(99);
+
+      filledData[6].timestamp.getTime().should.equal((new Date(2004, 5)).getTime());
+      filledData[6].something.should.equal(13);
+    });
+
+
+  });   // ==== End of 'Time series treatment' ==== //
+
+
 });
 
