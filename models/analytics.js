@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
   , mqClient = require('../lib/message-queue')
   , _ = require('underscore')
   , ObjectId = mongoose.Schema.ObjectId
+  , Tldr = require('./tldrModel')
   , Schema = mongoose.Schema
   , EventSchema, Event
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
@@ -84,7 +85,7 @@ TldrAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 TldrAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
 // Declare how to get the item selector for both models
-function getTldrSelector (data) { return { tldr: data.tldr._id}; }
+function getTldrSelector (id) { return { tldr: id}; }
 TldrAnalyticsSchema.daily.statics.itemSelector = getTldrSelector;
 TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
 
@@ -98,11 +99,11 @@ TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
  * @param {Object} data Data gotten from the events
  * @param {Function} cb Optional callback, signature: err
  */
-function addEvent (Model, updateObject, data, cb) {
+function addEvent (Model, updateObject, id, cb) {
   var callback = cb || function () {}
     , updateKeys = Object.keys(updateObject)
     , timestamp = Model.resolution(new Date())
-    , itemSelector = Model.itemSelector(data)
+    , itemSelector = Model.itemSelector(id)
     ;
 
   Model.update( _.extend({ timestamp: timestamp }, itemSelector)
@@ -150,7 +151,7 @@ function addEvent (Model, updateObject, data, cb) {
 //}
 
 function addTldrEvent (Model, updateObject, tldr, cb) {
-  addEvent(Model, updateObject, { tldr: tldr }, cb);
+  addEvent(Model, updateObject, tldr._id, cb);
 }
 
 // Add a read
@@ -232,17 +233,7 @@ UserAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 UserAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
 // Declare how to get the item selector
-function getUserSelector (data) {
-  var userId;
-
-  if (data.tldr.creator._id) {
-    userId = data.tldr.creator._id;
-  } else {
-    userId = data.tldr.creator;
-  }
-
-  return { user: userId };
-}
+function getUserSelector (id) { return { user: id }; }
 UserAnalyticsSchema.daily.statics.itemSelector = getUserSelector;
 UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
 
@@ -251,7 +242,7 @@ UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
  * Uses addEvent which is defined in the TldrAnalytics section
  */
 function addUserEvent (Model, updateObject, tldr, cb) {
-  addEvent(Model, updateObject, { tldr: tldr }, cb);
+  addEvent(Model, updateObject, Tldr.getCreatorId(tldr), cb);
 }
 
 // Add a read

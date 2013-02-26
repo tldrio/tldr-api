@@ -316,6 +316,18 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
 };
 
 
+/**
+ * Get the id of this tldr's creator, whether or not the field was populated or not
+ * We have a static version for tldrs passed through the node redis pubsub which have lost their methods
+ */
+TldrSchema.methods.getCreatorId = function () {
+  return this.creator._id || this.creator;
+}
+
+TldrSchema.statics.getCreatorId = function (tldr) {
+  return tldr.creator._id || tldr.creator;
+}
+
 
 /**
  * Update tldr object.
