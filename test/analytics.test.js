@@ -546,7 +546,7 @@ describe('Analytics', function () {
 });   // ==== End of 'Analytics' ==== //
 
 
-describe.only('Test analytics with events', function () {
+describe('Test analytics with events', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   function sendEventAndWait (event, data, wait, cb) {

@@ -493,5 +493,18 @@ describe('Custom utils', function () {
   });   // End of 'Get previous period' ==== //
 
 
+  describe('#getWordCount', function () {
+
+    it('With a string', function () {
+      customUtils.getWordCount('Hello how are you motherfucker? This is a string.').should.equal(9);
+    });
+
+    it('With an array', function () {
+      customUtils.getWordCount(['Hello how are you motherfucker?', 'This is a string.']).should.equal(9);
+    });
+
+  });   // ==== End of '#getWordCount' ==== //
+
+
 });
 

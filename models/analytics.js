@@ -174,9 +174,8 @@ UserAnalyticsSchemaData = {
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
 , thanks: { type: Number }
-//, cumulative: { readCount: { type: Number }   // Will store the cumulatives of the two data series
-              //, articleWordCount: { type: Number }
-              //}
+, tldrsCreated: { type: Number }
+, tldrsRead: { type: Number }
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
@@ -240,7 +239,6 @@ mqClient.on('tldr.read', function (data) {
   var tldr = data.tldr;
 
   Event.addRead(tldr);
-
   TldrAnalytics.daily.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
   TldrAnalytics.monthly.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
   UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
@@ -254,6 +252,13 @@ mqClient.on('tldr.thank', function (data) {
   TldrAnalytics.monthly.addEvent(tldr._id, { thanks: 1 });
   UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
   UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
+});
+
+mqClient.on('tldr.created', function (data) {
+  var tldr = data.tldr;
+
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { tldrsCreated: 1 });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { tldrsCreated: 1 });
 });
 
 
