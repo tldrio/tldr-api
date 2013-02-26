@@ -31,7 +31,7 @@ var should = require('chai').should()
 
 
 
-describe('Analytics', function () {
+describe.only('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {

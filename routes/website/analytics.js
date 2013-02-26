@@ -21,12 +21,12 @@ module.exports = function (req, res, next) {
   values.allTime = {};
 
   UserAnalytics.daily.getAnalytics(null, null, req.user._id, function (err, data) {
-    console.log(data);
+    values.analytics = JSON.stringify(data);
 
 
-  res.render('website/basicLayout', { values: values
-                                    , partials: partials
-                                    });
+    res.render('website/basicLayout', { values: values
+                                      , partials: partials
+                                      });
   });
 }
 

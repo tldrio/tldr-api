@@ -506,7 +506,7 @@ describe('Custom utils', function () {
   });   // ==== End of '#getWordCount' ==== //
 
 
-  describe.only('Time series treatment', function () {
+  describe('Time series treatment', function () {
 
     it('Can fill daily gaps in time series', function () {
       var data = [ { timestamp: new Date(2004, 7, 13), something: 42 }
