@@ -465,5 +465,33 @@ describe('Custom utils', function () {
   });   // ==== End of 'Decrease date resolution' ==== //
 
 
+  describe('Get previous period', function () {
+
+    it('Get previous day', function () {
+      var date;
+
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1985, 7, 19, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 7, 1, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1985, 6, 31, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 0, 1, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1984, 11, 31, 20, 0, 5, 938)).getTime());
+    });
+
+    it('Get previous month', function () {
+      var date;
+
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getPreviousMonth(date).getTime().should.equal((new Date(1985, 6, 20, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 0, 20, 20, 0, 5, 938);
+      customUtils.getPreviousMonth(date).getTime().should.equal((new Date(1984, 11, 20, 20, 0, 5, 938)).getTime());
+    });
+
+  });   // End of 'Get previous period' ==== //
+
+
 });
 

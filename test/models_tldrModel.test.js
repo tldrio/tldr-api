@@ -957,6 +957,49 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
+  describe('#getCreatorId - both static and dynamic versions', function () {
+
+    it('If creator is not populated', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloupOnlyOne'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        Tldr.findOne({ resourceAuthor: 'bloupOnlyOne' }, function (err, tldr) {
+          tldr.getCreatorId().toString().should.equal(user._id.toString());
+          Tldr.getCreatorId(tldr).toString().should.equal(user._id.toString());
+          done();
+        });
+      });
+    });
+
+    it('If creator is populated', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloupOnlyOne'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        Tldr.findOne({ resourceAuthor: 'bloupOnlyOne' }).populate('creator').exec(function (err, tldr) {
+          tldr.getCreatorId().toString().should.equal(user._id.toString());
+          Tldr.getCreatorId(tldr).toString().should.equal(user._id.toString());
+          done();
+        });
+      });
+    });
+
+  });   // ==== End of '#getCreatorId' ==== //
+
+
   describe('#thank', function () {
 
     it('should not be able to thank if no "thanker"', function (done) {
@@ -991,6 +1034,7 @@ describe('Tldr', function () {
     });
 
   }); // ==== End of '#thank' ==== //
+
 
   describe('#updateBatch', function () {
 
