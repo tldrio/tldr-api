@@ -79,21 +79,23 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
 TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
 TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
 
+// Declare resolutions for both models
+TldrAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
+TldrAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
 /**
  * Add an event to the a projections
  * The same internal function is used for both (daily and monthly versions)
  * and for both (user and tldr) projections as the signatures are identical
  * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Function} resolution Resolution to use, i.e. to day or to month
  * @param {Object} updateObject What fields to increment and by how much
  * @param {Object} itemSelector Can select a tldr, a user or even several tldrs/users
  * @param {Function} cb Optional callback, signature: err
  */
-function addEvent (Model, resolution, updateObject, itemSelector, cb) {
+function addEvent (Model, updateObject, itemSelector, cb) {
   var callback = cb || function () {}
     , updateKeys = Object.keys(updateObject)
-    , timestamp = resolution(new Date())
+    , timestamp = Model.resolution(new Date())
     ;
 
   Model.update( _.extend({ timestamp: timestamp }, itemSelector)
@@ -140,26 +142,26 @@ function addEvent (Model, resolution, updateObject, itemSelector, cb) {
               //);
 //}
 
-function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
-  addEvent(Model, resolution, updateObject, { tldr: tldrId }, cb);
+function addTldrEvent (Model, updateObject, tldrId, cb) {
+  addEvent(Model, updateObject, { tldr: tldrId }, cb);
 }
 
 // Add a read
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, tldr._id, cb);
 };
 
 // Add a thanks
 TldrAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { thanks: 1 }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.daily, { thanks: 1 }, tldr._id, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
-  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { thanks: 1 }, tldr._id, cb);
+  addTldrEvent(TldrAnalytics.monthly, { thanks: 1 }, tldr._id, cb);
 };
 
 
@@ -218,35 +220,39 @@ UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 
 UserAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
 UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 
+// Declare resolutions for both models
+UserAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
+UserAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
+
 
 /**
  * Uses addEvent which is defined in the TldrAnalytics section
  */
-function addUserEvent (Model, resolution, updateObject, userId, cb) {
-  addEvent(Model, resolution, updateObject, { user: userId }, cb);
+function addUserEvent (Model, updateObject, userId, cb) {
+  addEvent(Model, updateObject, { user: userId }, cb);
 }
 
 // Add a read
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
   var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
+  addUserEvent(UserAnalytics.daily, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
   var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
+  addUserEvent(UserAnalytics.monthly, { readCount: 1, articleWordCount: tldr.articleWordCount }, userId, cb);
 };
 
 // Add a thanks
 UserAnalyticsSchema.daily.statics.addThanks = function (tldr, cb) {
   var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { thanks: 1 }, userId, cb);
+  addUserEvent(UserAnalytics.daily, { thanks: 1 }, userId, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addThanks = function (tldr, cb) {
   var userId = tldr.creator._id || tldr.creator;   // creator may be populated or not ...
-  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { thanks: 1 }, userId, cb);
+  addUserEvent(UserAnalytics.monthly, { thanks: 1 }, userId, cb);
 };
 
 
