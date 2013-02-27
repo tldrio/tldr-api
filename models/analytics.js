@@ -8,9 +8,9 @@ var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , mqClient = require('../lib/message-queue')
   , _ = require('underscore')
-  , ObjectId = mongoose.Schema.ObjectId
   , Tldr = require('./tldrModel')
   , Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId
   , EventSchema, Event
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
   , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
@@ -173,13 +173,16 @@ UserAnalyticsSchemaData = {
 , tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
 , tldrsRead: { type: Number }
 };
+
+
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
+UserAnalyticsSchemaData.tldrsCreated = [{ type: ObjectId, ref: 'tldr' }];   // Ugly quickfix before they answer my question
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
 
 // Compound indexes on timestamp and user (both in ascending order)
 UserAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
-UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 
+UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
 // Declare resolutions for both models
 UserAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 UserAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;

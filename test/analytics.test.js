@@ -47,7 +47,7 @@ var myBlockingSetTimeout = (function (Date) {
 })(Date);
 
 
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -562,7 +562,7 @@ describe.only('Analytics', function () {
 });   // ==== End of 'Analytics' ==== //
 
 
-describe('Test analytics with events', function () {
+describe.only('Test analytics with events', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   function sendEventAndWait (event, data, wait, cb) {
@@ -677,6 +677,33 @@ describe('Test analytics with events', function () {
           UserAnalytics[resolution].find({ user: userbis._id }, function(err, analytics) {
             analytics.length.should.equal(1);
             analytics[0].thanks.should.equal(1);
+            cb();
+          });
+        }
+      ], done);
+    }
+
+    it('daily', function (done) { doTest('daily', done); });
+    it('monthly', function (done) { doTest('monthly', done); });
+  });
+
+  describe('The tldr.created event makes the analytics engine remember the ids of those tldrs, per user', function () {
+    function doTest (resolution, done) {
+      async.waterfall([   // The tldr.created event is already emitted on tldr creation we can test it right away
+        function (cb) {
+          UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].tldrsCreated.length.should.equal(2);
+            analytics[0].tldrsCreated.should.include(tldr1._id);
+            analytics[0].tldrsCreated.should.include(tldr2._id);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: userbis._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            analytics[0].tldrsCreated.length.should.equal(1);
+            analytics[0].tldrsCreated.should.include(tldr3._id);
             cb();
           });
         }
