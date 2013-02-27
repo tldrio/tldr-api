@@ -77,7 +77,7 @@ function addEventToProjection (id, updateObject, cb) {
     ;
 
   this.update( _.extend({ timestamp: timestamp }, itemSelector)
-              , { $inc: updateObject }
+              , updateObject
               , { upsert: true, multi: false }
               , function(err, numAffected, rawResponse) { return callback(err); }
               );
@@ -142,9 +142,9 @@ TldrAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
 TldrAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 
 
-// Add a read
+// Add a read - Only used for testing purposes since I can't test the events well
 TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  this.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
+  this.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
@@ -198,7 +198,7 @@ UserAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
 UserAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 
 
-// Add a read
+// Add a read - Only used for testing purposes since I can't test the events well
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
   this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
@@ -207,10 +207,6 @@ UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
   this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
 };
-
-
-
-
 
 
 

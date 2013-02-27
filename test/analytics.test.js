@@ -27,7 +27,6 @@ var should = require('chai').should()
   , tomorrow = new Date(2005, 6, 16)
   , monthNow = new Date(2005, 6, 1)
   , nextMonth = new Date(2005, 7, 1)
-  , timers = require('timers')
   ;
 
 
