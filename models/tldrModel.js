@@ -149,6 +149,15 @@ TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
 
+
+TldrSchema.virtual('lastEditor').get(function () {
+  if (this.editors.length) {
+    return this.editors[this.editors.length - 1];
+  } else {
+    return null;
+  }
+});
+
 TldrSchema.set('toJSON', {
    virtuals: true
 });
@@ -273,6 +282,7 @@ function findOneInternal (selector, cb) {
 
   Tldr.findOne(selector)
       .populate('creator', 'username twitterHandle')
+      .populate('editors', 'username')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
