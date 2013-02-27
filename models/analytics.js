@@ -148,7 +148,7 @@ TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
 };
 
 TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  this.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
+  this.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
 
@@ -201,11 +201,11 @@ UserAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 // Add a read - Only used for testing purposes since I can't test the events well
 // tldr is the tldr that was read. These functions update its creator's stats
 UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
-  this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
+  this.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
 UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
-  this.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount }, cb);
+  this.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
 
@@ -223,26 +223,26 @@ mqClient.on('tldr.read', function (data) {
   var tldr = data.tldr;
 
   Event.addRead(tldr);
-  TldrAnalytics.daily.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
-  TldrAnalytics.monthly.addEvent(tldr._id, { readCount: 1, articleWordCount: tldr.articleWordCount });
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { readCount: 1, articleWordCount: tldr.articleWordCount });
+  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
 });
 
 mqClient.on('tldr.thank', function (data) {
   var tldr = data.tldr;
 
-  TldrAnalytics.daily.addEvent(tldr._id, { thanks: 1 });
-  TldrAnalytics.monthly.addEvent(tldr._id, { thanks: 1 });
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { thanks: 1 });
+  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
 });
 
 mqClient.on('tldr.created', function (data) {
   var tldr = data.tldr;
 
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { tldrsCreated: 1 });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { tldrsCreated: 1 });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { tldrsCreated: 1 } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { tldrsCreated: 1 } });
 });
 
 
