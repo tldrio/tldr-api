@@ -47,7 +47,7 @@ var myBlockingSetTimeout = (function (Date) {
 })(Date);
 
 
-describe('Analytics', function () {
+describe.only('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -383,6 +383,53 @@ describe('Analytics', function () {
       });
     });
 
+    describe('Should be able to give you the analytics for multiple ids', function () {
+      function doTest(Model, period, resolutions, cb) {
+        async.waterfall([
+          async.apply(asyncClockTick, period)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr3)
+        , async.apply(addRead, Model, tldr1)
+        , async.apply(addRead, Model, tldr2)
+        , function (_cb) {
+            Model.getAnalytics(new Date(resolutions[1].getTime() - period / 2), null, [tldr1._id, tldr3._id], function (err, data) {
+              var dataForTldr1, dataForTldr3;
+
+              data.length.should.equal(2);
+              data[0].timestamp.getTime().should.equal(resolutions[1].getTime());
+              data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
+
+              // Order is not assured
+              if (data[0].tldr.toString() === tldr1._id.toString()) {
+                dataForTldr1 = data[0]; dataForTldr3 = data[1];
+              } else {
+                dataForTldr1 = data[1]; dataForTldr3 = data[0];
+              }
+
+              dataForTldr1.tldr.toString().should.equal(tldr1._id.toString());
+              dataForTldr1.readCount.should.equal(2);
+              dataForTldr1.articleWordCount.should.equal(800);
+
+              dataForTldr3.tldr.toString().should.equal(tldr3._id.toString());
+              dataForTldr3.readCount.should.equal(1);
+              dataForTldr3.articleWordCount.should.equal(700);
+              _cb();
+            });
+          }
+        ], cb);
+      }
+
+      it('daily', function (done) {
+        doTest(TldrAnalytics.daily, 24 * 3600 * 1000, [dayNow, tomorrow, new Date(2005, 6, 17), new Date(2005, 6, 18)], done);
+      });
+
+      it('monthly', function (done) {
+        doTest(TldrAnalytics.monthly, 24 * 30 * 3600 * 1000, [monthNow, nextMonth, new Date(2005, 8, 1), new Date(2005, 9, 1)], done);
+      });
+    });
+
+
+
   });   // ==== End of 'TldrAnalytics' ==== //
 
 
@@ -562,7 +609,7 @@ describe('Analytics', function () {
 });   // ==== End of 'Analytics' ==== //
 
 
-describe.only('Test analytics with events', function () {
+describe('Test analytics with events', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   function sendEventAndWait (event, data, wait, cb) {

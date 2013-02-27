@@ -91,7 +91,9 @@ function addEventToProjection (id, updateObject, cb) {
  * @param {Function} callback Siganture: err, array of time data points
  */
 function getAnalytics (beg, end, id, callback) {
-  var query = this.itemSelector(id);
+  var toFind = id instanceof Array ? { $in: id } : id
+    , query = this.itemSelector(toFind)
+    ;
 
   if (beg || end) {
     query.timestamp = {};
@@ -129,7 +131,7 @@ TldrAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
 TldrAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
 // Declare how to get the item selector for both models
-function getTldrSelector (id) { return { tldr: id}; }
+function getTldrSelector (id) { return { tldr: id }; }
 TldrAnalyticsSchema.daily.statics.itemSelector = getTldrSelector;
 TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
 

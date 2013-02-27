@@ -7,6 +7,7 @@
 var config = require('../../lib/config')
   , models = require('../../lib/models')
   , UserAnalytics = models.UserAnalytics
+  , TldrAnalytics = models.TldrAnalytics
   , _ = require('underscore')
   ;
 
@@ -36,6 +37,8 @@ module.exports = function (req, res, next) {
     return _.reduce(selectedData, function (memo, n) { return memo + n; }, 0);
   }
 
+
+
   UserAnalytics.daily.getAnalytics(null, null, req.user._id, function (err, data) {
     values.analytics = JSON.stringify(data);
 
@@ -48,6 +51,8 @@ module.exports = function (req, res, next) {
     values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
+
+
 
 
     res.render('website/basicLayout', { values: values
