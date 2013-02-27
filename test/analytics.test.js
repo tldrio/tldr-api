@@ -27,8 +27,25 @@ var should = require('chai').should()
   , tomorrow = new Date(2005, 6, 16)
   , monthNow = new Date(2005, 6, 1)
   , nextMonth = new Date(2005, 7, 1)
+  , timers = require('timers')
   ;
 
+
+// This works even after Sinon takes over the time in a Node.js environment
+// But it is blocking so only suitable for tests
+// Not the exact same signature are the native setTimeout, you can't pass arguments to the callback
+var myBlockingSetTimeout = (function (Date) {
+  return function (delay, cb) {
+    var beginning = (new Date()).getTime()
+      , now = (new Date()).getTime();
+
+    while (now < beginning + delay) {
+      now = (new Date()).getTime();
+    }
+
+    cb();
+  }
+})(Date);
 
 
 describe.only('Analytics', function () {

@@ -95,8 +95,8 @@ function getAnalytics (beg, end, id, callback) {
 
   if (beg || end) {
     query.timestamp = {};
-    if (beg) { query.timestamp.$gt = beg; }
-    if (end) { query.timestamp.$lt = end; }
+    if (beg) { query.timestamp.$gte = beg; }
+    if (end) { query.timestamp.$lte = end; }
   }
 
   this.find(query).sort('timestamp').exec(callback);
