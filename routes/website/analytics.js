@@ -64,20 +64,13 @@ module.exports = function (req, res, next) {
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
 
-    Tldr.find({ _id: { $in: req.user.tldrsCreated } }, 'articleWordCount summaryBullets', function (err, tldrs) {
-      Tldr.find({ _id: { $in: tldrsCreatedLast30Days } }, 'articleWordCount summaryBullets', function (err, tldrsLast30Days) {
-        console.log(tldrs);
-        console.log("=========================");
-        console.log(tldrsLast30Days);
-        console.log("=========================");
+    Tldr.find({ _id: { $in: req.user.tldrsCreated } }, 'articleWordCount wordCount', function (err, tldrs) {
+      Tldr.find({ _id: { $in: tldrsCreatedLast30Days } }, 'articleWordCount wordCount', function (err, tldrsLast30Days) {
         values.allTime.wordsCompressed = sumField(tldrs, 'articleWordCount');
         values.allTime.wordsWritten = sumField(tldrs, 'wordCount');
 
         values.past30Days.wordsCompressed = sumField(tldrsLast30Days, 'articleWordCount');
         values.past30Days.wordsWritten = sumField(tldrsLast30Days, 'wordCount');
-
-        console.log(values.allTime);
-        console.log(values.past30Days);
 
         res.render('website/basicLayout', { values: values
                                           , partials: partials
