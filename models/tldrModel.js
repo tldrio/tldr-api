@@ -130,6 +130,7 @@ TldrSchema = new Schema(
                       , default: 863
                       , set: customUtils.sanitizeNumber
                       }
+  , wordCount: { type: Number, default: 0 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , distributionChannels: { latestTldrs: { type: Boolean, default: true }
@@ -146,10 +147,6 @@ TldrSchema = new Schema(
 // Keep virtual 'slug' and 'wordCount' attributes and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
-});
-
-TldrSchema.virtual('wordCount').get(function () {
-  return customUtils.getWordCount(this.summaryBullets);
 });
 
 TldrSchema.set('toJSON', {
@@ -179,6 +176,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
+    instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
       mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
@@ -349,6 +347,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+  self.wordCount = customUtils.getWordCount(self.summaryBullets);
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 

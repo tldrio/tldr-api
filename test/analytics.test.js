@@ -47,7 +47,7 @@ var myBlockingSetTimeout = (function (Date) {
 })(Date);
 
 
-describe.only('Analytics', function () {
+describe('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {

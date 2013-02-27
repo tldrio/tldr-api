@@ -503,6 +503,11 @@ describe('Custom utils', function () {
       customUtils.getWordCount(['Hello how are you motherfucker?', 'This is a string.']).should.equal(9);
     });
 
+    it('With null or undefined', function () {
+      customUtils.getWordCount().should.equal(0);
+      customUtils.getWordCount(undefined).should.equal(0);
+    });
+
   });   // ==== End of '#getWordCount' ==== //
 
 
