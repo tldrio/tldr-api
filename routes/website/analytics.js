@@ -39,12 +39,12 @@ module.exports = function (req, res, next) {
   UserAnalytics.daily.getAnalytics(null, null, req.user._id, function (err, data) {
     values.analytics = JSON.stringify(data);
 
-    values.allTime.tldrsCreated = sumField(data, 'tldrsCreated');
+    //values.allTime.tldrsCreated = sumField(data, 'tldrsCreated');
     values.allTime.readCount = sumField(data, 'readCount');
     values.allTime.articleWordCount = sumField(data, 'articleWordCount');
     values.allTime.thanks = sumField(data, 'thanks');
 
-    values.past30Days.tldrsCreated = sumField(data, 'tldrsCreated', aMonthAgo);
+    //values.past30Days.tldrsCreated = sumField(data, 'tldrsCreated', aMonthAgo);
     values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);

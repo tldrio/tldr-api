@@ -170,7 +170,7 @@ UserAnalyticsSchemaData = {
 , readCount: { type: Number }
 , articleWordCount: { type: Number }
 , thanks: { type: Number }
-, tldrsCreated: { type: Number }
+, tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
 , tldrsRead: { type: Number }
 };
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
@@ -241,8 +241,8 @@ mqClient.on('tldr.thank', function (data) {
 mqClient.on('tldr.created', function (data) {
   var tldr = data.tldr;
 
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { tldrsCreated: 1 } });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { tldrsCreated: 1 } });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
 });
 
 
