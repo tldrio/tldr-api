@@ -571,7 +571,7 @@ describe('Webserver', function () {
         };
 
         request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
-          res.statusCode.should.equal(204);
+          res.statusCode.should.equal(200);
           Tldr.find({possibleUrls: 'http://needforair.com/nutcrackers'}, function(err, docs) {
             var tldr = docs[0];
             tldr.summaryBullets.should.include('Best Blog Ever');
@@ -669,7 +669,7 @@ describe('Webserver', function () {
         var tldrData = { summaryBullets: ['A new summary'] };
 
         request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
-          res.statusCode.should.equal(204);
+          res.statusCode.should.equal(200);
           Tldr.find({}, function(err, docs) {
             var tldr;
             docs.length.should.equal(numberOfTldrs);
