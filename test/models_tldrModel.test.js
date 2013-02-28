@@ -84,6 +84,67 @@ describe('Tldr', function () {
       });
     });
 
+    it('should detect missing required categories arg', function (done) {
+      var tldrData = {
+        url: 'http://bloup.com/',
+        summaryBullets: ['Awesome Blog'],
+        title: 'Blog NFA',
+        resourceAuthor: 'NFA Crew',
+      }
+      , valErr;
+
+      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.categories.should.not.equal(undefined);
+
+        done();
+      });
+    });
+
+    it('should reject tldrs whose categories is an empty array', function (done) {
+      var tldr = new Tldr({
+        url: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['bloup'],
+        categories: [],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.categories.should.not.equal(undefined);
+        done();
+      });
+    });
+
+    it('should reject tldrs whose categories array contains empty elements', function (done) {
+      var tldr = new Tldr({
+        url: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['bloup'],
+        categories: [''],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.categories.should.not.equal(undefined);
+        done();
+      });
+    });
+
+
     it('should detect missing required title arg', function (done) {
       var tldrData = {
         url: 'http://bloup.com/',
@@ -315,7 +376,7 @@ describe('Tldr', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should allow user to set url, title, summary, resourceAuthor, imageUrl and articleWordCount only', function (done) {
+    it('should allow user to set url, title, summary, resourceAuthor, imageUrl, categories and articleWordCount only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
@@ -337,6 +398,7 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://google.com/image.png');
             tldr.articleWordCount.should.equal(437);
+            tldr.categories.should.include('Business');
             tldr.createdAt.should.not.equal('2012');
 
             done();
@@ -952,6 +1014,7 @@ describe('Tldr', function () {
               tldr.resourceAuthor.should.equal('new3');
               tldr.createdAt.should.not.equal('2012');
               tldr.categories.should.include('Art');
+              tldr.categories.should.not.include('Business');
               tldr.imageUrl.should.equal('http://g.com/first.png');
 
               done();

@@ -33,9 +33,13 @@ var _ = require('underscore')
 
 // The categories array should not be empty
 function validateCategories (value) {
-  if (value && value.length) {
+  try {
+    check(value).isArray().len(0,15);
+    _.map(value, function (cat) {
+      check(cat).len(1, 30).notEmpty();
+    });
     return true;
-  } else {
+  } catch(e) {
     return false;
   }
 }
