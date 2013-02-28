@@ -43,14 +43,14 @@ describe('Custom utils', function () {
   });   // ==== End of '#timeago' ==== //
 
 
-  describe('#normalizeUrl', function() {
+  describe.only('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged', function () {
       var theUrl = "http://domain.tld/path/file.extension";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "https://domain.tld/path/file.extension";
-      normalizeUrl(theUrl).should.equal("https://domain.tld/path/file.extension");
+      theUrl = "http://domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
     });
 
     it('Should remove leading www subdomain, if any', function () {
@@ -231,12 +231,19 @@ describe('Custom utils', function () {
       normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
     });
 
+    it('Should always use http, since nobody hosts a different site on https', function () {
+      var theUrl;
+
+      theUrl = "https://lemonde.fr/about/me";
+      normalizeUrl(theUrl).should.equal("http://lemonde.fr/about/me");
+    });
+
     it('The normalize function should be idempotent', function () {
       var urlsToTest = [];
 
       // All the target urls in the tests above
       urlsToTest.push("http://domain.tld/path/file.extension");
-      urlsToTest.push("https://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/path/file.extension");
       urlsToTest.push("http://domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/bloup/blap");
@@ -271,6 +278,7 @@ describe('Custom utils', function () {
       urlsToTest.push("http://youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
       urlsToTest.push("http://youtube.com/path/file.extension?arg=value&rtf=yto");
       urlsToTest.push("http://youtube.com/path/file");
+      urlsToTest.push("http://lemonde.fr/about/me");
 
       _.each(urlsToTest, function (theUrl) {
         normalizeUrl(theUrl).should.equal(theUrl);
