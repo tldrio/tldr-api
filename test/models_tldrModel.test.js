@@ -112,7 +112,7 @@ describe('Tldr', function () {
         Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
-          _.keys(err.errors).length.should.equal(2);
+          _.keys(err.errors).length.should.equal(1);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 

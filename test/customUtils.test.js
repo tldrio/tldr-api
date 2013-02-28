@@ -43,7 +43,7 @@ describe('Custom utils', function () {
   });   // ==== End of '#timeago' ==== //
 
 
-  describe.only('#normalizeUrl', function() {
+  describe('#normalizeUrl', function() {
 
     it('Should keep correctly formatted urls unchanged', function () {
       var theUrl = "http://domain.tld/path/file.extension";
