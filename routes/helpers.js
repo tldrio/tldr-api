@@ -11,6 +11,7 @@ var i18n = require('../lib/i18n')
   , config = require('../lib/config')
   , bunyan = require('../lib/logger').bunyan
   , mailer = require('../lib/mailer')
+  , mqClient = require('../lib/message-queue')
   ;
 
 
@@ -22,7 +23,9 @@ var i18n = require('../lib/i18n')
 
 function updateCallback (err, docs, req, res, next) {
 
-  var oldTldr;
+  var oldTldr
+    , oldTldrAttributes
+    , tldrToSend;
 
   if (err) {
     if (err.message === 'Invalid ObjectId') {
@@ -34,6 +37,7 @@ function updateCallback (err, docs, req, res, next) {
 
   if (docs.length === 1) {
     oldTldr = docs[0];
+    oldTldrAttributes = {summaryBullets: oldTldr.summaryBullets, title: oldTldr.title };
 
     oldTldr.updateValidFields(req.body, req.user, function (err, updatedTldr) {
       if (err) {
@@ -43,17 +47,12 @@ function updateCallback (err, docs, req, res, next) {
         return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
       }
 
-      mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'
-                       , development: false
-                       , values: { user: req.user
-                                 , tldr: updatedTldr
-                                 , type: 'Edited'
-                                 , message: 'A tldr was edited'
-                                 }
-                       });
+      mqClient.emit('tldr.edit', { editor: req.user, oldTldr: oldTldrAttributes, newTldr: updatedTldr });
 
-      // With 204 even if a object is provided it's not sent by express
-      return res.send(204);
+      tldrToSend = oldTldr.toObject();
+      tldrToSend.lastEditor = { username: req.user.username };
+      delete tldrToSend.creator; // we delete the creator entry which is not populated otherwise client side it will mess up the model
+      return res.send(200, tldrToSend);
     });
   } else {
     return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );

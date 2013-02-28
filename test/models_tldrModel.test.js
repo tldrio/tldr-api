@@ -220,7 +220,6 @@ describe('Tldr', function () {
 
 
     it('should reject tldrs whose summary is an empty array', function (done) {
-
       var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
@@ -236,12 +235,10 @@ describe('Tldr', function () {
         err.name.should.equal('ValidationError');
         done();
       });
-
     });
 
 
     it('should reject tldrs whose summary contains empty bullets', function (done) {
-
       var tldr = new Tldr({
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
@@ -257,7 +254,6 @@ describe('Tldr', function () {
         err.name.should.equal('ValidationError');
         done();
       });
-
     });
 
 
@@ -307,13 +303,14 @@ describe('Tldr', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should allow user to set url, title, summary, resourceAuthor and imageUrl only', function (done) {
+    it('should allow user to set url, title, summary, resourceAuthor, imageUrl and articleWordCount only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
@@ -326,8 +323,27 @@ describe('Tldr', function () {
             tldr.summaryBullets.should.include('coin');
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://google.com/image.png');
+            tldr.articleWordCount.should.equal(437);
             tldr.createdAt.should.not.equal('2012');
 
+            done();
+          });
+        });
+    });
+
+    it('Should use default value if articleWordCount given is not parsable (potential XSS)', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloup'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 'document.write'   // Clearly unparsable
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          Tldr.findOne({resourceAuthor: 'bloup'}, function (err, tldr) {
+            tldr.articleWordCount.should.equal(863);
             done();
           });
         });
@@ -615,9 +631,12 @@ describe('Tldr', function () {
         function (cb) {
           Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
             id = tldr._id;
-            prevReadCount = tldr.readCount;
-            prevWeeklyReadCount = tldr.readCountThisWeek;
-            cb();
+            // Need to fetch it again to see the effects of the tldr.read message
+            Tldr.findOne({ _id: id }, function (err, tldr) {
+              prevReadCount = tldr.readCount;
+              prevWeeklyReadCount = tldr.readCountThisWeek;
+              cb();
+            });
           });
         }
       , function (cb) {
@@ -993,18 +1012,22 @@ describe('Tldr', function () {
         , prevReadCount2;
 
       Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr) {
-        prevReadCount1 = tldr.readCount;
-        Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr) {
-          prevReadCount2 = tldr.readCount;
-          Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr) {
-            Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
-              if (err) { return done(err); }
-              num.should.equal(2);
-              Tldr.find({ possibleUrls: tldrData1.url }, function (err, tldr) {
-                tldr[0].readCount.should.equal(prevReadCount1 + 1);
-                Tldr.find({ possibleUrls: tldrData2.url }, function (err, tldr) {
-                  tldr[0].readCount.should.equal(prevReadCount2 + 1);
-                  done();
+        Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+          prevReadCount1 = tldr.readCount;
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr) {
+            Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+              prevReadCount2 = tldr.readCount;
+              Tldr.createAndSaveInstance(tldrData3, user, function (err, tldr) {
+                Tldr.updateBatch(batch , { $inc: { readCount: 1 } }, function (err, num, raw) {
+                  if (err) { return done(err); }
+                  num.should.equal(2);
+                  Tldr.find({ possibleUrls: tldrData1.url }, function (err, tldr) {
+                    tldr[0].readCount.should.equal(prevReadCount1 + 1);
+                    Tldr.find({ possibleUrls: tldrData2.url }, function (err, tldr) {
+                      tldr[0].readCount.should.equal(prevReadCount2 + 1);
+                      done();
+                    });
+                  });
                 });
               });
             });

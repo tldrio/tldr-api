@@ -32,9 +32,14 @@
     {{/loggedUser}}
 
     {{#loggedUser}}
+      <!-- Directly scroll to this part of the page if there was an error -->
+      {{#displayValidationErrors}}
+        {{>website/comeHerePlease}}
+      {{/displayValidationErrors}}
+
       {{>website/validationErrors}}
 
-      <form method="post" action="/forum/topics/{{topic._id}}">
+      <form method="post" action="/forum/topics/{{topic._id}}/{{topic.slug}}">
         <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{userInput.text}}</textarea><br>
         <input type="submit" value="Express yourself" class="btn btn-primary">
       </form>

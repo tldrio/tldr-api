@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
   values.rssFeedPromotionLink = true;
   values.title = "Latest summaries" + config.titles.branding + config.titles.shortDescription;
   values.description = "Latest summaries contributed by the community. Get the most popular directly in your Twitter feed.";
-  partials.content = '{{>website/pages/tldrs}}';
+  partials.content = '{{>website/pages/latestTldrs}}';
 
   async.waterfall(
   [

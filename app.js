@@ -6,6 +6,7 @@
 var redis = require('redis')
   , redisClient = redis.createClient()
   , config = require('./lib/config')
+  , analytics = require('./models/analytics')
   ;
 
 

@@ -2,4 +2,11 @@ New user is: <br><br>
 
 Username: {{user.username}}<br>
 Email: {{user.email}}<br>
+{{#moreUserInfos.fullName}}
+Full name: {{moreUserInfos.fullName}}<br>
+{{/moreUserInfos.fullName}}
+<br>
+{{#moreUserInfos.socialProfiles}}
+<a href="{{url}}">Username {{username}}</a> on {{typeName}} <br>
+{{/moreUserInfos.socialProfiles}}
 

@@ -13,6 +13,7 @@ var bunyan = require('../lib/logger').bunyan
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , _ = require('underscore')
+  , mqClient = require('../lib/message-queue')
   , Tldr = models.Tldr;
 
 /**

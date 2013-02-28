@@ -9,13 +9,16 @@
         </p>
       </div>
       <div class="tldr-metadata">
-        {{#creator}}
-        <span>
-          tl;dr by
-          <span><a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
-        </span>
-        {{/creator}}
-      </div>
+       tl;dr 
+      {{^anonymous}}
+      <span>
+         by
+          <span><a href="{{websiteUrl}}/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a></span>
+           - 
+      </span>
+      {{/anonymous}}
+      read {{readCount}} times 
+    </div>
 
       <div class="tldr-summary">
         <ul>

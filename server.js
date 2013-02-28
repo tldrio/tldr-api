@@ -110,12 +110,12 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
-app.post('/tldrs', routes.createNewTldr);
+app.get('/tldrs/:id/stats', routes.getStatsForTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
+app.post('/tldrs', routes.createNewTldr);
+app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.put('/tldrs/:id', routes.updateTldrWithId);
-// IN EXPERIMENT
 app.put('/tldrs/:id/thank', routes.thankContributor);
 
 // routes for emails gathered during a product launch
@@ -160,7 +160,7 @@ app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
                                             , ifNotLogged: routes.website_signup }));
 
-app.get('/latest-summaries', middleware.websiteRoute, routes.website_tldrs);
+app.get('/latest-summaries', middleware.websiteRoute, routes.website_latestTldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
 
 app.get('/what-is-tldr', middleware.websiteRoute, routes.website_whatisit);
@@ -202,8 +202,8 @@ app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, rout
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
 app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumShowTopic);   // Show a whole topic
-app.get('/forum/topics/:id', middleware.websiteRoute, routes.website_forumShowTopic);   // For retrocompatibility
-app.post('/forum/topics/:id', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
+app.get('/forum/topics/:id', routes.website_forumShowTopic);   // For retrocompatibility, redirect to the correct, above url
+app.post('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
 app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewTopic);    // Display the newTopic form
 app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
 app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website_editPost);
@@ -211,6 +211,9 @@ app.post('/forum/posts/:id/edit', routes.website_changePostText);
 
 // Moderation
 app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
+
+// Scratchpad to test analytics
+app.get('/scratchpad', middleware.websiteRoute, middleware.adminOnly, routes.website_scratchpad);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched

@@ -21,8 +21,11 @@ function searchTldrsByBatch (req, res, next) {
   var query = req.query
     , batch = []
     , urls = {}
-    , maxBatchSize = 50
+    , maxBatchSize = 100
     ;
+
+  if (!req.body.batch) { req.body.batch = []; }
+  if (req.body.batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
 
   // We normalize the urls
   _.each(req.body.batch, function (url) {
@@ -31,11 +34,10 @@ function searchTldrsByBatch (req, res, next) {
     urls[url] = normalizedUrl;
   });
 
-  if (batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
-
   //Search by batch
   Tldr.find({ possibleUrls: { $in: batch } })
     .populate('creator', 'username twitterHandle')
+    .populate('editors', 'username')
     .exec( function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });

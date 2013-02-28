@@ -16,7 +16,7 @@ var _ = require('underscore')
   , Schema = mongoose.Schema
   , TldrSchema, Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl']     // setable fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
   , check = require('validator').check
@@ -90,6 +90,7 @@ TldrSchema = new Schema(
          , validate: [validateUrl, i18n.validateTldrUrl]
          , set: customUtils.normalizeUrl
          }
+  , anonymous: { type: Boolean, default: false }
   , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
   , originalUrl: { type: String   // Keep the original url in case normalization goes too far
                  , required: true
@@ -123,8 +124,12 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
-  , readCount: { type: Number, default: 1 }
-  , readCountThisWeek: { type: Number, default: 1 }
+  , readCount: { type: Number, default: 0 }
+  , readCountThisWeek: { type: Number, default: 0 }
+  , articleWordCount: { type: Number   // Number I made up after a bit of Googling
+                      , default: 863
+                      , set: customUtils.sanitizeNumber
+                      }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , distributionChannels: { latestTldrs: { type: Boolean, default: true }
@@ -133,6 +138,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
+  , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
 
@@ -141,6 +147,15 @@ TldrSchema = new Schema(
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
+});
+
+
+TldrSchema.virtual('lastEditor').get(function () {
+  if (this.editors.length) {
+    return this.editors[this.editors.length - 1];
+  } else {
+    return null;
+  }
 });
 
 TldrSchema.set('toJSON', {
@@ -172,6 +187,8 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
+      mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
+      mqClient.emit('tldr.created', { tldr: tldr });
 
       // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);
@@ -265,6 +282,7 @@ function findOneInternal (selector, cb) {
 
   Tldr.findOne(selector)
       .populate('creator', 'username twitterHandle')
+      .populate('editors', 'username')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
