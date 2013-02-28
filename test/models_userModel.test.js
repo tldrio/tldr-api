@@ -52,9 +52,9 @@ describe('User', function () {
                     , password: "supersecret"
                     , username: "usertest2"
                     }
-      , tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], categories: ['Business'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], categories: ['Business'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], categories: ['Business'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       ;
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
@@ -513,6 +513,7 @@ describe('User', function () {
                        summaryBullets: ['Awesome Blog'],
                        resourceAuthor: 'NFA Crew',
                        resourceDate: '2012',
+                       categories: ['Business'],
                        createdAt: new Date(),
                        updatedAt: new Date()
                      }
@@ -521,6 +522,7 @@ describe('User', function () {
                        summaryBullets: ['Awesome Blog', 'Another bullet'],
                        resourceAuthor: 'NFA Crew',
                        resourceDate: '2012',
+                       categories: ['Business'],
                        createdAt: new Date(),
                        updatedAt: new Date()
                      };
