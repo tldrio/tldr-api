@@ -18,6 +18,9 @@
             - 
           </span>
           {{/tldr.anonymous}}
+          {{#categories}}
+           In <span><a href="{{websiteUrl}}/tag/{{.}}" target="_blank"><em>{{.}}</em></a></span> -
+          {{/categories}}
           read {{tldr.readCount}} times
         </div>
 
