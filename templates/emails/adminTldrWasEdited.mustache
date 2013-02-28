@@ -1,0 +1,29 @@
+<a href="{{websiteUrl}}/{{editor.username}}">{{editor.username}}</a> just edited the tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a> from <a href="{{websiteUrl}}/{{creator.username}}">{{creator.username}}</a>. <br> <br>
+
+{{#diffTotal}}
+- 
+  {{#diffBullet}}
+
+    {{#added}}
+
+    <span style="color: #8bc142; background: #e7fddd;"> {{value}}</span>
+    {{/added}}
+
+    {{#removed}}
+      <span style="color: #a63822; background: #f7dede;"> {{value}}</span>
+    {{/removed}}
+
+    {{^removed}}
+    {{^added}}
+      {{value}}
+    {{/added}}
+    {{/removed}}
+  {{/diffBullet}}
+  <br>
+{{/diffTotal}}
+
+<br><br><br>
+
+## ADMIN<br>
+This summary smells like shit? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/delete">Delete the fucking outrageous tl;dr </a><br>
+Good summary but you don't want it to show anywhere? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/cockblock">Cockblock it</a>

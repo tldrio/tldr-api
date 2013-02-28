@@ -138,6 +138,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
+  , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
 
@@ -146,6 +147,15 @@ TldrSchema = new Schema(
 // Keep a virtual 'slug' attribute and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
+});
+
+
+TldrSchema.virtual('lastEditor').get(function () {
+  if (this.editors.length) {
+    return this.editors[this.editors.length - 1];
+  } else {
+    return null;
+  }
 });
 
 TldrSchema.set('toJSON', {
@@ -272,6 +282,7 @@ function findOneInternal (selector, cb) {
 
   Tldr.findOne(selector)
       .populate('creator', 'username twitterHandle')
+      .populate('editors', 'username')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }

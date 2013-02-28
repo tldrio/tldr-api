@@ -237,6 +237,9 @@
     "async": {
       "version": "0.2.5"
     },
+    "diff": {
+      "version": "1.0.4"
+    },
     "chai": {
       "version": "1.0.4"
     },

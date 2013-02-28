@@ -15,9 +15,12 @@
           <span>
             by
             <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
-            - 
+             ·  
           </span>
           {{/tldr.anonymous}}
+          {{#tldr.lastEditor}}
+          edited by <a href="{{websiteUrl}}/{{username}}" target="_blank"><em>{{username}}</em></a> · 
+          {{/tldr.lastEditor}}
           read {{tldr.readCount}} times
         </div>
 
