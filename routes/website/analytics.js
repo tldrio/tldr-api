@@ -18,13 +18,13 @@ module.exports = function (req, res, next) {
     , now = new Date(), aMonthAgo = new Date()
     ;
 
-  aMonthAgo.setDate(aMonthAgo.getDate() - 1);
+  aMonthAgo.setDate(aMonthAgo.getDate() - 30);
 
   partials.content = '{{>website/pages/analytics}}';
   values.title = (values.loggedUser ? values.loggedUser.username : '') + " - How badass are you?" + config.titles.branding;
 
-  values.past30Days = {};
-  values.allTime = {};
+  values.past30Days = { selection: 'past30Days' };
+  values.allTime = { selection: 'allTime' };
 
   function sumField (data, field, beg, end) {
     var selectedData = _.map(data, function (item) {
