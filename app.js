@@ -10,32 +10,60 @@ var redis = require('redis')
   ;
 
 
-// Get the current total read count
-// callback signature: err, count
-module.exports.getTotalTldrReadCount = function (callback) {
+/**
+ * Get from redis a global count defined by its key
+ * Callback signature: err, count
+ */
+function getGlobalCount (key, callback) {
+  var keyInRedis = 'global:' + key;
+
   redisClient.select(config.redisDb, function () {
-    redisClient.exists("global:totalTldrReadCount", function (err, exists) {
+    redisClient.exists(keyInRedis, function (err, exists) {
       if (err) { return callback(err); }
       if (!exists) {
         return callback(null, 0);
       } else {
-        redisClient.get("global:totalTldrReadCount", function (err, count) {
+        redisClient.get(keyInRedis, function (err, count) {
           if (err) { return callback(err); }
           return callback(null, parseInt(count, 10));
         });
       }
     });
   });
-};
+}
+module.exports.getGlobalCount = getGlobalCount;
 
 
-// Increase the total read count by one
-// cb is optional, signature: err, newCount
-module.exports.incrementTotalTldrReadCount = function (cb) {
-  var callback = cb || function () {};
+/**
+ * Increment by inc a global count defined by its key
+ * Callback is optional, signature: err, newCount
+ */
+function incrementGlobalCount (key, inc, cb) {
+  var keyInRedis = 'global:' + key
+    , callback = cb || function () {};
+
   redisClient.select(config.redisDb, function () {
-    redisClient.incr("global:totalTldrReadCount", callback);
+    redisClient.incrby(keyInRedis, inc, callback);
   });
+}
+module.exports.incrementGlobalCount = incrementGlobalCount;
+
+
+// Short hands for the total tldr read count
+module.exports.getTotalTldrReadCount = function (callback) {
+  getGlobalCount('totalTldrReadCount', callback);
+};
+
+module.exports.incrementTotalTldrReadCount = function (cb) {
+  incrementGlobalCount('totalTldrReadCount', 1, cb);
 };
 
 
+// Short hands for the total words saved count
+module.exports.getTotalWordsSaved = function (callback) {
+  getGlobalCount('totalWordsSaved', callback);
+};
+
+module.exports.incrementTotalWordsSaved = function (cb) {
+  incrementGlobalCount('totalWordsSaved', 1, cb);
+};
