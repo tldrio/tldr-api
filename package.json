@@ -30,7 +30,7 @@
     "mailchimp": "0.9.x",
     "mongoose": "3.3.x",
     "nodemailer": "0.3.x",
-    "node-redis-pubsub": "0.1.x",
+    "node-redis-pubsub": "0.1.1",
     "passport": "0.1.10",
     "passport-local": "0.1.3",
     "underscore": "1.4.x",
