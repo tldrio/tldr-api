@@ -39,6 +39,21 @@ blockingWait = (function (realDate) {
   };
 })(Date);
 
+function repartition (number, beginDate, maxRecursion) {
+  var stop = now.getTime() <= beginDate.getTime() + 24 * 3600 * 1000
+    , res = [], factor = (60 + Math.floor(10 * Math.random())) / 100
+    , tail
+    ;
+
+  maxRecursion = maxRecursion || 5;   // Everything happens it at most 5 days
+  if (stop || maxRecursion === 1 || number <= 3) { return [number]; }
+
+  res[0] = Math.floor(factor * number);
+  tail = repartition(number - res[0], new Date(beginDate.getTime() + 24 * 3600 * 1000), maxRecursion - 1);
+  res = res.concat(tail);
+  return res;
+}
+
 
 async.waterfall([
   function (cb) {
@@ -51,31 +66,56 @@ async.waterfall([
   }
 
   // Replay the tldrs creations
-, function (cb) {
-    var i = 0, errorCount = 0;
+//, function (cb) {
+    //var i = 0, errorCount = 0;
 
-    Tldr.find({}, function(err, tldrs) {
-      if (err) { return cb(err); }
+    //Tldr.find({}, function(err, tldrs) {
+      //if (err) { return cb(err); }
 
-      async.whilst(
-        function () { return i < tldrs.length; }
-      , function (_cb) {
-          console.log('Recreate analytics for: ' + tldrs[i]._id);
+      //async.whilst(
+        //function () { return i < tldrs.length; }
+      //, function (_cb) {
+          //console.log('Recreate analytics for: ' + tldrs[i]._id);
 
-          var tldr = tldrs[i];
+          //var tldr = tldrs[i];
 
-          setFakeTime(tldr.createdAt);
-          analytics.replayTldrsCreation(tldr, function (err) {
-            if (err) { return _cb(err); }
+          //setFakeTime(tldr.createdAt);
+          //analytics.replayTldrsCreation(tldr, function (err) {
+            //if (err) { return _cb(err); }
 
-            i += 1;
-            return _cb();
-          });
-        }
-      , cb);
-    });
-  }
+            //i += 1;
+            //return _cb();
+          //});
+        //}
+      //, cb);
+    //});
+  //}
 
+  // Replay thanks
+//, function (cb) {
+    //var i = 0, errorCount = 0;
+
+    //Tldr.find({}, function(err, tldrs) {
+      //if (err) { return cb(err); }
+
+      //async.whilst(
+        //function () { return i < tldrs.length; }
+      //, function (_cb) {
+          //console.log('Recreate analytics for: ' + tldrs[i]._id);
+
+          //var tldr = tldrs[i];
+
+          //setFakeTime(tldr.createdAt);
+          //analytics.replayTldrsCreation(tldr, function (err) {
+            //if (err) { return _cb(err); }
+
+            //i += 1;
+            //return _cb();
+          //});
+        //}
+      //, cb);
+    //});
+  //}
 
 
 ], function (err) {
