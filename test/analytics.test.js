@@ -30,22 +30,6 @@ var should = require('chai').should()
   ;
 
 
-// This works even after Sinon takes over the time in a Node.js environment
-// But it is blocking so only suitable for tests
-// Not the exact same signature are the native setTimeout, you can't pass arguments to the callback
-var myBlockingSetTimeout = (function (Date) {
-  return function (delay, cb) {
-    var beginning = (new Date()).getTime()
-      , now = (new Date()).getTime();
-
-    while (now < beginning + delay) {
-      now = (new Date()).getTime();
-    }
-
-    cb();
-  }
-})(Date);
-
 
 describe.skip('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;

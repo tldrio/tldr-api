@@ -15,7 +15,6 @@ function getStats (Model, req, res, next) {
   var resolution = req.query.resolution
     , beg = req.query.beg
     , end = req.query.end
-    , Model
     ;
 
   if (!req.params.id) { return res.send(404, i18n.resourceNotFound); }
@@ -29,7 +28,7 @@ function getStats (Model, req, res, next) {
 
     return res.json(200, data);
   });
-};
+}
 
 
 // Interface

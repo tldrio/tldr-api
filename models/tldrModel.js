@@ -335,11 +335,11 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
  */
 TldrSchema.methods.getCreatorId = function () {
   return this.creator._id || this.creator;
-}
+};
 
 TldrSchema.statics.getCreatorId = function (tldr) {
   return tldr.creator._id || tldr.creator;
-}
+};
 
 
 /**
