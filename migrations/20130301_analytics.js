@@ -7,8 +7,7 @@ var async = require('async')
   , models = require('../lib/models')
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
-  , UserAnalytics = models.UserAnalytics
-  , TldrAnalytics = models.TldrAnalytics
+  , analytics = require('../models/analytics')
   , mqClient = require('../lib/message-queue')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
@@ -66,25 +65,26 @@ async.waterfall([
           var tldr = tldrs[i];
 
           setFakeTime(tldr.createdAt);
-          UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
+          analytics.replayTldrsCreation(tldr, function (err) {
             if (err) { return _cb(err); }
-            UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
-              if (err) { return _cb(err); }
 
-              i += 1;
-              return _cb();
-            });
+            i += 1;
+            return _cb();
           });
-
         }
       , cb);
     });
   }
+
+
+
 ], function (err) {
     if (err) {
       console.log('Something unexpected occured, stopped migration. ', err);
     }
 
+    console.log(now);
+    clock.restore();
     db.closeDatabaseConnection(function () {
       console.log("Closed connection to database");
       process.exit(0);

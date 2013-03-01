@@ -255,31 +255,50 @@ UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSch
 
 
 // ONLY HERE FOR MIGRATION PURPOSES
-mqClient.on('migration.tldr.read', function (data) {
-  var tldr = data.tldr;
+module.exports.replayRead = function (tldr, cb) {
+  Event.addRead(tldr, function (err) {
+    if (err) { return cb(err); }
+    TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
+      if (err) { return cb(err); }
+      TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
+        if (err) { return cb(err); }
+        UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
+          if (err) { return cb(err); }
+          UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
+            if (err) { return cb(err); }
+            return cb();
+          });
+        });
+      });
+    });
+  });
+};
 
-  Event.addRead(tldr);
-  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-});
+module.exports.replayThanks = function (tldr, cb) {
+  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } }, function (err) {
+    if (err) { return cb(err); }
+    TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } }, function (err) {
+      if (err) { return cb(err); }
+      UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } }, function (err) {
+        if (err) { return cb(err); }
+        UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } }, function (err) {
+          if (err) { return cb(err); }
+          return cb();
+        });
+      });
+    });
+  });
+};
 
-mqClient.on('migration.tldr.thank', function (data) {
-  var tldr = data.tldr;
-
-  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } });
-  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } });
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
-});
-
-mqClient.on('migration.tldr.created', function (data) {
-  var tldr = data.tldr;
-
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
-  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
-});
+module.exports.replayTldrsCreation = function (tldr, cb) {
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
+    if (err) { return cb(err); }
+    UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
+      if (err) { return cb(err); }
+      return cb();
+    });
+  });
+};
 // END OF ONLY HERE FOR MIGRATION PURPOSES
 
 
