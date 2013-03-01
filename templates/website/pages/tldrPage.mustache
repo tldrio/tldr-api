@@ -15,11 +15,14 @@
           <span>
             by
             <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
-            - 
+             ·  
           </span>
           {{/tldr.anonymous}}
+          {{#tldr.lastEditor}}
+          edited by <a href="{{websiteUrl}}/{{username}}" target="_blank"><em>{{username}}</em></a>  ·
+          {{/tldr.lastEditor}}
           {{#tldr.categories}}
-           In <span><a href="{{websiteUrl}}/tag/{{.}}" target="_blank"><em>{{.}}</em></a></span> -
+           In <span><a href="{{websiteUrl}}/tag/{{.}}" target="_blank"><em>{{.}}</em></a></span> ·
           {{/tldr.categories}}
           read {{tldr.readCount}} times
         </div>
