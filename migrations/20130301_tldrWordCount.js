@@ -32,7 +32,7 @@ async.waterfall([
 , function (cb) {
     var i = 0, errorCount = 0;
 
-    Tldr.find({ wordCount: { $exists:false } }, function(err, tldrs) {
+    Tldr.find({}, function(err, tldrs) {
       if (err) { return cb(err); }
 
       console.log("====");
