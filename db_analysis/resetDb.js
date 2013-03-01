@@ -21,7 +21,10 @@ var async = require('async')
   , db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
-                     );
+                     )
+  , noAnalytics = process.argv.indexOf('--no-analytics') !== -1
+  ;
+
 
 function wait (delay, cb) {
   setTimeout(cb, delay);
@@ -31,6 +34,7 @@ function putCurrentAnalyticsBackInTime (days, cb) {
   var oldTimestamp = customUtils.getDayResolution(now)
     , newTimestamp = new Date(oldTimestamp.getTime() - days * oneday)
 
+  if (noAnalytics) { return cb(); }
   UserAnalytics.daily.update( { timestamp: oldTimestamp, user: louis._id }
                             , { timestamp: newTimestamp }
                             , { multi: false }
@@ -105,6 +109,7 @@ async.waterfall([
     });
   }
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr1 });
     mqClient.emit('tldr.read', { tldr: tldr1 });
@@ -118,6 +123,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 5)
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr3 });
     mqClient.emit('tldr.read', { tldr: tldr3 });
@@ -126,6 +132,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 4)
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr2 });
     mqClient.emit('tldr.read', { tldr: tldr1 });
@@ -136,6 +143,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 3)
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr3 });
     mqClient.emit('tldr.read', { tldr: tldr3 });
@@ -147,6 +155,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 2)
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr2 });
     mqClient.emit('tldr.read', { tldr: tldr2 });
@@ -156,6 +165,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 34)
 , function (cb) {
+    if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
     mqClient.emit('tldr.read', { tldr: tldr3 });
     mqClient.emit('tldr.read', { tldr: tldr3 });
@@ -172,6 +182,7 @@ async.waterfall([
     var tldrData4 = {url: 'http://needforair.com/bloupsim', articleWordCount: 7456, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
       ;
 
+    if (noAnalytics) { return cb(); }
     console.log("Creating another tldr");
     Tldr.createAndSaveInstance(tldrData4, louis, function (err, _tldr4) {
       if (err) { return cb(err); }
