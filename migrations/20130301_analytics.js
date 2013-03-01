@@ -76,30 +76,30 @@ async.waterfall([
   }
 
   // Replay the tldrs creations
-//, function (cb) {
-    //var i = 0, errorCount = 0;
+, function (cb) {
+    var i = 0, errorCount = 0;
 
-    //Tldr.find({}, function(err, tldrs) {
-      //if (err) { return cb(err); }
+    Tldr.find({}, function(err, tldrs) {
+      if (err) { return cb(err); }
 
-      //async.whilst(
-        //function () { return i < tldrs.length; }
-      //, function (_cb) {
-          //console.log('Replay creation for: ' + tldrs[i]._id);
+      async.whilst(
+        function () { return i < tldrs.length; }
+      , function (_cb) {
+          console.log('Replay creation for: ' + tldrs[i]._id);
 
-          //var tldr = tldrs[i];
+          var tldr = tldrs[i];
 
-          //setFakeTime(tldr.createdAt);
-          //analytics.replayTldrsCreation(tldr, function (err) {
-            //if (err) { return _cb(err); }
+          setFakeTime(tldr.createdAt);
+          analytics.replayTldrsCreation(tldr, function (err) {
+            if (err) { return _cb(err); }
 
-            //i += 1;
-            //return _cb();
-          //});
-        //}
-      //, cb);
-    //});
-  //}
+            i += 1;
+            return _cb();
+          });
+        }
+      , cb);
+    });
+  }
 
   // Replay thanks
 , function (cb) {
@@ -142,6 +142,46 @@ async.waterfall([
     });
   }
 
+  // Replay reads
+, function (cb) {
+    var i = 0, errorCount = 0;
+
+    Tldr.find({}, function(err, tldrs) {
+      if (err) { return cb(err); }
+
+      async.whilst(
+        function () { return i < tldrs.length; }
+      , function (_cb) {
+          console.log('Replay reads for: ' + tldrs[i]._id);
+
+          var tldr = tldrs[i]
+            , repartitionTable = repartition(tldr.readCount.length, tldr.createdAt)
+            , j = 0
+            ;
+
+          setFakeTime(tldr.createdAt);
+
+          // Execute multiple times according to repartition table
+          async.whilst(function () { return j < repartitionTable.length; }
+          , function (cbtable) {
+              executeMultipleTimes(
+                function (cbi) {
+                  analytics.replayRead(tldr, function (err) { cbi(err); })
+                }
+              , repartitionTable[j]
+              , function () {
+                  j += 1;
+                  clock.tick(24 * 3600 * 1000);
+                  return cbtable();
+              });
+            }
+          , function () { i += 1; _cb(); }
+          );
+          // End of executing table
+        }
+      , cb);
+    });
+  }
 
 ], function (err) {
     if (err) {
