@@ -144,7 +144,7 @@ TldrSchema = new Schema(
 
 
 
-// Keep virtual 'slug' and 'wordCount' attributes and send it when requested
+// Keep virtual 'slug' attributes and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
