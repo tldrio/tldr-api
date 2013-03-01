@@ -47,7 +47,7 @@ var myBlockingSetTimeout = (function (Date) {
 })(Date);
 
 
-describe('Analytics', function () {
+describe.skip('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -609,7 +609,7 @@ describe('Analytics', function () {
 });   // ==== End of 'Analytics' ==== //
 
 
-describe('Test analytics with events', function () {
+describe.skip('Test analytics with events', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   function sendEventAndWait (event, data, wait, cb) {
