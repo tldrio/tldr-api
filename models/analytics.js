@@ -224,31 +224,31 @@ UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSch
 
 
 // Handle all events
-//mqClient.on('tldr.read', function (data) {
-  //var tldr = data.tldr;
+mqClient.on('tldr.read', function (data) {
+  var tldr = data.tldr;
 
-  //Event.addRead(tldr);
-  //TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  //TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
-//});
+  Event.addRead(tldr);
+  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+});
 
-//mqClient.on('tldr.thank', function (data) {
-  //var tldr = data.tldr;
+mqClient.on('tldr.thank', function (data) {
+  var tldr = data.tldr;
 
-  //TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } });
-  //TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } });
-  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
-  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
-//});
+  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
+});
 
-//mqClient.on('tldr.created', function (data) {
-  //var tldr = data.tldr;
+mqClient.on('tldr.created', function (data) {
+  var tldr = data.tldr;
 
-  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
-  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
-//});
+  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
+  UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
+});
 
 
 

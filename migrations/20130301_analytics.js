@@ -119,9 +119,6 @@ async.waterfall([
             ;
 
           setFakeTime(tldr.createdAt);
-          console.log(tldr.thankedBy.length);
-          console.log(tldr.createdAt);
-          console.log(repartitionTable);
 
           // Execute multiple times according to repartition table
           async.whilst(function () { return j < repartitionTable.length; }
