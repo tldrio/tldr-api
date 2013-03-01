@@ -174,6 +174,7 @@ app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
 
 
 // Tldr page
+app.get('/tldrs/embed/:id', routes.website_tldrEmbed);
 app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website_tldrPage);
 
 // Login, logout
