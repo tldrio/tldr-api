@@ -7,8 +7,10 @@
 var mongoose = require('mongoose')
   , customUtils = require('../lib/customUtils')
   , mqClient = require('../lib/message-queue')
-  , ObjectId = mongoose.Schema.ObjectId
+  , _ = require('underscore')
+  , Tldr = require('./tldrModel')
   , Schema = mongoose.Schema
+  , ObjectId = Schema.ObjectId
   , EventSchema, Event
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
   , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
@@ -29,7 +31,7 @@ EventSchema = new Schema({
 
 , tldr: { type: ObjectId, ref: 'tldr' }
 , readCount: { type: Number }
-, wordsReadCount: { type: Number }
+, articleWordCount: { type: Number }
 , creator: { type: ObjectId, ref: 'user' }
 , thanks: { type: Number }
 }, { collection: 'event' });
@@ -44,7 +46,7 @@ EventSchema.statics.addRead = function (tldr, cb) {
                         , timestamp: new Date()
                         , tldr: tldr._id
                         , readCount: 1
-                        , wordsReadCount: 999   // TODO: replace by the actual one
+                        , articleWordCount: tldr.articleWordCount
                         , creator: tldr.creator
                         })
     , callback = cb || function () {}
@@ -52,6 +54,55 @@ EventSchema.statics.addRead = function (tldr, cb) {
 
   event.save(callback);
 };
+
+
+
+/**
+ * =============================
+ * === All-purpose functions ===
+ * =============================
+ */
+
+/**
+ * Add an event to a projection (tldr/user and daily/monthly)
+ * @param {ObjectId} id id of the object (can be a tldr or a user depending on the model)
+ * @param {Object} updateObject What fields to increment and by how much
+ * @param {Function} cb Optional callback, signature: err
+ */
+function addEventToProjection (id, updateObject, cb) {
+  var callback = cb || function () {}
+    , updateKeys = Object.keys(updateObject)
+    , timestamp = this.resolution(new Date())
+    , itemSelector = this.itemSelector(id)
+    ;
+
+  this.update( _.extend({ timestamp: timestamp }, itemSelector)
+              , updateObject
+              , { upsert: true, multi: false }
+              , function(err, numAffected, rawResponse) { return callback(err); }
+              );
+}
+
+/**
+ * Return all analytics data concerning one tldr, between beg and end
+ * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
+ * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
+ * @param {ObjectId} id id of the object (tldr or user)
+ * @param {Function} callback Siganture: err, array of time data points
+ */
+function getAnalytics (beg, end, id, callback) {
+  var toFind = id instanceof Array ? { $in: id } : id
+    , query = this.itemSelector(toFind)
+    ;
+
+  if (beg || end) {
+    query.timestamp = {};
+    if (beg) { query.timestamp.$gte = beg; }
+    if (end) { query.timestamp.$lte = end; }
+  }
+
+  this.find(query).sort('timestamp').exec(callback);
+}
 
 
 
@@ -65,7 +116,8 @@ TldrAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , tldr: { type: ObjectId, ref: 'tldr', required: true }
 , readCount: { type: Number }
-, wordsCount: { type: Number }
+, articleWordCount: { type: Number }
+, thanks: { type: Number }
 };
 TldrAnalyticsSchema.daily = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.daily' });
 TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 'tldranalytics.monthly' });
@@ -74,64 +126,37 @@ TldrAnalyticsSchema.monthly = new Schema(TldrAnalyticsSchemaData, { collection: 
 TldrAnalyticsSchema.daily.index({ timestamp: 1, tldr: 1 });
 TldrAnalyticsSchema.monthly.index({ timestamp: 1, tldr: 1 });
 
+// Declare resolutions for both models
+TldrAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
+TldrAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
 
-/**
- * Add an event to the tldr projections
- * The same internal function is used for both (daily and monthly versions)
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Function} resolution Resolution to use, i.e. to day or to month
- * @param {Object} updateObject What fields to increment and how
- * @param {ObjectID} tldrId
- * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
- */
-function addTldrEvent (Model, resolution, updateObject, tldrId, cb) {
-  var callback = cb || function () {}
-    ;
+// Declare how to get the item selector for both models
+function getTldrSelector (id) { return { tldr: id }; }
+TldrAnalyticsSchema.daily.statics.itemSelector = getTldrSelector;
+TldrAnalyticsSchema.monthly.statics.itemSelector = getTldrSelector;
 
-  Model.update( { timestamp: resolution(new Date()), tldr: tldrId }
-              , { $inc: updateObject }
-              , { upsert: true, multi: false }
-              , callback
-              );
-}
+// Use addEvent to update the analytics
+TldrAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
+TldrAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
 
-// TODO: replace 999 by actual wordsReadCount when we have it
-TldrAnalyticsSchema.daily.statics.addRead = function (tldrId, cb) {
-  addTldrEvent(TldrAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
+// Get the analytics
+TldrAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
+TldrAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
+
+
+// Add a read - Only used for testing purposes since I can't test the events well
+TldrAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
+  this.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
-TldrAnalyticsSchema.monthly.statics.addRead = function (tldrId, cb) {
-  addTldrEvent(TldrAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, tldrId, cb);
+TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
+  this.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
 
-/**
- * Return all analytics data concerning one tldr, between beg and end
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Date} beg Optional. Get data after this date, or after the beginning of times if it doesn't exist
- * @param {Date} end Optional. Get data before this date, or before the end of times if it doesn't exist
- * @param {ObjectID} tldrId
- * @param {Function} callback Siganture: err, array of time data points
- */
-function getAnalytics (Model, beg, end, tldrId, callback) {
-  var query = { tldr: tldrId };
 
-  if (beg || end) {
-    query.timestamp = {};
-    if (beg) { query.timestamp.$gt = beg; }
-    if (end) { query.timestamp.$lt = end; }
-  }
 
-  Model.find(query).sort('timestamp').exec(callback);
-}
 
-TldrAnalyticsSchema.daily.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.daily, beg, end, tldrId, callback);
-};
-
-TldrAnalyticsSchema.monthly.statics.getData = function (beg, end, tldrId, callback) {
-  getAnalytics(TldrAnalytics.monthly, beg, end, tldrId, callback);
-};
 
 
 
@@ -145,62 +170,84 @@ UserAnalyticsSchemaData = {
   timestamp: { type: Date, required: true }
 , user: { type: ObjectId, ref: 'user', required: true }
 , readCount: { type: Number }
-, wordsCount: { type: Number }
+, articleWordCount: { type: Number }
+, thanks: { type: Number }
+, tldrsCreated: [{ type: ObjectId, ref: 'tldr' }]
+, tldrsRead: { type: Number }
 };
+
+
 UserAnalyticsSchema.daily = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.daily' });
+UserAnalyticsSchemaData.tldrsCreated = [{ type: ObjectId, ref: 'tldr' }];   // Ugly quickfix before they answer my question
 UserAnalyticsSchema.monthly = new Schema(UserAnalyticsSchemaData, { collection: 'useranalytics.monthly' });
 
 // Compound indexes on timestamp and user (both in ascending order)
 UserAnalyticsSchema.daily.index({ timestamp: 1, user: 1 });
+
 UserAnalyticsSchema.monthly.index({ timestamp: 1, user: 1 });
+// Declare resolutions for both models
+UserAnalyticsSchema.daily.statics.resolution = customUtils.getDayResolution;
+UserAnalyticsSchema.monthly.statics.resolution = customUtils.getMonthResolution;
+
+// Declare how to get the item selector
+function getUserSelector (id) { return { user: id }; }
+UserAnalyticsSchema.daily.statics.itemSelector = getUserSelector;
+UserAnalyticsSchema.monthly.statics.itemSelector = getUserSelector;
+
+// Add an event
+UserAnalyticsSchema.daily.statics.addEvent = addEventToProjection;
+UserAnalyticsSchema.monthly.statics.addEvent = addEventToProjection;
+
+// Get analytics
+UserAnalyticsSchema.daily.statics.getAnalytics = getAnalytics;
+UserAnalyticsSchema.monthly.statics.getAnalytics = getAnalytics;
 
 
-/**
- * Add an event to the user projections
- * The same internal function is used for both (daily and monthly versions)
- * @param {Model} Model Model to use, i.e. daily or monthly
- * @param {Function} resolution Resolution to use, i.e. to day or to month
- * @param {Object} updateObject What fields to increment and how
- * @param {User} user
- * @param {Function} cb Optional callback, signature: err, numAffected, rawMongoResponse
- */
-function addUserEvent (Model, resolution, updateObject, user, cb) {
-  var callback = cb || function () {};
-
-  Model.update( { timestamp: resolution(new Date()), user: user._id }
-              , { $inc: updateObject }
-              , { upsert: true, multi: false }
-              , callback
-              );
-}
-
-// TODO: replace 999 by actual wordsReadCount when we have it
-UserAnalyticsSchema.daily.statics.addRead = function (user, cb) {
-  addUserEvent(UserAnalytics.daily, customUtils.getDayResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+// Add a read - Only used for testing purposes since I can't test the events well
+// tldr is the tldr that was read. These functions update its creator's stats
+UserAnalyticsSchema.daily.statics.addRead = function (tldr, cb) {
+  this.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
 
-UserAnalyticsSchema.monthly.statics.addRead = function (user, cb) {
-  addUserEvent(UserAnalytics.monthly, customUtils.getMonthResolution, { readCount: 1, wordsReadCount: 999 }, user, cb);
+UserAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
+  this.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, cb);
 };
-
 
 
 
 // Define the models
 Event = mongoose.model('event', EventSchema);
 TldrAnalytics.daily = mongoose.model('tldranalytics.daily', TldrAnalyticsSchema.daily);
-TldrAnalytics.monthly = mongoose.model('tldranalytics.weekly', TldrAnalyticsSchema.monthly);
+TldrAnalytics.monthly = mongoose.model('tldranalytics.monthly', TldrAnalyticsSchema.monthly);
 UserAnalytics.daily = mongoose.model('useranalytics.daily', UserAnalyticsSchema.daily);
-UserAnalytics.monthly = mongoose.model('useranalytics.weekly', UserAnalyticsSchema.monthly);
+UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSchema.monthly);
 
 
 // Handle all events
 //mqClient.on('tldr.read', function (data) {
-  //Event.addRead(data.tldr);
-  //TldrAnalytics.daily.addRead(data.tldr._id);
-  //TldrAnalytics.monthly.addRead(data.tldr._id);
-  //UserAnalytics.daily.addRead(data.tldr);
-  //UserAnalytics.monthly.addRead(data.tldr);
+  //var tldr = data.tldr;
+
+  //Event.addRead(tldr);
+  //TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  //TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } });
+//});
+
+//mqClient.on('tldr.thank', function (data) {
+  //var tldr = data.tldr;
+
+  //TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  //TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } });
+  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
+  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } });
+//});
+
+//mqClient.on('tldr.created', function (data) {
+  //var tldr = data.tldr;
+
+  //UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
+  //UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
 //});
 
 

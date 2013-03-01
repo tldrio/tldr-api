@@ -130,6 +130,7 @@ TldrSchema = new Schema(
                       , default: 863
                       , set: customUtils.sanitizeNumber
                       }
+  , wordCount: { type: Number, default: 0 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , distributionChannels: { latestTldrs: { type: Boolean, default: true }
@@ -144,7 +145,7 @@ TldrSchema = new Schema(
 
 
 
-// Keep a virtual 'slug' attribute and send it when requested
+// Keep virtual 'slug' attributes and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
@@ -185,6 +186,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
+    instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
       mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
@@ -327,6 +329,18 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
 };
 
 
+/**
+ * Get the id of this tldr's creator, whether or not the field was populated or not
+ * We have a static version for tldrs passed through the node redis pubsub which have lost their methods
+ */
+TldrSchema.methods.getCreatorId = function () {
+  return this.creator._id || this.creator;
+}
+
+TldrSchema.statics.getCreatorId = function (tldr) {
+  return tldr.creator._id || tldr.creator;
+}
+
 
 /**
  * Update tldr object.
@@ -344,6 +358,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+  self.wordCount = customUtils.getWordCount(self.summaryBullets);
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
