@@ -144,6 +144,26 @@ describe('Tldr', function () {
       });
     });
 
+    it('should reject tldrs whose topics array contains non approved elements', function (done) {
+      var tldr = new Tldr({
+        url: 'http://needforair.com/nutcrackers',
+        title: 'Blog NFA',
+        summaryBullets: ['bloup'],
+        topics: ['Loltrains'],
+        resourceAuthor: 'NFA Crew',
+        resourceDate: '2012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      , valErr;
+
+      tldr.save( function (err) {
+        err.name.should.equal('ValidationError');
+        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+        valErr.topics.should.not.equal(undefined);
+        done();
+      });
+    });
 
     it('should detect missing required title arg', function (done) {
       var tldrData = {

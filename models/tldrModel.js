@@ -19,6 +19,7 @@ var _ = require('underscore')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous', 'topics']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'topics']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
+  , approvedCategories = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
@@ -38,6 +39,16 @@ function validateTopics (value) {
     _.map(value, function (cat) {
       check(cat).len(1, 30).notEmpty();
     });
+    var validTopic = true;
+    value.forEach(function(topic) {
+      if (!_.contains(approvedCategories, topic)) {
+        validTopic = false;
+      }
+    });
+    if (!validTopic) {
+      return false;
+    }
+
     return true;
   } catch(e) {
     return false;
@@ -152,10 +163,10 @@ TldrSchema = new Schema(
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
   , topics: { type: Array
-                , required: true
-                , validate: [validateTopics, i18n.validateTopics]
-                , set: customUtils.sanitizeArray
-                }
+            , required: true
+            , validate: [validateTopics, i18n.validateTopics]
+            , set: customUtils.sanitizeArray
+            }
   , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
