@@ -20,7 +20,7 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases.push({ header: 'Week from Feb 18th, 2013 to Feb 24th, 2013'
   , items: [
-             "Enabled anonymous posting, you can now help the community in a more discreet way. Of course, people can still thank you for your work."
+             "YOu can now post tldrs anonymously, in case you don't want your username publicly associated with the tldr."
            , "Various improvements to the contribution UX: better positioned window, more intuitive behaviour of the tab command and better post contribution message."
            , "Embed tldrs in Reddit comments pages"
            , "Badges now appear on pinboard.in/popular and pinboard.in/recent"
