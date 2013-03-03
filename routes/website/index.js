@@ -6,6 +6,7 @@
 
 var config = require('../../lib/config')
   , app = require('../../app')
+  , _s = require('underscore.string')
   ;
 
 module.exports = function (req, res, next) {
@@ -15,7 +16,7 @@ module.exports = function (req, res, next) {
 
     values.index = true;
     values.rssFeedPromotionLink = true;
-    values.totalReadCount = totalReadCount;
+    values.totalReadCount = _s.numberFormat(totalReadCount);
     values.title = "tldr.io" + config.titles.shortDescription;
     values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
     partials.content = '{{>website/pages/index}}';
