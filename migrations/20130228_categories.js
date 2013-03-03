@@ -42,7 +42,7 @@ async.waterfall([
       , function (cb) {
           console.log('Adding hostname to: ' + tldrs[i]._id);
 
-          tldrs[i].categories = ['Startups']
+          tldrs[i].topics = ['Startups']
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 
@@ -55,7 +55,7 @@ async.waterfall([
   }
   // test that all the tldrs docs have a hostname field
 , function (cb) {
-    Tldr.find({ categories: { $exists: false } }, function(err, tldrs) {
+    Tldr.find({ topics: { $exists: false } }, function(err, tldrs) {
       if (tldrs.length === 0) {
         console.log("Everything worked");
       } else {

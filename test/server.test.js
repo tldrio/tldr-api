@@ -90,10 +90,10 @@ describe('Webserver', function () {
   beforeEach(function (done) {
 
     // dummy models
-    var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], categories: ['Business'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], categories: ['Business'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], categories: ['Business'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
-      , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], categories: ['Business'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+    var tldrData1 = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], topics: ['Business'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], topics: ['Business'], resourceAuthor: 'Fred', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], topics: ['Business'], resourceAuthor: 'Mark', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
+      , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], topics: ['Business'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret", twitterHandle: 'blipblop'}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
       , topicData1 = { title: 'et voila un topic' }
@@ -192,7 +192,7 @@ describe('Webserver', function () {
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
                                 , possibleUrls: ['http://needforair.com/sopa/number' + i]
                                 , originalUrl: 'http://needforair.com/sopa/number' + i
-                                , categories: ['Business']
+                                , topics: ['Business']
                                 , hostname: 'needforair.com'
                                 , title: 'sopa'
                                 , slug: 'sopa-' + i
@@ -349,7 +349,7 @@ describe('Webserver', function () {
         someTldrs.push({ url: 'http://needforair.com/sopa/number' + i
                        , title: 'sopa'
                        , summaryBullets: ['Great article']
-                       , categories: ['Business']
+                       , topics: ['Business']
                        });
       }
 
@@ -513,7 +513,7 @@ describe('Webserver', function () {
           title: 'A title',
           url: 'http://yetanotherunusedurl.com/somepage',
           summaryBullets: ['A summary'],
-          categories: ['Business'],
+          topics: ['Business'],
           resourceAuthor: 'bozo le clown',
         };
 
@@ -539,7 +539,7 @@ describe('Webserver', function () {
           title: 'A title',
           url: 'http://yetanotherunusedurl.com/somepage',
           summaryBullets: ['A summary'],
-          categories: ['Business'],
+          topics: ['Business'],
           resourceAuthor: 'bozo le clown',
         };
 
@@ -568,7 +568,7 @@ describe('Webserver', function () {
         var tldrData = {url: 'http://needforair.com/nutcrackers'
           , title:'Nutcrackers article'
           , summaryBullets: ['Best Blog Ever']
-          , categories: ['Business']
+          , topics: ['Business']
           , resourceAuthor: 'Migli'
           , resourceDate: new Date()
           , createdAt: new Date()
@@ -746,7 +746,7 @@ describe('Webserver', function () {
           title: 'A title',
           summaryBullets: ['A summary'],
           resourceAuthor: 'bozo le clown',
-          categories: ['Business'],
+          topics: ['Business'],
           resourceDate: new Date(),
           createdAt: new Date(),
           updatedAt: new Date()
@@ -1180,13 +1180,13 @@ describe('Webserver', function () {
                        resourceAuthor: 'NFA Crew',
                        resourceDate: '2012',
                        createdAt: new Date(),
-                       categories: ['Business'],
+                       topics: ['Business'],
                        updatedAt: new Date()
                      }
         , tldrData2 = { url: 'http://another.com/movie',
                        title: 'Blog NFA',
                        summaryBullets: ['Awesome Blog', 'Another bullet'],
-                       categories: ['Business'],
+                       topics: ['Business'],
                        resourceAuthor: 'NFA Crew',
                        resourceDate: '2012',
                        createdAt: new Date(),
@@ -1195,7 +1195,7 @@ describe('Webserver', function () {
         , tldrData3 = { url: 'http://another.com/again',
                        title: 'Blog NFA',
                        summaryBullets: ['Awesdsaasd', 'Another bullet'],
-                       categories: ['Business'],
+                       topics: ['Business'],
                        resourceAuthor: 'NFA Crew',
                        resourceDate: '2012',
                        createdAt: new Date(),
@@ -1257,7 +1257,7 @@ describe('Webserver', function () {
                        title: 'Blog NFA',
                        summaryBullets: ['Awesome Blog'],
                        resourceAuthor: 'NFA Crew',
-                       categories: ['Business'],
+                       topics: ['Business'],
                        resourceDate: '2012',
                        createdAt: new Date(),
                        updatedAt: new Date()
