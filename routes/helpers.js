@@ -50,7 +50,9 @@ function updateCallback (err, docs, req, res, next) {
       mqClient.emit('tldr.edit', { editor: req.user, oldTldr: oldTldrAttributes, newTldr: updatedTldr });
 
       tldrToSend = oldTldr.toObject();
-      tldrToSend.lastEditor = { username: req.user.username };
+      if (req.user._id.toString() !== oldTldr.creator.toString()) {
+        tldrToSend.lastEditor = { username: req.user.username };
+      }
       delete tldrToSend.creator; // we delete the creator entry which is not populated otherwise client side it will mess up the model
       return res.send(200, tldrToSend);
     });
