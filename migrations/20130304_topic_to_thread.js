@@ -38,7 +38,7 @@ async.waterfall([
       async.whilst(
         function () { return i < posts.length; }
       , function (cb) {
-          var post = post[i];
+          var post = posts[i];
 
           post.thread = post.topic;
           post.save(function(err, post) {
@@ -63,7 +63,7 @@ async.waterfall([
       async.whilst(
         function () { return i < posts.length; }
       , function (cb) {
-          var post = post[i];
+          var post = posts[i];
 
           delete post.topic;
           post.save(function(err, post) {
