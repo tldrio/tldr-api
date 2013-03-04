@@ -32,22 +32,15 @@ var _ = require('underscore')
  *
  */
 
-// The topics array should not be empty
+// Should contain only acceptable topics
 function validateTopics (value) {
   try {
     check(value).isArray().len(0,15);
-    _.map(value, function (cat) {
-      check(cat).len(1, 30).notEmpty();
-    });
-    var validTopic = true;
     value.forEach(function(topic) {
       if (!_.contains(approvedTopics, topic)) {
-        validTopic = false;
+        throw {};
       }
     });
-    if (!validTopic) {
-      return false;
-    }
 
     return true;
   } catch(e) {

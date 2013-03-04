@@ -144,8 +144,8 @@ describe('Tldr', function () {
       });
     });
 
-    it('should reject tldrs whose topics array contains non approved elements', function (done) {
-      var tldr = new Tldr({
+    it.only('should reject tldrs whose topics array contains non approved elements', function (done) {
+      var tldrData = {
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['bloup'],
@@ -154,14 +154,22 @@ describe('Tldr', function () {
         resourceDate: '2012',
         createdAt: new Date(),
         updatedAt: new Date()
-      })
+      }
       , valErr;
 
-      tldr.save( function (err) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
         err.name.should.equal('ValidationError');
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.topics.should.not.equal(undefined);
-        done();
+
+        tldrData.topics = ['Art', 'NotApproved'];
+        Tldr.createAndSaveInstance(tldrData, user, function (err) {
+          err.name.should.equal('ValidationError');
+          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
+          valErr.topics.should.not.equal(undefined);
+
+          done();
+        });
       });
     });
 
@@ -174,7 +182,7 @@ describe('Tldr', function () {
       }
       , valErr;
 
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
         err.name.should.equal('ValidationError');
         valErr = models.getAllValidationErrorsWithExplanations(err.errors);
         valErr.title.should.not.equal(undefined);
