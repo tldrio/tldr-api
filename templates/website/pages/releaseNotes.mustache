@@ -1,0 +1,20 @@
+<header class="marketing">
+<h1>Release Notes</h1>
+<h2 class="marketing-byline">Things are moving fast here!</h2>
+</header>
+
+{{#weeklyReleases}}
+<div class="centered-block">
+  <div class="weekly-releases-box">
+    <div class="weekly-releases-header">
+      {{header}}
+    </div>
+    <div style="padding: 20px;">
+      <ul>
+        {{#items}}<li>{{{.}}}</li>{{/items}}
+      </ul>
+    </div>
+  </div>
+</div>
+<br>
+{{/weeklyReleases}}

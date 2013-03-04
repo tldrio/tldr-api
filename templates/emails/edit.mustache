@@ -1,21 +1,41 @@
 Hey {{creator.username}}, <br> <br>
 
-<a href="{{websiteUrl}}/{{editor.username}}">{{editor.username}}</a> just edited your tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a>.<br><br>
+<a href="{{websiteUrl}}/{{editor.username}}">{{editor.username}}</a> just edited your tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a>. 
 
 This is the diff of the two versions: in <span style="color: #8bc142; background: #e7fddd;"> green</span> 
 the additions and in <span style="color: #a63822; background: #f7dede;">red</span> the deletions.<br> <br>
 
-{{#diffTotal}}
-- 
-  {{#diffBullet}}
+Title: 
+{{#diffTotal.diffTitle}}
+  {{#added}}
+  <span style="color: #8bc142; background: #e7fddd;"> {{value}}</span>
+  {{/added}}
 
+  {{#removed}}
+    <span style="color: #a63822; background: #f7dede;"> {{value}}</span>
+  {{/removed}}
+
+  {{^removed}}
+  {{^added}}
+    {{value}}
+  {{/added}}
+  {{/removed}}
+
+{{/diffTotal.diffTitle}}
+
+<br>
+<br>
+
+{{#diffTotal.diffSummary}}
+  -
+  {{#diffBullet}}
     {{#added}}
 
     <span style="color: #8bc142; background: #e7fddd;"> {{value}}</span>
     {{/added}}
 
     {{#removed}}
-      <span style="color: #a63822; background: #f7dede;text-decoration: line-through;"> {{value}}</span>
+      <span style="color: #a63822; background: #f7dede;"> {{value}}</span>
     {{/removed}}
 
     {{^removed}}
@@ -25,7 +45,7 @@ the additions and in <span style="color: #a63822; background: #f7dede;">red</spa
     {{/removed}}
   {{/diffBullet}}
   <br>
-{{/diffTotal}}
---
+{{/diffTotal.diffSummary}}
+---------
 <br>
 You can <a href="{{websiteUrl}}/notifications/unsubscribe?id={{creator._id}}&type=edit&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">unsubscribe</a> in one click from these notifications.
