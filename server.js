@@ -103,6 +103,7 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
+app.get('/users/:id/stats', routes.getStats.getStatsForUser);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
@@ -110,7 +111,7 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
-app.get('/tldrs/:id/stats', routes.getStatsForTldr);
+app.get('/tldrs/:id/stats', routes.getStats.getStatsForTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
 app.post('/tldrs', routes.createNewTldr);
@@ -171,6 +172,7 @@ app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-ex
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
+app.get('/release-notes', middleware.websiteRoute, routes.website_releaseNotes);
 
 app.get('/elad', middleware.websiteRoute, routes.website_elad);
 
@@ -198,6 +200,7 @@ app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.w
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
+app.get('/badass', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
 
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);

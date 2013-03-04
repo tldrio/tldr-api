@@ -1,5 +1,5 @@
 /*
- * Renormalize the urls and possible urls
+ * Get all word counts for tldrs
  * We set it to true for all tldrs
  * Date: 26/09/2012
  *
@@ -10,6 +10,7 @@ var async = require('async')
   , models = require('../lib/models')
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
+  , articleParsing = require('../lib/articleParsing')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
   , db = new DbObject( config.dbHost
@@ -28,30 +29,26 @@ async.waterfall([
     });
   }
 
-  // Add the versionDisplayed field
 , function (cb) {
-    var i = 0;
+    var i = 0, errorCount = 0;
 
-    Tldr.find({ }, function(err, tldrs) {
+    Tldr.find({}, function(err, tldrs) {
       if (err) { return cb(err); }
+
+      console.log("====");
+      console.log(tldrs.length);
 
       async.whilst(
         function () { return i < tldrs.length; }
-      , function (cb) {
+      , function (_cb) {
           var possibleUrls = [];
-          console.log('Renormalizing: ' + tldrs[i]._id);
+          console.log('Get tldr word count for: ' + tldrs[i]._id);
 
-          tldrs[i].url = customUtils.normalizeUrl(tldrs[i].url);
-          tldrs[i].possibleUrls.forEach(function (url) {
-            possibleUrls.push(customUtils.normalizeUrl(url));
-          });
-          tldrs[i].possibleUrls = possibleUrls;
-          tldrs[i].hostname = customUtils.getHostnameFromUrl(tldrs[i].url);
-          tldrs[i].save(function(err) {
-            if (err) { return cb(err); }
+          tldrs[i].wordCount = customUtils.getWordCount(tldrs[i].summaryBullets);
 
+          tldrs[i].save(function (err) {
             i += 1;
-            cb();
+            _cb(err);
           });
         }
       , cb);

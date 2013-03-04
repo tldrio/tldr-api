@@ -112,7 +112,7 @@ describe('Tldr', function () {
         Tldr.createAndSaveInstance( tldrData, user, function (err) {
           err.name.should.equal('ValidationError');
 
-          _.keys(err.errors).length.should.equal(2);
+          _.keys(err.errors).length.should.equal(1);
           valErr = models.getAllValidationErrorsWithExplanations(err.errors);
           valErr.url.should.not.equal(null);
 
@@ -485,10 +485,10 @@ describe('Tldr', function () {
         });
     });
 
-    it('should automatically set required hostname', function (done) {
+    it('should automatically set required hostname and wordCount', function (done) {
       var tldrData = {
         title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
+        summaryBullets: ['Awesome Blog', 'Hello how do you do??'],
         resourceAuthor: 'NFA Crew',
         url: 'http://needforair.com',
       }
@@ -499,6 +499,7 @@ describe('Tldr', function () {
         Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].hostname.should.equal('needforair.com');
+          docs[0].wordCount.should.equal(7);
           done();
         });
       });
@@ -530,7 +531,7 @@ describe('Tldr', function () {
     it('should automatically set virtual slug', function (done) {
       var tldrData = {
         title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
+        summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world'],
         resourceAuthor: 'NFA Crew',
         url: 'http://needforair.com',
       }
@@ -880,7 +881,7 @@ describe('Tldr', function () {
 
     it('should restrict the fields the user is allowed to update', function (done) {
         var updated = {url: 'http://myotherdomain.com'
-                      , summaryBullets: ['new2']
+                      , summaryBullets: ['new2', 'glip glop glup']
                       , title: 'Blog NeedForAir'
                       , resourceAuthor: 'new3'
                       , createdAt: '2012'
@@ -904,6 +905,7 @@ describe('Tldr', function () {
             tldr.title.should.equal('Blog NFA');
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://g.com/first.png');
+            tldr.wordCount.should.equal(1);
 
             // Perform update
             tldr.updateValidFields(updated, user, function(err) {
@@ -915,6 +917,7 @@ describe('Tldr', function () {
               tldr.resourceAuthor.should.equal('new3');
               tldr.createdAt.should.not.equal('2012');
               tldr.imageUrl.should.equal('http://g.com/first.png');
+              tldr.wordCount.should.equal(4);
 
               done();
             });
@@ -957,6 +960,49 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
+  describe('#getCreatorId - both static and dynamic versions', function () {
+
+    it('If creator is not populated', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloupOnlyOne'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        Tldr.findOne({ resourceAuthor: 'bloupOnlyOne' }, function (err, tldr) {
+          tldr.getCreatorId().toString().should.equal(user._id.toString());
+          Tldr.getCreatorId(tldr).toString().should.equal(user._id.toString());
+          done();
+        });
+      });
+    });
+
+    it('If creator is populated', function (done) {
+      var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin']
+        , resourceAuthor: 'bloupOnlyOne'
+        , createdAt: '2012'
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err) {
+        Tldr.findOne({ resourceAuthor: 'bloupOnlyOne' }).populate('creator').exec(function (err, tldr) {
+          tldr.getCreatorId().toString().should.equal(user._id.toString());
+          Tldr.getCreatorId(tldr).toString().should.equal(user._id.toString());
+          done();
+        });
+      });
+    });
+
+  });   // ==== End of '#getCreatorId' ==== //
+
+
   describe('#thank', function () {
 
     it('should not be able to thank if no "thanker"', function (done) {
@@ -991,6 +1037,7 @@ describe('Tldr', function () {
     });
 
   }); // ==== End of '#thank' ==== //
+
 
   describe('#updateBatch', function () {
 
