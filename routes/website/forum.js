@@ -1,5 +1,5 @@
 var models = require('../../lib/models')
-  , Topic = models.Topic
+  , Thread = models.Thread
   , customUtils = require('../../lib/customUtils')
   , _ = require('underscore')
   , config = require('../../lib/config')
@@ -14,21 +14,21 @@ module.exports = function (req, res, next) {
   values.description = "Discuss everything related to tldr.io: feature suggestions, the best tl;drs, your favorite contributors etc.";
   partials.content = '{{>website/pages/forum}}';
 
-  Topic.find({})
+  Thread.find({})
        .sort('-lastPost.at')
        .populate('lastPost.by', 'username')
-       .exec(function(err, topics) {
+       .exec(function(err, threads) {
     if (err) { return next({ statusCode: 500, body: { message: "An internal error occured" }}); }
 
-    values.topics = topics;
+    values.threads = threads;
 
-    _.each(topics, function (topic) {
-       topic.lastPostTimeago = customUtils.timeago(topic.lastPost.at);
-       topic.moreThanOnePost = (topic.posts.length > 1);
-       topic.moreThanOneVote = (topic.votes > 1) || (topic.votes === 0) || (topic.votes < -1);
+    _.each(threads, function (thread) {
+       thread.lastPostTimeago = customUtils.timeago(thread.lastPost.at);
+       thread.moreThanOnePost = (thread.posts.length > 1);
+       thread.moreThanOneVote = (thread.votes > 1) || (thread.votes === 0) || (thread.votes < -1);
 
        if (req.user) {   // Won't display the buttons if nobody's logged in
-         topic.userHasntVoted = topic.alreadyVoted.indexOf(req.user._id) === -1;
+         thread.userHasntVoted = thread.alreadyVoted.indexOf(req.user._id) === -1;
        }
      });
 

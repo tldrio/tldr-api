@@ -131,8 +131,9 @@ app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateD
 app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
 app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
-// Vote for/against a topic
-app.put('/forum/topics/:id', routes.voteOnTopic);
+// Vote for/against a thread
+app.put('/forum/topics/:id', routes.voteOnThread);   // Legacy
+app.put('/forum/threads/:id', routes.voteOnThread);
 
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
@@ -198,12 +199,20 @@ app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, route
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
 
 // Forum
-app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
-app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumShowTopic);   // Show a whole topic
-app.get('/forum/topics/:id', routes.website_forumShowTopic);   // For retrocompatibility, redirect to the correct, above url
-app.post('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
-app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewTopic);    // Display the newTopic form
-app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
+app.get('/forum/threads', middleware.websiteRoute, routes.website_forum);
+app.get('/forum/topics', function (req, res, next) { return res.redirect(301, '/forum/threads'); });   // Legacy
+
+app.get('/forum/threads/:id/:slug', middleware.websiteRoute, routes.website_forumShowThread);   // Show a whole thread
+app.get('/forum/topics/:id/:slug', function (req, res, next) { return res.redirect(301, '/forum/threads/' + req.params.id + '/' + req.params.slug); });   // Legacy
+app.get('/forum/topics/:id', routes.website_forumShowThread);   // Will 301-redirect to the correct URL
+
+app.post('/forum/threads/:id/:slug', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowThread);  // Post something to this thread
+
+app.get('/forum/newThread', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewThread);
+app.get('/forum/newTopic', function (req, res, next) { return res.redirect(301, '/forum/newThread'); });   // Legacy
+
+app.post('/forum/newThread', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateThread, routes.website_forumNewThread);
+
 app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website_editPost);
 app.post('/forum/posts/:id/edit', routes.website_changePostText);
 

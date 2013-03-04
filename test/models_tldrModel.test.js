@@ -144,7 +144,7 @@ describe('Tldr', function () {
       });
     });
 
-    it.only('should reject tldrs whose topics array contains non approved elements', function (done) {
+    it('should reject tldrs whose topics array contains non approved elements', function (done) {
       var tldrData = {
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',

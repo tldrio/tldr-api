@@ -5,25 +5,25 @@
 
 <div class="centered-block">
   {{#loggedUser}}
-  <em><a href="/forum/newTopic">Start a new topic</a></em><br><br>
+  <em><a href="/forum/newThread">Start a new thread</a></em><br><br>
   {{/loggedUser}}
   {{^loggedUser}}
-  <em><a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a></em><br><br>
+  <em><a href="/login?warning=false&returnUrl=/forum/newThread">Login to start a new thread</a></em><br><br>
   {{/loggedUser}}
 
 
-  <div id="topic-list" class="list-box">
-    {{#topics}}
+  <div id="thread-list" class="list-box">
+    {{#threads}}
       <div>
         {{>website/voting}}
         <div class="right-of-voting">
-          <a href="/forum/topics/{{_id}}/{{slug}}"><span class="topic-in-list">{{title}}</span></a><br>
-          <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+          <a href="/forum/threads/{{_id}}/{{slug}}"><span class="thread-in-list">{{title}}</span></a><br>
+          <span class="post-thread-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
         </div>
       </div>
       <br>
-      <div class="topic-separator"></div>
-    {{/topics}}
+      <div class="thread-separator"></div>
+    {{/threads}}
   </div>
 
 </div>

@@ -15,7 +15,7 @@ module.exports = function (req, res, next) {
     ;
 
   Post.findOne({ _id: req.params.id })
-      .populate('topic')
+      .populate('thread')
       .exec(function (err, post) {
         if (err || !post) { return res.send(404, "Couldn't find the post you want to edit!"); }
 
@@ -24,7 +24,7 @@ module.exports = function (req, res, next) {
         }
 
         post.changeText(req.body.text, function (err) {
-          res.redirect('/forum/topics/' + post.topic.id + '/' + post.topic.slug);
+          res.redirect('/forum/threads/' + post.thread.id + '/' + post.thread.slug);
         });
       });
 }

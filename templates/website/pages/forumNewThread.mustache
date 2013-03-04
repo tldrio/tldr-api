@@ -1,12 +1,12 @@
-<header class="jumbotron"><h1>Create a new topic</h1></header>
-<a href="/forum/topics">Go back to forum</a><br><br>
+<header class="jumbotron"><h1>Create a new thread</h1></header>
+<a href="/forum/threads">Go back to forum</a><br><br>
 
 
 
 {{>website/validationErrors}}
 
 
-<form method="post" action="/forum/newTopic">
+<form method="post" action="/forum/newThread">
   <input type="text" placeholder="Subject" name="title" class="input-xxlarge" value="{{userInput.title}}"><br>
   <textarea rows="5" cols="60" name="firstPostText" class="input-xxlarge" style="resize:none;" placeholder="Say something">{{userInput.firstPostText}}</textarea><br>
   <input type="submit" value="Start talking!" class="btn btn-primary">

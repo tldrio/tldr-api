@@ -13,7 +13,7 @@
   </url>
 
   <url>
-    <loc>http://tldr.io/forum/topics</loc>
+    <loc>http://tldr.io/forum/threads</loc>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>

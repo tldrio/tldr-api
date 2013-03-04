@@ -2,7 +2,7 @@ user-agent: *
 disallow: /account
 disallow: /moderation
 disallow: /tldrscreated
-disallow: /forum/newTopic
+disallow: /forum/newThread
 disallow: /forum/posts/
 disallow: /third-party-auth/
 

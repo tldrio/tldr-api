@@ -21,12 +21,12 @@ var should = require('chai').should()
   , bcrypt = require('bcrypt')
   , request = require('request')
   , customUtils = require('../lib/customUtils')
-  , Topic = models.Topic
+  , Thread = models.Thread
 
   // Global variables used throughout the tests
   , tldr1, tldr2, tldr3, tldr4, numberOfTldrs
   , user1
-  , topic1
+  , thread1
   , client;
 
 
@@ -96,7 +96,7 @@ describe('Webserver', function () {
       , tldrData4 = {url: 'http://needforair.com/sopa', title: 'sopa', summaryBullets: ['Great article'], topics: ['Business'], resourceAuthor: 'Louis', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()}
       , userData1 = {email: "user1@nfa.com", username: "UserOne", password: "supersecret", twitterHandle: 'blipblop'}
       , adminData1 = { email: "louis.chatriot@gmail.com", username: "louis", password: "supersecret" }
-      , topicData1 = { title: 'et voila un topic' }
+      , threadData1 = { title: 'et voila un thread' }
       ;
 
     function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
@@ -105,7 +105,7 @@ describe('Webserver', function () {
       async.apply(theRemove, Credentials)
     , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
-    , async.apply(theRemove, Topic)
+    , async.apply(theRemove, Thread)
     ], function(err) {
          User.createAndSaveInstance(userData1, function (err, user) {
            user1 = user;
@@ -117,7 +117,7 @@ describe('Webserver', function () {
            , function(cb) { Tldr.createAndSaveInstance(tldrData3, user1, function(err, tldr) { tldr3 = tldr; cb(); }); }
            , function(cb) { Tldr.createAndSaveInstance(tldrData4, user1, function(err, tldr) { tldr4 = tldr; cb(); }); }
            , function(cb) { User.createAndSaveInstance(adminData1, function() { cb(); }); }
-           , function(cb) { Topic.createAndSaveInstance(topicData1, user1, function(err, _topic) { topic1 = _topic; cb(); }); }
+           , function(cb) { Thread.createAndSaveInstance(threadData1, user1, function(err, _thread) { thread1 = _thread; cb(); }); }
            ], function() { Tldr.find({}, function(err, docs) { numberOfTldrs = docs.length; done(); }); });   // Finish by saving the number of tldrs
          });
        });
@@ -1548,7 +1548,7 @@ describe('Webserver', function () {
   });   // ==== End of 'Password reset' ==== //
 
 
-  describe('PUT topic', function () {
+  describe('PUT thread', function () {
 
     it('Should not do anything if called by a non logged user', function (done) {
       async.waterfall([
@@ -1556,7 +1556,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/' + topic1._id}, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/threads/' + thread1._id}, function (err, res, obj) {
             res.statusCode.should.equal(401);
 
             cb();
@@ -1565,13 +1565,13 @@ describe('Webserver', function () {
       ], done);
     });
 
-    it('Should send a 404 if topic is not found', function (done) {
+    it('Should send a 404 if thread is not found', function (done) {
       async.waterfall([
         async.apply(logUserIn, "user1@nfa.com", "supersecret")
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/123456789009876543211234' }, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/threads/123456789009876543211234' }, function (err, res, obj) {
             res.statusCode.should.equal(404);
 
             cb();
@@ -1580,16 +1580,16 @@ describe('Webserver', function () {
       ], done);
     });
 
-    it('Should be able to vote for and against a topic', function (done) {
+    it('Should be able to vote for and against a thread', function (done) {
       async.waterfall([
         async.apply(logUserIn, "louis.chatriot@gmail.com", "supersecret")
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/topics/' + topic1._id }, function (err, res, obj) {
+                      , uri: rootUrl + '/forum/threads/' + thread1._id }, function (err, res, obj) {
             res.statusCode.should.equal(200);
-            Topic.findOne({ _id: topic1._id }, function (err, topic) {
-              topic.votes.should.equal(2);
+            Thread.findOne({ _id: thread1._id }, function (err, thread) {
+              thread.votes.should.equal(2);
 
               cb();
             });
@@ -1598,7 +1598,7 @@ describe('Webserver', function () {
       ], done);
     });
 
-  });   // ==== End of 'PUT topic' ==== //
+  });   // ==== End of 'PUT thread' ==== //
 
 });
 

@@ -1,5 +1,5 @@
 var models = require('../../lib/models')
-  , Topic = models.Topic
+  , Thread = models.Thread
   , Post = models.Post
   , _ = require('underscore')
   , customUtils = require('../../lib/customUtils')
@@ -12,17 +12,17 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.forum = true;
-  partials.content = '{{>website/pages/forumShowTopic}}';
+  partials.content = '{{>website/pages/forumShowThread}}';
 
-  Topic.findOne({ _id: req.params.id }, function (err, topic) {
-    if (err || !topic) { return res.json(404, {}); }
+  Thread.findOne({ _id: req.params.id }, function (err, thread) {
+    if (err || !thread) { return res.json(404, {}); }
 
-    if (req.params.slug !== customUtils.slugify(topic.title)) {
-      return res.redirect(301, '/forum/topics/' + topic._id + '/' + topic.slug);
+    if (req.params.slug !== customUtils.slugify(thread.title)) {
+      return res.redirect(301, '/forum/threads/' + thread._id + '/' + thread.slug);
     }
 
     // Still not possible in mongoose to subpopulate documents so we do it manually
-    Post.find({ _id: { $in: topic.posts } })
+    Post.find({ _id: { $in: thread.posts } })
         .populate('creator', 'username gravatar')
         .exec(function (err, posts) {
 
@@ -34,18 +34,18 @@ module.exports = function (req, res, next) {
        if (req.user && (req.user.isAdmin || (req.user && req.user._id.toString() === post.creator._id.toString()))) { post.editable = true; }
      });
 
-     topic.moreThanOnePost = (topic.posts.length === 0) || (topic.posts.length > 1);
-     topic.moreThanOneVote = (topic.votes > 1) || (topic.votes === 0) || (topic.votes < -1);
-     if (req.user) { topic.userHasntVoted = topic.alreadyVoted.indexOf(req.user._id) === -1; }
+     thread.moreThanOnePost = (thread.posts.length === 0) || (thread.posts.length > 1);
+     thread.moreThanOneVote = (thread.votes > 1) || (thread.votes === 0) || (thread.votes < -1);
+     if (req.user) { thread.userHasntVoted = thread.alreadyVoted.indexOf(req.user._id) === -1; }
 
       values.posts = posts;
-      values.topic = topic;
-      values.title = topic.title + config.titles.branding;
+      values.thread = thread;
+      values.title = thread.title + config.titles.branding;
 
-      // Topic specific metatags
-      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', topic.title);
+      // Thread specific metatags
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', thread.title);
       values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'discussion');
-      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + topic._id + '/' + topic.slug);
+      values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + thread._id + '/' + thread.slug);
       values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', "Discussion on tldr.io's forum");
 
       res.render('website/basicLayout', { values: values
