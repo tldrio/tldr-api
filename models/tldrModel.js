@@ -19,7 +19,7 @@ var _ = require('underscore')
   , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous', 'topics']     // setable fields by user
   , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'topics']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
-  , approvedCategories = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
+  , approvedTopics = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
@@ -41,7 +41,7 @@ function validateTopics (value) {
     });
     var validTopic = true;
     value.forEach(function(topic) {
-      if (!_.contains(approvedCategories, topic)) {
+      if (!_.contains(approvedTopics, topic)) {
         validTopic = false;
       }
     });
