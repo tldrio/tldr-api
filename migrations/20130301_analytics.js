@@ -155,7 +155,7 @@ async.waterfall([
           console.log('Replay reads for: ' + tldrs[i]._id);
 
           var tldr = tldrs[i]
-            , repartitionTable = repartition(tldr.readCount.length, tldr.createdAt)
+            , repartitionTable = repartition(tldr.readCount, tldr.createdAt)
             , j = 0
             ;
 
