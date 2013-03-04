@@ -1,5 +1,5 @@
 /*
- * This migration was necessary once we defined the new required field 'categories' on tldr
+ * This migration was necessary once we defined the new required field 'topics' on tldr
  * We set it to 0 for all tldrs
  * Date: 28/02/2013
  *
@@ -28,11 +28,11 @@ async.waterfall([
     });
   }
 
-  // Add the categories field to all tldr docs
+  // Add the topics field to all tldr docs
 , function (cb) {
     var i = 0;
 
-    console.log('Adding and populating the categories field to the tldr schema');
+    console.log('Adding and populating the topics field to the tldr schema');
 
     Tldr.find({}, function(err, tldrs) {
       if (err) { return cb(err); }
