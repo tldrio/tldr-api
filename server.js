@@ -172,6 +172,7 @@ app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-ex
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
+app.get('/release-notes', middleware.websiteRoute, routes.website_releaseNotes);
 
 
 // Tldr page

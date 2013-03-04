@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
     ;
 
   values.title = "Developers" + config.titles.branding + config.titles.shortDescription;
-  values.description = "Documentation for our API.";
+  values.description = "Documentation for the tldr.io API.";
   partials.content = '{{>website/pages/apiDoc}}';
 
   res.render('website/basicLayout', { values: values
