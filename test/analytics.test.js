@@ -31,7 +31,7 @@ var should = require('chai').should()
 
 
 
-describe.skip('Analytics', function () {
+describe('Analytics', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   before(function (done) {
@@ -593,7 +593,7 @@ describe.skip('Analytics', function () {
 });   // ==== End of 'Analytics' ==== //
 
 
-describe.skip('Test analytics with events', function () {
+describe('Test analytics with events', function () {
   var user, userbis, tldr1, tldr2, tldr3;
 
   function sendEventAndWait (event, data, wait, cb) {

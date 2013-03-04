@@ -10,6 +10,7 @@ var config = require('../../lib/config')
   , TldrAnalytics = models.TldrAnalytics
   , Tldr = models.Tldr
   , _ = require('underscore')
+  , _s = require('underscore.string')
   ;
 
 module.exports = function (req, res, next) {
@@ -54,23 +55,23 @@ module.exports = function (req, res, next) {
     var tldrsCreatedLast30Days = joinArrayField(data, 'tldrsCreated', aMonthAgo);
     values.analytics = JSON.stringify(data);
 
-    values.allTime.tldrsCreated = req.user.tldrsCreated.length;
-    values.allTime.readCount = sumField(data, 'readCount');
-    values.allTime.articleWordCount = sumField(data, 'articleWordCount');
-    values.allTime.thanks = sumField(data, 'thanks');
+    values.allTime.tldrsCreated = _s.numberFormat(req.user.tldrsCreated.length);
+    values.allTime.readCount = _s.numberFormat(sumField(data, 'readCount'));
+    values.allTime.articleWordCount = _s.numberFormat(sumField(data, 'articleWordCount'));
+    values.allTime.thanks = _s.numberFormat(sumField(data, 'thanks'));
 
-    values.past30Days.tldrsCreated = tldrsCreatedLast30Days.length;
-    values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
-    values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
-    values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
+    values.past30Days.tldrsCreated = _s.numberFormat(tldrsCreatedLast30Days.length);
+    values.past30Days.readCount = _s.numberFormat(sumField(data, 'readCount', aMonthAgo));
+    values.past30Days.articleWordCount = _s.numberFormat(sumField(data, 'articleWordCount', aMonthAgo));
+    values.past30Days.thanks = _s.numberFormat(sumField(data, 'thanks', aMonthAgo));
 
     Tldr.find({ _id: { $in: req.user.tldrsCreated } }, 'articleWordCount wordCount', function (err, tldrs) {
       Tldr.find({ _id: { $in: tldrsCreatedLast30Days } }, 'articleWordCount wordCount', function (err, tldrsLast30Days) {
-        values.allTime.wordsCompressed = sumField(tldrs, 'articleWordCount');
-        values.allTime.wordsWritten = sumField(tldrs, 'wordCount');
+        values.allTime.wordsCompressed = _s.numberFormat(sumField(tldrs, 'articleWordCount'));
+        values.allTime.wordsWritten = _s.numberFormat(sumField(tldrs, 'wordCount'));
 
-        values.past30Days.wordsCompressed = sumField(tldrsLast30Days, 'articleWordCount');
-        values.past30Days.wordsWritten = sumField(tldrsLast30Days, 'wordCount');
+        values.past30Days.wordsCompressed = _s.numberFormat(sumField(tldrsLast30Days, 'articleWordCount'));
+        values.past30Days.wordsWritten = _s.numberFormat(sumField(tldrsLast30Days, 'wordCount'));
 
         res.render('website/basicLayout', { values: values
                                           , partials: partials
