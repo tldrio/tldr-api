@@ -926,8 +926,9 @@ describe('Tldr', function () {
             user.tldrsCreated.indexOf(tldr2Id).should.not.equal(-1);
 
             // Delete tldr1 and test it indeed worked
-            tldr1.deleteIfPossible(user, function (err) {
+            tldr1.deleteIfPossible(user, function (err, message) {
               assert.isNull(err);
+              message.should.equal(i18n.tldrWasDeleted);
               Tldr.findOne({ _id: tldr1Id }, function (err, _tldr) {
                 assert.isNull(err);
                 assert.isNull(_tldr);
@@ -939,7 +940,8 @@ describe('Tldr', function () {
                     assert.isNull(err);
                     tldr2.editors.length.should.equal(1);
 
-                    tldr2.deleteIfPossible(user, function (err) {
+                    tldr2.deleteIfPossible(user, function (err, message) {
+                      message.should.equal(i18n.tldrWasDeleted);
                       assert.isNull(err);
                       Tldr.findOne({ _id: tldr2Id }, function (err, _tldr) {
                         assert.isNull(err);
@@ -989,7 +991,8 @@ describe('Tldr', function () {
             Tldr.moderateTldr(tldr1Id, function (err) {
               assert.isNull(err);
               Tldr.findOne({ _id: tldr1Id }, function (err, tldr1) {   // Reattach tldr1
-                tldr1.deleteIfPossible(user, function (err) {
+                tldr1.deleteIfPossible(user, function (err, message) {
+                  message.should.equal(i18n.tldrWasAnonymized);
                   assert.isNull(err);
                   Tldr.findOne({ _id: tldr1Id }, function (err, _tldr) {
                     assert.isNull(err);
@@ -1003,7 +1006,8 @@ describe('Tldr', function () {
                         assert.isNull(err);
                         tldr2.editors.length.should.equal(1);
 
-                        tldr2.deleteIfPossible(user, function (err) {
+                        tldr2.deleteIfPossible(user, function (err, message) {
+                          message.should.equal(i18n.tldrWasAnonymized);
                           assert.isNull(err);
                           Tldr.findOne({ _id: tldr2Id }, function (err, _tldr) {
                             assert.isNull(err);
