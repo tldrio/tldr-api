@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="/assets/css/widget.embed.inner.css">
+</head>
+
+<body>
+
+  <div class="row">
+    <div class="tldr-base-unit page-tldr-container">
+      <div class="tldr-read-container">
+        <span class="tldr-header">
+          <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}" target="_blank" class="tldr-brand">tl;dr</a> version <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+          <span class="embed-actions">
+            <button type="button" class="dismiss-embed">×</button>
+          </span>
+        </span>
+
+        <div class="tldr-summary">
+          <ul>
+            {{#tldr.summaryBullets}}
+            <li class="tldr-bullet">
+              ◼ {{.}}
+            </li>
+            {{/tldr.summaryBullets}}
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Send the height to the parent
+  window.parent.postMessage(document.height, '*');
+  var closeButton = document.getElementsByClassName('dismiss-embed')[0];
+
+  function dismissEmbed () {
+    window.parent.postMessage('dismiss', '*');
+  }
+
+  if (closeButton.addEventListener) {
+    closeButton.addEventListener('click',dismissEmbed,false);
+  } else if(closeButton.attachEvent) {
+    closeButton.attachEvent('onclick',dismissEmbed);
+  }
+
+  //window.parent.postMessage(window.getComputedStyle(document.body).getPropertyValue('height'), '*');
+  </script>
+
+</body>
+</html>

@@ -178,6 +178,7 @@ app.get('/elad', middleware.websiteRoute, routes.website_elad);
 
 
 // Tldr page
+app.get('/tldrs/embed/:id', routes.website_tldrEmbed);
 app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website_tldrPage);
 
 // Login, logout
