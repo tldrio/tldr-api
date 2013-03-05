@@ -276,6 +276,29 @@ TldrSchema.statics.removeTldr = function (id, callback) {
 
 
 /**
+ * Delete a tldr if it hasn't been edited by someone else or moderated
+ * If it was, then make it anonymous
+ * @param {User} user The user requesting the deletion
+ * @param {Function} cb Optional, signature: err
+ */
+TldrSchema.methods.deleteIfPossible = function (user, cb) {
+  var callback = cb || function () {}
+
+  if (!user || user._id.toString() !== this.getCreatorId().toString()) {
+    return callback(i18n.unauthorized);
+  }
+
+  // Not yet moderated and not edited except by its creator
+  if (!this.moderated && (!this.editors || this.editors.length === 0 || (this.editors.length === 1 && this.editors[0].toString() === user._id.toString()))) {
+    Tldr.removeTldr(this._id, callback);
+  } else {
+    this.anonymous = true;
+    this.save(callback);
+  }
+};
+
+
+/**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
