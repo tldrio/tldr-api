@@ -548,6 +548,8 @@ UserSchema.methods.deleteAccount = function (cb) {
     , updateQuery = {}
     ;
 
+  mailchimpSync.unsubscribeUser({ email: self.email });
+
   Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
     if (err) { return callback(err); }
 
