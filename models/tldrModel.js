@@ -282,7 +282,7 @@ TldrSchema.statics.removeTldr = function (id, callback) {
  * @param {Function} cb Optional, signature: err, message telling what happened
  */
 TldrSchema.methods.deleteIfPossible = function (user, cb) {
-  var callback = cb || function () {}
+  var callback = cb || function () {};
 
   if (!user || user._id.toString() !== this.getCreatorId().toString()) {
     return callback(i18n.unauthorized);
@@ -294,7 +294,7 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
       if (err) {
         return callback(err);
       } else {
-        return callback(null, i18n.tldrWasDeleted)
+        return callback(null, i18n.tldrWasDeleted);
       }
     });
   } else {
@@ -303,7 +303,7 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
       if (err) {
         return callback(err);
       } else {
-        return callback(null, i18n.tldrWasAnonymized)
+        return callback(null, i18n.tldrWasAnonymized);
       }
     });
   }
