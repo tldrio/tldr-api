@@ -11,6 +11,7 @@ var config = require('../../lib/config')
   , Tldr = models.Tldr
   , _ = require('underscore')
   , _s = require('underscore.string')
+  , moment = require('moment')
   ;
 
 module.exports = function (req, res, next) {
