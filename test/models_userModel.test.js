@@ -1459,6 +1459,16 @@ describe('User', function () {
       });
     });
 
+    it('The virtual usernameForDisplay should reflect the deleted state', function (done) {
+      user2.usernameForDisplay.should.equal(user2.username);
+      user2.deleteAccount(function () {
+        User.findOne({ _id: user2._id }, function (err, user2) {
+          user2.usernameForDisplay.should.equal('[Deleted account]');
+          done();
+        });
+      });
+    });
+
 
 
 

@@ -188,11 +188,10 @@ UserSchema = new Schema(
   }
 , { strict: true });
 
+// We need the unique index on usernameLowerCased to be sparse
+// so that we can have multiple users where its not defined
 UserSchema.path('usernameLowerCased').index({ unique: true, sparse: true });
 
-/** Keep a virtual 'isAdmin' attribute
- *  isAdmin is true when user is an admin, false otherwise (of course ...)
- */
 UserSchema.virtual('isAdmin').get(function () {
   var adminEmails = { "louis.chatriot@gmail.com": true , "louis.chatrio.t@gmail.com": true , "lo.uis.chatriot@gmail.com": true , "louis.cha.triot@gmail.com": true , "loui.s.chatriot@gmail.com": true , "l.ouis.chatriot@gmail.com": true
                     , "charles.miglietti+luckyboy@gmail.com": true , "charles.miglietti@gmail.com": true , "charles@tldr.io": true , "charles@needforair.com": true , "c.harlesmiglietti@gmail.com": true , "ch.arlesmiglietti@gmail.com": true , "cha.rlesmiglietti@gmail.com": true
@@ -201,6 +200,10 @@ UserSchema.virtual('isAdmin').get(function () {
                     , "s.tanislas.marion@gmail.com": true , "st.anislas.marion@gmail.com": true , "sta.nislas.marion@gmail.com": true , "stan.islas.marion@gmail.com": true };
 
   return adminEmails[this.email] ? true : false;
+});
+
+UserSchema.virtual('usernameForDisplay').get(function () {
+  return this.username || i18n.deletedAccount;
 });
 
 // Send virtual attributes along with real ones
