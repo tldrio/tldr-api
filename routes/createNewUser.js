@@ -8,7 +8,6 @@
 var bunyan = require('../lib/logger').bunyan
   , config = require('../lib/config')
   , i18n = require('../lib/i18n')
-  , mailchimpSync = require('../lib/mailchimpSync')
   , mailer = require('../lib/mailer')
   , models = require('../lib/models')
   , User = models.User
@@ -31,7 +30,6 @@ function createNewUser(req, res, next) {
       }
     }
 
-    mailchimpSync.subscribeNewUser({ email: user.email, username: user.username });
     mqClient.emit('user.created', { user: user, source: req.body.source });
 
     // Log user in right away after his creation
