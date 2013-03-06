@@ -118,7 +118,7 @@ app.post('/tldrs', routes.createNewTldr);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 app.put('/tldrs/:id/thank', routes.thankContributor);
-app.delete('/tldrs/:id/deleteIfPossible', routes.deleteTldrIfPossible);
+app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
