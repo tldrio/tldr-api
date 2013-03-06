@@ -1334,4 +1334,54 @@ describe('User', function () {
   });   // ==== End of '#findAvailableUsername' ==== //
 
 
+  describe.only('Account deletion', function () {
+
+    it('Should be able to delete a user with his basic cred if he has only a basic cred', function (done) {
+      var nUsers, nCredentials;
+
+      user2.deleted.should.equal(false);
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+        Credentials.find({}, function (err, creds) {
+          nCredentials = creds.length;
+          Credentials.find({ owner: user2._id }, function (err, creds) {
+            creds.length.should.equal(1);
+
+            user2.deleteAccount(function (err) {
+              assert.isNull(err);
+              User.find({}, function (err, users) {
+                users.length.should.equal(nUsers);
+                Credentials.find({}, function (err, creds) {
+                  creds.length.should.equal(nUsers - 1);
+
+
+                  // user2 is now in the "deleted" state
+                  User.findOne({ _id: user2._id }, function (err, user2) {
+                    assert.isUndefined(user2.username);
+                    assert.isUndefined(user2.usernameLowerCased);
+                    assert.isUndefined(user2.email);
+                    user2.credentials.length.should.equal(0);
+                    user2.deleted.should.equal(true);
+
+                    Credentials.find({ owner: user2._id }, function (err, creds) {
+                      creds.length.should.equal(0);
+
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+
+
+
+
+  });   // ==== End of 'Account deletion' ==== //
+
+
 });

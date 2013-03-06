@@ -185,6 +185,7 @@ UserSchema = new Schema(
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
                    , set: setTwitterHandle }
   , credentials: [{ type: ObjectId, ref: 'credentials' }]
+  , deleted: { type: Boolean, default: false }
   }
 , { strict: true });
 
@@ -530,6 +531,28 @@ UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback
     return callback(null, tentativeUsername + suffix);
   });
 };
+
+
+/**
+ * Delete a user's account. We do not remove the record from the database because
+ * things can get messy, but we delete his credentials, remove his username, usernameLowerCased
+ * and email fields
+ */
+UserSchema.methods.deleteAccount = function (cb) {
+  var callback = cb || function () {}
+    , self = this
+    ;
+
+  Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
+    if (err) { return callback(err); }
+
+    // Validators are not applied when we use a direct operation on the database
+    User.update( { _id: self._id }
+               , { $unset: { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 }, $set: { deleted: true } }
+               , { multi: false }
+               , callback);
+  });
+}
 
 
 
