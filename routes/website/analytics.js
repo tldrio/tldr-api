@@ -31,7 +31,7 @@ module.exports = function (req, res, next) {
   function computeTimeSaved (wordCount) {
     // 5 words per second, returns in hours
     // very simple for now
-    return wordCount / (5 * 3600);
+    return wordCount / (3.3 * 3600);
   }
 
   function sumField (data, field, beg, end) {
