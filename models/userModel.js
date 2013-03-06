@@ -165,7 +165,6 @@ UserSchema = new Schema(
               }
   , usernameLowerCased: { type: String
                         , required: true
-                        , unique: true
                         , set: customUtils.sanitizeInput
                         }
   , firstName: { type: String }
@@ -188,6 +187,8 @@ UserSchema = new Schema(
   , deleted: { type: Boolean, default: false }
   }
 , { strict: true });
+
+UserSchema.path('usernameLowerCased').index({ unique: true, sparse: true });
 
 /** Keep a virtual 'isAdmin' attribute
  *  isAdmin is true when user is an admin, false otherwise (of course ...)

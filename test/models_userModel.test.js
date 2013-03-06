@@ -1431,7 +1431,33 @@ describe('User', function () {
       });
     });
 
+    it('Should be possible to create a user with the same username and email as a formerly deleted user', function (done) {
+      var userData = { email: user2.email, username: user2.username, password: 'supersecret' }
+        ;
 
+      User.createAndSaveInstance(userData, function (err) {
+        err.code.should.equal(11000);
+
+        user2.deleteAccount(function () {
+          User.createAndSaveInstance(userData, function (err) {
+            assert.isNull(err);
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should be possible to delete more than user because the index is sparse', function (done) {
+      user1.deleteAccount(function (err) {
+        assert.isNull(err);
+        user2.deleteAccount(function (err) {
+          assert.isNull(err);
+
+          done();
+        });
+      });
+    });
 
 
 
