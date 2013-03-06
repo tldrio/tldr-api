@@ -1362,6 +1362,8 @@ describe('User', function () {
                     assert.isUndefined(user2.email);
                     user2.credentials.length.should.equal(0);
                     user2.deleted.should.equal(true);
+                    user2.gravatar.url.should.equal('');
+                    user2.gravatar.email.should.equal('');
 
                     Credentials.find({ owner: user2._id }, function (err, creds) {
                       creds.length.should.equal(0);

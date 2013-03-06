@@ -552,7 +552,7 @@ UserSchema.methods.deleteAccount = function (cb) {
 
     // Validators are not applied when we use a direct operation on the database
     User.update( { _id: self._id }
-               , { $unset: { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 }, $set: { deleted: true } }
+               , { $unset: { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 }, $set: { deleted: true, 'gravatar.url': '', 'gravatar.email': '' } }
                , { multi: false }
                , callback);
   });
