@@ -33,7 +33,7 @@ function checkForInactivity (limitDateOfInactivity) {
               , function (user, cb) {
         mailer.sendEmail({ type: 'inactivity'
                         , development: true
-                        , from: 'charles@tldr.io'
+                        , from: 'Charles Miglietti <charles@tldr.io>'
                         , values: user
                         , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
                         }, function (err) {
