@@ -104,6 +104,7 @@ app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
 app.get('/users/:id/stats', routes.getStats.getStatsForUser);
+app.delete('/users/you', routes.deleteUser);
 
 // User login/logout
 app.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
