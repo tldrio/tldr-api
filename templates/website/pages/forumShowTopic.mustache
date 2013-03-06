@@ -13,11 +13,12 @@
     <div class="list-box">
       {{#posts}}
         <div class="media">
-          <img class="pull-left" src="{{creator.gravatar.url}}&s=48" alt="a" style="width: 48px; height: 48px;">
+          <img class="pull-left" src="{{creator.gravatar.url}}&s=48" alt="a" style="width: 48px; height: 48px; visibility: hidden;" onload="this.style.visibility='visible';">
           <div class="media-body">
-              <a href="/{{creator.username}}">
-                {{creator.username}}
-              </a> - <span class="post-topic-metadata">{{timeago}}</span> {{#editable}}<a href="/forum/posts/{{_id}}/edit">edit</a>{{/editable}}<br>
+              {{^creator.deleted}}<a href="/{{creator.username}}">{{/creator.deleted}}
+                {{creator.usernameForDisplay}}
+              {{^creator.deleted}}</a>{{/creator.deleted}}
+              - <span class="post-topic-metadata">{{timeago}}</span> {{#editable}}<a href="/forum/posts/{{_id}}/edit">edit</a>{{/editable}}<br>
               {{{markedText}}}
           </div>
         </div>

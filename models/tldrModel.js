@@ -318,8 +318,8 @@ function findOneInternal (selector, cb) {
   var callback = cb || function () {};
 
   Tldr.findOne(selector)
-      .populate('creator', 'username twitterHandle')
-      .populate('editors', 'username')
+      .populate('creator', 'deleted username twitterHandle')
+      .populate('editors', 'deleted username')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }

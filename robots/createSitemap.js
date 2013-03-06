@@ -47,7 +47,6 @@ async.waterfall([
 , function (cb) {   // Add tldr pages
     Tldr.find({}, function (err, tldrs) {
       _.each(tldrs, function (tldr) {
-console.log(tldr._id + ' - ' + tldr.slug);
 
         addUrlToMap(writeStream, 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug, 'monthly', '0.5');
       });
@@ -57,7 +56,9 @@ console.log(tldr._id + ' - ' + tldr.slug);
 , function (cb) {   // Add user public profiles
     User.find({}, function (err, users) {
       _.each(users, function (user) {
-        addUrlToMap(writeStream, 'http://tldr.io/' + user.username, 'daily', '0.4');
+        if (user.username) {   // Only add non deleted users
+          addUrlToMap(writeStream, 'http://tldr.io/' + user.username, 'daily', '0.4');
+        }
       });
       cb();
     });

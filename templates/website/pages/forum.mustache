@@ -18,7 +18,7 @@
         {{>website/voting}}
         <div class="right-of-voting">
           <a href="/forum/topics/{{_id}}/{{slug}}"><span class="topic-in-list">{{title}}</span></a><br>
-          <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by <a href="/{{lastPost.by.username}}" target="_blank">{{lastPost.by.username}}</a></span>
+          <span class="post-topic-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by {{^lastPost.by.deleted}}<a href="/{{lastPost.by.username}}" target="_blank">{{/lastPost.by.deleted}} {{lastPost.by.usernameForDisplay}} {{^lastPost.by.deleted}}</a>{{/lastPost.by.deleted}}</span>
         </div>
       </div>
       <br>

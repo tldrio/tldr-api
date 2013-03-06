@@ -28,7 +28,7 @@ module.exports = function (req, res, next) {
     function (cb) {
       Tldr.find({ moderated: false })
         .sort('-createdAt')
-        .populate('creator', 'username')
+        .populate('creator', 'deleted username')
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
           _.each(values.tldrs, function (tldr) {

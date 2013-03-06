@@ -1334,7 +1334,7 @@ describe('User', function () {
   });   // ==== End of '#findAvailableUsername' ==== //
 
 
-  describe.only('Account deletion', function () {
+  describe('Account deletion', function () {
 
     it('Should be able to delete a user with his basic cred if he has only a basic cred', function (done) {
       var nUsers, nCredentials;
@@ -1463,7 +1463,7 @@ describe('User', function () {
       user2.usernameForDisplay.should.equal(user2.username);
       user2.deleteAccount(function () {
         User.findOne({ _id: user2._id }, function (err, user2) {
-          user2.usernameForDisplay.should.equal('[Deleted account]');
+          user2.usernameForDisplay.should.equal(i18n.deletedAccount);
           done();
         });
       });

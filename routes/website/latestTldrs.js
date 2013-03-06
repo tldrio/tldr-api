@@ -28,7 +28,7 @@ module.exports = function (req, res, next) {
       Tldr.find({ 'distributionChannels.latestTldrs': true })
         .limit(10)
         .sort('-createdAt')
-        .populate('creator', 'username')
+        .populate('creator', 'deleted username')
         .exec(function (err, tldrs) {
           values.latestTldrs = tldrs;
           _.each(values.latestTldrs, function (tldr) {

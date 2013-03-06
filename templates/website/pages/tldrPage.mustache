@@ -10,16 +10,16 @@
 
 
         <div class="tldr-metadata">
-          tl;dr 
+          tl;dr
           {{^tldr.anonymous}}
           <span>
             by
-            <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
-             ·  
+            <span>{{^tldr.creator.deleted}}<a href="/{{tldr.creator.username}}" target="_blank">{{/tldr.creator.deleted}}<em>{{tldr.creator.usernameForDisplay}}</em>{{^tldr.creator.deleted}}</a>{{/tldr.creator.deleted}}</span>
+             ·
           </span>
           {{/tldr.anonymous}}
           {{#tldr.lastEditor}}
-          edited by <a href="{{websiteUrl}}/{{username}}" target="_blank"><em>{{username}}</em></a> · 
+          edited by {{^deleted}}<a href="{{websiteUrl}}/{{username}}" target="_blank">{{/deleted}}<em>{{usernameForDisplay}}</em>{{^deleted}}</a>{{/deleted}} ·
           {{/tldr.lastEditor}}
           read {{tldr.readCount}} times
         </div>

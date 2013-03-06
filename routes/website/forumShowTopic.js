@@ -23,7 +23,7 @@ module.exports = function (req, res, next) {
 
     // Still not possible in mongoose to subpopulate documents so we do it manually
     Post.find({ _id: { $in: topic.posts } })
-        .populate('creator', 'username gravatar')
+        .populate('creator', 'deleted username gravatar')
         .exec(function (err, posts) {
 
      _.each(posts, function (post) {

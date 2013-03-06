@@ -7,7 +7,7 @@ Summary: <br>
    - {{.}} <br>
 {{/tldr.summaryBullets}}
 <br>
-{{type}} by <a href="{{websiteUrl}}/{{user.username}}">{{user.username}}</a><br><br><br>
+{{type}} by {{^user.deleted}}<a href="{{websiteUrl}}/{{user.username}}">{{/user.deleted}} {{user.usernameForDisplay}} {{^user.deleted}}</a>{{/user.deleted}}<br><br><br>
 
 
 ## ADMIN<br>
