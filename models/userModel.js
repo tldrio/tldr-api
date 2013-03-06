@@ -545,14 +545,21 @@ UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback
 UserSchema.methods.deleteAccount = function (cb) {
   var callback = cb || function () {}
     , self = this
+    , updateQuery = {}
     ;
 
   Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
     if (err) { return callback(err); }
 
+    updateQuery.$unset = { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 };
+    updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' }
+    Object.keys(UserSchema.tree.notificationsSettings).forEach(function (notif) {
+      updateQuery.$set['notificationsSettings.' + notif] = false;
+    });
+
     // Validators are not applied when we use a direct operation on the database
     User.update( { _id: self._id }
-               , { $unset: { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 }, $set: { deleted: true, 'gravatar.url': '', 'gravatar.email': '' } }
+               , updateQuery
                , { multi: false }
                , callback);
   });

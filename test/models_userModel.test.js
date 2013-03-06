@@ -1334,7 +1334,7 @@ describe('User', function () {
   });   // ==== End of '#findAvailableUsername' ==== //
 
 
-  describe('Account deletion', function () {
+  describe.only('Account deletion', function () {
 
     it('Should be able to delete a user with his basic cred if he has only a basic cred', function (done) {
       var nUsers, nCredentials;
@@ -1354,7 +1354,6 @@ describe('User', function () {
                 Credentials.find({}, function (err, creds) {
                   creds.length.should.equal(nCredentials - 1);
 
-
                   // user2 is now in the "deleted" state
                   User.findOne({ _id: user2._id }, function (err, user2) {
                     assert.isUndefined(user2.username);
@@ -1364,6 +1363,9 @@ describe('User', function () {
                     user2.deleted.should.equal(true);
                     user2.gravatar.url.should.equal('');
                     user2.gravatar.email.should.equal('');
+                    ['read', 'edit', 'congratsTldrViews', 'postForum', 'newsletter', 'serviceUpdates', 'thank'].forEach(function (notif) {
+                      user2.notificationsSettings[notif].should.equal(false);
+                    });
 
                     Credentials.find({ owner: user2._id }, function (err, creds) {
                       creds.length.should.equal(0);
