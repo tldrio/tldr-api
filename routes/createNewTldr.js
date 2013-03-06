@@ -74,7 +74,7 @@ function createNewTldr (req, res, next) {
       // Get a plain object from our model, on which we can set the creator field to what populate would do
       // And send it to the client. We avoid a useless DB call here
       tldrToSend = tldr.toObject();
-      tldrToSend.creator = { username: req.user.username, twitterHandle: req.user.twitterHandle };
+      tldrToSend.creator = { _id: req.user._id, username: req.user.username, twitterHandle: req.user.twitterHandle };
       return res.json(201, tldrToSend);
     }
   });

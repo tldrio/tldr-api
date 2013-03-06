@@ -37,7 +37,7 @@ function wait (millis, cb) {
  * Tests
  */
 describe('Tldr', function () {
-  var user;
+  var user, userbis;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -53,7 +53,10 @@ describe('Tldr', function () {
         Tldr.remove({}, function (err) {
           User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
             user = _user;
-            done();
+            User.createAndSaveInstance({ username: "eekkkee", password: "eeeeeeee", email: "validghj@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
+              userbis = _user;
+              done();
+            });
           });
         });
       });
@@ -875,6 +878,159 @@ describe('Tldr', function () {
 		});
 
   });   // ==== End of 'Moderation' ==== //
+
+
+  describe('#deleteIfPossible', function () {
+
+    it('Should not do anything if no user or not the creator asks for deletion', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                      , url: 'http://mydomain.com'
+                      , summaryBullets: ['coin']
+                      , resourceAuthor: 'bloup'
+                      }
+        ;
+
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+          tldr1.deleteIfPossible(null, function (err) {
+            err.should.equal(i18n.unauthorized);
+            tldr1.deleteIfPossible(userbis, function (err) {
+              err.should.equal(i18n.unauthorized);
+              done();
+            });
+          });
+        });
+    });
+
+    it('Should delete the tldr completely if not moderated or edited by someone else than the creator', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                      , url: 'http://mydomain.com'
+                      , summaryBullets: ['coin']
+                      , resourceAuthor: 'bloup'
+                      }
+        , tldrData2 = { title: 'Coucou'
+                      , url: 'http://mydomain.com/another'
+                      , summaryBullets: ['coin', 'piou']
+                      }
+        , tldr1Id, tldr2Id
+        ;
+
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+          tldr1.editors.length.should.equal(0);
+          tldr1.moderated.should.equal(false);
+          tldr1Id = tldr1._id;
+          user.tldrsCreated.indexOf(tldr1Id).should.not.equal(-1);
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+            tldr2.editors.length.should.equal(0);
+            tldr2.moderated.should.equal(false);
+            tldr2Id = tldr2._id;
+            user.tldrsCreated.indexOf(tldr2Id).should.not.equal(-1);
+
+            // Delete tldr1 and test it indeed worked
+            tldr1.deleteIfPossible(user, function (err, message) {
+              assert.isNull(err);
+              message.should.equal(i18n.tldrWasDeleted);
+              Tldr.findOne({ _id: tldr1Id }, function (err, _tldr) {
+                assert.isNull(err);
+                assert.isNull(_tldr);
+                User.findOne({ _id: user.id }, function (err, user) {
+                  user.tldrsCreated.indexOf(tldr1Id).should.equal(-1);
+
+                  tldr2.editors.push(user._id);
+                  tldr2.save(function (err, tldr2) {
+                    assert.isNull(err);
+                    tldr2.editors.length.should.equal(1);
+
+                    tldr2.deleteIfPossible(user, function (err, message) {
+                      message.should.equal(i18n.tldrWasDeleted);
+                      assert.isNull(err);
+                      Tldr.findOne({ _id: tldr2Id }, function (err, _tldr) {
+                        assert.isNull(err);
+                        assert.isNull(_tldr);
+                        User.findOne({ _id: user.id }, function (err, user) {
+                          user.tldrsCreated.indexOf(tldr2Id).should.equal(-1);
+
+                          done();
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+    });
+
+    it('Should only anonymize if the tldr was moderated or edited by someone else than the creator', function (done) {
+      var tldrData1 = { title: 'Blog NFA'
+                      , url: 'http://mydomain.com'
+                      , summaryBullets: ['coin']
+                      , resourceAuthor: 'bloup'
+                      }
+        , tldrData2 = { title: 'Coucou'
+                      , url: 'http://mydomain.com/another'
+                      , summaryBullets: ['coin', 'piou']
+                      }
+        , tldr1Id, tldr2Id
+        ;
+
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, tldr1) {
+          tldr1.editors.length.should.equal(0);
+          tldr1.moderated.should.equal(false);
+          tldr1.anonymous.should.equal(false);
+          tldr1Id = tldr1._id;
+          user.tldrsCreated.indexOf(tldr1Id).should.not.equal(-1);
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, tldr2) {
+            tldr2.editors.length.should.equal(0);
+            tldr2.moderated.should.equal(false);
+            tldr2.anonymous.should.equal(false);
+            tldr2Id = tldr2._id;
+            user.tldrsCreated.indexOf(tldr2Id).should.not.equal(-1);
+
+            // Moderate tldr1 and try to delete it
+            Tldr.moderateTldr(tldr1Id, function (err) {
+              assert.isNull(err);
+              Tldr.findOne({ _id: tldr1Id }, function (err, tldr1) {   // Reattach tldr1
+                tldr1.deleteIfPossible(user, function (err, message) {
+                  message.should.equal(i18n.tldrWasAnonymized);
+                  assert.isNull(err);
+                  Tldr.findOne({ _id: tldr1Id }, function (err, _tldr) {
+                    assert.isNull(err);
+                    _tldr._id.toString().should.equal(tldr1Id.toString());
+                    _tldr.anonymous.should.equal(true);
+                    User.findOne({ _id: user.id }, function (err, user) {
+                      user.tldrsCreated.indexOf(tldr1Id).should.not.equal(-1);
+
+                      tldr2.editors.push(userbis._id);
+                      tldr2.save(function (err, tldr2) {
+                        assert.isNull(err);
+                        tldr2.editors.length.should.equal(1);
+
+                        tldr2.deleteIfPossible(user, function (err, message) {
+                          message.should.equal(i18n.tldrWasAnonymized);
+                          assert.isNull(err);
+                          Tldr.findOne({ _id: tldr2Id }, function (err, _tldr) {
+                            assert.isNull(err);
+                            _tldr.anonymous.should.equal(true);
+                            User.findOne({ _id: user.id }, function (err, user) {
+                              user.tldrsCreated.indexOf(tldr2Id).should.not.equal(-1);
+
+                              done();
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+    });
+
+
+  });   // ==== End of 'deleteIfPossible' ==== //
 
 
   describe('#updateValidFields', function () {
