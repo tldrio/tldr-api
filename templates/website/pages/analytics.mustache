@@ -1,16 +1,6 @@
 <section class="marketing">
   <h1>tl;dr of your impact on the world</h1>
-  {{#past30Days.readCount}}
-    <h2 class="marketing-byline"><p>Looks like the world owes you a one!</p></h2>
-  {{/past30Days.readCount}}
-  {{^past30Days.readCount}}
-    {{#allTime.readCount}}
-      <h2 class="marketing-byline"><p>You were so prolific once upon a time, what happened to you?</p></h2>
-    {{/allTime.readCount}}
-    {{^allTime.readCount}}
-      <h2 class="marketing-byline"><p>Time to stop procrastinating and contribute a tl;dr!</p></h2>
-    {{/allTime.readCount}}
-  {{/past30Days.readCount}}
+  <h2 class="marketing-byline"><p>{{subtitle}}</p></h2>
   <div class="tldr-base-unit" id="badass">
     <ul class="nav nav-pills">
       <li class="active"><a href="#past-30-days" data-toggle="pill">Past 30 days</a></li>
@@ -18,27 +8,58 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane active" id="past-30-days">
-        {{#past30Days}}
-          {{>website/userStats}}
-          {{#readCount}}
+        {{#active}}
+          {{#past30Days}}
+            {{>website/userStats}}
             {{>website/userChartBar}}
-          {{/readCount}}
-          {{^readCount}}
-            <img src="https://i.chzbgr.com/maxW500/1468205312/h05CB4111/" alt="sad panda">
-          {{/readCount}}
-        {{/past30Days}}
+          {{/past30Days}}
+        {{/active}}
+        {{#wasActive}}
+          <div class="image-and-motivational-text">
+            The world is forever grateful for your contributions but since you stopped, this panda is sad ->
+            <img src="assets/img/sadpanda.png">
+          </div>
+        {{/wasActive}}
+        {{#neverActive}}
+          <div class="image-and-motivational-text">
+            <img src="assets/img/yunocontribute.jpg">
+            <h2>You should try it, you won't regret it!</h2>
+          </div>
+        {{/neverActive}}
+        {{#isNewHere}}
+          <div class="image-and-motivational-text">
+            <img src="assets/img/happy-thumbs-up.png">
+            You will feel great about it, we promise!
+          </div>
+        {{/isNewHere}}
       </div>
       <div class="tab-pane" id="all-time">
-        {{#allTime}}
-          {{>website/userStats}}
-          {{#readCount}}
+        {{#active}}
+          {{#allTime}}
+            {{>website/userStats}}
             {{>website/userChartBar}}
             {{>website/userChartLine}}
-          {{/readCount}}
-          {{^readCount}}
-            <img src="https://i.chzbgr.com/maxW500/1468205312/h05CB4111/" alt="sad panda">
-          {{/readCount}}
-        {{/allTime}}
+          {{/allTime}}
+        {{/active}}
+        {{#wasActive}}
+          {{#allTime}}
+            {{>website/userStats}}
+            {{>website/userChartBar}}
+            {{>website/userChartLine}}
+          {{/allTime}}
+        {{/wasActive}}
+        {{#neverActive}}
+          <div class="image-and-motivational-text">
+            <img src="assets/img/yunocontribute.jpg">
+            <h2>You should try it, you won't regret it!</h2>
+          </div>
+        {{/neverActive}}
+        {{#isNewHere}}
+          <div class="image-and-motivational-text">
+            <img src="assets/img/happy-thumbs-up.png">
+            <h2>You will feel great about it, we promise!</h2>
+          </div>
+        {{/isNewHere}}
       </div>
     </div>
   </div>
