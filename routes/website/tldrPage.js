@@ -34,7 +34,6 @@ module.exports = function (req, res, next) {
                    config.titles.branding + config.titles.shortDescription;
     // Warning: don't use double quotes in the meta description tag
     if (tldr.creator) { values.description = "Summary written by " + tldr.creator.usernameForDisplay + " of '" + tldr.title.replace(/"/g, '') + "'"; }
-    console.log(tldr.creator);
 
     // Specific metatags for the tldr page
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);

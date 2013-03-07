@@ -14,12 +14,12 @@
           {{^tldr.anonymous}}
           <span>
             by
-            <span>{{^tldr.creator.deleted}}<a href="/{{tldr.creator.username}}" target="_blank">{{/tldr.creator.deleted}}<em>{{tldr.creator.usernameForDisplay}}</em>{{^tldr.creator.deleted}}</a>{{/tldr.creator.deleted}}</span>
+            <span><em>{{#tldr.creator}} {{>website/usernameLink}} {{/tldr.creator}}</em></span>
              ·
           </span>
           {{/tldr.anonymous}}
           {{#tldr.lastEditor}}
-          edited by {{^deleted}}<a href="{{websiteUrl}}/{{username}}" target="_blank">{{/deleted}}<em>{{usernameForDisplay}}</em>{{^deleted}}</a>{{/deleted}} ·
+          edited by <em>{{>website/usernameLink}}</em> ·
           {{/tldr.lastEditor}}
           read {{tldr.readCount}} times
         </div>

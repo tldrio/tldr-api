@@ -9,13 +9,11 @@
         </p>
       </div>
       <div class="tldr-metadata">
-       tl;dr 
+       tl;dr
       {{^anonymous}}
       <span>
          by
-          <span>{{^creator.deleted}}<a href="{{websiteUrl}}/{{creator.username}}" target="_blank">{{/creator.deleted}}
-            <em>{{creator.usernameForDisplay}}</em>
-          {{^creator.deleted}}</a>{{/creator.deleted}}</span>
+          <span><em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em></span>
            -
       </span>
       {{/anonymous}}

@@ -29,10 +29,7 @@
             </span>
             <div class="tldr-metadata-tldrs">
               <span class="tldr-creator">
-                contributed by
-                {{^creator.deleted}}<a href="/{{creator.username}}" target="_blank">{{/creator.deleted}}
-                  <em>{{creator.usernameForDisplay}}</em>
-                {{^creator.deleted}}</a>{{/creator.deleted}}
+                contributed by <em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em>
               </span>
               <span class="tldr-readcount">
                 &middot; read {{readCount}} times
