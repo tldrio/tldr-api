@@ -1,0 +1,97 @@
+<div class="navbar navbar-static-top hidden-phone">
+  <div class="navbar-inner">
+    <div class="container">
+
+      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <!-- we live the branding here so that it is not hidden by responsiveness -->
+      <a class="brand" href="/">tl;dr</a>
+
+      <!-- Everything you want hidden at 940px or less, place within here -->
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li class="active"><a href="/boobies">Discover</a></li>
+          <li{{#extension}} class="active"{{/extension}}><a href="/chrome-extension">Chrome extension</a></li>
+          <li{{#forum}} class="active"{{/forum}}><a href="/forum/threads">Forum</a></li>
+        </ul>
+
+        <!-- Right part of the navbar, holding the signup and login links -->
+        <ul class="nav pull-right">
+
+          <!-- User is not logged, display the login widget -->
+          {{^loggedUser}}
+          <li{{#signup}} class="active"{{/signup}}>
+            <a href="/signup">Sign up!</a>
+          </li>
+          <li class="divider-vertical"></li>
+
+          <li  class="dropdown">
+            <a href="#"  class="dropdown-toggle" data-toggle="dropdown">
+              <small>Already a member?</small>
+              Log in
+              <b class="caret"></b>
+            </a>
+
+            <ul id="login-widget" class="dropdown-menu dropdown-form">
+              <!-- If there are login errors, they are displayed here -->
+              <li class="login-invalid-input" style="display: none;">
+                <div class="alert">
+                  <button type="button" class="close" data-dismiss="alert">×</button>
+                  <small class='login-error-message'></small>
+                </div>
+              </li>
+
+              <!-- Login form -->
+              <li>
+                <form>
+                  <fieldset>
+                    <input type="text" class="login-status-email" placeholder="Email goes here" value="{{email}}" name="email">
+                    <input type="password" class="login-status-password" placeholder="Password" value="{{password}}" name="password">
+                    <button type="submit" class="btn btn-primary login-status-submit">Log in</button>
+                    <a href="/forgotPassword" class="forgot-password-link"><small>Forgot your password?</small></a>
+                  </fieldset>
+                </form>
+              </li>
+
+              <!-- Login with Google -->
+              <li class="login-with-google">
+                Or log in with:<br>
+                <button class="btn btn-primary login-with-google-button">Google</button>
+              </li>
+            </ul>
+          </li>
+          {{/loggedUser}}
+
+          <!-- User is logged, display his personal space -->
+          {{#loggedUser}}
+          <li  class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              <img class="small-avatar" height="20" width="20" src="{{gravatar.url}}&s=20" alt="{{loggedUser.username}}">
+              <span id="logged-user-username" data-username="{{loggedUser.username}}" data-email="{{loggedUser.email}}" data-id="{{loggedUser._id}}" data-isadmin="{{loggedUser.isAdmin}}">
+                {{loggedUser.username}} 
+              </span>
+              <b class="caret"></b>
+            </a>
+
+            <ul class="dropdown-menu dropdown-form">
+              <li><a href="/account">My account</a></li>
+              <li class="divider"></li>
+              <li><a href="/{{loggedUser.username}}">My profile</a></li>
+              <li class="divider"></li>
+              <li><a href="/tldrscreated">My <em>tl;drs</em></a></li>
+              <li class="divider"></li>
+              <li><a href="/logout" id="login-status-logout">Sign out</a></li>
+            </ul>
+          </li>
+          {{/loggedUser}}
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>

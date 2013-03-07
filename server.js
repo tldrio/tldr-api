@@ -219,8 +219,9 @@ app.post('/forum/posts/:id/edit', routes.website_changePostText);
 // Moderation
 app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
 
-// Scratchpad to test analytics
+// Dev routes
 app.get('/scratchpad', middleware.websiteRoute, middleware.adminOnly, routes.website_scratchpad);
+app.get('/boobies', middleware.websiteRoute, routes.website_boobies);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
