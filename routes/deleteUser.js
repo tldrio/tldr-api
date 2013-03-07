@@ -13,6 +13,7 @@ module.exports = function (req, res, next) {
     if (err) {
       return res.send(403);
     } else {
+      req.logOut();
       return res.send(200);
     }
   });
