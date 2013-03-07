@@ -1334,7 +1334,7 @@ describe('User', function () {
   });   // ==== End of '#findAvailableUsername' ==== //
 
 
-  describe.only('Account deletion', function () {
+  describe('Account deletion', function () {
 
     it('Should be able to delete a user with his basic cred if he has only a basic cred', function (done) {
       var nUsers, nCredentials;
