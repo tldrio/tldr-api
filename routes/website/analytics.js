@@ -22,7 +22,7 @@ module.exports = function (req, res, next) {
 
   aMonthAgo.setDate(aMonthAgo.getDate() - 30);
 
-  values.yourimpact = true;
+  values.impact = true;
   partials.content = '{{>website/pages/analytics}}';
   values.title = (values.loggedUser ? values.loggedUser.username : '') + " - How badass are you?" + config.titles.branding;
 
