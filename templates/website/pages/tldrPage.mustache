@@ -26,7 +26,7 @@
 
         {{#tldr.imageUrl}}
         <div class="tldr-image">
-          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}" style="display: none;" onload="this.style.display='block';">
         </div>
         {{/tldr.imageUrl}}
 
