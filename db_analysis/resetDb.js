@@ -141,7 +141,7 @@ async.waterfall([
     cb();
   }
 , async.apply(wait, 50)
-, async.apply(putCurrentAnalyticsBackInTime, 3)
+, async.apply(putCurrentAnalyticsBackInTime, 6)
 , function (cb) {
     if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");
@@ -153,7 +153,7 @@ async.waterfall([
     cb();
   }
 , async.apply(wait, 50)
-, async.apply(putCurrentAnalyticsBackInTime, 2)
+, async.apply(putCurrentAnalyticsBackInTime, 7)
 , function (cb) {
     if (noAnalytics) { return cb(); }
     console.log("Faking some analytics");

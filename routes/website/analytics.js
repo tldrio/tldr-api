@@ -22,6 +22,7 @@ module.exports = function (req, res, next) {
 
   aMonthAgo.setDate(aMonthAgo.getDate() - 30);
 
+  values.yourimpact = true;
   partials.content = '{{>website/pages/analytics}}';
   values.title = (values.loggedUser ? values.loggedUser.username : '') + " - How badass are you?" + config.titles.branding;
 
@@ -31,7 +32,7 @@ module.exports = function (req, res, next) {
   function computeTimeSaved (wordCount) {
     // 5 words per second, returns in hours
     // very simple for now
-    return wordCount / (5 * 3600);
+    return wordCount / (3.3 * 3600);
   }
 
   function sumField (data, field, beg, end) {
@@ -89,19 +90,22 @@ module.exports = function (req, res, next) {
         values.past30Days.wordsWritten = sumField(tldrsLast30Days, 'wordCount');
 
         // figure out correct subtitle depending on activity
-        if (values.past30Days.readCount > 0) {
-          values.active = true;
-          values.subtitle = 'Looks like the world owes you a one!';
-        } else if (values.past30Days.readCount === 0 && values.allTime.readCount > 0) {
-          values.wasActive = true;
-          values.subtitle = 'You were so prolific once upon a time, what happened to you?';
-        } else {
-          if (joinedRecently) {
-            values.subtitle = 'Time to stop procrastinating and contribute a tl;dr!';
-            values.neverActive = true;
+        if (values.allTime.readCount > 0) {   // User already made some tldrs
+          values.hasBeenActive = true;
+          if (values.past30Days.readCount > 0) {
+            values.active = true;
+            values.subtitle = 'Looks like the world owes you a one!';
           } else {
+            values.wasActive = true;
+            values.subtitle = 'You were so prolific once upon a time, what happened to you?';
+          }
+        } else {   // User never wrote a tldr
+          if (joinedRecently) {
             values.subtitle = 'Looks like you\'re new here. You should try creating your first tl;dr!';
             values.isNewHere = true;
+          } else {
+            values.subtitle = 'Time to stop procrastinating and contribute a tl;dr!';
+            values.neverActive = true;
           }
         }
 
