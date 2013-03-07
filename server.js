@@ -200,7 +200,7 @@ app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.w
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
-app.get('/badass', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
+app.get('/your-impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
 
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
