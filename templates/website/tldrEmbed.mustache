@@ -38,18 +38,7 @@
   }
 
   // Send the height to the parent
-  window.parent.postMessage({ action: 'SET_HEIGHT', height: getDocHeight() }, '*');
-  var closeButton = document.getElementsByClassName('dismiss-embed')[0];
-
-  function dismissEmbed () {
-    window.parent.postMessage({ action: 'DISMISS'}, '*');
-  }
-
-  if (closeButton.addEventListener) {
-    closeButton.addEventListener('click',dismissEmbed,false);
-  } else if(closeButton.attachEvent) {
-    closeButton.attachEvent('onclick',dismissEmbed);
-  }
+  window.parent.postMessage({ action: 'SET_HEIGHT', tldrId: '{{tldr._id}}', height: getDocHeight() }, '*');
 
   </script>
 
