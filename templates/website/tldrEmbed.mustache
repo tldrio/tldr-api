@@ -38,7 +38,6 @@
   }
 
   // Send the height to the parent
-  console.log("========== Sent fucking message");
   var msg = { action: 'SET_HEIGHT', tldrId: '{{tldr._id}}', height: getDocHeight() };
   window.parent.postMessage(JSON.stringify(msg), '*');
 
