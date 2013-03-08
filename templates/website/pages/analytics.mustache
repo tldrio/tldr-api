@@ -9,13 +9,13 @@
   <div class="tldr-base-unit" id="badass">
     {{#neverActive}}
       <div class="image-and-motivational-text">
-        <img src="assets/img/yunocontribute.jpg">
+        <img src="/assets/img/yunocontribute.jpg">
         <h2>You should try it, you won't regret it!</h2>
       </div>
     {{/neverActive}}
     {{#isNewHere}}
       <div class="image-and-motivational-text">
-        <img src="assets/img/happy-thumbs-up.png">
+        <img src="/assets/img/happy-thumbs-up.png">
         <h2>You will feel great about it, we promise!</h2>
       </div>
     {{/isNewHere}}
@@ -27,18 +27,14 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane" id="past-30-days">
-        {{#active}}
           {{#past30Days}}
             {{>website/userStatsPast30Days}}
             {{>website/userChartBar}}
           {{/past30Days}}
-        {{/active}}
         {{#wasActive}}
-            {{>website/userStatsPast30Days}}
-            {{>website/userChartBar}}
           <div class="image-and-motivational-text">
             The world is forever grateful for your contributions but since you stopped, this panda is sad!<br><br>
-            <img src="assets/img/sadpanda.png">
+            <img src="/assets/img/sadpanda.png">
           </div>
         {{/wasActive}}
       </div>
