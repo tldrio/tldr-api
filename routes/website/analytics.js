@@ -129,14 +129,14 @@ module.exports.displayAnalytics = function (req, res, next) {
         values.past30Days.thanks = _s.numberFormat(values.past30Days.thanks);
         values.past30Days.wordsCompressed = _s.numberFormat(values.past30Days.wordsCompressed);
         values.past30Days.wordsWritten = _s.numberFormat(values.past30Days.wordsWritten);
-        values.past30Days.timeSaved = _s.numberFormat(values.past30Days.timeSaved);
+        values.past30Days.timeSaved = moment.duration(values.past30Days.timeSaved, 'hours').humanize();
         values.allTime.tldrsCreated = _s.numberFormat(values.allTime.tldrsCreated);
         values.allTime.readCount = _s.numberFormat(values.allTime.readCount);
         values.allTime.articleWordCount = _s.numberFormat(values.allTime.articleWordCount);
         values.allTime.thanks = _s.numberFormat(values.allTime.thanks);
         values.allTime.wordsCompressed = _s.numberFormat(values.allTime.wordsCompressed);
         values.allTime.wordsWritten = _s.numberFormat(values.allTime.wordsWritten);
-        values.allTime.timeSaved = _s.numberFormat(values.allTime.timeSaved);
+        values.allTime.timeSaved = moment.duration(values.allTime.timeSaved, 'hours').humanize();
 
         res.render('website/basicLayout', { values: values
                                           , partials: partials
