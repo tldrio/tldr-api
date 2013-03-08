@@ -118,6 +118,7 @@ app.post('/tldrs', routes.createNewTldr);
 app.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 app.put('/tldrs/:id', routes.updateTldrWithId);
 app.put('/tldrs/:id/thank', routes.thankContributor);
+app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
@@ -202,7 +203,7 @@ app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.w
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
-app.get('/badass', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
+app.get('/impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
 
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
