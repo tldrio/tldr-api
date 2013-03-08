@@ -1,5 +1,10 @@
 <section class="marketing">
-  <h1>tl;dr of your impact on the world</h1>
+  {{^userToDisplayAnalyticsFor}}
+    <h1>tl;dr of your impact on the world</h1>
+  {{/userToDisplayAnalyticsFor}}
+  {{#userToDisplayAnalyticsFor}}
+    <h1>tl;dr of {{username}}'s impact on the world</h1>
+  {{/userToDisplayAnalyticsFor}}
   <h2 class="marketing-byline"><p>{{subtitle}}</p></h2>
   <div class="tldr-base-unit" id="badass">
     {{#neverActive}}
