@@ -203,7 +203,7 @@ app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.w
 app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
 app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
 app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
-app.get('/impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics);
+app.get('/impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics.displayAnalytics);
 
 // Forum
 app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
@@ -218,11 +218,11 @@ app.post('/forum/posts/:id/edit', routes.website_changePostText);
 // Moderation
 app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
 
-// Scratchpad to test analytics
-app.get('/scratchpad', middleware.websiteRoute, middleware.adminOnly, routes.website_scratchpad);
-
 // User profiles, leaderboard ...
 app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+
+// Admin only
+app.get('/:username/impact', middleware.adminOnly, middleware.websiteRoute, routes.website_analytics.selectUserForAnalytics, routes.website_analytics.displayAnalytics);
 
 
 /*
