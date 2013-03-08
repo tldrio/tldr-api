@@ -27,15 +27,11 @@
     </ul>
     <div class="tab-content">
       <div class="tab-pane" id="past-30-days">
-        {{#active}}
           {{#past30Days}}
             {{>website/userStatsPast30Days}}
             {{>website/userChartBar}}
           {{/past30Days}}
-        {{/active}}
         {{#wasActive}}
-            {{>website/userStatsPast30Days}}
-            {{>website/userChartBar}}
           <div class="image-and-motivational-text">
             The world is forever grateful for your contributions but since you stopped, this panda is sad!<br><br>
             <img src="assets/img/sadpanda.png">
