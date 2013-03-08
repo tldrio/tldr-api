@@ -46,7 +46,7 @@
   var closeButton = document.getElementsByClassName('dismiss-embed')[0];
 
   function dismissEmbed () {
-    window.parent.postMessage('dismiss', '*');
+    window.parent.postMessage({ action: 'DISMISS'}, '*');
   }
 
   if (closeButton.addEventListener) {
