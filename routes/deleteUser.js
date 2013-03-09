@@ -3,7 +3,11 @@ var User = require('../models/userModel')
   ;
 
 module.exports = function (req, res, next) {
-  var values = { reason: req.body.reason, username: req.user.username, email: req.user.email };
+  var values;
+
+  if (! req.user) { return res.send(401); }
+
+  values = { reason: req.body.reason, username: req.user.username, email: req.user.email };
   mailer.sendEmail({ type: 'adminUserDeleted'
                    , development: false
                    , values: values
