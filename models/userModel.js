@@ -566,7 +566,7 @@ UserSchema.methods.deleteAccount = function (cb) {
       if (err) { return callback(err); }
 
       updateQuery.$unset = { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 };
-      updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' }
+      updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' };
       Object.keys(UserSchema.tree.notificationsSettings).forEach(function (notif) {
         updateQuery.$set['notificationsSettings.' + notif] = false;
       });
@@ -578,7 +578,7 @@ UserSchema.methods.deleteAccount = function (cb) {
                  , callback);
     });
   });
-}
+};
 
 /**
  * Keep a deleted user's private data if it was a mistake on his or an admin's part
