@@ -39,6 +39,7 @@ reservedUsernames = {
   , 'crx': true
   , 'extension': true
   , 'forgotpassword': true
+  , 'impact': true
   , 'index': true
   , 'login': true
   , 'logout': true

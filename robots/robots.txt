@@ -1,4 +1,5 @@
 user-agent: *
+disallow: /impact
 disallow: /account
 disallow: /moderation
 disallow: /tldrscreated
