@@ -1,4 +1,5 @@
-var User = require('../models/userModel')
+var models = require('../lib/models')
+  , User = models.User
   , mailer = require('../lib/mailer')
   ;
 

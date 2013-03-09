@@ -15,6 +15,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , Credentials = models.Credentials
   , User = models.User
+  , DeletedUsersData = models.DeletedUsersData
   , UserHistory = models.UserHistory
   , notificator = require('../lib/notificator')
   , Tldr = models.Tldr
@@ -62,6 +63,7 @@ describe('User', function () {
     async.waterfall([
       async.apply(theRemove, Credentials)
     , async.apply(theRemove, User)
+    , async.apply(theRemove, DeletedUsersData)
     , async.apply(theRemove, Tldr)
     , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
     , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
@@ -1473,6 +1475,30 @@ describe('User', function () {
       });
     });
 
+    it('Upon deletion, the users private data should be stored in the DeletedUsersData collection for safe keeping', function (done) {
+      var theEmail = user2.email, theUsername = user2.username
+        , theGravatarUrl = user2.gravatar.url, theGravatarEmail = user2.gravatar.email
+        , theId = user2._id
+        ;
+
+      DeletedUsersData.find(function (err, duds) {
+        duds.length.should.equal(0);
+
+        user2.deleteAccount(function (err) {
+          assert.isNull(err);
+          DeletedUsersData.find(function (err, duds) {
+            duds.length.should.equal(1);
+            duds[0].email.should.equal(theEmail);
+            duds[0].username.should.equal(theUsername);
+            duds[0].gravatar.url.should.equal(theGravatarUrl);
+            duds[0].gravatar.email.should.equal(theGravatarEmail);
+            duds[0].deletedUser.toString().should.equal(theId.toString());
+
+            done();
+          });
+        });
+      });
+    });
 
 
 

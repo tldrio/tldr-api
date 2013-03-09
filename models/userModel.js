@@ -24,6 +24,7 @@ var mongoose = require('mongoose')
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
   , reservedUsernames
   , async = require('async')
+  , DeletedUsersDataSchema, DeletedUsersData
   ;
 
 
@@ -547,27 +548,51 @@ UserSchema.methods.deleteAccount = function (cb) {
   var callback = cb || function () {}
     , self = this
     , updateQuery = {}
+    , deletedUserData = new DeletedUsersData({ email: self. email
+                                             , username: self.username
+                                             , gravatar:  { url: self.gravatar.url
+                                                          , email: self.gravatar.email
+                                                          }
+                                             , deletedUser: self._id
+                                             })
     ;
 
   mailchimpSync.unsubscribeUser({ email: self.email });
 
-  Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
+  deletedUserData.save(function (err) {
     if (err) { return callback(err); }
 
-    updateQuery.$unset = { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 };
-    updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' }
-    Object.keys(UserSchema.tree.notificationsSettings).forEach(function (notif) {
-      updateQuery.$set['notificationsSettings.' + notif] = false;
-    });
+    Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
+      if (err) { return callback(err); }
 
-    // Validators are not applied when we use a direct operation on the database
-    User.update( { _id: self._id }
-               , updateQuery
-               , { multi: false }
-               , callback);
+      updateQuery.$unset = { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 };
+      updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' }
+      Object.keys(UserSchema.tree.notificationsSettings).forEach(function (notif) {
+        updateQuery.$set['notificationsSettings.' + notif] = false;
+      });
+
+      // Validators are not applied when we use a direct operation on the database
+      User.update( { _id: self._id }
+                 , updateQuery
+                 , { multi: false }
+                 , callback);
+    });
   });
 }
 
+/**
+ * Keep a deleted user's private data if it was a mistake on his or an admin's part
+ * This data is private and not accessible except directly through the DB
+ */
+DeletedUsersDataSchema = new Schema({
+  email: { type: String }
+, username: { type: String }
+, gravatar: { url: { type: String }
+            , email: { type: String }
+            }
+, deletedUser: { type: ObjectId }
+});
+DeletedUsersData = mongoose.model('deleteduserdata', DeletedUsersDataSchema);
 
 
 
@@ -582,5 +607,5 @@ UserSchema.statics.validateUsername = validateUsername;
 User = mongoose.model('user', UserSchema);
 
 // Export User
-module.exports = User;
-
+module.exports.User = User;
+module.exports.DeletedUsersData = DeletedUsersData;
