@@ -178,6 +178,7 @@ app.get('/release-notes', middleware.websiteRoute, routes.website_releaseNotes);
 app.get('/embedded-tldrs', middleware.websiteRoute, routes.website_embeddedTldrs);
 
 app.get('/elad', middleware.websiteRoute, routes.website_elad);
+app.get('/scratchpad', middleware.adminOnly, middleware.websiteRoute, routes.website_scratchpad);
 
 
 // Tldr page
