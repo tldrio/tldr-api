@@ -6,7 +6,27 @@
 
 <body>
 
-  TEST WITH NOTHING
+  <div class="row">
+    <div class="tldr-base-unit page-tldr-container">
+      <div class="tldr-read-container">
+        <span class="tldr-header">
+          Summary <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+        </span>
+
+        <div class="tldr-summary">
+          <ul>
+            {{#tldr.summaryBullets}}
+            <li class="tldr-bullet">
+              ◼ {{.}}
+            </li>
+            {{/tldr.summaryBullets}}
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 
   <script>
   function getDocHeight() {
