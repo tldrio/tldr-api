@@ -31,17 +31,17 @@ function sendResetPasswordEmail (req, res, next) {
                          });
       } else {
         user.createResetPasswordToken(function(err, bc) {
-          if (! err) {
-            // Send the same message, whether a user was found or not
-            // Don't wait for email to be sent successfully to send the response to the client
-            res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
+          if (err) { return res.json(500, err); }
 
-            // Send reset password email
-            mailer.sendEmail({ type: 'resetPassword'
-                             , to: user.email
-                             , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(bc.resetPasswordToken) }
-                             });
-          }
+          // Send the same message, whether a user was found or not
+          // Don't wait for email to be sent successfully to send the response to the client
+          res.json(200, { message: util.format(i18n.resetPasswordEmailWasSent, req.body.email) });
+
+          // Send reset password email
+          mailer.sendEmail({ type: 'resetPassword'
+                           , to: user.email
+                           , values: { user: user, email: encodeURIComponent(user.email), token: encodeURIComponent(bc.resetPasswordToken) }
+                           });
         });
       }
     });
