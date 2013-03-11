@@ -14,7 +14,7 @@ module.exports = function (req, res, next) {
         , clippedTitle = tldr.title.length <= stringsLengths.titleMax ?
                          tldr.title :
                          tldr.title.substring(0, stringsLengths.titleMax-3) + '...'
-        , tweetText = clippedTitle + ' ' + tldr.originalUrl + ', tldr';
+        , tweetText = clippedTitle + ' ' + tldr.originalUrl + ', TLDR';
 
     if (tldr.creator && tldr.creator.twitterHandle && tldr.creator.twitterHandle.length > 0) {
       tweetText = tweetText + " by @" + tldr.creator.twitterHandle;
