@@ -248,7 +248,7 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
   User.findOne({ email: email },  function (err, user) {
     if (err) { return callback({ error: err }); }
     if (!user) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
-    if (user.confirmedEmail) { return callback(); }
+    if (user.confirmedEmail) { return callback(null); }
     if (user.confirmEmailToken !== token) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
 
     // User email is not confirmed - token is correct -> Confirm
@@ -257,7 +257,7 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
     user.token = null;
     user.save(function (err) {
       if (err) { return callback({ error: err }); }
-      return callback();
+      return callback(null);
     });
   });
 };

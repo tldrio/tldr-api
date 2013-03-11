@@ -527,6 +527,60 @@ describe('User', function () {
   });   // ==== End of '#signupWithGoogleSSO' ==== //
 
 
+  describe.only('#confirmEmail', function () {
+
+    it('Should be able to confirm a users email', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail(user1.email, user1.confirmEmailToken, function (err) {
+        assert.isNull(err);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(true);
+          done();
+        });
+      });
+    });
+
+    it('Any subsequent try to confirm should be successful', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail(user1.email, user1.confirmEmailToken, function (err) {
+        assert.isNull(err);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(true);
+
+          // Try again with any token
+          User.confirmEmail(user1.email, 'anythinggoes', function (err) {
+            assert.isNull(err);
+            User.findOne({ _id: user1._id }, function (err, user1) {
+              user1.confirmedEmail.should.equal(true);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Cant confirm an unknown user or a bad token', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail('someoneelse@email.com', user1.confirmEmailToken, function (err) {
+        assert.isDefined(err.message);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(false);
+
+          User.confirmEmail(user1.email, 'badtoken', function (err) {
+            assert.isDefined(err.message);
+            User.findOne({ _id: user1._id }, function (err, user1) {
+              user1.confirmedEmail.should.equal(false);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#confirmEmail' ==== //
+
+
   describe('Get specific credentials', function () {
 
     it('Returns with no error even if no basic creds were found', function (done) {
