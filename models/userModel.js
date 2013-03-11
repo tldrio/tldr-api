@@ -265,9 +265,11 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
         if (!gc) { return callback(null); }   // Nothing to attach
         if (user.credentials.indexOf(gc._id) !== -1) { return callback(null); }   // Already attached
 
-        //user.attachCredentialsToProfile();
-
-        return callback(null);
+        gc.owner.detachCredentialsFromProfile(gc, function () {
+          user.attachCredentialsToProfile(gc, function () {
+            return callback(null);
+          });
+        });
       });
     });
   });

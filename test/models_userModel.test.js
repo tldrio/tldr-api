@@ -527,7 +527,7 @@ describe('User', function () {
   });   // ==== End of '#signupWithGoogleSSO' ==== //
 
 
-  describe('#confirmEmail', function () {
+  describe.only('#confirmEmail', function () {
 
     it('Should be able to confirm a users email', function (done) {
       user1.confirmedEmail.should.equal(false);
@@ -628,7 +628,7 @@ describe('User', function () {
   });
 
 
-  describe.only('Attach and detach credentials from profiles', function () {
+  describe('Attach and detach credentials from profiles', function () {
 
     it('Should work as expected, no error possible', function (done) {
       var userData = { username: 'NFADeploy'
