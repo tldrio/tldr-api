@@ -24,6 +24,7 @@ var mongoose = require('mongoose')
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
   , reservedUsernames
   , async = require('async')
+  , mqClient = require('../lib/message-queue')
   , DeletedUsersDataSchema, DeletedUsersData
   ;
 
@@ -235,6 +236,33 @@ UserSchema.methods.createConfirmToken = function (callback) {
 };
 
 
+/**
+ * Confirm a user's email
+ * Callback signature: err
+ */
+UserSchema.statics.confirmEmail = function (email, token, callback) {
+  if (!token || !email) {
+    return callback({ message: i18n.confirmTokenOrEmailInvalid});
+  }
+
+  User.findOne({ email: email },  function (err, user) {
+    if (err) { return callback({ error: err }); }
+    if (!user) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
+    if (user.confirmedEmail) { return callback(); }
+    if (user.token !== token) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
+
+    // User email is not confirmed - token is correct -> Confirm
+    var now = new Date();
+    user.confirmedEmail = true;
+    user.token = null;
+    user.save(function (err) {
+      if (err) { return callback({ error: err }); }
+      return callback();
+    });
+  });
+};
+
+
 /*
  * Prepare to reset password by creating a reset password token and sending it to the user
  */
@@ -427,6 +455,61 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
       });
     });
   });
+};
+
+
+/**
+ * Upon signup with Google SSO, create a user with his google creds and default basic creds
+ * Don't call this if you're not sure whether the user exists or not
+ * @param {String} identifier OpenID provided by Google for this user
+ * @param {Object} googleProfile Contains all the user's information given by google, incl. email and displayName
+ * @param {Function} callback Signature err, user, optional infos for downstream services
+ */
+UserSchema.statics.signupWithGoogleSSO = function (identifier, googleProfile, callback) {
+  async.waterfall([
+    function (cb) {   // Create the user's profile
+      User.findAvailableUsername(googleProfile.displayName, function (err, username) {
+        User.createAndSaveBareProfile({ username: username, email: googleProfile.emails[0].value }, function (err, user) {
+          if (err) { return cb(err); }
+          if (! user) { return cb({ noErrorButUserStillNotCreated: true }); }
+
+          if (googleProfile.name) {
+            if (googleProfile.name.givenName) { user.firstName = googleProfile.name.givenName; }
+            if (googleProfile.name.familyName) { user.lastName = googleProfile.name.familyName; }
+          }
+
+          // No need to confirm the user's email
+          user.confirmedEmail = true;
+          user.confirmEmailToken = null;
+
+          // If possible, use the user's first name while he hasn't setted his username himself
+          user.username = user.firstName || user.username;
+          mqClient.emit('user.created', { user: user });
+          user.username = username;
+
+          return cb(null, user, { userWasJustCreated: true });
+        });
+      });
+    }
+  , function (user, info, cb) {   // Create the google credentials and attach them to our found/created user
+      Credentials.createGoogleCredentials({ openID: identifier, googleEmail: user.email }, function (err, gc) {
+        user.attachCredentialsToProfile(gc, function () {
+          return cb(null, user, info);
+        });
+      });
+    }
+  , function (user, info, cb) {   // If there are no basic creds for this email, create and attach them
+      Credentials.findOne({ login: user.email, type: 'basic' }, function (err, bc) {
+        if (bc) { return cb(null, user, info); }
+
+        Credentials.createBasicCredentials({ login: user.email, password: customUtils.uid(20) }, function (err, bc) {
+          user.attachCredentialsToProfile(bc, function () {
+            return cb(null, user, info);
+          });
+        });
+      });
+    }
+  ], callback);
 };
 
 

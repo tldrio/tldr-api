@@ -417,14 +417,114 @@ describe('User', function () {
         assert.isNull(err);
         user.confirmedEmail.should.be.false;
         assert.isUndefined(user.bio);
-        user.credentials.length.should.equal(0);
 
+        user.credentials.length.should.equal(0);
         done();
       });
     });
 
-
   });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
+
+
+  describe('#signupWithGoogleSSO', function () {
+
+    it('Upon signup with Google, create the new user, google creds and basic creds if the latter dont exist', function (done) {
+      var nUsers, newCreds
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'newgoogle@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        ;
+
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, user, info) {
+          assert.isNull(err);
+          user.email.should.equal('newgoogle@email.com');
+          user.username.should.equal('NewGoogle');
+          user.firstName.should.equal('New');
+          user.lastName.should.equal('Google');
+          user.confirmedEmail.should.equal(true);
+          user.credentials.length.should.equal(2);
+
+          newCreds = user.credentials;
+
+          info.userWasJustCreated.should.equal(true);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(nUsers + 1);
+
+            user.getBasicCredentials(function (err, bc) {
+              newCreds.should.contain(bc._id);
+              bc.login.should.equal(user.email);
+              bc.owner.toString().should.equal(user._id.toString());
+
+              user.getGoogleCredentials(function (err, gc) {
+                newCreds.should.contain(gc._id);
+                gc.googleEmail.should.equal(user.email);
+                gc.openID.should.equal(identifier);
+                gc.owner.toString().should.equal(user._id.toString());
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Upon signup with Google, create the new user, google creds, but not basic creds if the latter already exist', function (done) {
+      var nUsers, newCreds
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'test1@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        ;
+
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, user, info) {
+          assert.isNull(err);
+          user.email.should.equal('test1@email.com');
+          user.username.should.equal('NewGoogle');
+          user.firstName.should.equal('New');
+          user.lastName.should.equal('Google');
+          user.confirmedEmail.should.equal(true);
+          user.credentials.length.should.equal(1);
+
+          newCreds = user.credentials;
+
+          info.userWasJustCreated.should.equal(true);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(nUsers + 1);
+
+            user.getBasicCredentials(function (err, bc) {
+              assert.isNull(bc);
+
+              user.getGoogleCredentials(function (err, gc) {
+                newCreds.should.contain(gc._id);
+                gc.googleEmail.should.equal(user.email);
+                gc.openID.should.equal(identifier);
+                gc.owner.toString().should.equal(user._id.toString());
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#signupWithGoogleSSO' ==== //
 
 
   describe('Get specific credentials', function () {
