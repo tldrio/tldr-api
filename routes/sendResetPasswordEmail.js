@@ -14,17 +14,11 @@ var bunyan = require('../lib/logger').bunyan
 
 
 function sendResetPasswordEmail (req, res, next) {
-  console.log("SRPE= Called");
   if (! req.body || ! req.body.email || req.body.email.length === 0) {
-    console.log("SRPE= no body or email");
-    console.log(req.body);
     return next({ statusCode: 403, body: { message: i18n.noEmailProvidedForReset } });
   } else {
     User.findOne({ email: req.body.email }, function (err, user) {
-      console.log("SRPE= Tried to find user");
-      console.log("SRPE= ", err);
       if (err) { return next({ statusCode: 500, body: { message: i18n.mongoInternErrGetTldrUrl} } ); }
-      console.log("SRPE= No error while finding user");
 
       if (user === null) {
         // Send the same message, whether a user was found or not
