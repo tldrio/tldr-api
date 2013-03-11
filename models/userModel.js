@@ -249,7 +249,7 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
     if (err) { return callback({ error: err }); }
     if (!user) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
     if (user.confirmedEmail) { return callback(); }
-    if (user.token !== token) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
+    if (user.confirmEmailToken !== token) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
 
     // User email is not confirmed - token is correct -> Confirm
     var now = new Date();
