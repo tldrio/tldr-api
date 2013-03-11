@@ -238,6 +238,7 @@ UserSchema.methods.createConfirmToken = function (callback) {
 
 /**
  * Confirm a user's email
+ * If there are Google creds and user.email === gc.googleEmail, attach those
  * Callback signature: err
  */
 UserSchema.statics.confirmEmail = function (email, token, callback) {
@@ -257,7 +258,17 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
     user.token = null;
     user.save(function (err) {
       if (err) { return callback({ error: err }); }
-      return callback(null);
+
+      Credentials.findOne({ googleEmail: user.email, type: 'google' })
+                 .populate('owner')
+                 .exec(function (err, gc) {
+        if (!gc) { return callback(null); }   // Nothing to attach
+        if (user.credentials.indexOf(gc._id) !== -1) { return callback(null); }   // Already attached
+
+        //user.attachCredentialsToProfile();
+
+        return callback(null);
+      });
     });
   });
 };
@@ -515,6 +526,7 @@ UserSchema.statics.signupWithGoogleSSO = function (identifier, googleProfile, ca
 
 /**
  * Attach credentials to this user profile
+ * Can't reattach the same credentials twice
  * @param {Credentials} creds
  * @param {Function} cb Optional callback, signature: err, user
  */
@@ -522,10 +534,30 @@ UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
   var callback = cb || function () {}
     , self = this;
 
+  if (creds.owner) { return callback(null, self); }
+
   creds.owner = self._id;
   creds.save(function (err) {
     if (err) { return callback(err); }   // Shouldn't happen
     self.credentials.push(creds._id);
+    self.save(callback);
+  });
+};
+
+
+/**
+ * Detach a credentials from a profile
+ * @param {Credentials} creds
+ * @param {Function} cb Optional callback, signature: err, user
+ */
+UserSchema.methods.detachCredentialsFromProfile = function (creds, cb) {
+  var callback = cb || function () {}
+    , self = this;
+
+  creds.owner = undefined;
+  creds.save(function (err) {
+    if (err) { return callback(err); }   // Shouldn't happen
+    self.credentials = _.without(self.credentials, creds._id);
     self.save(callback);
   });
 };

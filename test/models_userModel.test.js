@@ -527,7 +527,7 @@ describe('User', function () {
   });   // ==== End of '#signupWithGoogleSSO' ==== //
 
 
-  describe.only('#confirmEmail', function () {
+  describe('#confirmEmail', function () {
 
     it('Should be able to confirm a users email', function (done) {
       user1.confirmedEmail.should.equal(false);
@@ -628,7 +628,7 @@ describe('User', function () {
   });
 
 
-  describe('#attachCredentialsToProfile', function () {
+  describe.only('Attach and detach credentials from profiles', function () {
 
     it('Should work as expected, no error possible', function (done) {
       var userData = { username: 'NFADeploy'
@@ -648,7 +648,73 @@ describe('User', function () {
           user.attachCredentialsToProfile(bc, function (err, user) {
             bc.owner.toString().should.equal(user._id.toString());
             user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
             done();
+          });
+        });
+      });
+    });
+
+    it('Trying to reattach a second time has no effect', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
+
+            user.attachCredentialsToProfile(bc, function (err, user) {
+              user.credentials.length.should.equal(2);
+              user.credentials.should.contain(bc._id);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to detach a creds from a profile', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
+
+            user.detachCredentialsFromProfile(bc, function (err, user) {
+              Credentials.findOne({ _id: bc._id }, function (err, bc) {
+                assert.isUndefined(bc.owner);
+                user.credentials.length.should.equal(1);
+                user.credentials.should.not.contain(bc._id);
+
+                done();
+              });
+            });
           });
         });
       });
