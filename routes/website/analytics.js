@@ -78,12 +78,14 @@ module.exports.displayAnalytics = function (req, res, next) {
     values.analytics = JSON.stringify(data);
 
     values.allTime.tldrsCreated = userToDisplayAnalyticsFor.tldrsCreated.length;
+    values.allTime.createdSomeTldrs = values.allTime.tldrsCreated > 0;
     values.allTime.readCount = sumField(data, 'readCount');
     values.allTime.articleWordCount = sumField(data, 'articleWordCount');
     values.allTime.thanks = sumField(data, 'thanks');
     values.allTime.timeSaved = computeTimeSaved(values.allTime.articleWordCount);
 
     values.past30Days.tldrsCreated = tldrsCreatedLast30Days.length;
+    values.past30Days.createdSomeTldrs = values.past30Days.tldrsCreated > 0;
     values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
