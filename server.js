@@ -147,7 +147,7 @@ app.options('*', function (req, res, next) {
 });
 
 // Only hybrid for retrocompatibility
-app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldrPage, routes.getTldrById));
+app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website.tldrPage, routes.getTldrById));
 
 
 /*
@@ -155,76 +155,76 @@ app.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website_tldr
  *
  */
 // General pages
-app.get('/about', middleware.websiteRoute, routes.website_about);
+app.get('/about', middleware.websiteRoute, routes.website.about);
 app.get('/', middleware.websiteRoute     // Routing for this page depends on the logged in status
            , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
-                                      , ifNotLogged: routes.website_index }));
+                                      , ifNotLogged: routes.website.index }));
 app.get('/signup', middleware.websiteRoute
                  , middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
-                                            , ifNotLogged: routes.website_signup }));
+                                            , ifNotLogged: routes.website.signup }));
 
-app.get('/latest-summaries', middleware.websiteRoute, routes.website_latestTldrs);
+app.get('/latest-summaries', middleware.websiteRoute, routes.website.latestTldrs);
 app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
 
-app.get('/what-is-tldr', middleware.websiteRoute, routes.website_whatisit);
+app.get('/what-is-tldr', middleware.websiteRoute, routes.website.whatisit);
 app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
 
-app.get('/chrome-extension', middleware.websiteRoute, routes.website_chrome_extension);
+app.get('/chrome-extension', middleware.websiteRoute, routes.website.chrome_extension);
 app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
 app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-app.get('/api-documentation', middleware.websiteRoute, routes.website_apiDoc);
-app.get('/release-notes', middleware.websiteRoute, routes.website_releaseNotes);
-app.get('/embedded-tldrs', middleware.websiteRoute, routes.website_embeddedTldrs);
+app.get('/api-documentation', middleware.websiteRoute, routes.website.apiDoc);
+app.get('/release-notes', middleware.websiteRoute, routes.website.releaseNotes);
+app.get('/embedded-tldrs', middleware.websiteRoute, routes.website.embeddedTldrs);
 
-app.get('/elad', middleware.websiteRoute, routes.website_elad);
-app.get('/scratchpad', middleware.adminOnly, middleware.websiteRoute, routes.website_scratchpad);
+app.get('/elad', middleware.websiteRoute, routes.website.elad);
+app.get('/scratchpad', middleware.adminOnly, middleware.websiteRoute, routes.website.scratchpad);
 
 
 // Tldr page
-app.get('/tldrs/embed/:id', routes.website_tldrEmbed);
-app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website_tldrPage);
+app.get('/tldrs/embed/:id', routes.website.tldrEmbed);
+app.get('/tldrs/:id/:slug', middleware.websiteRoute, routes.website.tldrPage);
 
 // Login, logout
 app.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
-app.get('/login', routes.website_login);
+app.get('/login', routes.website.login);
 
 // 3rd party auth with Google
 app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
-app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.displayForm);
-app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website_pickUsername.changeUsername);
+app.get('/third-party-auth/pick-username', middleware.websiteRoute, routes.website.pickUsername.displayForm);
+app.post('/third-party-auth/pick-username', middleware.websiteRoute, routes.website.pickUsername.changeUsername);
 
 // Email confirmation, password recovery, unsubscribe route
-app.get('/confirmEmail', middleware.websiteRoute, routes.website_confirmEmail);
-app.get('/forgotPassword', middleware.websiteRoute, routes.website_forgotPassword);
-app.get('/resetPassword', middleware.websiteRoute, routes.website_resetPassword);
-app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website_unsubscribe);
+app.get('/confirmEmail', middleware.websiteRoute, routes.website.confirmEmail);
+app.get('/forgotPassword', middleware.websiteRoute, routes.website.forgotPassword);
+app.get('/resetPassword', middleware.websiteRoute, routes.website.resetPassword);
+app.get('/notifications/unsubscribe', middleware.attachRenderingValues, routes.website.unsubscribe);
 
 // Private pages
-app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website_account);
-app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website_tldrscreated);
-app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website_notifications);
-app.get('/impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website_analytics.displayAnalytics);
+app.get('/account', middleware.loggedInOnly, middleware.websiteRoute, routes.website.account);
+app.get('/tldrscreated', middleware.loggedInOnly, middleware.websiteRoute, routes.website.tldrscreated);
+app.get('/notifications', middleware.loggedInOnly, middleware.websiteRoute, routes.website.notifications);
+app.get('/impact', middleware.loggedInOnly, middleware.websiteRoute, routes.website.analytics.displayAnalytics);
 
 // Forum
-app.get('/forum/topics', middleware.websiteRoute, routes.website_forum);
-app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumShowTopic);   // Show a whole topic
-app.get('/forum/topics/:id', routes.website_forumShowTopic);   // For retrocompatibility, redirect to the correct, above url
-app.post('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website_forumAddPost, routes.website_forumShowTopic);  // Post something to this topic
-app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumNewTopic);    // Display the newTopic form
-app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website_forumCreateTopic, routes.website_forumNewTopic);   // Create a new topic with the POSTed data
-app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website_editPost);
-app.post('/forum/posts/:id/edit', routes.website_changePostText);
+app.get('/forum/topics', middleware.websiteRoute, routes.website.forum);
+app.get('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website.forumShowTopic);   // Show a whole topic
+app.get('/forum/topics/:id', routes.website.forumShowTopic);   // For retrocompatibility, redirect to the correct, above url
+app.post('/forum/topics/:id/:slug', middleware.websiteRoute, routes.website.forumAddPost, routes.website.forumShowTopic);  // Post something to this topic
+app.get('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website.forumNewTopic);    // Display the newTopic form
+app.post('/forum/newTopic', middleware.loggedInOnly, middleware.websiteRoute, routes.website.forumCreateTopic, routes.website.forumNewTopic);   // Create a new topic with the POSTed data
+app.get('/forum/posts/:id/edit', middleware.websiteRoute, routes.website.editPost);
+app.post('/forum/posts/:id/edit', routes.website.changePostText);
 
 // Moderation
-app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website_moderation);
+app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.website.moderation);
 
 // User profiles, leaderboard ...
-app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+app.get('/:username', middleware.websiteRoute, routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
 // Admin only
-app.get('/:username/impact', middleware.adminOnly, middleware.websiteRoute, routes.website_analytics.selectUserForAnalytics, routes.website_analytics.displayAnalytics);
+app.get('/:username/impact', middleware.adminOnly, middleware.websiteRoute, routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
 
 
 /*
