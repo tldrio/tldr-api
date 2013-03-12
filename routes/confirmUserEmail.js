@@ -21,7 +21,7 @@ function confirmUserEmail (req, res, next) {
       }
     }
 
-    return res.json(200, {})
+    return res.json(200, {});
   });
 }
 
