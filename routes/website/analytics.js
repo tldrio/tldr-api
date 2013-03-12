@@ -136,6 +136,7 @@ module.exports.displayAnalytics = function (req, res, next) {
         values.past30Days.wordsCompressed = _s.numberFormat(values.past30Days.wordsCompressed);
         values.past30Days.wordsWritten = _s.numberFormat(values.past30Days.wordsWritten);
         values.past30Days.timeSaved = moment.duration(values.past30Days.timeSaved, 'hours').humanize();
+        values.past30Days.coffeeBreaks = _s.numberFormat(values.past30Days.coffeeBreaks);
         values.allTime.tldrsCreated = _s.numberFormat(values.allTime.tldrsCreated);
         values.allTime.readCount = _s.numberFormat(values.allTime.readCount);
         values.allTime.articleWordCount = _s.numberFormat(values.allTime.articleWordCount);
@@ -143,6 +144,7 @@ module.exports.displayAnalytics = function (req, res, next) {
         values.allTime.wordsCompressed = _s.numberFormat(values.allTime.wordsCompressed);
         values.allTime.wordsWritten = _s.numberFormat(values.allTime.wordsWritten);
         values.allTime.timeSaved = moment.duration(values.allTime.timeSaved, 'hours').humanize();
+        values.allTime.coffeeBreaks = _s.numberFormat(values.allTime.coffeeBreaks);
 
         res.render('website/basicLayout', { values: values
                                           , partials: partials

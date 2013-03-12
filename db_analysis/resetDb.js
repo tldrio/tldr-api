@@ -108,60 +108,60 @@ async.waterfall([
       });
     });
   }
-//, function (cb) {
-    //if (noAnalytics) { return cb(); }
-    //console.log("Faking some analytics");
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr2 });
-    //cb();
-  //}
-//, async.apply(wait, 50)
-//, async.apply(putCurrentAnalyticsBackInTime, 5)
-//, function (cb) {
-    //if (noAnalytics) { return cb(); }
-    //console.log("Faking some analytics");
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //cb();
-  //}
-//, async.apply(wait, 50)
-//, async.apply(putCurrentAnalyticsBackInTime, 4)
-//, function (cb) {
-    //if (noAnalytics) { return cb(); }
-    //console.log("Faking some analytics");
-    //mqClient.emit('tldr.read', { tldr: tldr2 });
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //cb();
-  //}
-//, async.apply(wait, 50)
-//, async.apply(putCurrentAnalyticsBackInTime, 6)
-//, function (cb) {
-    //if (noAnalytics) { return cb(); }
-    //console.log("Faking some analytics");
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr3 });
-    //mqClient.emit('tldr.read', { tldr: tldr1 });
-    //mqClient.emit('tldr.thank', { tldr: tldr2 });
-    //cb();
-  //}
-//, async.apply(wait, 50)
-//, async.apply(putCurrentAnalyticsBackInTime, 7)
-//, function (cb) {
-    //if (noAnalytics) { return cb(); }
-    //console.log("Faking some analytics");
-    //mqClient.emit('tldr.read', { tldr: tldr2 });
-    //mqClient.emit('tldr.read', { tldr: tldr2 });
-    //mqClient.emit('tldr.read', { tldr: tldr2 });
-    //cb();
-  //}
+, function (cb) {
+    if (noAnalytics) { return cb(); }
+    console.log("Faking some analytics");
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr2 });
+    cb();
+  }
+, async.apply(wait, 50)
+, async.apply(putCurrentAnalyticsBackInTime, 5)
+, function (cb) {
+    if (noAnalytics) { return cb(); }
+    console.log("Faking some analytics");
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    cb();
+  }
+, async.apply(wait, 50)
+, async.apply(putCurrentAnalyticsBackInTime, 4)
+, function (cb) {
+    if (noAnalytics) { return cb(); }
+    console.log("Faking some analytics");
+    mqClient.emit('tldr.read', { tldr: tldr2 });
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    cb();
+  }
+, async.apply(wait, 50)
+, async.apply(putCurrentAnalyticsBackInTime, 6)
+, function (cb) {
+    if (noAnalytics) { return cb(); }
+    console.log("Faking some analytics");
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr3 });
+    mqClient.emit('tldr.read', { tldr: tldr1 });
+    mqClient.emit('tldr.thank', { tldr: tldr2 });
+    cb();
+  }
+, async.apply(wait, 50)
+, async.apply(putCurrentAnalyticsBackInTime, 7)
+, function (cb) {
+    if (noAnalytics) { return cb(); }
+    console.log("Faking some analytics");
+    mqClient.emit('tldr.read', { tldr: tldr2 });
+    mqClient.emit('tldr.read', { tldr: tldr2 });
+    mqClient.emit('tldr.read', { tldr: tldr2 });
+    cb();
+  }
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 34)
 , function (cb) {
