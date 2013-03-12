@@ -221,7 +221,7 @@ app.get('/moderation', middleware.websiteRoute, middleware.adminOnly, routes.web
 
 // Dev routes
 app.get('/scratchpad', middleware.websiteRoute, middleware.adminOnly, routes.website_scratchpad);
-app.get('/boobies', middleware.websiteRoute, routes.website_boobies);
+app.get('/discover', middleware.websiteRoute, routes.website_discover);
 
 // User profiles, leaderboard ...
 app.get('/:username', middleware.websiteRoute, routes.website_userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched

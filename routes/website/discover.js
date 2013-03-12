@@ -5,9 +5,9 @@ module.exports = function (req, res, next) {
     , values = req.renderingValues || {}
     ;
 
-  values.title = "Boobies" + config.titles.branding + config.titles.shortDescription;
+  values.title = "discover" + config.titles.branding + config.titles.shortDescription;
   values.description = "Private scratchpad to test stuff.";
-  partials.content = '{{>website/pages/boobies}}';
+  partials.content = '{{>website/pages/discover}}';
   values.tldr = { hostname: 'biatch.com'
                 , creator: { username: 'chloe' }
                 , topics: ['programming']
