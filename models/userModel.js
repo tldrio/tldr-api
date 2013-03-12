@@ -259,11 +259,12 @@ UserSchema.statics.confirmEmail = function (email, token, callback) {
     user.save(function (err) {
       if (err) { return callback({ error: err }); }
 
+      // Try to find an existing Google creds that should belong to this user
       Credentials.findOne({ googleEmail: user.email, type: 'google' })
                  .populate('owner')
                  .exec(function (err, gc) {
         if (!gc) { return callback(null); }   // Nothing to attach
-        if (user.credentials.indexOf(gc._id) !== -1) { return callback(null); }   // Already attached
+        if (gc.owner.toString() === user._id.toString()) { return callback(null); }   // Already attached
 
         gc.owner.detachCredentialsFromProfile(gc, function () {
           user.attachCredentialsToProfile(gc, function () {
@@ -559,7 +560,7 @@ UserSchema.methods.detachCredentialsFromProfile = function (creds, cb) {
   creds.owner = undefined;
   creds.save(function (err) {
     if (err) { return callback(err); }   // Shouldn't happen
-    self.credentials = _.without(self.credentials, creds._id);
+    self.credentials = _.filter(self.credentials, function (_c) { return _c.toString() !== creds._id.toString(); });
     self.save(callback);
   });
 };

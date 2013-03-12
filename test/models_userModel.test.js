@@ -527,7 +527,7 @@ describe('User', function () {
   });   // ==== End of '#signupWithGoogleSSO' ==== //
 
 
-  describe.only('#confirmEmail', function () {
+  describe('#confirmEmail', function () {
 
     it('Should be able to confirm a users email', function (done) {
       user1.confirmedEmail.should.equal(false);
@@ -572,6 +572,52 @@ describe('User', function () {
               user1.confirmedEmail.should.equal(false);
 
               done();
+            });
+          });
+        });
+      });
+    });
+
+    it('If a user confirms his email, find any GC attached to someone else and attach it to him', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'valid@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.confirmedEmail.should.equal(false);
+
+        // Don't confirm email and now sign up with Google
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, userGoogle) {
+          userGoogle.credentials.length.should.equal(1);   // Couldnt create his basic creds of course
+          User.findOne({ _id: user._id }, function (err, user) {
+            user.credentials.length.should.equal(1);   // Not attached
+            user.confirmedEmail.should.equal(false);
+
+            // Confirm user's email and check that the google creds are now his
+            User.confirmEmail(user.email, user.confirmEmailToken, function (err) {
+              User.findOne({ _id: user._id }, function (err, user) {
+                Credentials.findOne({ _id: userGoogle.credentials[0] }, function (err, gc) {
+                  user.confirmedEmail.should.equal(true);
+                  user.credentials.length.should.equal(2);
+                  user.credentials.should.contain(gc._id);
+                  gc.owner.toString().should.equal(user._id.toString());
+
+                  // The userGoogle has no credentials anymore
+                  User.findOne({ _id: userGoogle._id }, function (err, userGoogle) {
+                    userGoogle.credentials.length.should.equal(0);
+                    done();
+                  });
+                });
+              });
             });
           });
         });
@@ -706,13 +752,21 @@ describe('User', function () {
             user.credentials.length.should.equal(2);
             user.credentials.should.contain(bc._id);
 
-            user.detachCredentialsFromProfile(bc, function (err, user) {
-              Credentials.findOne({ _id: bc._id }, function (err, bc) {
-                assert.isUndefined(bc.owner);
-                user.credentials.length.should.equal(1);
-                user.credentials.should.not.contain(bc._id);
+            // Test with a fresh user from memory do avoid testing for pointer equality oO
+            User.findOne({ _id: user._id }, function (err, user) {
+              user.detachCredentialsFromProfile(bc, function (err, user) {
+                Credentials.findOne({ _id: bc._id }, function (err, bc) {
+                  assert.isUndefined(bc.owner);
+                  user.credentials.length.should.equal(1);
+                  user.credentials.should.not.contain(bc._id);
 
-                done();
+                  Credentials.findOne({ login: userData.email }, function (err, firstBc) {
+                    firstBc.owner.toString().should.equal(user._id.toString());
+                    user.credentials.should.contain(firstBc._id);
+
+                    done();
+                  });
+                });
               });
             });
           });
