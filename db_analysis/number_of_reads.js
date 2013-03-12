@@ -2,4 +2,4 @@
 
 echo "====================="
 date
-redis-cli get global:totalTldrReadCount
+redis-cli -n 0 get global:totalTldrReadCount
