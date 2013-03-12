@@ -38,12 +38,20 @@ h4e.setup({ app: app
 // Trust the nginx proxy
 app.enable('trust proxy');
 
+// Block misleading calls to /favicon.ico in development
+if (config.env === 'development') {
+  app.use(function (req, res, next) {
+    if (req.path === '/favicon.ico') {
+      return res.send(204);
+    } else {
+      return next();
+    }
+  });
+}
+
 /**
  * Middlewares
- *
  */
-
-
 app.use(middleware.CORS);
 app.use(express.bodyParser());
 app.use(express.cookieParser());// Parse cookie data and use redis to store session data
@@ -103,7 +111,6 @@ app.get('/users/you/createdtldrs', routes.getCreatedTldrs);
 app.put('/users/you', routes.updateProfile);
 app.put('/users/you/updatePassword', routes.updatePassword);
 app.put('/users/you/updateGravatarEmail', routes.updateGravatarEmail);
-app.get('/users/:id/stats', routes.getStats.getStatsForUser);
 app.delete('/users/you', routes.deleteUser);
 
 // User login/logout
@@ -127,12 +134,12 @@ app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Admin only routes
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
-app.get('/tldrs/:id/admin', middleware.adminOnly, routes.getTldrById);
-app.get('/tldrs/:id/delete', middleware.adminOnly, routes.deleteTldr);   // Delete tldr
-app.get('/tldrs/:id/moderate', middleware.adminOnly, routes.moderateTldr);
+app.get('/tldrs/:id/admin', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.getTldrById));
+app.get('/tldrs/:id/delete', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.deleteTldr));
+app.get('/tldrs/:id/moderate', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.moderateTldr));
+app.get('/tldrs/:id/cockblock', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.cockblockTldr));
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
 app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
-app.get('/tldrs/:id/cockblock', middleware.adminOnly, routes.cockblockTldr);
 
 // Vote for/against a topic
 app.put('/forum/topics/:id', routes.voteOnTopic);
@@ -162,7 +169,7 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 /*
  * Routes for the website, which all respond HTML
  */
-customUtils.routesGrouping.before(app, middleware.websiteRoute, function (app) {
+customUtils.routesGrouping.beforeEach(app, middleware.websiteRoute, function (app) {
   // General pages
   app.get('/about', routes.website.about);
   app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
@@ -228,6 +235,7 @@ customUtils.routesGrouping.before(app, middleware.websiteRoute, function (app) {
   // Admin only
   app.get('/:username/impact', middleware.adminOnly, routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
 });
+
 
 
 /*
