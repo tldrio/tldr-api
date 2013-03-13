@@ -1,32 +1,7 @@
 Scratchpad
 
-<div id="test">
-</div>
-
-
 <script>
-
-function createIframe() {
-  var iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-
-  document.getElementById('test').appendChild(iframe);
-
-  return iframe;
-}
-
-var iframe = createIframe()
-  , content = 'caca<br><br><a href="/third-party-auth/google">Click me bitch</a>'
-  ;
-
-iframe.contentWindow.document
-      .write(content);
-
-iframe.style.display = 'block';
-
+  window.opener.postMessage({ loggedInWithGoogle: true }, '*');
+  window.close();
 </script>
 
-
-<br><br><br>
-
-<a href="#" id="ducaca">BLOUP</a>
