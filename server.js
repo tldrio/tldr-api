@@ -169,6 +169,7 @@ app.get('/third-party-auth/google', function (req, res, next) {
                                     }
                                   , passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
 
 /*
