@@ -9,7 +9,7 @@ var async = require('async')
   , User = models.User
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
-  , mailChimpSync = require('../lib/mailChimpSync')
+  , mailChimpSync = require('../lib/mailchimpSync')
   , db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
