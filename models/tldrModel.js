@@ -190,7 +190,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
       mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
-      mqClient.emit('tldr.created', { tldr: tldr });
+      mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
 
       // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);
