@@ -13,7 +13,9 @@ var async = require('async')
   , db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
-                     );
+                     )
+  , j = 0
+  ;
 
 console.log('===== Beginning migration =====');
 console.log('Connecting to DB ' + config.dbHost + ':' + config.dbPort + '/' + config.dbName)
@@ -35,14 +37,15 @@ async.waterfall([
       async.whilst(
         function () { return i < users.length; }
       , function (cb) {
-          if (users[i].tldrsCreated && users[i].tldrsCreated.length > 1) {
+          if (users[i].tldrsCreated && users[i].tldrsCreated.length >= 1) {
             mailChimpSync.updateGroupForUser({ email: users[i].email
                                              , groupName: 'Contributors'
                                              , userBelongsToGroup: true
                                              });
 
             i += 1;
-            setTimeout(cb, 100);
+	j+=1;
+            setTimeout(cb, 500);
           } else {
             i += 1;
             cb();
@@ -56,6 +59,7 @@ async.waterfall([
       console.log('Something unexpected occured, stopped migration. ', err);
     }
 
+console.log("Sent for " + j);
     console.log("Wait 5s to be sure sync is complete");
 
     setTimeout(function () {
