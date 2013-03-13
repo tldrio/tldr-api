@@ -1,25 +1,28 @@
 Scratchpad
 
+<div id="test">
 
-Salut <i style="background-image: url(http://twitter.github.com/bootstrap/assets/img/glyphicons-halflings.png);background-position: -312px -72px;background-repeat: no-repeat;width:14px;height:14px;display:inline-block;"></i> Du caca
+</div>
 
 
-<br>
-<br>
-<br>
+<script>
 
-          <ul>
-            <li class="tldr-bullet">
-              <i style="background-image: url(http://twitter.github.com/bootstrap/assets/img/glyphicons-halflings.png);background-position: -312px -72px;background-repeat: no-repeat;width:14px;height:14px;display:inline-block;"></i> Du caca
-            </li>
-            <li class="tldr-bullet">
-              <i style="background-image: url(http://twitter.github.com/bootstrap/assets/img/glyphicons-halflings.png);background-position: -312px -72px;background-repeat: no-repeat;width:14px;height:14px;display:inline-block;position: relative; top:2px;"></i> Du caca
-            </li>
-            <li class="tldr-bullet">
-              ◼ Du caca
-            </li>
-            <li class="tldr-bullet">
-              ◼ Du caca
-            </li>
-          </ul>
+function createIframe() {
+  var iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
 
+  document.getElementById('test').appendChild(iframe);
+
+  return iframe;
+}
+
+var iframe = createIframe()
+  , content = 'caca<br><br><a href="/third-party-auth/google?returnUrl=http://localhost:8888/about">Click me bitch</a>'
+  ;
+
+iframe.contentWindow.document
+      .write(content);
+
+iframe.style.display = 'block';
+
+</script>
