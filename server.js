@@ -162,7 +162,12 @@ app.get('/tldrs/embed/:id', routes.website.tldrEmbed);
 
 
 // 3rd party auth with Google
-app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
+app.get('/third-party-auth/google', function (req, res, next) {
+                                      req.session.returnUrl = req.query.returnUrl;
+                                      req.session.googleAuthThroughPopup = req.query.googleAuthThroughPopup
+                                      next();
+                                    }
+                                  , passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
 
 
