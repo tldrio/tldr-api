@@ -36,7 +36,7 @@ async.waterfall([
         function () { return i < users.length; }
       , function (cb) {
           if (users[i].tldrsCreated && users[i].tldrsCreated.length > 1) {
-            mailChimpSync.updateGroupForUser({ email: user
+            mailChimpSync.updateGroupForUser({ email: users[i].email
                                              , groupName: 'Contributors'
                                              , userBelongsToGroup: true
                                              });
