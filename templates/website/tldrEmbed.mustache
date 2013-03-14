@@ -39,7 +39,11 @@
   }
 
   // Send the height to the parent
-  var msg = { action: 'SET_HEIGHT', tldrId: '{{tldr._id}}', height: getDocHeight() };
+  var msg = { action: 'SET_HEIGHT'
+            , tldrId: '{{tldr._id}}'
+            , iframeId: '{{iframeId}}'
+            , height: getDocHeight()
+            };
   window.parent.postMessage(JSON.stringify(msg), '*');
 
   </script>
