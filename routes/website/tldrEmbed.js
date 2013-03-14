@@ -12,13 +12,17 @@ var _ = require('underscore')
   ;
 
 module.exports = function (req, res, next) {
-  var values = {};
-
+  var values = {}
+    , showTitle = req.query && req.query.showTitle ? req.query.showTitle.toString() === 'true' ? true : false
+                                                   : false
+    ;
 
   Tldr.findOneById(req.params.id, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
     values.tldr = tldr;
+    values.titlePart = showTitle ? 'Summary of "' + tldr.title + '"'
+                                           : 'Summary';
 
     return res.render('website/tldrEmbed', { values: values });
   });
