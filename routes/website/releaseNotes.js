@@ -18,7 +18,19 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases = [];
 
-  values.weeklyReleases.push({ header: 'Week from Feb 25th, 2013 to Mar 1st, 2013'
+  values.weeklyReleases.push({ header: 'Week from Mar 4th, 2013 to Mar 10th, 2013'
+  , items: [
+             "Contributors now enjoy their analytics report, telling them how much time they saved the community, how many times they were thanked and various other metrics."
+           , "You can now embed a tldr in any webpage."
+           , "A tldr made on the Readability version of an article is now also available when you view the original article."
+           , "The tldrs on the 'Tldrs you created' page now have permalinks."
+           , "Contributors can now delete their own tldrs, if they haven't been edited or moderated yet."
+           , "You can now delete your user account. We would be sad if you did though!"
+           , "Bugfixes: spinner during login with Google, autocomplete of credentials, don't display an ugly square in the tldr page if the image can't be fetched."
+    ]
+  });
+
+  values.weeklyReleases.push({ header: 'Week from Feb 25th, 2013 to Mar 3st, 2013'
   , items: [
              "Calls from the extension to the API are now made in HTTPS for privacy reasons."
            , "You are now notified when someone edits a tldr you wrote. The email shows how your tldr was changed."
