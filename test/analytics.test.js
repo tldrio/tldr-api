@@ -749,7 +749,7 @@ describe('Test analytics with events', function () {
 });   // ==== End of 'Test analytics with events' ====  //
 
 
-describe.only('Embed analytics', function () {
+describe('Embed analytics', function () {
 
   var user, userbis, tldr1, tldr2, tldr3;
 
