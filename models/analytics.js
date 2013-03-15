@@ -299,7 +299,7 @@ mqClient.on('tldr.created', function (data) {
   UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
 });
 
-mqClient.on('tldr.embed.read', function (data) {
+mqClient.on('tldr.read.embed', function (data) {
   if (!data || !data.pageUrl || !data.tldr || !data.tldr._id) { return; }
   EmbedAnalytics.addEmbedRead(data.pageUrl, data.tldr._id);
 });

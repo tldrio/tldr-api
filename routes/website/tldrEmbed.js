@@ -10,13 +10,13 @@ var _ = require('underscore')
   , config = require('../../lib/config')
   , customUtils = require('../../lib/customUtils')
   , async = require('async')
+  , mqClient = require('../../lib/message-queue')
   ;
 
 
 module.exports = function (req, res, next) {
   var values = {}
-    , showTitle = req.query && req.query.showTitle ? req.query.showTitle.toString() === 'true' ? true : false
-                                                   : false
+    , showTitle = req.query.showTitle === 'true' ? true : false
     , tldrId = req.query && req.query.tldrId
     , url = req.query && req.query.url
     ;
@@ -33,6 +33,8 @@ module.exports = function (req, res, next) {
      }
   ], function (err, tldr) {
        if (err || !tldr) { return res.json(404, {}); }
+
+       mqClient.emit('tldr.read.embed', { tldr: tldr, pageUrl: req.query.pageUrl });
 
        values.tldr = tldr;
        values.titlePart = showTitle ? 'Summary of "' + tldr.title + '"'
