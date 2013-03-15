@@ -1,3 +1,4 @@
+<div style="display: hidden" id="all-tldr-data" data-tldr="{{tldrData}}"></div>
 <div class="row">
   <div class="tldr-base-unit page-tldr-container">
     <div class="tldr-read-container">
@@ -14,12 +15,12 @@
           {{^tldr.anonymous}}
           <span>
             by
-            <span><a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a></span>
+            <span><em>{{#tldr.creator}} {{>website/usernameLink}} {{/tldr.creator}}</em></span>
              ·
           </span>
           {{/tldr.anonymous}}
           {{#tldr.lastEditor}}
-          edited by <a href="{{websiteUrl}}/{{username}}" target="_blank"><em>{{username}}</em></a>  ·
+          edited by <em>{{>website/usernameLink}}</em> ·
           {{/tldr.lastEditor}}
           {{#tldr.topics}}
            In <span><a href="{{websiteUrl}}/tag/{{.}}" target="_blank"><em>{{.}}</em></a></span> ·
@@ -28,8 +29,8 @@
         </div>
 
         {{#tldr.imageUrl}}
-        <div class="tldr-image">
-          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+        <div class="tldr-image" style="display: none;">
+          <img src="{{tldr.imageUrl}}" alt="{{tldr.title}}" onload="this.parentNode.style.display='block';">
         </div>
         {{/tldr.imageUrl}}
 

@@ -62,15 +62,9 @@ async.waterfall([
       console.log('Something unexpected occured, stopped migration. ', err);
     }
 
-    Tldr.find({ accepted: { $exists: false } }, function (err, tldrs) {
-      if (tldrs.length > 0) {
-        console.log("All tldrs weren't updatedm that's strange");
-      }
-
-      db.closeDatabaseConnection(function () {
-        console.log("Closed connection to database");
-        process.exit(0);
-      });
+    db.closeDatabaseConnection(function () {
+      console.log("Closed connection to database");
+      process.exit(0);
     });
   }
 );

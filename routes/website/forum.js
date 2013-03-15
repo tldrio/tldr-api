@@ -16,7 +16,7 @@ module.exports = function (req, res, next) {
 
   Thread.find({})
        .sort('-lastPost.at')
-       .populate('lastPost.by', 'username')
+       .populate('lastPost.by', 'deleted username')
        .exec(function(err, threads) {
     if (err) { return next({ statusCode: 500, body: { message: "An internal error occured" }}); }
 

@@ -15,6 +15,7 @@ var should = require('chai').should()
   , models = require('../lib/models')
   , Credentials = models.Credentials
   , User = models.User
+  , DeletedUsersData = models.DeletedUsersData
   , UserHistory = models.UserHistory
   , notificator = require('../lib/notificator')
   , Tldr = models.Tldr
@@ -62,6 +63,7 @@ describe('User', function () {
     async.waterfall([
       async.apply(theRemove, Credentials)
     , async.apply(theRemove, User)
+    , async.apply(theRemove, DeletedUsersData)
     , async.apply(theRemove, Tldr)
     , function (cb) { User.createAndSaveInstance(userData1, function (err, u1) { user1 = u1; cb(); }); }
     , function (cb) { User.createAndSaveInstance(userData2, function (err, u2) { user2 = u2; cb(); }); }
@@ -415,14 +417,214 @@ describe('User', function () {
         assert.isNull(err);
         user.confirmedEmail.should.be.false;
         assert.isUndefined(user.bio);
-        user.credentials.length.should.equal(0);
 
+        user.credentials.length.should.equal(0);
         done();
       });
     });
 
-
   });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
+
+
+  describe('#signupWithGoogleSSO', function () {
+
+    it('Upon signup with Google, create the new user, google creds and basic creds if the latter dont exist', function (done) {
+      var nUsers, newCreds
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'newgoogle@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        ;
+
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, user, info) {
+          assert.isNull(err);
+          user.email.should.equal('newgoogle@email.com');
+          user.username.should.equal('NewGoogle');
+          user.firstName.should.equal('New');
+          user.lastName.should.equal('Google');
+          user.confirmedEmail.should.equal(true);
+          user.credentials.length.should.equal(2);
+
+          newCreds = user.credentials;
+
+          info.userWasJustCreated.should.equal(true);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(nUsers + 1);
+
+            user.getBasicCredentials(function (err, bc) {
+              newCreds.should.contain(bc._id);
+              bc.login.should.equal(user.email);
+              bc.owner.toString().should.equal(user._id.toString());
+
+              user.getGoogleCredentials(function (err, gc) {
+                newCreds.should.contain(gc._id);
+                gc.googleEmail.should.equal(user.email);
+                gc.openID.should.equal(identifier);
+                gc.owner.toString().should.equal(user._id.toString());
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Upon signup with Google, create the new user, google creds, but not basic creds if the latter already exist', function (done) {
+      var nUsers, newCreds
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'test1@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        ;
+
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, user, info) {
+          assert.isNull(err);
+          user.email.should.equal('test1@email.com');
+          user.username.should.equal('NewGoogle');
+          user.firstName.should.equal('New');
+          user.lastName.should.equal('Google');
+          user.confirmedEmail.should.equal(true);
+          user.credentials.length.should.equal(1);
+
+          newCreds = user.credentials;
+
+          info.userWasJustCreated.should.equal(true);
+
+          User.find({}, function (err, users) {
+            users.length.should.equal(nUsers + 1);
+
+            user.getBasicCredentials(function (err, bc) {
+              assert.isNull(bc);
+
+              user.getGoogleCredentials(function (err, gc) {
+                newCreds.should.contain(gc._id);
+                gc.googleEmail.should.equal(user.email);
+                gc.openID.should.equal(identifier);
+                gc.owner.toString().should.equal(user._id.toString());
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#signupWithGoogleSSO' ==== //
+
+
+  describe('#confirmEmail', function () {
+
+    it('Should be able to confirm a users email', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail(user1.email, user1.confirmEmailToken, function (err) {
+        assert.isNull(err);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(true);
+          done();
+        });
+      });
+    });
+
+    it('Any subsequent try to confirm should be successful', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail(user1.email, user1.confirmEmailToken, function (err) {
+        assert.isNull(err);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(true);
+
+          // Try again with any token
+          User.confirmEmail(user1.email, 'anythinggoes', function (err) {
+            assert.isNull(err);
+            User.findOne({ _id: user1._id }, function (err, user1) {
+              user1.confirmedEmail.should.equal(true);
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Cant confirm an unknown user or a bad token', function (done) {
+      user1.confirmedEmail.should.equal(false);
+      User.confirmEmail('someoneelse@email.com', user1.confirmEmailToken, function (err) {
+        assert.isDefined(err.message);
+        User.findOne({ _id: user1._id }, function (err, user1) {
+          user1.confirmedEmail.should.equal(false);
+
+          User.confirmEmail(user1.email, 'badtoken', function (err) {
+            assert.isDefined(err.message);
+            User.findOne({ _id: user1._id }, function (err, user1) {
+              user1.confirmedEmail.should.equal(false);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('If a user confirms his email, find any GC attached to someone else and attach it to him', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , googleProfile = { displayName: 'NewGoogle'
+                          , emails: [{ value: 'valid@email.com' }]
+                          , name: { givenName: 'New'
+                                  , familyName: 'Google'
+                                  }
+                          }
+        , identifier = 'http://google.com/openid/newgoogle'
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        user.confirmedEmail.should.equal(false);
+
+        // Don't confirm email and now sign up with Google
+        User.signupWithGoogleSSO(identifier, googleProfile, function (err, userGoogle) {
+          userGoogle.credentials.length.should.equal(1);   // Couldnt create his basic creds of course
+          User.findOne({ _id: user._id }, function (err, user) {
+            user.credentials.length.should.equal(1);   // Not attached
+            user.confirmedEmail.should.equal(false);
+
+            // Confirm user's email and check that the google creds are now his
+            User.confirmEmail(user.email, user.confirmEmailToken, function (err) {
+              User.findOne({ _id: user._id }, function (err, user) {
+                Credentials.findOne({ _id: userGoogle.credentials[0] }, function (err, gc) {
+                  user.confirmedEmail.should.equal(true);
+                  user.credentials.length.should.equal(2);
+                  user.credentials.should.contain(gc._id);
+                  gc.owner.toString().should.equal(user._id.toString());
+
+                  // The userGoogle has no credentials anymore
+                  User.findOne({ _id: userGoogle._id }, function (err, userGoogle) {
+                    userGoogle.credentials.length.should.equal(0);
+                    done();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });   // ==== End of '#confirmEmail' ==== //
 
 
   describe('Get specific credentials', function () {
@@ -472,7 +674,7 @@ describe('User', function () {
   });
 
 
-  describe('#attachCredentialsToProfile', function () {
+  describe('Attach and detach credentials from profiles', function () {
 
     it('Should work as expected, no error possible', function (done) {
       var userData = { username: 'NFADeploy'
@@ -492,7 +694,81 @@ describe('User', function () {
           user.attachCredentialsToProfile(bc, function (err, user) {
             bc.owner.toString().should.equal(user._id.toString());
             user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
             done();
+          });
+        });
+      });
+    });
+
+    it('Trying to reattach a second time has no effect', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
+
+            user.attachCredentialsToProfile(bc, function (err, user) {
+              user.credentials.length.should.equal(2);
+              user.credentials.should.contain(bc._id);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to detach a creds from a profile', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , password: 'notTOOshort'
+                     , email: 'valid@email.com'
+                     }
+        , otherCredsData = { login: 'bloup@email.com', password: 'anooother' }
+        , sessionUsableFields;
+
+      User.createAndSaveInstance(userData, function(err, user) {
+        assert.isNull(err);
+        user.credentials.length.should.equal(1);
+
+        Credentials.createBasicCredentials(otherCredsData, function (err, bc) {
+          assert.isUndefined(bc.owner);
+
+          user.attachCredentialsToProfile(bc, function (err, user) {
+            bc.owner.toString().should.equal(user._id.toString());
+            user.credentials.length.should.equal(2);
+            user.credentials.should.contain(bc._id);
+
+            // Test with a fresh user from memory do avoid testing for pointer equality oO
+            User.findOne({ _id: user._id }, function (err, user) {
+              user.detachCredentialsFromProfile(bc, function (err, user) {
+                Credentials.findOne({ _id: bc._id }, function (err, bc) {
+                  assert.isUndefined(bc.owner);
+                  user.credentials.length.should.equal(1);
+                  user.credentials.should.not.contain(bc._id);
+
+                  Credentials.findOne({ login: userData.email }, function (err, firstBc) {
+                    firstBc.owner.toString().should.equal(user._id.toString());
+                    user.credentials.should.contain(firstBc._id);
+
+                    done();
+                  });
+                });
+              });
+            });
           });
         });
       });
@@ -1334,6 +1610,177 @@ describe('User', function () {
     });
 
   });   // ==== End of '#findAvailableUsername' ==== //
+
+
+  describe('Account deletion', function () {
+
+    it('Should be able to delete a user with his basic cred if he has only a basic cred', function (done) {
+      var nUsers, nCredentials;
+
+      user2.deleted.should.equal(false);
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+        Credentials.find({}, function (err, creds) {
+          nCredentials = creds.length;
+          Credentials.find({ owner: user2._id }, function (err, creds) {
+            creds.length.should.equal(1);
+
+            user2.deleteAccount(function (err) {
+              assert.isNull(err);
+              User.find({}, function (err, users) {
+                users.length.should.equal(nUsers);
+                Credentials.find({}, function (err, creds) {
+                  creds.length.should.equal(nCredentials - 1);
+
+                  // user2 is now in the "deleted" state
+                  User.findOne({ _id: user2._id }, function (err, user2) {
+                    assert.isUndefined(user2.username);
+                    assert.isUndefined(user2.usernameLowerCased);
+                    assert.isUndefined(user2.email);
+                    user2.credentials.length.should.equal(0);
+                    user2.deleted.should.equal(true);
+                    user2.gravatar.url.should.equal('');
+                    user2.gravatar.email.should.equal('');
+                    ['read', 'edit', 'congratsTldrViews', 'postForum', 'newsletter', 'serviceUpdates', 'thank'].forEach(function (notif) {
+                      user2.notificationsSettings[notif].should.equal(false);
+                    });
+
+                    Credentials.find({ owner: user2._id }, function (err, creds) {
+                      creds.length.should.equal(0);
+
+                      done();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be able to delete a user with all his credentials if he has multiple ones', function (done) {
+      var nUsers, nCredentials;
+
+      user2.deleted.should.equal(false);
+      User.find({}, function (err, users) {
+        nUsers = users.length;
+        Credentials.find({}, function (err, creds) {
+          nCredentials = creds.length;
+
+          Credentials.createGoogleCredentials({ openID: 'something', googleEmail: user2.email }, function (err, gc) {
+            user2.attachCredentialsToProfile(gc, function () {
+              Credentials.find({}, function (err, creds) {
+                creds.length.should.equal(nCredentials + 1);
+                nCredentials = creds.length;
+
+                Credentials.find({ owner: user2._id }, function (err, creds) {
+                  creds.length.should.equal(2);
+
+                  User.findOne({ _id: user2._id }, function (err, user2) {
+                    user2.credentials.length.should.equal(2);
+
+                    user2.deleteAccount(function (err) {
+                      assert.isNull(err);
+                      User.find({}, function (err, users) {
+                        users.length.should.equal(nUsers);
+                        Credentials.find({}, function (err, creds) {
+                          creds.length.should.equal(nCredentials - 2);
+
+                          // user2 is now in the "deleted" state
+                          User.findOne({ _id: user2._id }, function (err, user2) {
+                            assert.isUndefined(user2.username);
+                            assert.isUndefined(user2.usernameLowerCased);
+                            assert.isUndefined(user2.email);
+                            user2.credentials.length.should.equal(0);
+                            user2.deleted.should.equal(true);
+
+                            Credentials.find({ owner: user2._id }, function (err, creds) {
+                              creds.length.should.equal(0);
+
+                              done();
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Should be possible to create a user with the same username and email as a formerly deleted user', function (done) {
+      var userData = { email: user2.email, username: user2.username, password: 'supersecret' }
+        ;
+
+      User.createAndSaveInstance(userData, function (err) {
+        err.code.should.equal(11000);
+
+        user2.deleteAccount(function () {
+          User.createAndSaveInstance(userData, function (err) {
+            assert.isNull(err);
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('Should be possible to delete more than user because the index is sparse', function (done) {
+      user1.deleteAccount(function (err) {
+        assert.isNull(err);
+        user2.deleteAccount(function (err) {
+          assert.isNull(err);
+
+          done();
+        });
+      });
+    });
+
+    it('The virtual usernameForDisplay should reflect the deleted state', function (done) {
+      user2.usernameForDisplay.should.equal(user2.username);
+      user2.deleteAccount(function () {
+        User.findOne({ _id: user2._id }, function (err, user2) {
+          user2.usernameForDisplay.should.equal(i18n.deletedAccount);
+          done();
+        });
+      });
+    });
+
+    it('Upon deletion, the users private data should be stored in the DeletedUsersData collection for safe keeping', function (done) {
+      var theEmail = user2.email, theUsername = user2.username
+        , theGravatarUrl = user2.gravatar.url, theGravatarEmail = user2.gravatar.email
+        , theId = user2._id
+        ;
+
+      DeletedUsersData.find(function (err, duds) {
+        duds.length.should.equal(0);
+
+        user2.deleteAccount(function (err) {
+          assert.isNull(err);
+          DeletedUsersData.find(function (err, duds) {
+            duds.length.should.equal(1);
+            duds[0].email.should.equal(theEmail);
+            duds[0].username.should.equal(theUsername);
+            duds[0].gravatar.url.should.equal(theGravatarUrl);
+            duds[0].gravatar.email.should.equal(theGravatarEmail);
+            duds[0].deletedUser.toString().should.equal(theId.toString());
+
+            done();
+          });
+        });
+      });
+    });
+
+
+
+
+
+  });   // ==== End of 'Account deletion' ==== //
 
 
 });

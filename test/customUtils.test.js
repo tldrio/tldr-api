@@ -49,8 +49,8 @@ describe('Custom utils', function () {
       var theUrl = "http://domain.tld/path/file.extension";
       normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
 
-      theUrl = "https://domain.tld/path/file.extension";
-      normalizeUrl(theUrl).should.equal("https://domain.tld/path/file.extension");
+      theUrl = "http://domain.tld/path/file.extension";
+      normalizeUrl(theUrl).should.equal("http://domain.tld/path/file.extension");
     });
 
     it('Should remove leading www subdomain, if any', function () {
@@ -231,12 +231,19 @@ describe('Custom utils', function () {
       normalizeUrl(theUrl).should.equal("http://bloup.blogspot.com/about/me");
     });
 
+    it('Should always use http, since nobody hosts a different site on https', function () {
+      var theUrl;
+
+      theUrl = "https://lemonde.fr/about/me";
+      normalizeUrl(theUrl).should.equal("http://lemonde.fr/about/me");
+    });
+
     it('The normalize function should be idempotent', function () {
       var urlsToTest = [];
 
       // All the target urls in the tests above
       urlsToTest.push("http://domain.tld/path/file.extension");
-      urlsToTest.push("https://domain.tld/path/file.extension");
+      urlsToTest.push("http://domain.tld/path/file.extension");
       urlsToTest.push("http://domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/");
       urlsToTest.push("http://subdomain.domain.tld/bloup/blap");
@@ -271,6 +278,7 @@ describe('Custom utils', function () {
       urlsToTest.push("http://youtube.com/path/file.extension?c5=yto&caee=value&ffutm_sss=bloup&utma=b");
       urlsToTest.push("http://youtube.com/path/file.extension?arg=value&rtf=yto");
       urlsToTest.push("http://youtube.com/path/file");
+      urlsToTest.push("http://lemonde.fr/about/me");
 
       _.each(urlsToTest, function (theUrl) {
         normalizeUrl(theUrl).should.equal(theUrl);
@@ -463,6 +471,213 @@ describe('Custom utils', function () {
     });
 
   });   // ==== End of 'Decrease date resolution' ==== //
+
+
+  describe('Get previous period', function () {
+
+    it('Get previous day', function () {
+      var date;
+
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1985, 7, 19, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 7, 1, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1985, 6, 31, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 0, 1, 20, 0, 5, 938);
+      customUtils.getPreviousDay(date).getTime().should.equal((new Date(1984, 11, 31, 20, 0, 5, 938)).getTime());
+    });
+
+    it('Get previous month', function () {
+      var date;
+
+      date = new Date(1985, 7, 20, 20, 0, 5, 938);
+      customUtils.getPreviousMonth(date).getTime().should.equal((new Date(1985, 6, 20, 20, 0, 5, 938)).getTime());
+
+      date = new Date(1985, 0, 20, 20, 0, 5, 938);
+      customUtils.getPreviousMonth(date).getTime().should.equal((new Date(1984, 11, 20, 20, 0, 5, 938)).getTime());
+    });
+
+  });   // End of 'Get previous period' ==== //
+
+
+  describe('#getWordCount', function () {
+
+    it('With a string', function () {
+      customUtils.getWordCount('Hello how are you motherfucker? This is a string.').should.equal(9);
+    });
+
+    it('With an array', function () {
+      customUtils.getWordCount(['Hello how are you motherfucker?', 'This is a string.']).should.equal(9);
+    });
+
+    it('With null or undefined', function () {
+      customUtils.getWordCount().should.equal(0);
+      customUtils.getWordCount(undefined).should.equal(0);
+    });
+
+  });   // ==== End of '#getWordCount' ==== //
+
+
+  describe('Time series treatment', function () {
+
+    it('Can fill daily gaps in time series', function () {
+      var data = [ { timestamp: new Date(2004, 7, 13), something: 42 }
+                 , { timestamp: new Date(2004, 7, 14), something: 13 }
+                 , { timestamp: new Date(2004, 7, 17), something: 99 }
+                 , { timestamp: new Date(2004, 7, 16), something: 9 }
+                 , { timestamp: new Date(2004, 7, 20), something: 1 }
+                 ]
+        , filledData = customUtils.fillGapsInTimeSeries(data)
+        , data2 = [ { timestamp: new Date(2004, 6, 29), something: 42 }
+                  , { timestamp: new Date(2004, 7, 2), something: 1 }
+                  ]
+        , filledData2 = customUtils.fillGapsInTimeSeries(data2)
+        ;
+
+      // Within a a month
+      filledData.length.should.equal(8);
+
+      filledData[0].timestamp.getTime().should.equal((new Date(2004, 7, 13)).getTime());
+      filledData[0].something.should.equal(42);
+
+      filledData[1].timestamp.getTime().should.equal((new Date(2004, 7, 14)).getTime());
+      filledData[1].something.should.equal(13);
+
+      filledData[2].timestamp.getTime().should.equal((new Date(2004, 7, 15)).getTime());
+      assert.isUndefined(filledData[2].something);
+
+      filledData[3].timestamp.getTime().should.equal((new Date(2004, 7, 16)).getTime());
+      filledData[3].something.should.equal(9);
+
+      filledData[4].timestamp.getTime().should.equal((new Date(2004, 7, 17)).getTime());
+      filledData[4].something.should.equal(99);
+
+      filledData[5].timestamp.getTime().should.equal((new Date(2004, 7, 18)).getTime());
+      assert.isUndefined(filledData[5].something);
+
+      filledData[6].timestamp.getTime().should.equal((new Date(2004, 7, 19)).getTime());
+      assert.isUndefined(filledData[6].something);
+
+      filledData[7].timestamp.getTime().should.equal((new Date(2004, 7, 20)).getTime());
+      filledData[7].something.should.equal(1);
+
+      // Across months
+      filledData2.length.should.equal(5);
+      filledData2[0].timestamp.getTime().should.equal((new Date(2004, 6, 29)).getTime());
+      filledData2[0].something.should.equal(42);
+
+      filledData2[1].timestamp.getTime().should.equal((new Date(2004, 6, 30)).getTime());
+      assert.isUndefined(filledData2[1].something);
+
+      filledData2[2].timestamp.getTime().should.equal((new Date(2004, 6, 31)).getTime());
+      assert.isUndefined(filledData2[2].something);
+
+      filledData2[3].timestamp.getTime().should.equal((new Date(2004, 7, 1)).getTime());
+      assert.isUndefined(filledData2[3].something);
+
+      filledData2[4].timestamp.getTime().should.equal((new Date(2004, 7, 2)).getTime());
+      filledData2[4].something.should.equal(1);
+    });
+
+    it('Can fill monthly gaps in time series', function () {
+      var data = [ { timestamp: new Date(2004, 2), something: 42 }
+                 , { timestamp: new Date(2004, 5), something: 13 }
+                 , { timestamp: new Date(2004, 4), something: 99 }
+                 , { timestamp: new Date(2003, 11), something: 9 }
+                 ]
+        , filledData = customUtils.fillGapsInTimeSeries(data, 'monthly')
+        ;
+
+      filledData.length.should.equal(7);
+
+      filledData[0].timestamp.getTime().should.equal((new Date(2003, 11)).getTime());
+      filledData[0].something.should.equal(9);
+
+      filledData[1].timestamp.getTime().should.equal((new Date(2004, 0)).getTime());
+      assert.isUndefined(filledData[1].something);
+
+      filledData[2].timestamp.getTime().should.equal((new Date(2004, 1)).getTime());
+      assert.isUndefined(filledData[2].something);
+
+      filledData[3].timestamp.getTime().should.equal((new Date(2004, 2)).getTime());
+      filledData[3].something.should.equal(42);
+
+      filledData[4].timestamp.getTime().should.equal((new Date(2004, 3)).getTime());
+      assert.isUndefined(filledData[4].something);
+
+      filledData[5].timestamp.getTime().should.equal((new Date(2004, 4)).getTime());
+      filledData[5].something.should.equal(99);
+
+      filledData[6].timestamp.getTime().should.equal((new Date(2004, 5)).getTime());
+      filledData[6].something.should.equal(13);
+    });
+
+    it('Add extremes', function () {
+      var data = [ { timestamp: new Date(2004, 2), something: 42 }
+                 , { timestamp: new Date(2004, 5), something: 13 }
+                 , { timestamp: new Date(2004, 4), something: 99 }
+                 ]
+        , extremeData1 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 2), new Date(2004, 5))
+        , extremeData2 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 0), new Date(2004, 5))
+        , extremeData3 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 2), new Date(2004, 6))
+        , extremeData4 = customUtils.addExtremesIfNecessary(data.slice(0), 'monthly', new Date(2004, 1), new Date(2004, 7))
+        ;
+
+      extremeData1.length.should.equal(3);
+
+      extremeData2.length.should.equal(4);
+      extremeData2[0].timestamp.getTime().should.equal((new Date(2004, 0)).getTime());
+
+      extremeData3.length.should.equal(4);
+      extremeData3[3].timestamp.getTime().should.equal((new Date(2004, 6)).getTime());
+
+      extremeData4.length.should.equal(5);
+      extremeData4[0].timestamp.getTime().should.equal((new Date(2004, 1)).getTime());
+      extremeData4[4].timestamp.getTime().should.equal((new Date(2004, 7)).getTime());
+    });
+
+  });   // ==== End of 'Time series treatment' ==== //
+
+
+  describe('#getSubAdressedGmails', function () {
+
+    it('Given a Gmail address, should return a regex that matches it and it subaddresses only', function () {
+      var add = "louis.chatriot@gmail.com"
+        , re = customUtils.getSubAdressedGmails(add)
+        ;
+
+      // We don't treat the dots in the addresses, its a very rare and shitty case
+      assert.isNull('louischatriot@gmail.com'.match(re));
+      assert.isNull('louischatriot+t@gmail.com'.match(re));
+      assert.isNull('louischatriot+tldr@gmail.com'.match(re));
+      assert.isNull('louis.chatrot@gmail.com'.match(re));
+      assert.isNull('louis.chatrot+tldr@gmail.com'.match(re));
+      assert.isNull('louis.chatriot+@gmail.com'.match(re));
+
+      assert.isNotNull('louis.chatriot@gmail.com'.match(re));
+      assert.isNotNull('louis.chatriot+t@gmail.com'.match(re));
+      assert.isNotNull('louis.chatriot+tldr@gmail.com'.match(re));
+    });
+
+    it('Given a non Gmail address, should only match this address', function () {
+      var add = "louis.chatriot@yahoo.com"
+        , re = customUtils.getSubAdressedGmails(add)
+        ;
+
+      assert.isNull('louischatriot@yahoo.com'.match(re));
+      assert.isNull('louischatriot+t@yahoo.com'.match(re));
+      assert.isNull('louischatriot+tldr@yahoo.com'.match(re));
+      assert.isNull('louis.chatrot@yahoo.com'.match(re));
+      assert.isNull('louis.chatrot+tldr@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+t@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+tldr@yahoo.com'.match(re));
+
+      assert.isNotNull('louis.chatriot@yahoo.com'.match(re));
+    });
+
+  });   // ==== End of '#getSubAdressedGmails' ==== //
 
 
 });

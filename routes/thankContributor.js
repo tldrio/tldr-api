@@ -28,7 +28,7 @@ function thankContributor (req, res, next) {
     tldr.thank( req.user, function (err, tldr) {
       if (err) { return next(i18n.se_thanking); }
 
-      mqClient.emit('tldr.thank', { thanker: req.user, id: id });
+      mqClient.emit('tldr.thank', { thanker: req.user, tldr: tldr });
       return res.json(200, tldr);
     });
   }) ;

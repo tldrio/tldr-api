@@ -36,8 +36,8 @@ function searchTldrsByBatch (req, res, next) {
 
   //Search by batch
   Tldr.find({ possibleUrls: { $in: batch } })
-    .populate('creator', 'username twitterHandle')
-    .populate('editors', 'username')
+    .populate('creator', 'deleted username twitterHandle')
+    .populate('editors', 'deleted username')
     .exec( function (err, docs) {
       if (err) {
         return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });

@@ -24,6 +24,8 @@ var mongoose = require('mongoose')
   , authorizedFields = ['email', 'username', 'confirmedEmail', '_id', 'notificationsSettings', 'gravatar', 'bio', 'twitterHandle', 'tldrsCreated']         // Fields that can be sent to the user
   , reservedUsernames
   , async = require('async')
+  , mqClient = require('../lib/message-queue')
+  , DeletedUsersDataSchema, DeletedUsersData
   ;
 
 
@@ -39,6 +41,7 @@ reservedUsernames = {
   , 'crx': true
   , 'extension': true
   , 'forgotpassword': true
+  , 'impact': true
   , 'index': true
   , 'login': true
   , 'logout': true
@@ -165,7 +168,6 @@ UserSchema = new Schema(
               }
   , usernameLowerCased: { type: String
                         , required: true
-                        , unique: true
                         , set: customUtils.sanitizeInput
                         }
   , firstName: { type: String }
@@ -185,12 +187,14 @@ UserSchema = new Schema(
                    , validate: [validateTwitterHandle, i18n.validateTwitterHandle]
                    , set: setTwitterHandle }
   , credentials: [{ type: ObjectId, ref: 'credentials' }]
+  , deleted: { type: Boolean, default: false }
   }
 , { strict: true });
 
-/** Keep a virtual 'isAdmin' attribute
- *  isAdmin is true when user is an admin, false otherwise (of course ...)
- */
+// We need the unique index on usernameLowerCased to be sparse
+// so that we can have multiple users where its not defined
+UserSchema.path('usernameLowerCased').index({ unique: true, sparse: true });
+
 UserSchema.virtual('isAdmin').get(function () {
   var adminEmails = { "louis.chatriot@gmail.com": true , "louis.chatrio.t@gmail.com": true , "lo.uis.chatriot@gmail.com": true , "louis.cha.triot@gmail.com": true , "loui.s.chatriot@gmail.com": true , "l.ouis.chatriot@gmail.com": true
                     , "charles.miglietti+luckyboy@gmail.com": true , "charles.miglietti@gmail.com": true , "charles@tldr.io": true , "charles@needforair.com": true , "c.harlesmiglietti@gmail.com": true , "ch.arlesmiglietti@gmail.com": true , "cha.rlesmiglietti@gmail.com": true
@@ -199,6 +203,10 @@ UserSchema.virtual('isAdmin').get(function () {
                     , "s.tanislas.marion@gmail.com": true , "st.anislas.marion@gmail.com": true , "sta.nislas.marion@gmail.com": true , "stan.islas.marion@gmail.com": true };
 
   return adminEmails[this.email] ? true : false;
+});
+
+UserSchema.virtual('usernameForDisplay').get(function () {
+  return this.username || i18n.deletedAccount;
 });
 
 // Send virtual attributes along with real ones
@@ -224,6 +232,47 @@ UserSchema.methods.createConfirmToken = function (callback) {
 
     doc.confirmEmailToken = newToken;
     doc.save(callback);
+  });
+};
+
+
+/**
+ * Confirm a user's email
+ * If there are Google creds and user.email === gc.googleEmail, attach those
+ * Callback signature: err
+ */
+UserSchema.statics.confirmEmail = function (email, token, callback) {
+  if (!token || !email) {
+    return callback({ message: i18n.confirmTokenOrEmailInvalid});
+  }
+
+  User.findOne({ email: email },  function (err, user) {
+    if (err) { return callback({ error: err }); }
+    if (!user) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
+    if (user.confirmedEmail) { return callback(null); }
+    if (user.confirmEmailToken !== token) { return callback({ message: i18n.confirmTokenOrEmailInvalid}); }
+
+    // User email is not confirmed - token is correct -> Confirm
+    var now = new Date();
+    user.confirmedEmail = true;
+    user.token = null;
+    user.save(function (err) {
+      if (err) { return callback({ error: err }); }
+
+      // Try to find an existing Google creds that should belong to this user
+      Credentials.findOne({ googleEmail: user.email, type: 'google' })
+                 .populate('owner')
+                 .exec(function (err, gc) {
+        if (!gc) { return callback(null); }   // Nothing to attach
+        if (gc.owner.toString() === user._id.toString()) { return callback(null); }   // Already attached
+
+        gc.owner.detachCredentialsFromProfile(gc, function () {
+          user.attachCredentialsToProfile(gc, function () {
+            return callback(null);
+          });
+        });
+      });
+    });
   });
 };
 
@@ -424,7 +473,63 @@ UserSchema.statics.createAndSaveInstance = function (userInput, callback) {
 
 
 /**
+ * Upon signup with Google SSO, create a user with his google creds and default basic creds
+ * Don't call this if you're not sure whether the user exists or not
+ * @param {String} identifier OpenID provided by Google for this user
+ * @param {Object} googleProfile Contains all the user's information given by google, incl. email and displayName
+ * @param {Function} callback Signature err, user, optional infos for downstream services
+ */
+UserSchema.statics.signupWithGoogleSSO = function (identifier, googleProfile, callback) {
+  async.waterfall([
+    function (cb) {   // Create the user's profile
+      User.findAvailableUsername(googleProfile.displayName, function (err, username) {
+        User.createAndSaveBareProfile({ username: username, email: googleProfile.emails[0].value }, function (err, user) {
+          if (err) { return cb(err); }
+          if (! user) { return cb({ noErrorButUserStillNotCreated: true }); }
+
+          if (googleProfile.name) {
+            if (googleProfile.name.givenName) { user.firstName = googleProfile.name.givenName; }
+            if (googleProfile.name.familyName) { user.lastName = googleProfile.name.familyName; }
+          }
+
+          // No need to confirm the user's email
+          user.confirmedEmail = true;
+          user.confirmEmailToken = null;
+
+          // If possible, use the user's first name while he hasn't setted his username himself
+          user.username = user.firstName || user.username;
+          mqClient.emit('user.created', { user: user });
+          user.username = username;
+
+          return cb(null, user, { userWasJustCreated: true });
+        });
+      });
+    }
+  , function (user, info, cb) {   // Create the google credentials and attach them to our found/created user
+      Credentials.createGoogleCredentials({ openID: identifier, googleEmail: user.email }, function (err, gc) {
+        user.attachCredentialsToProfile(gc, function () {
+          return cb(null, user, info);
+        });
+      });
+    }
+  , function (user, info, cb) {   // If there are no basic creds for this email, create and attach them
+      Credentials.findOne({ login: user.email, type: 'basic' }, function (err, bc) {
+        if (bc) { return cb(null, user, info); }
+
+        Credentials.createBasicCredentials({ login: user.email, password: customUtils.uid(20) }, function (err, bc) {
+          user.attachCredentialsToProfile(bc, function () {
+            return cb(null, user, info);
+          });
+        });
+      });
+    }
+  ], callback);
+};
+
+
+/**
  * Attach credentials to this user profile
+ * Can't reattach the same credentials twice
  * @param {Credentials} creds
  * @param {Function} cb Optional callback, signature: err, user
  */
@@ -432,10 +537,30 @@ UserSchema.methods.attachCredentialsToProfile = function (creds, cb) {
   var callback = cb || function () {}
     , self = this;
 
+  if (creds.owner) { return callback(null, self); }
+
   creds.owner = self._id;
   creds.save(function (err) {
     if (err) { return callback(err); }   // Shouldn't happen
     self.credentials.push(creds._id);
+    self.save(callback);
+  });
+};
+
+
+/**
+ * Detach a credentials from a profile
+ * @param {Credentials} creds
+ * @param {Function} cb Optional callback, signature: err, user
+ */
+UserSchema.methods.detachCredentialsFromProfile = function (creds, cb) {
+  var callback = cb || function () {}
+    , self = this;
+
+  creds.owner = undefined;
+  creds.save(function (err) {
+    if (err) { return callback(err); }   // Shouldn't happen
+    self.credentials = _.filter(self.credentials, function (_c) { return _c.toString() !== creds._id.toString(); });
     self.save(callback);
   });
 };
@@ -532,6 +657,61 @@ UserSchema.statics.findAvailableUsername = function (tentativeUsername, callback
 };
 
 
+/**
+ * Delete a user's account. We do not remove the record from the database because
+ * things can get messy, but we delete his credentials, remove his username, usernameLowerCased
+ * and email fields
+ */
+UserSchema.methods.deleteAccount = function (cb) {
+  var callback = cb || function () {}
+    , self = this
+    , updateQuery = {}
+    , deletedUserData = new DeletedUsersData({ email: self. email
+                                             , username: self.username
+                                             , gravatar:  { url: self.gravatar.url
+                                                          , email: self.gravatar.email
+                                                          }
+                                             , deletedUser: self._id
+                                             })
+    ;
+
+  mailchimpSync.unsubscribeUser({ email: self.email });
+
+  deletedUserData.save(function (err) {
+    if (err) { return callback(err); }
+
+    Credentials.remove({ _id: { $in: self.credentials } }, function (err) {
+      if (err) { return callback(err); }
+
+      updateQuery.$unset = { email: 1, username: 1, usernameLowerCased: 1, credentials: 1 };
+      updateQuery.$set = { deleted: true, 'gravatar.url': '', 'gravatar.email': '' };
+      Object.keys(UserSchema.tree.notificationsSettings).forEach(function (notif) {
+        updateQuery.$set['notificationsSettings.' + notif] = false;
+      });
+
+      // Validators are not applied when we use a direct operation on the database
+      User.update( { _id: self._id }
+                 , updateQuery
+                 , { multi: false }
+                 , callback);
+    });
+  });
+};
+
+/**
+ * Keep a deleted user's private data if it was a mistake on his or an admin's part
+ * This data is private and not accessible except directly through the DB
+ */
+DeletedUsersDataSchema = new Schema({
+  email: { type: String }
+, username: { type: String }
+, gravatar: { url: { type: String }
+            , email: { type: String }
+            }
+, deletedUser: { type: ObjectId }
+});
+DeletedUsersData = mongoose.model('deleteduserdata', DeletedUsersDataSchema);
+
 
 
 /**
@@ -545,5 +725,5 @@ UserSchema.statics.validateUsername = validateUsername;
 User = mongoose.model('user', UserSchema);
 
 // Export User
-module.exports = User;
-
+module.exports.User = User;
+module.exports.DeletedUsersData = DeletedUsersData;

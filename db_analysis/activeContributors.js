@@ -15,6 +15,7 @@ var async = require('async')
                      , config.dbName
                      , config.dbPort
                      )
+  , j = 0
   ;
 
 async.waterfall([
@@ -32,8 +33,9 @@ async.waterfall([
       if (err) { return cb(err); }
 
       _.each(users, function (user) {
-        if (user.tldrsCreated.length >= 5 && !user.isAdmin) {
+        if (user.tldrsCreated.length >= 1 && !user.isAdmin) {
           console.log(user.email + ' - ' + user.tldrsCreated.length);
+          j += 1;
         }
       });
 
@@ -41,6 +43,7 @@ async.waterfall([
     });
   }
 ], function (err) {
+    console.log("Found " + j);
     db.closeDatabaseConnection(function () {
       console.log('Closed connection to database');
       process.exit(0);

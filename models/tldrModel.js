@@ -147,6 +147,7 @@ TldrSchema = new Schema(
                       , default: 863
                       , set: customUtils.sanitizeNumber
                       }
+  , wordCount: { type: Number, default: 0 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
   , distributionChannels: { latestTldrs: { type: Boolean, default: true }
@@ -166,7 +167,7 @@ TldrSchema = new Schema(
 
 
 
-// Keep a virtual 'slug' attribute and send it when requested
+// Keep virtual 'slug' attributes and send it when requested
 TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
@@ -207,10 +208,11 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     instance.history = _history._id;
     instance.creator = creator._id;
     instance.hostname = customUtils.getHostnameFromUrl(instance.url);
+    instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
     instance.save(function(err, tldr) {
       if (err) { return callback(err); }
       mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
-      mqClient.emit('tldr.created', { tldr: tldr });
+      mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
 
       // Put it in the creator's list of created tldrs
       creator.tldrsCreated.push(tldr._id);
@@ -296,6 +298,41 @@ TldrSchema.statics.removeTldr = function (id, callback) {
 
 
 /**
+ * Delete a tldr if it hasn't been edited by someone else or moderated
+ * If it was, then make it anonymous
+ * @param {User} user The user requesting the deletion
+ * @param {Function} cb Optional, signature: err, message telling what happened
+ */
+TldrSchema.methods.deleteIfPossible = function (user, cb) {
+  var callback = cb || function () {};
+
+  if (!user || user._id.toString() !== this.getCreatorId().toString()) {
+    return callback(i18n.unauthorized);
+  }
+
+  // Not yet moderated and not edited except by its creator
+  if (!this.moderated && (!this.editors || this.editors.length === 0 || (this.editors.length === 1 && this.editors[0].toString() === user._id.toString()))) {
+    Tldr.removeTldr(this._id, function (err) {
+      if (err) {
+        return callback(err);
+      } else {
+        return callback(null, i18n.tldrWasDeleted);
+      }
+    });
+  } else {
+    this.anonymous = true;
+    this.save(function (err) {
+      if (err) {
+        return callback(err);
+      } else {
+        return callback(null, i18n.tldrWasAnonymized);
+      }
+    });
+  }
+};
+
+
+/**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
@@ -303,8 +340,8 @@ function findOneInternal (selector, cb) {
   var callback = cb || function () {};
 
   Tldr.findOne(selector)
-      .populate('creator', 'username twitterHandle')
-      .populate('editors', 'username')
+      .populate('creator', 'deleted username twitterHandle')
+      .populate('editors', 'deleted username')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
@@ -349,6 +386,18 @@ TldrSchema.statics.registerRedirection = function (from, to, cb) {
 };
 
 
+/**
+ * Get the id of this tldr's creator, whether or not the field was populated or not
+ * We have a static version for tldrs passed through the node redis pubsub which have lost their methods
+ */
+TldrSchema.methods.getCreatorId = function () {
+  return this.creator._id || this.creator;
+};
+
+TldrSchema.statics.getCreatorId = function (tldr) {
+  return tldr.creator._id || tldr.creator;
+};
+
 
 /**
  * Update tldr object.
@@ -366,6 +415,7 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   _.each( validUpdateFields, function (validField) {
     self[validField] = updates[validField];
   });
+  self.wordCount = customUtils.getWordCount(self.summaryBullets);
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 

@@ -24,7 +24,7 @@ function getLatestTldrs (req, res, next) {
    .sort('-updatedAt')
    .limit(limit)
    .skip(startat)
-   .populate('creator', 'username twitterHandle')
+   .populate('creator', 'deleted username twitterHandle')
    .exec(function(err, docs) {
      if (err) { return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} }); }
 

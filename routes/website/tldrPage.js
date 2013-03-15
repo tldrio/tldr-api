@@ -13,7 +13,9 @@ var _ = require('underscore')
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
-    , partials = req.renderingPartials || {};
+    , partials = req.renderingPartials || {}
+    , tldrData
+    ;
 
   partials.content = '{{>website/pages/tldrPage}}';
   partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
@@ -33,7 +35,7 @@ module.exports = function (req, res, next) {
                    (tldr.title.length > 60 ? '..."' : '"') +
                    config.titles.branding + config.titles.shortDescription;
     // Warning: don't use double quotes in the meta description tag
-    if (tldr.creator) { values.description = "Summary written by " + tldr.creator.username + " of '" + tldr.title.replace(/"/g, '') + "'"; }
+    if (tldr.creator) { values.description = "Summary written by " + tldr.creator.usernameForDisplay + " of '" + tldr.title.replace(/"/g, '') + "'"; }
 
     // Specific metatags for the tldr page
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
@@ -42,6 +44,21 @@ module.exports = function (req, res, next) {
     values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
     if (tldr.creator) {values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || ''); }
     if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
+
+    tldrData = tldr.toJSON();
+    tldrData = _.pick(tldrData, [ 'title'
+                                , '_id'
+                                , 'url'
+                                , 'summaryBullets'
+                                , 'slug'
+                                , 'originalUrl'
+                                , 'thankedBy'
+                                ]);
+    tldrData = JSON.stringify(tldrData);
+    tldrData = tldrData.replace(/"/g, '\\"');
+    console.log(tldrData);
+
+    values.tldrData = tldrData;
 
     return res.render('website/basicLayout', { values: values , partials: partials });
   });
