@@ -63,6 +63,14 @@
     </div>
     <div class="span9 discover-feed-column">
       <div class="tab-content discover-feed-container">
+        <div class="discover-feed-options">
+          <span class="options">
+            <a alt="Newest summaries" href="#newest">Newest</a>/<a alt="Most read summaries" href="#mostread">Most read</a>
+          </span>
+          <span class="options options-visual pull-right">
+            <a class="option-chosen option-expand" alt="Expand all summaries" href="#">Expand</a>/<a alt="Collapse all summaries" class="option-collapse" href="#">Collapse</a>
+          </span>
+        </div>
         <div class="tab-pane active" id="topic1">
           <ol class="media-list discover-tldr-list">
             {{>website/discover.tldr.unit}}
@@ -82,6 +90,12 @@
             {{>website/discover.tldr.unit}}
             {{>website/discover.tldr.unit}}
           </ol>
+        </div>
+        <div class="discover-load-more">
+          <button class="btn btn-primary">
+            <img src="/assets/img/happy-derp.small.png">
+            Load more...
+          </button>
         </div>
       </div>
     </div>

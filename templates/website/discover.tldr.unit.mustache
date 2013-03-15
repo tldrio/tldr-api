@@ -1,7 +1,12 @@
 <li class="media discover-tldr-item">
   <div class="discover-tldr-header">
     <a class="pull-left" href="#">
-      <img class="media-object" width="130" height="99" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+      {{#tldr.imageUrl}}
+      <img class="media-object discover-tldr-image" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+      {{/tldr.imageUrl}}
+      {{^tldr.imageUrl}}
+      <img class="media-object discover-tldr-image" src="http://www.gravatar.com/avatar/?f=y&d=identicon" alt="{{tldr.title}}">
+      {{/tldr.imageUrl}}
     </a>
     <div class="media-body">
       <h4 class="media-heading">{{tldr.title}}</h4>
@@ -16,21 +21,27 @@
           {{/tldr.anonymous}}
         </span>
         in
-        <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</span>
+        <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</a>,
         {{#tldr.topics}}
-        <a href="{{websiteUrl}}/topics/{{.}}" target="_blank"><span>{{.}}</span></a>
+        <a href="{{websiteUrl}}/topics/{{.}}" class="topic-link" target="_blank">{{.}}</a>
         {{/tldr.topics}}
       </div>
       <div class="tldr-stats">
-        <i class="icon-eye-open"></i> {{tldr.readCount}}
-        <i class="icon-beer"></i> {{tldr.tyCount}}
-        <i class="icon-time"></i> {{tldr.tyCount}}
+        <span title="Read {{tldr.readCount}} times.">
+          <i class="icon-eye-open"></i> {{tldr.readCount}}
+        </span>
+        <span title="Thanked {{tldr.tyCount}} times.">
+          &nbsp;&nbsp;<i class="icon-beer"></i> {{tldr.tyCount}}
+        </span>
+        <span title="It takes ~{{tldr.timeSaved}} to read the original article.">
+          &nbsp;&nbsp;<i class="icon-time"></i> {{tldr.timeSaved}}
+        </span>
       </div>
     </div>
   </div>
 
-  <div class="discover-tldr-foldable expanded">
-    <div class="tldr-summary">
+  <div class="discover-tldr-foldable">
+    <div class="discover-tldr-summary">
       <ul>
         {{#tldr.summaryBullets}}
         <li class="tldr-bullet">
@@ -42,9 +53,10 @@
     </div>
     <div class="tldr-actions">
       <ul>
-        <li><a href="{{tldr.originalUrl}}" alt="">Read full article</a></li>
-        <li> &middot; <a href="">Thank contributor</a></li>
+        <li><a href="">Thank contributor</a></li>
+        <li> &middot; <a href="">Share article with tldr</a></li>
         <li> &middot; <a href="">Save full article for later</a></li>
+        <li> &middot; <a href="">Embed tldr</a></li>
       </ul>
     </div>
   </div>
