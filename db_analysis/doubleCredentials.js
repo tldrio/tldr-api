@@ -42,7 +42,7 @@ async.waterfall([
             Credentials.findOne({ type: 'google', googleEmail: user.email }, function (err, gc) {
               if (bc && gc) {
                 doublesFound += 1;
-	        console.log(user.email);
+                console.log(user.email);
               }
               return _cb();
             });
