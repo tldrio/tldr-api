@@ -1,4 +1,12 @@
 <li class="media discover-tldr-item">
+<span style="display:none;" class="discover-tldr-data"
+  data-tldr-id="{{tldr._id}}"
+  data-tldr-title="{{tldr.title}}"
+  data-tldr-twitterHandle="{{tldr.creator.twitterHandle}}"
+  data-tldr-summary="{{tldr.summaryBullets}}"
+  data-tldr-thankedBy="{{tldr.thankedBy}}"
+  data-tldr-originalUrl="{{tldr.originalUrl}}"
+  ></span>
   <div class="discover-tldr-header">
     <a class="pull-left" href="#">
       {{#tldr.imageUrl}}
@@ -52,12 +60,31 @@
       </ul>
     </div>
     <div class="tldr-actions">
-      <ul>
-        <li><a href="">Thank contributor</a></li>
-        <li> &middot; <a href="">Share article with tldr</a></li>
-        <li> &middot; <a href="">Save full article for later</a></li>
-        <li> &middot; <a href="">Embed tldr</a></li>
-      </ul>
+      <div class="thank-container">
+        <div class="btn-group">
+          <button class="btn btn-link thank" >
+            Thank contributor
+          </button>
+        </div>
+      </div>
+      <div class="sharing-container">
+        <div class="btn-group dropup">
+          <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+            Share article with tl;dr
+          </button>
+        </div>
+        <div class="btn-group dropup">
+          <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+            Save full article for later
+          </button>
+        </div>
+      </div>
+      <!--<ul>-->
+        <!--<li><a href="">Thank contributor</a></li>-->
+        <!--<li> &middot; <a href="">Share article with tldr</a></li>-->
+        <!--<li> &middot; <a href="">Save full article for later</a></li>-->
+        <!--<li> &middot; <a href="">Embed tldr</a></li>-->
+      <!--</ul>-->
     </div>
   </div>
 </li>
