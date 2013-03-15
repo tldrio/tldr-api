@@ -8,6 +8,7 @@ var async = require('async')
   , models = require('../lib/models')
   , Tldr = models.Tldr
   , User = models.User
+  , Credentials = models.Credentials
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
@@ -16,6 +17,7 @@ var async = require('async')
                      , config.dbPort
                      )
   , j = 0
+  , doublesFound = 0
   ;
 
 async.waterfall([
@@ -32,16 +34,27 @@ async.waterfall([
     User.find({ confirmedEmail: false }, function (err, users) {
       if (err) { return cb(err); }
 
-      _.each(users, function (user) {
-        console.log(user.email);
-        j += 1;
-      });
+      async.whilst( function () { return j < users.length; }
+      , function (_cb) {
+          var user = users[j];
+          j += 1;
+          Credentials.findOne({ type: 'basic', login: user.email }, function (err, bc) {
+            Credentials.findOne({ type: 'google', googleEmail: user.email }, function (err, gc) {
+              if (bc && gc) {
+                doublesFound += 1;
+	        console.log(user.email);
+              }
+              return _cb();
+            });
+          });
+        }
+      , cb);
 
-      cb();
     });
   }
 ], function (err) {
-    console.log("Found " + j);
+    console.log("Non confirmed " + j);
+console.log("Doubles " + doublesFound);
     db.closeDatabaseConnection(function () {
       console.log('Closed connection to database');
       process.exit(0);
