@@ -1012,6 +1012,7 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
+                      , topics: ['Startups']
                       }
         ;
 
@@ -1031,10 +1032,12 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
+                      , topics: ['Startups']
                       }
         , tldrData2 = { title: 'Coucou'
                       , url: 'http://mydomain.com/another'
                       , summaryBullets: ['coin', 'piou']
+                      , topics: ['Startups']
                       }
         , tldr1Id, tldr2Id
         ;
@@ -1091,10 +1094,12 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
+                      , topics: ['Startups']
                       }
         , tldrData2 = { title: 'Coucou'
                       , url: 'http://mydomain.com/another'
                       , summaryBullets: ['coin', 'piou']
+                      , topics: ['Startups']
                       }
         , tldr1Id, tldr2Id
         ;
@@ -1256,6 +1261,7 @@ describe('Tldr', function () {
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
         , articleWordCount: 437
+        , topics: ['Startups']
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
@@ -1275,6 +1281,7 @@ describe('Tldr', function () {
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
         , articleWordCount: 437
+        , topics: ['Startups']
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
