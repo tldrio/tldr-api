@@ -35,8 +35,8 @@ module.exports = function (req, res, next) {
        if (err || !tldr) { return res.json(404, {}); }
 
        values.tldr = tldr;
-       values.titlePart = showTitle ? 'Summary of "' + tldr.title + '"'
-                                    : 'Summary';
+       values.titlePart = showTitle ? 'tl;dr of "' + tldr.title + '"'
+                                    : 'tl;dr';
 
        return res.render('website/tldrEmbed', { values: values });
   });
