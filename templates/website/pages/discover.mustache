@@ -64,182 +64,24 @@
     <div class="span9 discover-feed-column">
       <div class="tab-content discover-feed-container">
         <div class="tab-pane active" id="topic1">
-
           <ol class="media-list discover-tldr-list">
-
-            <li class="media discover-tldr-item">
-              <div class="discover-tldr-header">
-                <a class="pull-left" href="#">
-                  <img class="media-object" width="130" height="99" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
-                </a>
-                <div class="media-body">
-                  <h4 class="media-heading">{{tldr.title}}</h4>
-                  <div class="tldr-metadata">
-                    tl;dr by
-                    <span>
-                    {{^tldr.anonymous}}
-                      <a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a>
-                    {{/tldr.anonymous}}
-                    {{#tldr.anonymous}}
-                      anonymous
-                    {{/tldr.anonymous}}
-                    </span>
-                    in
-                    <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</span>
-                    {{#tldr.topics}}
-                      <a href="{{websiteUrl}}/topics/{{.}}" target="_blank"><span>{{.}}</span></a>
-                    {{/tldr.topics}}
-                  </div>
-                  <div class="tldr-stats">
-                    <i class="icon-eye-open"></i> {{tldr.readCount}}
-                  </div>
-                </div>
-              </div>
-
-              <div class="discover-tldr-foldable expanded">
-                <div class="tldr-summary">
-                  <ul>
-                    {{#tldr.summaryBullets}}
-                    <li class="tldr-bullet">
-                    <i class="icon-stop"></i>
-                    {{.}}
-                    </li>
-                    {{/tldr.summaryBullets}}
-                  </ul>
-                </div>
-                <div class="tldr-actions">
-                  <ul>
-                    <li><a href="{{tldr.originalUrl}}" alt="">Read full article</a></li>
-                    <li> &middot; <a href="">Thank contributor</a></li>
-                    <li> &middot; <a href="">Save full article for later</a></li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
-            <li class="media discover-tldr-item collapsed">
-              <div class="discover-tldr-header">
-                <a class="pull-left" href="#">
-                  <img class="media-object" width="130" height="99" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
-                </a>
-                <div class="media-body">
-                  <h4 class="media-heading">{{tldr.title}}</h4>
-                  <div class="tldr-metadata">
-                    tl;dr by
-                    <span>
-                    {{^tldr.anonymous}}
-                      <a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a>
-                    {{/tldr.anonymous}}
-                    {{#tldr.anonymous}}
-                      anonymous
-                    {{/tldr.anonymous}}
-                    </span>
-                    in
-                    <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</span>
-                    {{#tldr.topics}}
-                      <a href="{{websiteUrl}}/topics/{{.}}" target="_blank"><span>{{.}}</span></a>
-                    {{/tldr.topics}}
-                  </div>
-                  <div class="tldr-stats">
-                    <i class="icon-eye-open"></i> {{tldr.readCount}}
-                  </div>
-                </div>
-              </div>
-
-              <div class="discover-tldr-foldable">
-                <div class="tldr-summary">
-                  <ul>
-                    {{#tldr.summaryBullets}}
-                    <li class="tldr-bullet">
-                    <i class="icon-stop"></i>
-                    {{.}}
-                    </li>
-                    {{/tldr.summaryBullets}}
-                  </ul>
-                </div>
-                <div class="tldr-actions">
-                  <ul>
-                    <li>Read full article</li>
-                    <li> &middot; Thank contributor</li>
-                    <li> &middot; Save full article for later</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
-            <li class="media discover-tldr-item collapsed">
-              <div class="discover-tldr-header">
-                <a class="pull-left" href="#">
-                  <img class="media-object" width="130" height="99" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
-                </a>
-                <div class="media-body">
-                  <h4 class="media-heading">{{tldr.title}}</h4>
-                  <div class="tldr-metadata">
-                    tl;dr by
-                    <span>
-                    {{^tldr.anonymous}}
-                      <a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a>
-                    {{/tldr.anonymous}}
-                    {{#tldr.anonymous}}
-                      anonymous
-                    {{/tldr.anonymous}}
-                    </span>
-                    in
-                    <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</span>
-                    {{#tldr.topics}}
-                      <a href="{{websiteUrl}}/topics/{{.}}" target="_blank"><span>{{.}}</span></a>
-                    {{/tldr.topics}}
-                  </div>
-                  <div class="tldr-stats">
-                    <i class="icon-eye-open"></i> {{tldr.readCount}}
-                  </div>
-                </div>
-              </div>
-
-              <div class="discover-tldr-foldable">
-                <div class="tldr-summary">
-                  <ul>
-                    {{#tldr.summaryBullets}}
-                    <li class="tldr-bullet">
-                    <i class="icon-stop"></i>
-                    {{.}}
-                    </li>
-                    {{/tldr.summaryBullets}}
-                  </ul>
-                </div>
-                <div class="tldr-actions">
-                  <ul>
-                    <li>Read full article</li>
-                    <li> &middot; Thank contributor</li>
-                    <li> &middot; Save full article for later</li>
-                  </ul>
-                </div>
-              </div>
-            </li>
-
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
           </ol>
-
         </div>
         <div class="tab-pane" id="topic2">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic3">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic4">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic5">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic6">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic7">
-          <p>Howdy, I'm in Section 2.</p>
-        </div>
-        <div class="tab-pane" id="topic8">
-          <p>Howdy, I'm in Section 2.</p>
+          <ol class="media-list discover-tldr-list">
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
+          </ol>
         </div>
       </div>
     </div>

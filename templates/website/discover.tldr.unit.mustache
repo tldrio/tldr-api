@@ -1,0 +1,51 @@
+<li class="media discover-tldr-item">
+  <div class="discover-tldr-header">
+    <a class="pull-left" href="#">
+      <img class="media-object" width="130" height="99" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
+    </a>
+    <div class="media-body">
+      <h4 class="media-heading">{{tldr.title}}</h4>
+      <div class="tldr-metadata">
+        tl;dr by
+        <span>
+          {{^tldr.anonymous}}
+          <a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a>
+          {{/tldr.anonymous}}
+          {{#tldr.anonymous}}
+          anonymous
+          {{/tldr.anonymous}}
+        </span>
+        in
+        <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</span>
+        {{#tldr.topics}}
+        <a href="{{websiteUrl}}/topics/{{.}}" target="_blank"><span>{{.}}</span></a>
+        {{/tldr.topics}}
+      </div>
+      <div class="tldr-stats">
+        <i class="icon-eye-open"></i> {{tldr.readCount}}
+        <i class="icon-beer"></i> {{tldr.tyCount}}
+        <i class="icon-time"></i> {{tldr.tyCount}}
+      </div>
+    </div>
+  </div>
+
+  <div class="discover-tldr-foldable expanded">
+    <div class="tldr-summary">
+      <ul>
+        {{#tldr.summaryBullets}}
+        <li class="tldr-bullet">
+        <i class="icon-stop"></i>
+        {{.}}
+        </li>
+        {{/tldr.summaryBullets}}
+      </ul>
+    </div>
+    <div class="tldr-actions">
+      <ul>
+        <li><a href="{{tldr.originalUrl}}" alt="">Read full article</a></li>
+        <li> &middot; <a href="">Thank contributor</a></li>
+        <li> &middot; <a href="">Save full article for later</a></li>
+      </ul>
+    </div>
+  </div>
+</li>
