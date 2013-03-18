@@ -1,0 +1,11 @@
+<blockquote class="tldr-embed-widget" data-align="center">
+      <p>
+      <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}" class="link-to-tldr-page" target="_blank">Summary of "{{tldr.title}}"</a> (via <a href="http://tldr.io" target="_blank">tldr.io</a>)
+      <ul>
+        {{#tldr.summaryBullets}}
+          <li style="margin-bottom: 10px; line-height: 130%;">{{.}}</li>
+        {{/tldr.summaryBullets}}
+      </ul>
+      </p>
+</blockquote>
+<script async src="//{{origin}}/embed/widget-embed.js" charset="utf-8"></script>

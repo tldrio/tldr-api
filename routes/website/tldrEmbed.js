@@ -14,7 +14,7 @@ var _ = require('underscore')
 
 
 module.exports = function (req, res, next) {
-  var values = {}
+  var values = _.extend({}, config)
     , showTitle = req.query && req.query.showTitle ? req.query.showTitle.toString() === 'true' ? true : false
                                                    : false
     , tldrId = req.query && req.query.tldrId
