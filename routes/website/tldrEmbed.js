@@ -15,7 +15,7 @@ var _ = require('underscore')
 
 
 module.exports = function (req, res, next) {
-  var values = {}
+  var values = _.extend({}, config)
     , showTitle = req.query.showTitle === 'true' ? true : false
     , tldrId = req.query && req.query.tldrId
     , url = req.query && req.query.url
@@ -37,8 +37,8 @@ module.exports = function (req, res, next) {
        mqClient.emit('tldr.read.embed', { tldr: tldr, pageUrl: req.query.pageUrl });
 
        values.tldr = tldr;
-       values.titlePart = showTitle ? 'Summary of "' + tldr.title + '"'
-                                    : 'Summary';
+       values.titlePart = showTitle ? 'tl;dr of "' + tldr.title + '"'
+                                    : 'tl;dr';
 
        return res.render('website/tldrEmbed', { values: values });
   });

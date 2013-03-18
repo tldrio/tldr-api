@@ -10,7 +10,26 @@
     <div class="tldr-base-unit page-tldr-container">
       <div class="tldr-read-container">
         <span class="tldr-header">
-          {{titlePart}} <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+          <span class="tldr-title">{{titlePart}}</span> <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+         <span class="embed-actions">
+           <span class="btn-group dropup">
+              <a class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+                Embed this tl;dr
+              </a>
+              <ul class="pull-right dropdown-menu">
+                <li class="embed-code-info">
+                  Add this tl;dr to your website with the code below
+                </li>
+                <li>
+                  <input onclick="this.select()" value='{{>website/embedCodeTldr}}' type="text" class="embed-code">
+                </li>
+              </ul>
+            </span>
+            <span class="separator">
+               ·
+              </span>
+           <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}" target="_blank" class="tldr-page-link">Permalink</a>
+         </span>
         </span>
 
         <div class="tldr-summary">
