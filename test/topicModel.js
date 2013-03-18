@@ -23,7 +23,9 @@ describe.only('Topic', function () {
   });
 
   beforeEach(function (done) {
-    done();
+    Topic.remove({}, function () {
+      done();
+    });
   });
 
 
@@ -49,5 +51,28 @@ describe.only('Topic', function () {
       });
     });
   });
+
+  it('Get all collections names', function (done) {
+    var topicData1 = { type: 'category', name: 'yepyep' }
+      , topicData2 = { type: 'category', name: 'again' }
+      , topicData3 = { type: 'category', name: 'another' }
+      ;
+
+    Topic.createAndSaveInstance(topicData1, function (err) {
+      Topic.createAndSaveInstance(topicData2, function (err) {
+        Topic.createAndSaveInstance(topicData3, function (err) {
+          Topic.getCategoriesNames(function(err, names) {
+            names.length.should.equal(3);
+            names.should.contain('yepyep');
+            names.should.contain('again');
+            names.should.contain('another');
+
+            done();
+          });
+        });
+      });
+    });
+  });
+
 
 });

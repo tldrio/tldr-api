@@ -26,25 +26,35 @@ function validateType (value) {
 TopicSchema = new Schema({
   type: { type: String
         , required: true
-        , unique: true
         , validate: [validateType, i18n.topic.badType]
         }
 , name: { type: String, required: true, unique: true }
 });
+TopicSchema.path('type').index(true);
 
 
 /**
  * Get All categories names
  */
 TopicSchema.statics.getCategoriesNames = function (callback) {
-  this.find({ type: 'category' }, { name: 1 }, function (err, topics) {
+  this.find({ type: 'category' }, 'name', function (err, topics) {
     if (err) {
       return callback(err);
     } else {
       return callback(null, _.map(topics, function (topic) { return topic.name; }));
     }
   });
+};
 
+
+/**
+ * Create a new topic (mostly for dev purposes)
+ */
+TopicSchema.statics.createAndSaveInstance = function (topicData, cb) {
+  var callback = cb || function () {}
+    , topic = new Topic(topicData);
+
+  topic.save(callback);
 };
 
 
