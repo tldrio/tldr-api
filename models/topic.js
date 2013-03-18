@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
   , TopicSchema, Topic
+  //, approvedTopics = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
   ;
 
 function validateType (value) {
@@ -72,6 +73,24 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
     }
 
     return callback(null, topic);
+  });
+};
+
+
+/**
+ * From an array of category names, return the array of corresponding topic _ids
+ */
+TopicSchema.statics.getIdsFromCategoryNames = function (_names, cb) {
+  var names = typeof _names === 'string' ? [_names] : _names
+    , callback = cb || function () {}
+    ;
+
+  Topic.find({ type: 'category', name: { $in: names } }, '', function (err, topics) {
+    if (err) {
+      return callback(err);
+    } else {
+      return callback(null, _.map(topics, function (t) { return t._id; }));
+    }
   });
 };
 

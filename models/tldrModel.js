@@ -16,10 +16,9 @@ var _ = require('underscore')
   , Schema = mongoose.Schema
   , TldrSchema, Tldr
   , url = require('url')
-  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous', 'topics']     // setable fields by user
-  , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'topics']     // updatabe fields by user
+  , userSetableFields = ['url', 'summaryBullets', 'title', 'resourceAuthor', 'resourceDate', 'imageUrl', 'articleWordCount', 'anonymous']     // setable fields by user
+  , userUpdatableFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']     // updatabe fields by user
   , versionedFields = ['summaryBullets', 'title', 'resourceAuthor', 'resourceDate']
-  , approvedTopics = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
@@ -32,22 +31,6 @@ var _ = require('underscore')
  * Validators
  *
  */
-
-// Should contain only acceptable topics
-function validateTopics (value) {
-  try {
-    check(value).isArray().len(0,15);
-    value.forEach(function(topic) {
-      if (!_.contains(approvedTopics, topic)) {
-        throw {};
-      }
-    });
-
-    return true;
-  } catch(e) {
-    return false;
-  }
-}
 
 //url should be a url, containing hostname and protocol info
 // This validator is very light and only check that the url uses a Web protocol and the hostname has a TLD
@@ -157,11 +140,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
-  , topics: { type: Array
-            , required: true
-            , validate: [validateTopics, i18n.validateTopics]
-            , set: customUtils.sanitizeArray
-            }
+  , topics: [{ type: ObjectId, ref: 'topic' }]
   , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
