@@ -77,23 +77,33 @@ module.exports.displayAnalytics = function (req, res, next) {
 
     values.analytics = JSON.stringify(data);
 
+    // All time
     values.allTime.tldrsCreated = userToDisplayAnalyticsFor.tldrsCreated.length;
     values.allTime.createdSomeTldrs = values.allTime.tldrsCreated > 0;
+    values.allTime.tldrsCreatedPlural = values.allTime.tldrsCreated !== 1;
     values.allTime.readCount = sumField(data, 'readCount');
+    values.allTime.readCountPlural = values.allTime.readCount !== 1;
     values.allTime.wasRead = values.allTime.readCount > 0;
     values.allTime.articleWordCount = sumField(data, 'articleWordCount');
     values.allTime.thanks = sumField(data, 'thanks');
+    values.allTime.thanksPlural = values.allTime.thanks !== 1;
     values.allTime.timeSaved = computeTimeSaved(values.allTime.articleWordCount);
     values.allTime.coffeeBreaks = Math.floor(values.allTime.timeSaved * 6);
+    values.allTime.coffeeBreaksPlural = values.allTime.coffeeBreaks !== 1;
 
+    // Past 30 days
     values.past30Days.tldrsCreated = tldrsCreatedLast30Days.length;
     values.past30Days.createdSomeTldrs = values.past30Days.tldrsCreated > 0;
+    values.past30Days.tldrsCreatedPlural = values.past30Days.tldrsCreated !== 1;
     values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
+    values.past30Days.readCountPlural = values.past30Days.readCount !== 1;
     values.past30Days.wasRead = values.past30Days.readCount > 0;
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
+    values.past30Days.thanksPlural = values.past30Days.thanks !== 1;
     values.past30Days.timeSaved = computeTimeSaved(values.past30Days.articleWordCount);
     values.past30Days.coffeeBreaks = Math.floor(values.past30Days.timeSaved * 6);
+    values.past30Days.coffeeBreaksPlural = values.past30Days.coffeeBreaks !== 1;
 
     Tldr.find({ _id: { $in: userToDisplayAnalyticsFor.tldrsCreated } }, 'articleWordCount wordCount', function (err, tldrs) {
       Tldr.find({ _id: { $in: tldrsCreatedLast30Days } }, 'articleWordCount wordCount', function (err, tldrsLast30Days) {
