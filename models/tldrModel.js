@@ -185,24 +185,28 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
-    instance.history = _history._id;
-    instance.creator = creator._id;
-    instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-    instance.save(function(err, tldr) {
-      if (err) { return callback(err); }
-      mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
-      mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
+    // Initialize topics
+    Topic.getIdsFromCategoryNames(userInput.topics, function (err, topicsIds) {
+      instance.history = _history._id;
+      instance.creator = creator._id;
+      instance.hostname = customUtils.getHostnameFromUrl(instance.url);
+      instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
+      instance.topics = topicsIds;
+      instance.save(function(err, tldr) {
+        if (err) { return callback(err); }
+        mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
+        mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
 
-      // Put it in the creator's list of created tldrs
-      creator.tldrsCreated.push(tldr._id);
-      creator.save(function(err, _user) {
-        if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+        // Put it in the creator's list of created tldrs
+        creator.tldrsCreated.push(tldr._id);
+        creator.save(function(err, _user) {
+          if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-        // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
-        creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
-          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-          callback(null, tldr);
+          // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+          creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+            if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+            callback(null, tldr);
+          });
         });
       });
     });

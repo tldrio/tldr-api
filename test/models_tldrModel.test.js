@@ -71,7 +71,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business']
       }
       , valErr;
 
@@ -87,101 +86,11 @@ describe('Tldr', function () {
       });
     });
 
-    it('should detect missing required topics arg', function (done) {
-      var tldrData = {
-        url: 'http://bloup.com/',
-        summaryBullets: ['Awesome Blog'],
-        title: 'Blog NFA',
-        resourceAuthor: 'NFA Crew',
-      }
-      , valErr;
-
-      Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
-        err.name.should.equal('ValidationError');
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.topics.should.not.equal(undefined);
-
-        done();
-      });
-    });
-
-    it('should reject tldrs whose topics is an empty array', function (done) {
-      var tldr = new Tldr({
-        url: 'http://needforair.com/nutcrackers',
-        title: 'Blog NFA',
-        summaryBullets: ['bloup'],
-        topics: [],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      , valErr;
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.topics.should.not.equal(undefined);
-        done();
-      });
-    });
-
-    it('should reject tldrs whose topics array contains empty elements', function (done) {
-      var tldr = new Tldr({
-        url: 'http://needforair.com/nutcrackers',
-        title: 'Blog NFA',
-        summaryBullets: ['bloup'],
-        topics: [''],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      , valErr;
-
-      tldr.save( function (err) {
-        err.name.should.equal('ValidationError');
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.topics.should.not.equal(undefined);
-        done();
-      });
-    });
-
-    it('should reject tldrs whose topics array contains non approved elements', function (done) {
-      var tldrData = {
-        url: 'http://needforair.com/nutcrackers',
-        title: 'Blog NFA',
-        summaryBullets: ['bloup'],
-        topics: ['Loltrains'],
-        resourceAuthor: 'NFA Crew',
-        resourceDate: '2012',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-      , valErr;
-
-      Tldr.createAndSaveInstance(tldrData, user, function (err) {
-        err.name.should.equal('ValidationError');
-        valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-        valErr.topics.should.not.equal(undefined);
-
-        tldrData.topics = ['Art', 'NotApproved'];
-        Tldr.createAndSaveInstance(tldrData, user, function (err) {
-          err.name.should.equal('ValidationError');
-          valErr = models.getAllValidationErrorsWithExplanations(err.errors);
-          valErr.topics.should.not.equal(undefined);
-
-          done();
-        });
-      });
-    });
-
     it('should detect missing required title arg', function (done) {
       var tldrData = {
         url: 'http://bloup.com/',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business']
       }
       , valErr;
 
@@ -201,7 +110,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business']
       }
         , valErr;
 
@@ -237,7 +145,6 @@ describe('Tldr', function () {
           url: 'http://needforair.com/nutcrackers',
           title: 'Blog NFA',
           resourceAuthor: 'NFA Crew',
-          topics: ['Business']
           }
         , valErr;
 
@@ -260,7 +167,6 @@ describe('Tldr', function () {
           title: 'Blog Blog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmBlog NFAmmuNFAmm',   // 201 characters
           resourceAuthor: 'NFA Crew',
           summaryBullets: ['bloup'],
-          topics: ['Business']
           }
         , valErr;
 
@@ -282,7 +188,6 @@ describe('Tldr', function () {
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
-        topics: ['Business'],
         resourceAuthor: 'NFA Crew',
         resourceDate: 'NFA Crew',
         createdAt: 'eiugherg',
@@ -305,7 +210,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         resourceAuthor: 'NFA Crew',
         resourceDate: '2012',
-        topics: ['Business'],
         createdAt: new Date(),
         updatedAt: new Date()
       })
@@ -324,7 +228,6 @@ describe('Tldr', function () {
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: [],
-        topics: ['Business'],
         resourceAuthor: 'NFA Crew',
         resourceDate: '2012',
         createdAt: new Date(),
@@ -344,7 +247,6 @@ describe('Tldr', function () {
         url: 'http://needforair.com/nutcrackers',
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', '', 'amnother bullet'],
-        topics: ['Business'],
         resourceAuthor: 'NFA Crew',
         resourceDate: '2012',
         createdAt: new Date(),
@@ -366,7 +268,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['weqrqweqw eqwe qwe', 'adad', 'amnother bullet', 'eweqweq', 'qweqwe', 'qweqweqwe'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         resourceDate: '2012',
         createdAt: new Date(),
         updatedAt: new Date()
@@ -389,7 +290,6 @@ describe('Tldr', function () {
         summaryBullets: ['weqrqweqw eqwe qwe', 'adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee adadeeeee w'],
         resourceAuthor: 'NFA Crew',
         resourceDate: '2012',
-        topics: ['Business'],
         createdAt: new Date(),
         updatedAt: new Date()
       })
@@ -407,11 +307,10 @@ describe('Tldr', function () {
 
   describe('#createAndSaveInstance', function () {
 
-    it('should allow user to set url, title, summary, resourceAuthor, imageUrl, topics and articleWordCount only', function (done) {
+    it('should allow user to set url, title, summary, resourceAuthor, imageUrl, and articleWordCount only', function (done) {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
-        , topics: ['Business']
         , resourceAuthor: 'bloup'
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
@@ -429,7 +328,6 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://google.com/image.png');
             tldr.articleWordCount.should.equal(437);
-            tldr.topics.should.include('Business');
             tldr.createdAt.should.not.equal('2012');
 
             done();
@@ -441,7 +339,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFAerBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAeBlog NFAerrrrrrrrrrrrrrrrrrr'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
-        , topics: ['Business']
         , resourceAuthor: 'bloup'
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
@@ -461,7 +358,6 @@ describe('Tldr', function () {
         , url: 'http://www.mydomain.com/bloup/'
         , summaryBullets: ['coin']
         , resourceAuthor: 'bloup'
-        , topics: ['Business']
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
         };
@@ -484,7 +380,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'
                      , createdAt: '2012'}
         , deserialized;
@@ -511,7 +406,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'
                      , createdAt: '2012'}
         , userData = { username: 'blip'
@@ -548,7 +442,6 @@ describe('Tldr', function () {
       var tldr = { title: 'Blog NFA'
         , url: 'http://mydomain.com'
         , summaryBullets: ['coin']
-        , topics: ['Business']
         , resourceAuthor: 'bloup'
         , createdAt: '2012'};
 
@@ -571,7 +464,6 @@ describe('Tldr', function () {
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
                      , resourceAuthor: 'bloup'
-                     , topics: ['Business']
                      , createdAt: '2012'}
         , userData = { username: 'blip'
                      , password: 'supersecret'
@@ -602,7 +494,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog', 'Hello how do you do??'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       }
       , valErr;
@@ -622,12 +513,10 @@ describe('Tldr', function () {
       var tldrData1 = {
             summaryBullets: ['Awesome Blog'],
             resourceAuthor: 'NFA Crew',
-            topics: ['Business'],
             url: 'http://needforair.com',
           }
         , tldrData2 = { title: ''
                       , summaryBullets: ['hgf']
-                      , topics: ['Business']
                       , url: 'http://needforair.com/yup'
           }
         ;
@@ -648,7 +537,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       }
       , valErr;
@@ -674,7 +562,6 @@ describe('Tldr', function () {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
-        topics: ['Business'],
         resourceAuthor: 'NFA Crew',
         url: 'http://needforair.com',
       }
@@ -718,7 +605,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       }
       , id
@@ -740,7 +626,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       }
       , id
@@ -795,7 +680,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       }
       , id
@@ -828,7 +712,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       };
 
@@ -843,7 +726,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       };
 
@@ -869,7 +751,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       };
 
@@ -899,7 +780,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       };
 
@@ -930,7 +810,6 @@ describe('Tldr', function () {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog'],
         resourceAuthor: 'NFA Crew',
-        topics: ['Business'],
         url: 'http://needforair.com',
       };
 
@@ -954,19 +833,16 @@ describe('Tldr', function () {
       var tldrData1 = { title: 'Blog NFA'
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
-                      , topics: ['Business']
                       , resourceAuthor: 'bloup'
                       }
         , tldrData2 = { title: 'Blog NFA2'
                       , url: 'http://mydomain.com2'
                       , summaryBullets: ['coin2']
-                      , topics: ['Business']
                       , resourceAuthor: 'bloup2'
                       }
         , tldrData3 = { title: 'Blog NFA3'
                       , url: 'http://mydomain.com3'
                       , summaryBullets: ['coin3']
-                      , topics: ['Business']
                       , resourceAuthor: 'bloup3'
                       }
         , tldrId, userId = user._id
@@ -1012,7 +888,6 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
-                      , topics: ['Startups']
                       }
         ;
 
@@ -1032,12 +907,10 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
-                      , topics: ['Startups']
                       }
         , tldrData2 = { title: 'Coucou'
                       , url: 'http://mydomain.com/another'
                       , summaryBullets: ['coin', 'piou']
-                      , topics: ['Startups']
                       }
         , tldr1Id, tldr2Id
         ;
@@ -1094,12 +967,10 @@ describe('Tldr', function () {
                       , url: 'http://mydomain.com'
                       , summaryBullets: ['coin']
                       , resourceAuthor: 'bloup'
-                      , topics: ['Startups']
                       }
         , tldrData2 = { title: 'Coucou'
                       , url: 'http://mydomain.com/another'
                       , summaryBullets: ['coin', 'piou']
-                      , topics: ['Startups']
                       }
         , tldr1Id, tldr2Id
         ;
@@ -1171,14 +1042,12 @@ describe('Tldr', function () {
                       , title: 'Blog NeedForAir'
                       , resourceAuthor: 'new3'
                       , createdAt: '2012'
-                      , topics: ['Art']
                       , imageUrl: 'http://g.com/second.png'
                       }
           , tldrData = { title: 'Blog NFA'
                        , url: 'http://mydomain.com'
                        , summaryBullets: ['coin']
                        , resourceAuthor: 'bloup'
-                       , topics: ['Business']
                        , imageUrl: 'http://g.com/first.png'
                        };
 
@@ -1204,8 +1073,6 @@ describe('Tldr', function () {
               tldr.title.should.equal('Blog NeedForAir');
               tldr.resourceAuthor.should.equal('new3');
               tldr.createdAt.should.not.equal('2012');
-              tldr.topics.should.include('Art');
-              tldr.topics.should.not.include('Business');
               tldr.imageUrl.should.equal('http://g.com/first.png');
               tldr.wordCount.should.equal(4);
 
@@ -1219,7 +1086,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'}
         , theTldr;
 
@@ -1261,7 +1127,6 @@ describe('Tldr', function () {
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
         , articleWordCount: 437
-        , topics: ['Startups']
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
@@ -1281,7 +1146,6 @@ describe('Tldr', function () {
         , createdAt: '2012'
         , imageUrl: 'http://google.com/image.png'
         , articleWordCount: 437
-        , topics: ['Startups']
         };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err) {
@@ -1302,7 +1166,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com/'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'};
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
@@ -1317,7 +1180,6 @@ describe('Tldr', function () {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com/'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'};
 
       Tldr.createAndSaveInstance(tldrData, user, function(err, tldr) {
@@ -1340,17 +1202,14 @@ describe('Tldr', function () {
       var tldrData1 = { title: 'Blog NFA'
                      , url: 'http://mydomain.com/'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'}
         , tldrData2 = { title: 'Blog NFA - Totot'
                      , url: 'http://anotherdomain.com/'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'}
         , tldrData3 = { title: 'Blog NFA - tata'
                      , url: 'http://athirddomain.com/'
                      , summaryBullets: ['coin']
-                     , topics: ['Business']
                      , resourceAuthor: 'bloup'}
         , batch = [tldrData1.url, tldrData2.url, 'http://nonexistingdomain.com/']
         , prevReadCount1
@@ -1391,7 +1250,6 @@ describe('Tldr', function () {
           url: 'http://needfdocument.cookieorair.com/nutcrackers',
           title: 'Blog NFdocument.writeA',
           summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
-          topics: ['Business'],
           resourceAuthor: 'NFA Crewwindow.location',
           resourceDate: '2012',
           imageUrl: 'http://googledocument.write.fr/bloup.png'
@@ -1418,14 +1276,12 @@ describe('Tldr', function () {
           url: 'http://url.com/nutcrackers',
           title: 'Yipiie',
           summaryBullets: ['AwBlog', 'Bzzzup'],
-          topics: ['Business'],
           resourceAuthor: 'Someone',
           }
         , userInput = {
           url: 'http://needfdocument.cookieorair.com/nutcrackers',
           title: 'Blog NFdocument.writeA',
           summaryBullets: ['Aweso.parentNodeme Blog', 'B.innerHTMLloup'],
-          topics: ['Business'],
           resourceAuthor: 'NFA Crewwindow.location',
           };
 
@@ -1450,7 +1306,6 @@ describe('Tldr', function () {
           url: 'http://url.com/nutcrackers',
           title: 'Yipiie',
           summaryBullets: ['AwBlog', 'Bzzzup'],
-          topics: ['Business'],
           resourceAuthor: 'Someone',
           resourceDate: 'document'   // Try to put a string, like document.cookie or document.write
           };
@@ -1467,7 +1322,6 @@ describe('Tldr', function () {
       var tldrData = { url: 'http://needforair.com/nutcrackers',
                             title: 'toto&nbsp;titi',
                             summaryBullets: ['toto', 'tit&lt;i'],
-                            topics: ['Business'],
                             resourceAuthor: 'NFA Crew',
                      }
         , valErr;
@@ -1491,7 +1345,6 @@ describe('Tldr', function () {
       var tldrData = { url: 'http://needforair.com/nutcrackers',
                             title: 'tototiti',
                             summaryBullets: ['toto', 'titi'],
-                            topics: ['Business'],
                             resourceAuthor: 'NFA Crew',
                           };
 
@@ -1519,7 +1372,6 @@ describe('Tldr', function () {
                      , url: 'http://mydomain.com'
                      , summaryBullets: ['coin', 'hihan']
                      , resourceAuthor: 'bloup'
-                     , topics: ['Business']
                      , createdAt: '2012'}
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
          , userData2 = { username: 'eehhhhe', password: 'goodp2ssword', email: 'vali2@email.com' }
@@ -1625,7 +1477,6 @@ describe('Tldr', function () {
     it('should be able to go back one version', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://mydomain.com'
-                     , topics: ['Business']
                      , summaryBullets: ['coin', 'hihan']
                      , resourceAuthor: 'bloup' }
          , userData1 = { username: 'eee', password: 'goodpassword', email: 'va11d@email.com' }
