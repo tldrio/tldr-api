@@ -121,7 +121,19 @@ describe('Topic', function () {
 
               Topic.getIdsFromCategoryNames(['nothingtoseehere'], function (err, topics) {
                 topics.length.should.equal(0);
-                done();
+
+                Topic.getIdsFromCategoryNames('', function (err, topics) {
+                  topics.length.should.equal(0);
+
+                  Topic.getIdsFromCategoryNames('yepyep again', function (err, topics) {
+                    topics = _.map(topics, function (t) { return t.toString(); });
+                    topics.length.should.equal(2);
+                    topics.should.contain(topic1._id.toString());
+                    topics.should.contain(topic2._id.toString());
+
+                    done();
+                  });
+                });
               });
             });
           });

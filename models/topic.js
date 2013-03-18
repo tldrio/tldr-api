@@ -79,9 +79,10 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
 
 /**
  * From an array of category names, return the array of corresponding topic _ids
+ * @param {String or Array} _names either 'cat1 cat2 ...' or [cat1, cat2, ...]
  */
 TopicSchema.statics.getIdsFromCategoryNames = function (_names, cb) {
-  var names = typeof _names === 'string' ? [_names] : _names
+  var names = typeof _names === 'string' ? _names.split(' ') : _names
     , callback = cb || function () {}
     ;
 

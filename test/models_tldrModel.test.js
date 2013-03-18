@@ -17,6 +17,7 @@ var should = require('chai').should()
   , Credentials = models.Credentials
   , User = models.User
   , TldrHistory = models.TldrHistory
+  , Topic = models.Topic
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
@@ -36,7 +37,7 @@ function wait (millis, cb) {
 /**
  * Tests
  */
-describe('Tldr', function () {
+describe.only('Tldr', function () {
   var user, userbis;
 
   before(function (done) {
@@ -48,19 +49,24 @@ describe('Tldr', function () {
   });
 
   beforeEach(function (done) {
-    Credentials.remove({}, function(err) {
-      User.remove({}, function(err) {
-        Tldr.remove({}, function (err) {
-          User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
-            user = _user;
-            User.createAndSaveInstance({ username: "eekkkee", password: "eeeeeeee", email: "validghj@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
-              userbis = _user;
-              done();
-            });
+    function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
+
+    async.waterfall([
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
+    , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Topic)
+    , function (cb) {
+        User.createAndSaveInstance({ username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
+          user = _user;
+          User.createAndSaveInstance({ username: "eekkkee", password: "eeeeeeee", email: "validghj@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
+            userbis = _user;
+            cb();
           });
         });
-      });
-    });
+      }
+    ], done);
+
   });
 
 
@@ -532,7 +538,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should automatically set virtual slug', function (done) {
+    it.only('should automatically set virtual slug', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world'],
