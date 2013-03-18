@@ -6,17 +6,19 @@
 
 var config = require('../../lib/config')
   , app = require('../../app')
-  , _s = require('underscore.string')
+  , customUtils = require('../../lib/customUtils')
+  , moment = require('moment')
   ;
 
 module.exports = function (req, res, next) {
-  app.getTotalTldrReadCount(function (err, totalReadCount) {
+  app.getTotalWordsSaved(function (err, totalWordsSaved) {
     var values = req.renderingValues || {}
-      , partials = req.renderingPartials || {};
+      , partials = req.renderingPartials || {}
+      , totalTimeSaved = customUtils.timeToRead(totalWordsSaved);
 
     values.index = true;
     values.rssFeedPromotionLink = true;
-    values.totalReadCount = _s.numberFormat(totalReadCount);
+    values.totalTimeSaved = moment.duration(totalTimeSaved, 'hours').humanize();
     values.title = "tldr.io" + config.titles.shortDescription;
     values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
     partials.content = '{{>website/pages/index}}';

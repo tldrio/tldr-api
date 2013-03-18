@@ -43,7 +43,7 @@ module.exports.displayAnalytics = function (req, res, next) {
   values.allTime = { selection: 'allTime' };
 
   function computeTimeSaved (wordCount) {
-    // 5 words per second, returns in hours
+    // 200 words per minute, returns in hours
     // very simple for now
     return wordCount / (3.3 * 3600);
   }
