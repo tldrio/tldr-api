@@ -74,5 +74,31 @@ describe.only('Topic', function () {
     });
   });
 
+  it('createAndSaveInstance in safe mode doesnt spout an error on conflict', function (done) {
+    var topicData = { type: 'category', name: 'same' }
+      ;
+
+    Topic.createAndSaveInstance(topicData, function (err) {
+      // Unsafe creation: an error is raised
+      Topic.createAndSaveInstance(topicData, { safe: false }, function (err) {
+        err.code.should.equal(11000);
+        Topic.find({}, function (err, topics) {
+          topics.length.should.equal(1);
+
+          // Safe creation: no error is raised
+          Topic.createAndSaveInstance(topicData, { safe: true }, function (err, topic) {
+            assert.isNull(err);
+            assert.isUndefined(topic);
+            Topic.find({}, function (err, topics) {
+              topics.length.should.equal(1);
+
+              done();
+            });
+          });
+        });
+      });
+    });
+  });
+
 
 });

@@ -49,12 +49,30 @@ TopicSchema.statics.getCategoriesNames = function (callback) {
 
 /**
  * Create a new topic (mostly for dev purposes)
+ * @param {Boolean} options.safe Safe insert which doesn't raise an error in case of conflict
+ * @param {Function} cb Optional callback, signature err, new topic if created
  */
-TopicSchema.statics.createAndSaveInstance = function (topicData, cb) {
-  var callback = cb || function () {}
+TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
+  var callback, options, safe
     , topic = new Topic(topicData);
 
-  topic.save(callback);
+  if (typeof _options === 'function') {
+    options = {};
+    cb = _options;
+  } else {
+    options = _options;
+  }
+
+  callback = cb || function () {};
+  safe = options.safe || false;
+
+  topic.save(function (err, topic) {
+    if (err) {
+      if (!(safe && err.code === 11000)) { return callback(err); }
+    }
+
+    return callback(null, topic);
+  });
 };
 
 

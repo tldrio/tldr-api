@@ -23,6 +23,7 @@ var _ = require('underscore')
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
+  , Topic = require('./topic')
   , async = require('async')
   ;
 
