@@ -637,8 +637,47 @@ describe('Custom utils', function () {
       extremeData4[4].timestamp.getTime().should.equal((new Date(2004, 7)).getTime());
     });
 
-
   });   // ==== End of 'Time series treatment' ==== //
+
+
+  describe('#getSubAdressedGmails', function () {
+
+    it('Given a Gmail address, should return a regex that matches it and it subaddresses only', function () {
+      var add = "louis.chatriot@gmail.com"
+        , re = customUtils.getSubAdressedGmails(add)
+        ;
+
+      // We don't treat the dots in the addresses, its a very rare and shitty case
+      assert.isNull('louischatriot@gmail.com'.match(re));
+      assert.isNull('louischatriot+t@gmail.com'.match(re));
+      assert.isNull('louischatriot+tldr@gmail.com'.match(re));
+      assert.isNull('louis.chatrot@gmail.com'.match(re));
+      assert.isNull('louis.chatrot+tldr@gmail.com'.match(re));
+      assert.isNull('louis.chatriot+@gmail.com'.match(re));
+
+      assert.isNotNull('louis.chatriot@gmail.com'.match(re));
+      assert.isNotNull('louis.chatriot+t@gmail.com'.match(re));
+      assert.isNotNull('louis.chatriot+tldr@gmail.com'.match(re));
+    });
+
+    it('Given a non Gmail address, should only match this address', function () {
+      var add = "louis.chatriot@yahoo.com"
+        , re = customUtils.getSubAdressedGmails(add)
+        ;
+
+      assert.isNull('louischatriot@yahoo.com'.match(re));
+      assert.isNull('louischatriot+t@yahoo.com'.match(re));
+      assert.isNull('louischatriot+tldr@yahoo.com'.match(re));
+      assert.isNull('louis.chatrot@yahoo.com'.match(re));
+      assert.isNull('louis.chatrot+tldr@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+t@yahoo.com'.match(re));
+      assert.isNull('louis.chatriot+tldr@yahoo.com'.match(re));
+
+      assert.isNotNull('louis.chatriot@yahoo.com'.match(re));
+    });
+
+  });   // ==== End of '#getSubAdressedGmails' ==== //
 
 
 });

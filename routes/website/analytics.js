@@ -78,16 +78,22 @@ module.exports.displayAnalytics = function (req, res, next) {
     values.analytics = JSON.stringify(data);
 
     values.allTime.tldrsCreated = userToDisplayAnalyticsFor.tldrsCreated.length;
+    values.allTime.createdSomeTldrs = values.allTime.tldrsCreated > 0;
     values.allTime.readCount = sumField(data, 'readCount');
+    values.allTime.wasRead = values.allTime.readCount > 0;
     values.allTime.articleWordCount = sumField(data, 'articleWordCount');
     values.allTime.thanks = sumField(data, 'thanks');
     values.allTime.timeSaved = computeTimeSaved(values.allTime.articleWordCount);
+    values.allTime.coffeeBreaks = Math.floor(values.allTime.timeSaved * 6);
 
     values.past30Days.tldrsCreated = tldrsCreatedLast30Days.length;
+    values.past30Days.createdSomeTldrs = values.past30Days.tldrsCreated > 0;
     values.past30Days.readCount = sumField(data, 'readCount', aMonthAgo);
+    values.past30Days.wasRead = values.past30Days.readCount > 0;
     values.past30Days.articleWordCount = sumField(data, 'articleWordCount', aMonthAgo);
     values.past30Days.thanks = sumField(data, 'thanks', aMonthAgo);
     values.past30Days.timeSaved = computeTimeSaved(values.past30Days.articleWordCount);
+    values.past30Days.coffeeBreaks = Math.floor(values.past30Days.timeSaved * 6);
 
     Tldr.find({ _id: { $in: userToDisplayAnalyticsFor.tldrsCreated } }, 'articleWordCount wordCount', function (err, tldrs) {
       Tldr.find({ _id: { $in: tldrsCreatedLast30Days } }, 'articleWordCount wordCount', function (err, tldrsLast30Days) {
@@ -130,6 +136,7 @@ module.exports.displayAnalytics = function (req, res, next) {
         values.past30Days.wordsCompressed = _s.numberFormat(values.past30Days.wordsCompressed);
         values.past30Days.wordsWritten = _s.numberFormat(values.past30Days.wordsWritten);
         values.past30Days.timeSaved = moment.duration(values.past30Days.timeSaved, 'hours').humanize();
+        values.past30Days.coffeeBreaks = _s.numberFormat(values.past30Days.coffeeBreaks);
         values.allTime.tldrsCreated = _s.numberFormat(values.allTime.tldrsCreated);
         values.allTime.readCount = _s.numberFormat(values.allTime.readCount);
         values.allTime.articleWordCount = _s.numberFormat(values.allTime.articleWordCount);
@@ -137,6 +144,7 @@ module.exports.displayAnalytics = function (req, res, next) {
         values.allTime.wordsCompressed = _s.numberFormat(values.allTime.wordsCompressed);
         values.allTime.wordsWritten = _s.numberFormat(values.allTime.wordsWritten);
         values.allTime.timeSaved = moment.duration(values.allTime.timeSaved, 'hours').humanize();
+        values.allTime.coffeeBreaks = _s.numberFormat(values.allTime.coffeeBreaks);
 
         res.render('website/basicLayout', { values: values
                                           , partials: partials

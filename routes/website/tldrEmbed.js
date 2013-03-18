@@ -9,17 +9,37 @@ var _ = require('underscore')
   , bunyan = require('../../lib/logger').bunyan
   , config = require('../../lib/config')
   , customUtils = require('../../lib/customUtils')
+  , async = require('async')
+  , mqClient = require('../../lib/message-queue')
   ;
 
+
 module.exports = function (req, res, next) {
-  var values = {};
+  var values = {}
+    , showTitle = req.query.showTitle === 'true' ? true : false
+    , tldrId = req.query && req.query.tldrId
+    , url = req.query && req.query.url
+    ;
 
+  values.iframeId = req.query && req.query.iframeId;
 
-  Tldr.findOneById(req.params.id, function (err, tldr) {
-    if (err || !tldr) { return res.json(404, {}); }
+  async.waterfall([
+     function (cb) {
+       if (tldrId) {
+         Tldr.findOneById(tldrId, function (err, tldr) { return cb(err, tldr); });
+       } else {
+         Tldr.findOneByUrl(url, function (err, tldr) { return cb(err, tldr); });
+       }
+     }
+  ], function (err, tldr) {
+       if (err || !tldr) { return res.json(404, {}); }
 
-    values.tldr = tldr;
+       mqClient.emit('tldr.read.embed', { tldr: tldr, pageUrl: req.query.pageUrl });
 
-    return res.render('website/tldrEmbed', { values: values });
+       values.tldr = tldr;
+       values.titlePart = showTitle ? 'Summary of "' + tldr.title + '"'
+                                    : 'Summary';
+
+       return res.render('website/tldrEmbed', { values: values });
   });
 };
