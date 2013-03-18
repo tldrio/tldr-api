@@ -8,6 +8,7 @@ var config = require('../../lib/config')
   , app = require('../../app')
   , customUtils = require('../../lib/customUtils')
   , moment = require('moment')
+  , _s = require('underscore.string')
   ;
 
 module.exports = function (req, res, next) {
@@ -18,6 +19,7 @@ module.exports = function (req, res, next) {
 
     values.index = true;
     values.rssFeedPromotionLink = true;
+    values.coffeeBreaksSaved = _s.numberFormat(Math.floor(totalTimeSaved * 6));
     values.totalTimeSaved = moment.duration(totalTimeSaved, 'hours').humanize();
     values.title = "tldr.io" + config.titles.shortDescription;
     values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
