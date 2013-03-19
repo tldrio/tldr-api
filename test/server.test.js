@@ -688,7 +688,7 @@ describe('Webserver', function () {
         var tldrData = { summaryBullets: ['A new summary'] };
 
         request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
-          res.statusCode.should.equal(403);
+          res.statusCode.should.equal(404);
           done();
         });
       });
