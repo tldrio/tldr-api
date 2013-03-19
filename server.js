@@ -131,6 +131,9 @@ app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
+// Topics
+app.get('/categories/names', routes.getAllCategoriesNames);
+
 
 // Admin only routes
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);

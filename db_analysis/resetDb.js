@@ -10,6 +10,7 @@ var async = require('async')
   , User = models.User
   , Tldr = models.Tldr
   , UserAnalytics = models.UserAnalytics
+  , Topic = models.Topic
   , mongoose = require('mongoose')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
@@ -68,6 +69,16 @@ async.waterfall([
     APIClient.createAndSaveInstance(bmLocal, function (err, apic) {
       APIClient.createAndSaveInstance(crxLocal, function (err, apic) {
         cb();
+      });
+    });
+  }
+, function (cb) {
+    console.log("Creating some categories");
+    Topic.createAndSaveInstance({ type: 'category', name: 'Startups' }, function () {
+      Topic.createAndSaveInstance({ type: 'category', name: 'Art' }, function () {
+        Topic.createAndSaveInstance({ type: 'category', name: 'Programming' }, function () {
+          cb();
+        });
       });
     });
   }

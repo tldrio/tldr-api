@@ -326,6 +326,7 @@ function findOneInternal (selector, cb) {
   Tldr.findOne(selector)
       .populate('creator', 'deleted username twitterHandle')
       .populate('editors', 'deleted username')
+      .populate('topics', 'name')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
