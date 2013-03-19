@@ -1108,12 +1108,14 @@ describe('Tldr', function () {
                       , resourceAuthor: 'new3'
                       , createdAt: '2012'
                       , imageUrl: 'http://g.com/second.png'
+                      , topics: 'Art'
                       }
           , tldrData = { title: 'Blog NFA'
                        , url: 'http://mydomain.com'
                        , summaryBullets: ['coin']
                        , resourceAuthor: 'bloup'
                        , imageUrl: 'http://g.com/first.png'
+                       , topics: 'Startups'
                        };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err) {
@@ -1128,6 +1130,8 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://g.com/first.png');
             tldr.wordCount.should.equal(1);
+            tldr.topics.length.should.equal(1);
+            tldr.topics[0].toString().should.equal(categories.startups._id.toString());
 
             // Perform update
             tldr.updateValidFields(updated, user, function(err) {
@@ -1140,6 +1144,41 @@ describe('Tldr', function () {
               tldr.createdAt.should.not.equal('2012');
               tldr.imageUrl.should.equal('http://g.com/first.png');
               tldr.wordCount.should.equal(4);
+              tldr.topics.length.should.equal(1);
+              tldr.topics[0].toString().should.equal(categories.art._id.toString());
+
+              done();
+            });
+          });
+        });
+    });
+
+    it('An update that doesnt specify topics should not change them', function (done) {
+        var updated = {url: 'http://myotherdomain.com'
+                      , summaryBullets: ['new2', 'glip glop glup']
+                      , title: 'Blog NeedForAir'
+                      , resourceAuthor: 'new3'
+                      , createdAt: '2012'
+                      , imageUrl: 'http://g.com/second.png'
+                      }
+          , tldrData = { title: 'Blog NFA'
+                       , url: 'http://mydomain.com'
+                       , summaryBullets: ['coin']
+                       , resourceAuthor: 'bloup'
+                       , imageUrl: 'http://g.com/first.png'
+                       , topics: 'Startups'
+                       };
+
+      Tldr.createAndSaveInstance(tldrData, user, function(err) {
+          Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
+            var tldr = docs[0];
+            tldr.topics.length.should.equal(1);
+            tldr.topics[0].toString().should.equal(categories.startups._id.toString());
+
+            // Perform update
+            tldr.updateValidFields(updated, user, function(err) {
+              tldr.topics.length.should.equal(1);
+              tldr.topics[0].toString().should.equal(categories.startups._id.toString());
 
               done();
             });

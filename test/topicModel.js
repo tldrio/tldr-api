@@ -128,7 +128,7 @@ describe('Topic', function () {
   });
 
 
-  describe.only('Get topic ids from category names', function () {
+  describe('Get topic ids from category names', function () {
 
     it('Can use a space separated string to get category names', function (done) {
       var topicData1 = { type: 'category', name: 'yepyep' }
