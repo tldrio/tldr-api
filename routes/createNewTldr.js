@@ -1,5 +1,4 @@
 var bunyan = require('../lib/logger').bunyan
-  , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , models = require('../lib/models')
   , i18n = require('../lib/i18n')
   , helpers = require('./helpers')
@@ -7,7 +6,10 @@ var bunyan = require('../lib/logger').bunyan
   , mailer = require('../lib/mailer')
   , _ = require('underscore')
   , mqClient = require('../lib/message-queue')
-  , Tldr = models.Tldr;
+  , Tldr = models.Tldr
+  , updateTldrWithId = require('./updateTldrWithId')
+  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  ;
 
 
 function createNewTldr (req, res, next) {
@@ -23,8 +25,9 @@ function createNewTldr (req, res, next) {
 
       // POST on existing resource so we act as if it's an update
       url = normalizeUrl(req.body.url);
-      Tldr.find({ possibleUrls: url }, function (err, docs) {
-        helpers.updateCallback(err, docs, req, res, next);
+      return Tldr.findOne({ possibleUrls: url }, function (err, tldr) {
+        req.params = { id: tldr._id };
+        updateTldrWithId(req, res, next);
       });
     } else {
       mailer.sendEmail({ type: 'adminTldrWasCreatedOrEdited'

@@ -45,7 +45,6 @@ function updateTldrWithId (req, res, next) {
       });
     });
   });
-
 }
 
 // Module interface
