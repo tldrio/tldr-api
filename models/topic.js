@@ -35,7 +35,7 @@ TopicSchema.path('type').index(true);
 
 
 /**
- * Get All categories names
+ * Get all categories names
  */
 TopicSchema.statics.getCategoriesNames = function (callback) {
   this.find({ type: 'category' }, 'name', function (err, topics) {
@@ -45,6 +45,15 @@ TopicSchema.statics.getCategoriesNames = function (callback) {
       return callback(null, _.map(topics, function (topic) { return topic.name; }));
     }
   });
+};
+
+
+/**
+ * Get all categories names and ideas
+ * callback signature: err, [{ categoryId, categoryName }]
+ */
+TopicSchema.statics.getCategoriesNamesAndIds = function (callback) {
+  this.find({ type: 'category' }, 'name', callback);
 };
 
 

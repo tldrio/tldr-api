@@ -586,7 +586,7 @@ describe('Tldr', function () {
       });
     });
 
-    it.only('Should be able to create a tldr and initialize topics', function (done) {
+    it('Should be able to create a tldr and initialize topics', function (done) {
       var tldrData = {
             title: 'Blog NFA'
           , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
