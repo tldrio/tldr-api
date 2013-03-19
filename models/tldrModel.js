@@ -191,7 +191,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
       instance.creator = creator._id;
       instance.hostname = customUtils.getHostnameFromUrl(instance.url);
       instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-      //instance.topics = topicsIds;
+      instance.topics = topicsIds;
       instance.save(function(err, tldr) {
         if (err) { return callback(err); }
         mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)

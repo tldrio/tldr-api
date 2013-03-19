@@ -38,7 +38,9 @@ function wait (millis, cb) {
  * Tests
  */
 describe('Tldr', function () {
-  var user, userbis;
+  var user, userbis
+    , categories = {}
+    ;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -62,6 +64,18 @@ describe('Tldr', function () {
           User.createAndSaveInstance({ username: "eekkkee", password: "eeeeeeee", email: "validghj@email.com", twitterHandle: 'zetwit' }, function(err, _user) {
             userbis = _user;
             cb();
+          });
+        });
+      }
+    , function (cb) {
+        Topic.createAndSaveInstance({ type: 'category', name: 'Startups' }, function (err, _topic) {
+          categories.startups = _topic;
+          Topic.createAndSaveInstance({ type: 'category', name: 'Programming' }, function (err, _topic) {
+            categories.programming = _topic;
+            Topic.createAndSaveInstance({ type: 'category', name: 'Art' }, function (err, _topic) {
+              categories.art = _topic;
+              cb();
+            });
           });
         });
       }
@@ -558,21 +572,47 @@ describe('Tldr', function () {
       });
     });
 
-    it.only('Should be able to create a tldr with no topic', function (done) {
+    it('Should be able to create a tldr with no topic', function (done) {
       var tldrData = {
         title: 'Blog NFA'
       , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
       , resourceAuthor: 'NFA Crew'
       , url: 'http://needforair.com'
-      }
-      , valErr;
+      };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-        if (err) { return done(err); }
-        tldr.slug.should.equal('blog-nfa');
-        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
-          if (err) { return done(err); }
-          docs[0].slug.should.equal('blog-nfa');
+        tldr.topics.length.should.equal(0);
+        done();
+      });
+    });
+
+    it.only('Should be able to create a tldr and initialize topics', function (done) {
+      var tldrData = {
+            title: 'Blog NFA'
+          , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
+          , resourceAuthor: 'NFA Crew'
+          , url: 'http://needforair.com'
+          , topics: 'Startups'
+          }
+        , tldrDataMultiple = {
+            title: 'Blog NFA'
+          , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
+          , resourceAuthor: 'NFA Crew'
+          , url: 'http://needforair.com/another'
+          , topics: 'Startups Art'
+          };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        var topicsIds = _.map(tldr.topics, function (t) { return t.toString(); });
+        tldr.topics.length.should.equal(1);
+        topicsIds.should.contain(categories.startups._id.toString());
+
+        Tldr.createAndSaveInstance(tldrDataMultiple, user, function (err, tldr) {
+          var topicsIds = _.map(tldr.topics, function (t) { return t.toString(); });
+          tldr.topics.length.should.equal(2);
+          topicsIds.should.contain(categories.startups._id.toString());
+          topicsIds.should.contain(categories.art._id.toString());
+
           done();
         });
       });
