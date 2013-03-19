@@ -76,16 +76,23 @@ describe('Analytics', function () {
   });
 
   // Make sure the start state is well known
-  // The messages in Redis have had time to have effect when we created the tldrs, no need to add a timeout
   it('Creating two tldrs for testing should already have created their analytics even if they dont existed before', function (done) {
     TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr1._id }, function (err, tldrEventD) {
-      tldrEventD.readCount.should.equal(1);
+      assert.isNull(err);
+      assert.isNull(tldrEventD);
+
       TldrAnalytics.daily.findOne({ timestamp: dayNow, tldr: tldr2._id }, function (err, tldrEventD) {
-        tldrEventD.readCount.should.equal(1);
+        assert.isNull(err);
+        assert.isNull(tldrEventD);
+
         TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr1._id }, function (err, tldrEventD) {
-          tldrEventD.readCount.should.equal(1);
+          assert.isNull(err);
+          assert.isNull(tldrEventD);
+
           TldrAnalytics.monthly.findOne({ timestamp: monthNow, tldr: tldr2._id }, function (err, tldrEventD) {
-            tldrEventD.readCount.should.equal(1);
+            assert.isNull(err);
+            assert.isNull(tldrEventD);
+
             done();
           });
         });
@@ -113,7 +120,7 @@ describe('Analytics', function () {
           event.articleWordCount.should.equal(400);
 
           Event.find({}, function (err, events) {
-            events.length.should.equal(5);   // 2 events have been created when we created tldr1, tldr2 and tldr3
+            events.length.should.equal(2);   // 2 events have been created when we created tldr1, tldr2 and tldr3
             done();
           });
         });
@@ -138,16 +145,16 @@ describe('Analytics', function () {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-              tldrEvents[0].readCount.should.equal(3);
-              tldrEvents[0].articleWordCount.should.equal(1200);
+              tldrEvents[0].readCount.should.equal(2);
+              tldrEvents[0].articleWordCount.should.equal(800);
               clock.tick(stayInPeriod);
               Model.addRead(tldr1, function (err) {
                 Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
                   tldrEvents.length.should.equal(1);
                   tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
                   tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-                  tldrEvents[0].readCount.should.equal(4);
-                  tldrEvents[0].articleWordCount.should.equal(1600);
+                  tldrEvents[0].readCount.should.equal(3);
+                  tldrEvents[0].articleWordCount.should.equal(1200);
 
                   cb();
                 });
@@ -175,8 +182,8 @@ describe('Analytics', function () {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-              tldrEvents[0].readCount.should.equal(3);
-              tldrEvents[0].articleWordCount.should.equal(1200);
+              tldrEvents[0].readCount.should.equal(2);
+              tldrEvents[0].articleWordCount.should.equal(800);
               clock.tick(goToNextPeriod);
               Model.addRead(tldr1, function (err) {
                 Model.find({ tldr: tldr1._id }, function (err, tldrEvents) {
@@ -185,8 +192,8 @@ describe('Analytics', function () {
                   Model.findOne({ tldr: tldr1._id, timestamp: resolutionNow }, function (err, tldrEvent) {
                     tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
                     tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
-                    tldrEvent.readCount.should.equal(3);
-                    tldrEvent.articleWordCount.should.equal(1200);
+                    tldrEvent.readCount.should.equal(2);
+                    tldrEvent.articleWordCount.should.equal(800);
 
                     Model.findOne({ tldr: tldr1._id, timestamp: resolutionNext }, function (err, tldrEvent) {
                       tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
@@ -222,24 +229,24 @@ describe('Analytics', function () {
               tldrEvents.length.should.equal(1);
               tldrEvents[0].tldr.toString().should.equal(tldr1._id.toString());
               tldrEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-              tldrEvents[0].readCount.should.equal(3);
-              tldrEvents[0].articleWordCount.should.equal(1200);
+              tldrEvents[0].readCount.should.equal(2);
+              tldrEvents[0].articleWordCount.should.equal(800);
               clock.tick(stayInPeriod);
               Model.addRead(tldr2, function (err) {
                 Model.find({}, function (err, tldrEvents) {
-                  tldrEvents.length.should.equal(3);
+                  tldrEvents.length.should.equal(2);
 
                   Model.findOne({ tldr: tldr1._id, timestamp: resolutionNow }, function (err, tldrEvent) {
                     tldrEvent.tldr.toString().should.equal(tldr1._id.toString());
                     tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
-                    tldrEvent.readCount.should.equal(3);
-                    tldrEvent.articleWordCount.should.equal(1200);
+                    tldrEvent.readCount.should.equal(2);
+                    tldrEvent.articleWordCount.should.equal(800);
 
                     Model.findOne({ tldr: tldr2._id, timestamp: resolutionNow }, function (err, tldrEvent) {
                       tldrEvent.tldr.toString().should.equal(tldr2._id.toString());
                       tldrEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
-                      tldrEvent.readCount.should.equal(2);
-                      tldrEvent.articleWordCount.should.equal(1000);
+                      tldrEvent.readCount.should.equal(1);
+                      tldrEvent.articleWordCount.should.equal(500);
 
                       cb();
                     });
@@ -280,8 +287,8 @@ describe('Analytics', function () {
             Model.getAnalytics(null, null, tldr1._id, function (err, data) {
               data.length.should.equal(4);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
-              data[0].readCount.should.equal(2);
-              data[0].articleWordCount.should.equal(800);
+              data[0].readCount.should.equal(1);
+              data[0].articleWordCount.should.equal(400);
 
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
@@ -329,8 +336,8 @@ describe('Analytics', function () {
             Model.getAnalytics(null, new Date(resolutions[1].getTime() + period / 2), tldr1._id, function (err, data) {
               data.length.should.equal(2);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
-              data[0].readCount.should.equal(2);
-              data[0].articleWordCount.should.equal(800);
+              data[0].readCount.should.equal(1);
+              data[0].articleWordCount.should.equal(400);
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
               data[1].articleWordCount.should.equal(800);
@@ -430,23 +437,23 @@ describe('Analytics', function () {
               userEvents.length.should.equal(1);
               userEvents[0].user.toString().should.equal(user._id.toString());
               userEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-              userEvents[0].readCount.should.equal(4);
-              userEvents[0].articleWordCount.should.equal(1700);
+              userEvents[0].readCount.should.equal(2);
+              userEvents[0].articleWordCount.should.equal(800);
               clock.tick(stayInPeriod);
               Model.addRead(tldr3, function (err) {   // Not written by user, so nothing to add for him
                 Model.find({ user: user._id }, function (err, userEvents) {
                   userEvents.length.should.equal(1);
                   userEvents[0].user.toString().should.equal(user._id.toString());
                   userEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-                  userEvents[0].readCount.should.equal(4);
-                  userEvents[0].articleWordCount.should.equal(1700);
+                  userEvents[0].readCount.should.equal(2);
+                  userEvents[0].articleWordCount.should.equal(800);
 
                   Model.find({ user: userbis._id }, function (err, userEvents) {
                   userEvents.length.should.equal(1);
                   userEvents[0].user.toString().should.equal(userbis._id.toString());
                   userEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-                  userEvents[0].readCount.should.equal(2);
-                  userEvents[0].articleWordCount.should.equal(1400);
+                  userEvents[0].readCount.should.equal(1);
+                  userEvents[0].articleWordCount.should.equal(700);
 
                     cb();
                   });
@@ -475,8 +482,8 @@ describe('Analytics', function () {
               userEvents.length.should.equal(1);
               userEvents[0].user.toString().should.equal(user._id.toString());
               userEvents[0].timestamp.getTime().should.equal(resolutionNow.getTime());
-              userEvents[0].readCount.should.equal(4);
-              userEvents[0].articleWordCount.should.equal(1800);
+              userEvents[0].readCount.should.equal(2);
+              userEvents[0].articleWordCount.should.equal(900);
               clock.tick(goToNextPeriod);
               Model.addRead(tldr2, function (err) {
                 Model.find({ user: user._id }, function (err, userEvents) {
@@ -485,8 +492,8 @@ describe('Analytics', function () {
                   Model.findOne({ user: user._id, timestamp: resolutionNow }, function (err, userEvent) {
                     userEvent.user.toString().should.equal(user._id.toString());
                     userEvent.timestamp.getTime().should.equal(resolutionNow.getTime());
-                    userEvent.readCount.should.equal(4);
-                    userEvent.articleWordCount.should.equal(1800);
+                    userEvent.readCount.should.equal(2);
+                    userEvent.articleWordCount.should.equal(900);
 
                     Model.findOne({ user: user._id, timestamp: resolutionNext }, function (err, userEvent) {
                       userEvent.user.toString().should.equal(user._id.toString());
@@ -534,8 +541,8 @@ describe('Analytics', function () {
             Model.getAnalytics(null, null, user._id, function (err, data) {
               data.length.should.equal(3);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
-              data[0].readCount.should.equal(3);
-              data[0].articleWordCount.should.equal(1300);
+              data[0].readCount.should.equal(1);
+              data[0].articleWordCount.should.equal(400);
 
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(2);
@@ -551,8 +558,8 @@ describe('Analytics', function () {
             Model.getAnalytics(null, null, userbis._id, function (err, data) {
               data.length.should.equal(4);
               data[0].timestamp.getTime().should.equal(resolutions[0].getTime());
-              data[0].readCount.should.equal(1);
-              data[0].articleWordCount.should.equal(700);
+              assert.isUndefined(data[0].readCount);
+              assert.isUndefined(data[0].articleWordCount);
 
               data[1].timestamp.getTime().should.equal(resolutions[1].getTime());
               data[1].readCount.should.equal(1);
@@ -641,6 +648,21 @@ describe('Test analytics with events', function () {
       async.waterfall([
         function (cb) {
           TldrAnalytics[resolution].find({ tldr: tldr1._id }, function(err, analytics) {
+            analytics.length.should.equal(0);
+            cb();
+          });
+        }
+      , function (cb) {
+          UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
+            analytics.length.should.equal(1);
+            assert.isUndefined(analytics[0].readCount);
+            assert.isUndefined(analytics[0].articleWordCount);
+            cb();
+          });
+        }
+      , async.apply(sendEventAndWait, 'tldr.read', { tldr: tldr1 }, 20)
+      , function (cb) {
+          TldrAnalytics[resolution].find({ tldr: tldr1._id }, function(err, analytics) {
             analytics.length.should.equal(1);
             analytics[0].readCount.should.equal(1);
             analytics[0].articleWordCount.should.equal(400);
@@ -650,25 +672,8 @@ describe('Test analytics with events', function () {
       , function (cb) {
           UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
             analytics.length.should.equal(1);
-            analytics[0].readCount.should.equal(2);
-            analytics[0].articleWordCount.should.equal(900);
-            cb();
-          });
-        }
-      , async.apply(sendEventAndWait, 'tldr.read', { tldr: tldr1 }, 20)
-      , function (cb) {
-          TldrAnalytics[resolution].find({ tldr: tldr1._id }, function(err, analytics) {
-            analytics.length.should.equal(1);
-            analytics[0].readCount.should.equal(2);
-            analytics[0].articleWordCount.should.equal(800);
-            cb();
-          });
-        }
-      , function (cb) {
-          UserAnalytics[resolution].find({ user: user._id }, function(err, analytics) {
-            analytics.length.should.equal(1);
-            analytics[0].readCount.should.equal(3);
-            analytics[0].articleWordCount.should.equal(1300);
+            analytics[0].readCount.should.equal(1);
+            analytics[0].articleWordCount.should.equal(400);
             cb();
           });
         }
@@ -684,8 +689,7 @@ describe('Test analytics with events', function () {
       async.waterfall([
         function (cb) {
           TldrAnalytics[resolution].find({ tldr: tldr3._id }, function(err, analytics) {
-            analytics.length.should.equal(1);
-            assert.isUndefined(analytics[0].thanks);
+            analytics.length.should.equal(0);
             cb();
           });
         }
