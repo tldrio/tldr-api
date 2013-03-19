@@ -81,10 +81,11 @@ TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
  * From an array of category names, return the array of corresponding topic _ids
  * @param {String or Array} _names either 'cat1 cat2 ...' or [cat1, cat2, ...]
  */
-TopicSchema.statics.getIdsFromCategoryNames = function (_names, cb) {
-  var names = typeof _names === 'string' ? _names.split(' ') : _names
-    , callback = cb || function () {}
-    ;
+TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
+  var callback = cb || function () {};
+
+  names = names || '';
+  names = typeof names === 'string' ? names.split(' ') : names;
 
   Topic.find({ type: 'category', name: { $in: names } }, '', function (err, topics) {
     if (err) {

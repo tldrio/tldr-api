@@ -100,7 +100,7 @@ describe('Topic', function () {
     });
   });
 
-  it('Can get the ids of topics given their names, in batch too', function (done) {
+  it.only('Can get the ids of topics given their names, in batch too', function (done) {
     var topicData1 = { type: 'category', name: 'yepyep' }
       , topicData2 = { type: 'category', name: 'again' }
       , topicData3 = { type: 'category', name: 'another' }
@@ -125,13 +125,17 @@ describe('Topic', function () {
                 Topic.getIdsFromCategoryNames('', function (err, topics) {
                   topics.length.should.equal(0);
 
-                  Topic.getIdsFromCategoryNames('yepyep again', function (err, topics) {
-                    topics = _.map(topics, function (t) { return t.toString(); });
-                    topics.length.should.equal(2);
-                    topics.should.contain(topic1._id.toString());
-                    topics.should.contain(topic2._id.toString());
+                  Topic.getIdsFromCategoryNames(undefined, function (err, topics) {
+                    topics.length.should.equal(0);
 
-                    done();
+                    Topic.getIdsFromCategoryNames('yepyep again', function (err, topics) {
+                      topics = _.map(topics, function (t) { return t.toString(); });
+                      topics.length.should.equal(2);
+                      topics.should.contain(topic1._id.toString());
+                      topics.should.contain(topic2._id.toString());
+
+                      done();
+                    });
                   });
                 });
               });
