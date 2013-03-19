@@ -404,18 +404,24 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
-  // Try to save it
-  self.save(function (err, tldr) {
-    if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
+  //Update the topics field
+  Topic.getIdsFromCategoryNames(updates.topics, function (err, topicsIds) {
+    if (updates.topics) { self.topics = topicsIds; }   // Don't remove topics if you didn't want to update them
 
-    // Update both histories
-    // Don't return an error if an history couldnt be saved, simply log it
-    TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
-      history.saveVersion(tldr.serialize(), user, function(err) {
-        if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-        user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
+    // Try to save it
+    self.save(function (err, tldr) {
+      if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
+
+      // Update both histories
+      // Don't return an error if an history couldnt be saved, simply log it
+      TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
+        history.saveVersion(tldr.serialize(), user, function(err) {
           if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-          callback(null, tldr);
+          user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
+            if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+
+            callback(null, tldr);
+          });
         });
       });
     });

@@ -128,7 +128,7 @@ describe('Topic', function () {
   });
 
 
-  describe('Get topic ids from category names', function () {
+  describe.only('Get topic ids from category names', function () {
 
     it('Can use a space separated string to get category names', function (done) {
       var topicData1 = { type: 'category', name: 'yepyep' }
@@ -165,7 +165,6 @@ describe('Topic', function () {
       });
     });
 
-
     it('Can use an array of category names', function (done) {
       var topicData1 = { type: 'category', name: 'yepyep' }
         , topicData2 = { type: 'category', name: 'again' }
@@ -193,6 +192,37 @@ describe('Topic', function () {
 
                     done();
                   });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+
+    it('Can use an array of objects with a nam property', function (done) {
+      var topicData1 = { type: 'category', name: 'yepyep' }
+        , topicData2 = { type: 'category', name: 'again' }
+        , topicData3 = { type: 'category', name: 'another' }
+        ;
+
+      Topic.createAndSaveInstance(topicData1, function (err, topic1) {
+        Topic.createAndSaveInstance(topicData2, function (err, topic2) {
+          Topic.createAndSaveInstance(topicData3, function (err, topic3) {
+            Topic.getIdsFromCategoryNames([{ name: 'again' }], function (err, topics) {
+              topics.length.should.equal(1);
+              topics[0].toString().should.equal(topic2._id.toString());
+
+              Topic.getIdsFromCategoryNames([{ name: 'yepyep' }, { name: 'another' }], function (err, topics) {
+                topics = _.map(topics, function (t) { return t.toString(); });
+                topics.length.should.equal(2);
+                topics.should.contain(topic1._id.toString());
+                topics.should.contain(topic3._id.toString());
+
+                Topic.getIdsFromCategoryNames([{ name: 'nothingtoseehere' }], function (err, topics) {
+                  topics.length.should.equal(0);
+
+                  done();
                 });
               });
             });
