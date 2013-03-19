@@ -6,7 +6,7 @@ var Tldr = require('../lib/models').Tldr
  *
  */
 function getLatestTldrs (req, res, next) {
-  var defaultLimit = 10
+  var defaultLimit = 50
     , limit = req.params.quantity || defaultLimit
     , startat = req.query.startat || 0
     ;
