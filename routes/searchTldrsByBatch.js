@@ -7,7 +7,6 @@
 
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
-  , helpers = require('./helpers')
   , _ = require('underscore')
   , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , i18n = require('../lib/i18n');

@@ -1,7 +1,6 @@
 var bunyan = require('../lib/logger').bunyan
   , models = require('../lib/models')
   , i18n = require('../lib/i18n')
-  , helpers = require('./helpers')
   , config = require('../lib/config')
   , mailer = require('../lib/mailer')
   , _ = require('underscore')

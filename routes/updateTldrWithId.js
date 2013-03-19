@@ -1,7 +1,6 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , i18n = require('../lib/i18n')
-  , helpers = require('./helpers')
   , mqClient = require('../lib/message-queue')
   , models = require('../lib/models')
   ;
