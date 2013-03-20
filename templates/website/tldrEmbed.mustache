@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <link rel="stylesheet" href="/embed/assets/css/widget.embed.inner.css">
-</head>
+  <head>
+    <link rel="stylesheet" href="/embed/assets/css/widget.embed.inner.css">
+  </head>
 
-<body>
+  <body>
 
-  <div class="row">
-    <div class="tldr-base-unit page-tldr-container">
-      <div class="tldr-read-container">
-        <span class="tldr-header">
-          <span class="tldr-title">{{titlePart}}</span> <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
-         <span class="embed-actions">
-           <span class="btn-group dropup">
+    <div class="row">
+      <div class="tldr-base-unit page-tldr-container">
+        <div class="tldr-read-container">
+          <span class="tldr-header">
+            <span class="tldr-title">{{titlePart}}</span> <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+          </span>
+
+          <div class="tldr-summary">
+            <ul>
+              {{#tldr.summaryBullets}}
+              <li class="tldr-bullet">
+                <i class="square-bullet"></i> {{.}}
+              </li>
+              {{/tldr.summaryBullets}}
+            </ul>
+          </div>
+          <div class="embed-actions">
+            <span class="btn-group dropup">
               <a class="btn btn-link dropdown-toggle" data-toggle="dropdown">
                 Embed this tl;dr
               </a>
@@ -25,47 +36,34 @@
                 </li>
               </ul>
             </span>
-            <span class="separator">
-               ·
-              </span>
-           <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}" target="_blank" class="tldr-page-link">Permalink</a>
-         </span>
-        </span>
+            <span class="separator"> · </span>
+            <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}" target="_blank" class="tldr-page-link">Permalink</a>
+          </div>
 
-        <div class="tldr-summary">
-          <ul>
-            {{#tldr.summaryBullets}}
-            <li class="tldr-bullet">
-            <i class="square-bullet"></i> {{.}}
-            </li>
-            {{/tldr.summaryBullets}}
-          </ul>
         </div>
 
       </div>
-
     </div>
-  </div>
 
-  <script>
-  function getDocHeight() {
-      var D = document;
-      return Math.max(
-          Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
-          Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
-          Math.max(D.body.clientHeight, D.documentElement.clientHeight)
-      );
-  }
+    <script>
+      function getDocHeight() {
+        var D = document;
+        return Math.max(
+            Math.max(D.body.scrollHeight, D.documentElement.scrollHeight),
+            Math.max(D.body.offsetHeight, D.documentElement.offsetHeight),
+            Math.max(D.body.clientHeight, D.documentElement.clientHeight)
+            );
+      }
 
-  // Send the height to the parent
-  var msg = { action: 'SET_HEIGHT'
-            , tldrId: '{{tldr._id}}'
-            , iframeId: '{{iframeId}}'
-            , height: getDocHeight()
-            };
-  window.parent.postMessage(JSON.stringify(msg), '*');
+// Send the height to the parent
+var msg = { action: 'SET_HEIGHT'
+  , tldrId: '{{tldr._id}}'
+    , iframeId: '{{iframeId}}'
+    , height: getDocHeight()
+};
+window.parent.postMessage(JSON.stringify(msg), '*');
 
-  </script>
+</script>
 
 </body>
 </html>
