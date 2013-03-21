@@ -763,40 +763,40 @@ describe('Tldr', function () {
         });
       }
       , function (cb) {
-        Tldr.findByCategory('Startups', function (err, tldrs) {
+        Tldr.findByCategoryName('Startups', function (err, tldrs) {
           tldrs.length.should.equal(3);
-          tldrs[0].url.should.equal('http://needforair.com/1');
+          tldrs[0].url.should.equal('http://needforair.com/5');
           tldrs[1].url.should.equal('http://needforair.com/2');
-          tldrs[2].url.should.equal('http://needforair.com/5');
+          tldrs[2].url.should.equal('http://needforair.com/1');
           cb();
         });
       }
       , function (cb) {
-        Tldr.findByCategory('Art', function (err, tldrs) {
+        Tldr.findByCategoryName('Art', function (err, tldrs) {
           tldrs.length.should.equal(1);
           tldrs[0].url.should.equal('http://needforair.com/3');
           cb();
         });
       }
       , function (cb) {
-        Tldr.findByCategory('DoesntExist', function (err, tldrs) {
+        Tldr.findByCategoryName('DoesntExist', function (err, tldrs) {
           tldrs.length.should.equal(0);
           cb();
         });
       }
       , function (cb) {
-        Tldr.findByCategory('Art Programming', function (err, tldrs) {
+        Tldr.findByCategoryName('Art Programming', function (err, tldrs) {
           tldrs.length.should.equal(2);
-          tldrs[0].url.should.equal('http://needforair.com/3');
-          tldrs[1].url.should.equal('http://needforair.com/4');
+          tldrs[0].url.should.equal('http://needforair.com/4');
+          tldrs[1].url.should.equal('http://needforair.com/3');
           cb();
         });
       }
       , function (cb) {   // With custom limit and skip
-        Tldr.findByCategory('Startups', { limit: 2, skip: 1 }, function (err, tldrs) {
+        Tldr.findByCategoryName('Startups', { limit: 2, skip: 1 }, function (err, tldrs) {
           tldrs.length.should.equal(2);
           tldrs[0].url.should.equal('http://needforair.com/2');
-          tldrs[1].url.should.equal('http://needforair.com/5');
+          tldrs[1].url.should.equal('http://needforair.com/1');
           cb();
         });
       }
@@ -804,7 +804,7 @@ describe('Tldr', function () {
         Tldr.update({ _id: tldr1._id }, { $set: { readCount: 97 } }, { multi: false }, function () {
           Tldr.update({ _id: tldr2._id }, { $set: { readCount: 46 } }, { multi: false }, function () {
             Tldr.update({ _id: tldr5._id }, { $set: { readCount: 212 } }, { multi: false }, function () {
-              Tldr.findByCategory('Startups', { sort: '-readCount' }, function (err, tldrs) {
+              Tldr.findByCategoryName('Startups', { sort: '-readCount' }, function (err, tldrs) {
                 tldrs.length.should.equal(3);
                 tldrs[0].url.should.equal('http://needforair.com/5');
                 tldrs[1].url.should.equal('http://needforair.com/1');

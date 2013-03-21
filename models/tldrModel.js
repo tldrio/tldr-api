@@ -353,7 +353,7 @@ TldrSchema.statics.findOneById = function (id, cb) {
  * @param {Integer} options.limit
  * @param {Integer} options.skip
  */
-TldrSchema.statics.findByCategory = function (categories, _options, _callback) {
+TldrSchema.statics.findByCategoryName = function (categories, _options, _callback) {
   Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
     if (err) { return callback(err); }
 
@@ -371,7 +371,7 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
     , callback = typeof _options === 'function' ? _options : _callback
     , skip = options.skip || 0
     , limit = options.limit || 0
-    , sort = options.sort || 'createdAt'
+    , sort = options.sort || '-createdAt'   // Sort default: latest
     ;
 
     Tldr.find({ topics: { $in: ids } })
