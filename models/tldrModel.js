@@ -348,6 +348,32 @@ TldrSchema.statics.findOneById = function (id, cb) {
 
 
 /**
+ * Find tldrs by their category
+ * @param {String or Array of Strings} categories
+ * @param {Integer} options.limit
+ * @param {Integer} options.skip
+ */
+TldrSchema.statics.findByCategory = function (categories, _options, _callback) {
+  var options = typeof _options === 'function' ? {} : _options
+    , callback = typeof _options === 'function' ? _options : _callback
+    , skip = options.skip || 0
+    , limit = options.limit || 0
+    , sort = options.sort || 'createdAt'
+    ;
+
+  Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
+    if (err) { return callback(err); }
+
+    Tldr.find({ topics: { $in: topicsIds } })
+        .sort(sort)
+        .limit(limit)
+        .skip(skip)
+        .exec(callback);
+  });
+};
+
+
+/**
  * A new redirection/canonicalization was found, register it
  * @param {String} from The url from which the redirection comes
  * @param {String} to The url to which the redirection points

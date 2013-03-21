@@ -621,7 +621,7 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
-  describe('find by url', function () {
+  describe.only('Finding tldr', function () {
 
     it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
       var tldrData = {
@@ -734,8 +734,83 @@ describe('Tldr', function () {
       ], done);
     });
 
+    it('Find tldrs by topic', function (done) {
+      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://needforair.com/3', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://needforair.com/5', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldr1, tldr2, tldr3, tldr4, tldr5
+        ;
 
-  });   // ==== End of 'find by url' ==== //
+      async.waterfall([
+      function (cb) {
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, _tldr1) {
+          tldr1 = _tldr1;
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, _tldr2) {
+            tldr2 = _tldr2;
+            Tldr.createAndSaveInstance(tldrData3, user, function (err, _tldr3) {
+              tldr3 = _tldr3;
+              Tldr.createAndSaveInstance(tldrData4, user, function (err, _tldr4) {
+                tldr4 = _tldr4;
+                Tldr.createAndSaveInstance(tldrData5, user, function (err, _tldr5) {
+                  tldr5 = _tldr5;
+                  cb();
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Tldr.findByCategory('Startups', function (err, tldrs) {
+          tldrs.length.should.equal(3);
+          tldrs[0].url.should.equal('http://needforair.com/1');
+          tldrs[1].url.should.equal('http://needforair.com/2');
+          tldrs[2].url.should.equal('http://needforair.com/5');
+          cb();
+        });
+      }
+      , function (cb) {
+        Tldr.findByCategory('Art', function (err, tldrs) {
+          tldrs.length.should.equal(1);
+          tldrs[0].url.should.equal('http://needforair.com/3');
+          cb();
+        });
+      }
+      , function (cb) {
+        Tldr.findByCategory('DoesntExist', function (err, tldrs) {
+          tldrs.length.should.equal(0);
+          cb();
+        });
+      }
+      , function (cb) {   // With custom limit and skip
+        Tldr.findByCategory('Startups', { limit: 2, skip: 1 }, function (err, tldrs) {
+          tldrs.length.should.equal(2);
+          tldrs[0].url.should.equal('http://needforair.com/2');
+          tldrs[1].url.should.equal('http://needforair.com/5');
+          cb();
+        });
+      }
+      , function (cb) {   // With custom sort
+        Tldr.update({ _id: tldr1._id }, { $set: { readCount: 97 } }, { multi: false }, function () {
+          Tldr.update({ _id: tldr2._id }, { $set: { readCount: 46 } }, { multi: false }, function () {
+            Tldr.update({ _id: tldr5._id }, { $set: { readCount: 212 } }, { multi: false }, function () {
+              Tldr.findByCategory('Startups', { sort: '-readCount' }, function (err, tldrs) {
+                tldrs.length.should.equal(3);
+                tldrs[0].url.should.equal('http://needforair.com/5');
+                tldrs[1].url.should.equal('http://needforair.com/1');
+                tldrs[2].url.should.equal('http://needforair.com/2');
+                cb();
+              });
+            });
+          });
+        });
+      }
+      ], done);
+    });
+
+  });   // ==== End of 'Finding tldrs' ==== //
 
 
   describe('Redirection and canonicalization handling', function () {

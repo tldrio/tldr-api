@@ -1,10 +1,6 @@
 var Tldr = require('../lib/models').Tldr
   , i18n = require('../lib/i18n');
 
-/**
- * Convenience route for latest tldrs
- *
- */
 function getLatestTldrs (req, res, next) {
   var defaultLimit = 50
     , limit = req.params.quantity || defaultLimit
