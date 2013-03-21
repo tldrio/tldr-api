@@ -386,6 +386,9 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
     ;
 
     Tldr.find({ topics: { $in: ids } })
+        .populate('creator', 'deleted username twitterHandle')
+        .populate('editors', 'deleted username')
+        .populate('topics', 'name')
         .sort(sort)
         .limit(limit)
         .skip(skip)
