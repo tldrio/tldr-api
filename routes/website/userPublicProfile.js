@@ -56,6 +56,7 @@ module.exports = function (req, res, next) {
     // it would require to populate the entire tldrsCreated array which can lead to even poorer perf
     , function (cb) {
       User.findOne({ usernameLowerCased: usernameLowerCased })
+          .populate('tldrsCreated', '_id', { anonymous: false })
           .exec(function (err, user) {
             if (! err && user) {
               values.user.numberTldrsCreated = user.tldrsCreated.length ;

@@ -14,6 +14,7 @@ var mongoose = require('mongoose')
   , EventSchema, Event
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
   , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
+  , EmbedAnalyticsSchema, EmbedAnalytics
   ;
 
 
@@ -71,7 +72,6 @@ EventSchema.statics.addRead = function (tldr, cb) {
  */
 function addEventToProjection (id, updateObject, cb) {
   var callback = cb || function () {}
-    , updateKeys = Object.keys(updateObject)
     , timestamp = this.resolution(new Date())
     , itemSelector = this.itemSelector(id)
     ;
@@ -157,9 +157,6 @@ TldrAnalyticsSchema.monthly.statics.addRead = function (tldr, cb) {
 
 
 
-
-
-
 /**
  * =======================================
  * === UserAnalytics models definition ===
@@ -223,7 +220,59 @@ UserAnalytics.daily = mongoose.model('useranalytics.daily', UserAnalyticsSchema.
 UserAnalytics.monthly = mongoose.model('useranalytics.monthly', UserAnalyticsSchema.monthly);
 
 
+
+
+// ========================================================================
+// Embed analytics
+// Goal: know which webpages embed which tldrs and the embed read count
+// ========================================================================
+EmbedAnalyticsSchema = new Schema({
+  firstRead: { type: Date }
+, lastRead: { type: Date }
+, hostname: { type: String }
+, pageUrl: { type: String }
+, pageNormalizedUrl: { type: String }
+, tldrId: { type: ObjectId, ref: 'tldr' }
+, readCount: { type: Number }
+});
+EmbedAnalyticsSchema.index({ pageNormalizedUrl: 1, tldrId: 1 });
+
+
+/**
+ * Add an event to a projection (tldr/user and daily/monthly)
+ * @param {ObjectId} id id of the object (can be a tldr or a user depending on the model)
+ * @param {Object} updateObject What fields to increment and by how much
+ * @param {Function} cb Optional callback, signature: err
+ */
+EmbedAnalyticsSchema.statics.addEmbedRead = function (pageUrl, tldrId, cb) {
+  var callback = cb || function () {}
+    , pageNormalizedUrl = customUtils.normalizeUrl(pageUrl)
+    , hostname = customUtils.getHostnameFromUrl(pageUrl)
+    , self = this
+    ;
+
+  this.update( { pageNormalizedUrl: pageNormalizedUrl, tldrId: tldrId }
+             , { hostname: hostname, pageUrl: pageUrl, lastRead: new Date(), $inc: { readCount: 1 } }
+             , { upsert: true, multi: false }
+             , function(err, numAffected, rawResponse) {
+                 if (rawResponse.updatedExisting) { return callback(err); }
+
+                 self.update( { pageNormalizedUrl: pageNormalizedUrl, tldrId: tldrId }
+                            , { firstRead: new Date() }
+                            , { multi: false }
+                            , function (err) { return callback(err); }
+                            );
+               }
+             );
+};
+
+EmbedAnalytics = mongoose.model('embedanalytics', EmbedAnalyticsSchema);
+
+
+
+// =============================
 // Handle all events
+// =============================
 mqClient.on('tldr.read', function (data) {
   var tldr = data.tldr;
 
@@ -250,62 +299,14 @@ mqClient.on('tldr.created', function (data) {
   UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } });
 });
 
-
-
-
-
-// ONLY HERE FOR MIGRATION PURPOSES
-module.exports.replayRead = function (tldr, cb) {
-  Event.addRead(tldr, function (err) {
-    if (err) { return cb(err); }
-    TldrAnalytics.daily.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
-      if (err) { return cb(err); }
-      TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
-        if (err) { return cb(err); }
-        UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
-          if (err) { return cb(err); }
-          UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { readCount: 1, articleWordCount: tldr.articleWordCount } }, function (err) {
-            if (err) { return cb(err); }
-            return cb();
-          });
-        });
-      });
-    });
-  });
-};
-
-module.exports.replayThanks = function (tldr, cb) {
-  TldrAnalytics.daily.addEvent(tldr._id, { $inc: { thanks: 1 } }, function (err) {
-    if (err) { return cb(err); }
-    TldrAnalytics.monthly.addEvent(tldr._id, { $inc: { thanks: 1 } }, function (err) {
-      if (err) { return cb(err); }
-      UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } }, function (err) {
-        if (err) { return cb(err); }
-        UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $inc: { thanks: 1 } }, function (err) {
-          if (err) { return cb(err); }
-          return cb();
-        });
-      });
-    });
-  });
-};
-
-module.exports.replayTldrsCreation = function (tldr, cb) {
-  UserAnalytics.daily.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
-    if (err) { return cb(err); }
-    UserAnalytics.monthly.addEvent(Tldr.getCreatorId(tldr), { $push: { tldrsCreated: tldr._id } }, function (err) {
-      if (err) { return cb(err); }
-      return cb();
-    });
-  });
-};
-// END OF ONLY HERE FOR MIGRATION PURPOSES
-
-
-
+mqClient.on('tldr.read.embed', function (data) {
+  if (!data || !data.pageUrl || !data.tldr || !data.tldr._id) { return; }
+  EmbedAnalytics.addEmbedRead(data.pageUrl, data.tldr._id);
+});
 
 
 // Interface
 module.exports.Event = Event;
 module.exports.TldrAnalytics = TldrAnalytics;
 module.exports.UserAnalytics = UserAnalytics;
+module.exports.EmbedAnalytics = EmbedAnalytics;
