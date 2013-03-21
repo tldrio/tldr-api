@@ -67,7 +67,3 @@ module.exports.getTotalWordsSaved = function (callback) {
 module.exports.incrementTotalWordsSaved = function (n, cb) {
   incrementGlobalCount('totalWordsSaved', n, cb);
 };
-
-
-
-

@@ -31,7 +31,7 @@ function changeUsername (req, res, next) {
       req.renderingValues.userInput = req.body;
       displayForm(req, res, next);
     } else {
-      res.redirect('/chrome-extension');
+      res.redirect('/browser-extension');
     }
   });
 }

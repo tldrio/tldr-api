@@ -15,7 +15,9 @@ var express = require('express')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
   , notificator = require('./lib/notificator')
-  , h4e = require('h4e');
+  , h4e = require('h4e')
+  , beforeEach = require('express-group-handlers').beforeEach
+  ;
 
 
 
@@ -162,14 +164,20 @@ app.get('/tldrs/embed/:id', routes.website.tldrEmbed);
 
 
 // 3rd party auth with Google
-app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
+app.get('/third-party-auth/google', function (req, res, next) {
+                                      req.session.returnUrl = req.query.returnUrl;
+                                      req.session.googleAuthThroughPopup = req.query.googleAuthThroughPopup;
+                                      next();
+                                    }
+                                  , passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
 
 /*
  * Routes for the website, which all respond HTML
  */
-customUtils.routesGrouping.beforeEach(app, middleware.websiteRoute, function (app) {
+beforeEach(app, middleware.websiteRoute, function (app) {
   // General pages
   app.get('/about', routes.website.about);
   app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
@@ -183,10 +191,11 @@ customUtils.routesGrouping.beforeEach(app, middleware.websiteRoute, function (ap
   app.get('/what-is-tldr', routes.website.whatisit);
   app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
 
-  app.get('/chrome-extension', routes.website.chrome_extension);
-  app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-  app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-  app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+  app.get('/browser-extension', routes.website.browser_extension);
+  app.get('/chrome-extension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/crx', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/extension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
   app.get('/api-documentation', routes.website.apiDoc);
   app.get('/release-notes', routes.website.releaseNotes);
   app.get('/embedded-tldrs', routes.website.embeddedTldrs);

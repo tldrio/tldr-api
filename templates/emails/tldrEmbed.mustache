@@ -7,9 +7,9 @@
           <a href="{{tldr.originalUrl}}" target="_blank" style="color: black; font-weight: normal; text-decoration: none;">{{tldr.title}}</a></p>
       </div>
       <div class="tldr-metadata" style="color: #666; font-family: Arial; font-size: 12px; line-height: 18px; text-align: left; font-weight: 300;">
-        <span>tl;dr by <span><a href="{{websiteUrl}}/{{user.usernameForDisplay}}" target="_blank" style="color: #336699; font-weight: normal; text-decoration: underline;"><em>{{user.usernameForDisplay}}</em></a></span> </span></div>
+        <span>tl;dr by <span><a href="{{websiteUrl}}/{{creator.usernameForDisplay}}" target="_blank" style="color: #336699; font-weight: normal; text-decoration: underline;"><em>{{creator.usernameForDisplay}}</em></a></span> </span></div>
       <div class="tldr-summary" style="color: #505050; font-family: Arial; font-size: 15px; line-height: 20px; text-align: left;">
-        <ul style="list-style: none;">
+        <ul style="list-style: none;padding:0;">
           {{#tldr.summaryBullets}}
           <li class="tldr-bullet" style="font-size: 15px; line-height: 20px; margin-top: 11px;"> ◼ {{.}}</li>
           {{/tldr.summaryBullets}}
