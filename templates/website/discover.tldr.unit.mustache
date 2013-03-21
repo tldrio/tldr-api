@@ -1,48 +1,48 @@
 <li class="media discover-tldr-item">
 <span style="display:none;" class="discover-tldr-data"
-  data-tldr-id="{{tldr._id}}"
-  data-tldr-title="{{tldr.title}}"
-  data-tldr-twitterHandle="{{tldr.creator.twitterHandle}}"
-  data-tldr-summary="{{tldr.summaryBullets}}"
-  data-tldr-thankedBy="{{tldr.thankedBy}}"
-  data-tldr-originalUrl="{{tldr.originalUrl}}"
+  data-tldr-id="{{_id}}"
+  data-tldr-title="{{title}}"
+  data-tldr-twitterHandle="{{creator.twitterHandle}}"
+  data-tldr-summary="{{summaryBullets}}"
+  data-tldr-thankedBy="{{thankedBy}}"
+  data-tldr-originalUrl="{{originalUrl}}"
   ></span>
   <div class="discover-tldr-header">
     <a class="pull-left" href="#">
-      {{#tldr.imageUrl}}
-      <img class="media-object discover-tldr-image" src="{{tldr.imageUrl}}" alt="{{tldr.title}}">
-      {{/tldr.imageUrl}}
-      {{^tldr.imageUrl}}
-      <img class="media-object discover-tldr-image" src="http://www.gravatar.com/avatar/?f=y&d=identicon" alt="{{tldr.title}}">
-      {{/tldr.imageUrl}}
+      {{#imageUrl}}
+      <img class="media-object discover-tldr-image" src="{{imageUrl}}" alt="{{title}}">
+      {{/imageUrl}}
+      {{^imageUrl}}
+      <img class="media-object discover-tldr-image" src="http://www.gravatar.com/avatar/?f=y&d=identicon" alt="{{title}}">
+      {{/imageUrl}}
     </a>
     <div class="media-body">
-      <h4 class="media-heading">{{tldr.title}}</h4>
+      <h4 class="media-heading">{{title}}</h4>
       <div class="tldr-metadata">
         tl;dr by
         <span>
-          {{^tldr.anonymous}}
-          <a href="/{{tldr.creator.username}}" target="_blank"><em>{{tldr.creator.username}}</em></a>
-          {{/tldr.anonymous}}
-          {{#tldr.anonymous}}
+          {{^anonymous}}
+          <a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a>
+          {{/anonymous}}
+          {{#anonymous}}
           anonymous
-          {{/tldr.anonymous}}
+          {{/anonymous}}
         </span>
         in
-        <a href="{{websiteUrl}}/domains/{{tldr.hostname}}">{{tldr.hostname}}</a>,
-        {{#tldr.topics}}
+        <a href="{{websiteUrl}}/domains/{{hostname}}">{{hostname}}</a>,
+        {{#topics}}
         <a href="{{websiteUrl}}/topics/{{.}}" class="topic-link" target="_blank">{{.}}</a>
-        {{/tldr.topics}}
+        {{/topics}}
       </div>
       <div class="tldr-stats">
-        <span title="Read {{tldr.readCount}} times.">
-          <i class="icon-eye-open"></i> {{tldr.readCount}}
+        <span title="Read {{readCount}} times.">
+          <i class="icon-eye-open"></i> {{readCount}}
         </span>
-        <span title="Thanked {{tldr.tyCount}} times.">
-          &nbsp;&nbsp;<i class="icon-beer"></i> {{tldr.tyCount}}
+        <span title="Thanked {{tyCount}} times.">
+          &nbsp;&nbsp;<i class="icon-beer"></i> {{tyCount}}
         </span>
-        <span title="It takes ~{{tldr.timeSaved}} to read the original article.">
-          &nbsp;&nbsp;<i class="icon-time"></i> {{tldr.timeSaved}}
+        <span title="It takes ~{{timeSaved}} to read the original article.">
+          &nbsp;&nbsp;<i class="icon-time"></i> {{timeSaved}}
         </span>
       </div>
     </div>
@@ -51,12 +51,12 @@
   <div class="discover-tldr-foldable">
     <div class="discover-tldr-summary">
       <ul>
-        {{#tldr.summaryBullets}}
+        {{#summaryBullets}}
         <li class="tldr-bullet">
         <i class="icon-stop"></i>
         {{.}}
         </li>
-        {{/tldr.summaryBullets}}
+        {{/summaryBullets}}
       </ul>
     </div>
     <div class="tldr-actions">

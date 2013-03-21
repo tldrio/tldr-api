@@ -398,6 +398,7 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
  * TODO: Absolutely suboptimal for now
  * @param {Number} options.limit How many tldr from each category to return
  * @param {String} options.sort Same option as findByCategoryName
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
  */
 TldrSchema.statics.findFromEveryCategory = function (options, callback) {
   var res = [], i = 0;

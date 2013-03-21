@@ -1,64 +1,15 @@
-</style>
-<div class="navbar navbar-static-top visible-phone">
-  <div class="navbar-inner">
-    <div class="container">
-
-      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
-
-      <!-- Everything you want hidden at 940px or less, place within here -->
-      <div class="nav-collapse collapse">
-        <ul class="nav">
-          <li class="active"><a href="/discover">Programming</a></li>
-          <li><a href="/chrome-extension">Startups</a></li>
-          <li><a href="/forum/threads">Technology</a></li>
-          <li><a href="/forum/threads">Technology</a></li>
-          <li><a href="/forum/threads">World News</a></li>
-          <li><a href="/forum/threads">Business</a></li>
-          <li><a href="/forum/threads">Design</a></li>
-          <li><a href="/forum/threads">Science</a></li>
-          <li><a href="/forum/threads">Art</a></li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
-</div>
 <div class="container main-container">
   <div class="row">
     <div class="span3 topics-list-column">
       <ul class="nav nav-list topics-list">
-        <li class="active">
-        <a href="#topic1" data-toggle="tab">
-          <i class="icon-chevron-right"></i>
-          Programming
-        </a>
-        </li>
+        {{#categories}}
         <li>
-        <a href="#topic2" data-toggle="tab">Startups</a>
+          <a href="#topic1" data-toggle="tab">
+            <i class="icon-chevron-right"></i>
+            {{.}}
+          </a>
         </li>
-        <li>
-        <a href="#topic3" data-toggle="tab">World News</a>
-        </li>
-        <li>
-        <a href="#topic4" data-toggle="tab">Technology</a>
-        </li>
-        <li>
-        <a href="#topic5" data-toggle="tab">Business</a>
-        </li>
-        <li>
-        <a href="#topic6" data-toggle="tab">Design</a>
-        </li>
-        <li>
-        <a href="#topic7" data-toggle="tab">Science</a>
-        </li>
-        <li>
-        <a href="#topic8" data-toggle="tab">Art</a>
-        </li>
+        {{/categories}}
       </ul>
     </div>
     <div class="span9 discover-feed-column">
@@ -73,22 +24,9 @@
         </div>
         <div class="tab-pane active" id="topic1">
           <ol class="media-list discover-tldr-list">
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-          </ol>
-        </div>
-        <div class="tab-pane" id="topic2">
-          <ol class="media-list discover-tldr-list">
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
-            {{>website/discover.tldr.unit}}
+            {{#tldrs}}
+              {{>website/discover.tldr.unit}}
+            {{/tldrs}}
           </ol>
         </div>
         <div class="discover-load-more">
