@@ -348,7 +348,7 @@ TldrSchema.statics.findOneById = function (id, cb) {
 
 
 /**
- * Find tldrs by their category
+ * Find tldrs by their category names
  * @param {String or Array of Strings} categories
  * @param {Integer} options.limit
  * @param {Integer} options.skip
@@ -362,6 +362,16 @@ TldrSchema.statics.findByCategoryName = function (categories, _options, _callbac
   });
 };
 
+/**
+ * Find tldrs by their category
+ * @param {Object} category
+ * @param {Integer} options.limit
+ * @param {Integer} options.skip
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
+ */
+TldrSchema.statics.findByCategory = function (category, _options, _callback) {
+  Tldr.findByCategoryId([category._id], _options, _callback);
+};
 
 /**
  * Find tldrs by category id (faster if we already have the id)
@@ -392,11 +402,11 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
 TldrSchema.statics.findFromEveryCategory = function (options, callback) {
   var res = [], i = 0;
 
-  Topic.getCategoriesNames(function(err, names) {
+  Topic.getCategories(function(err, categories) {
     async.whilst(
-      function () { return i < names.length; }
+      function () { return i < categories.length; }
     , function (cb) {
-        Tldr.findByCategoryName(names[i], options, function (err, tldrs) {
+        Tldr.findByCategory(categories[i], options, function (err, tldrs) {
           if (err) { return cb(err); }
           res = res.concat(tldrs);
           i += 1;

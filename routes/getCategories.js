@@ -8,11 +8,11 @@ var models = require('../lib/models')
   ;
 
 module.exports = function (req, res, next) {
-  Topic.getCategoriesNames(function (err, names) {
+  Topic.getCategories(function (err, categories) {
     if (err) {
       return res.json(500, err);   // No reason this should happen
     } else {
-      return res.json(200, names);
+      return res.json(200, categories);
     }
   });
 };

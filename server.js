@@ -135,7 +135,7 @@ app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
 // Topics
-app.get('/categories/names', routes.getAllCategoriesNames);
+app.get('/categories', routes.getCategories);
 
 
 // Admin only routes

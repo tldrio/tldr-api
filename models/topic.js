@@ -33,6 +33,18 @@ TopicSchema = new Schema({
 });
 TopicSchema.path('type').index(true);
 
+/**
+ * Get all categories
+ */
+TopicSchema.statics.getCategories = function (callback) {
+  this.find({ type: 'category' }, function (err, categories) {
+    if (err) {
+      return callback(err);
+    } else {
+      return callback(null, categories);
+    }
+  });
+};
 
 /**
  * Get all categories names
@@ -42,7 +54,20 @@ TopicSchema.statics.getCategoriesNames = function (callback) {
     if (err) {
       return callback(err);
     } else {
-      return callback(null, _.map(topics, function (topic) { return topic.name; }));
+      return callback(null, _.map(topics, function(topic) { return topic.name; }));
+    }
+  });
+};
+
+/**
+ * Get all categories ids
+ */
+TopicSchema.statics.getCategoriesIds = function (callback) {
+  this.find({ type: 'category' }, '_id', function (err, topics) {
+    if (err) {
+      return callback(err);
+    } else {
+      return callback(null, _.map(topics, function (topic) { return topic._id; }));
     }
   });
 };
