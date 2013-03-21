@@ -121,6 +121,7 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
+app.get('/tldrs/filter', routes.getTldrsByCategory.getTldrsByCategoryName);
 app.get('/tldrs/:id/stats', routes.getStats.getStatsForTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);

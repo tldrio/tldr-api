@@ -99,9 +99,9 @@ async.waterfall([
     });
   }
 , function (cb) {
-    var tldrData1 = {url: 'http://www.nytimes.com/2013/03/06/opinion/the-country-that-stopped-reading.html', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
-      , tldrData2 = {url: 'http://www.avc.com/a_vc/2013/03/why-the-unlocking-phones-debate-is-important.html', articleWordCount: 500, title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
-      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', articleWordCount: 700, title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark' }
+    var tldrData1 = {url: 'http://www.nytimes.com/2013/03/06/opinion/the-country-that-stopped-reading.html', topics: 'Startups', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+      , tldrData2 = {url: 'http://www.avc.com/a_vc/2013/03/why-the-unlocking-phones-debate-is-important.html', topics: 'Startups', articleWordCount: 500, title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', topics: 'Startups', articleWordCount: 700, title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark' }
       ;
 
     console.log("Creating three tldrs");
@@ -190,7 +190,7 @@ async.waterfall([
 , async.apply(wait, 50)
 , async.apply(putCurrentAnalyticsBackInTime, 33)
 , function (cb) {
-    var tldrData4 = {url: 'http://blog.eladgil.com/2013/02/should-you-hire-coo.html', articleWordCount: 7456, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+    var tldrData4 = {url: 'http://blog.eladgil.com/2013/02/should-you-hire-coo.html', topics: 'Art', articleWordCount: 7456, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
       ;
 
     if (noAnalytics) { return cb(); }

@@ -25,7 +25,7 @@ function getTldrsByCategoryName (req, res, next) {
   options.limit = isNaN(options.limit) ? 1 : options.limit;
   options.limit = Math.min(defaultLimit, Math.max(1, options.limit));
 
-  Tldr.getTldrsByCategoryName(req.query.categories, options, function (err, tldrs) {
+  Tldr.findByCategoryName(req.query.categories, options, function (err, tldrs) {
     if (err) { return res.send(500, err); }
 
     return res.json(200, tldrs);
