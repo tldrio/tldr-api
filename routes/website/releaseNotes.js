@@ -18,6 +18,15 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases = [];
 
+  values.weeklyReleases.push({ header: 'Week from Mar 11th, 2013 to Mar 17th, 2013'
+  , item: [
+            "You can now use Google login within the Chrome extension."
+          , "You can now automatically embed the tldr of your blogposts in all your pages with the same code which fetches and displays the tldr if it exists and does nothing otherwise."
+          , "You can now include the article's title in embedded tldrs."
+          , "Bugfixes: no need to confirm your email upon signing up with Google, nice analytics page even if there is no data to graph, quick flicker of the embedded tldr."
+          ]
+  });
+
   values.weeklyReleases.push({ header: 'Week from Mar 4th, 2013 to Mar 10th, 2013'
   , items: [
              "Contributors now enjoy their analytics report, telling them how much time they saved the community, how many times they were thanked and various other metrics."
@@ -27,7 +36,7 @@ module.exports = function (req, res, next) {
            , "Contributors can now delete their own tldrs, if they haven't been edited or moderated yet."
            , "You can now delete your user account. We would be sad if you did though!"
            , "Bugfixes: spinner during login with Google, autocomplete of credentials, don't display an ugly square in the tldr page if the image can't be fetched."
-    ]
+           ]
   });
 
   values.weeklyReleases.push({ header: 'Week from Feb 25th, 2013 to Mar 3st, 2013'

@@ -16,6 +16,7 @@ var should = require('chai').should()
   , Event = models.Event
   , TldrAnalytics = models.TldrAnalytics
   , UserAnalytics = models.UserAnalytics
+  , EmbedAnalytics = models.EmbedAnalytics
   , config = require('../lib/config')
   , mqClient = require('../lib/message-queue')
   , DbObject = require('../lib/db')
@@ -749,4 +750,145 @@ describe('Test analytics with events', function () {
     it('monthly', function (done) { doTest('monthly', done); });
   });
 
-});
+});   // ==== End of 'Test analytics with events' ====  //
+
+
+describe('Embed analytics', function () {
+
+  var user, userbis, tldr1, tldr2, tldr3;
+
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+  beforeEach(function (done) {
+    var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , tldrData3 = {url: 'http://avc.com/mba-monday/tuesday', title:'mba-mondaddy', articleWordCount: 700, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
+      , userbisData = { username: "easdeee", password: "eeeeeeee", email: "validagain@email.com", twitterHandle: 'zetwitkk' }
+      ;
+
+    clock = sinon.useFakeTimers(fakeNow.getTime());
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
+
+    async.waterfall([
+      async.apply(theRemove, Credentials)
+    , async.apply(theRemove, User)
+    , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, EmbedAnalytics)
+    , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
+    , function (cb) { User.createAndSaveInstance(userbisData, function(err, _user) { userbis = _user; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
+    , function (cb) { Tldr.createAndSaveInstance(tldrData3, userbis, function(err, _tldr) { tldr3 = _tldr; cb(err); }); }
+    ], done);
+  });
+
+  afterEach(function (done) {
+    clock.restore();
+    done();
+  });
+
+  it('Should create the data point if it doesnt exist and create its first read date', function (done) {
+    EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr2._id, function () {
+      EmbedAnalytics.find({}, function (err, datapoints) {
+        datapoints.length.should.equal(1);
+        datapoints[0].firstRead.getTime().should.equal(fakeNow.getTime());
+        datapoints[0].lastRead.getTime().should.equal(fakeNow.getTime());
+        datapoints[0].hostname.should.equal('www.someblog.com');
+        datapoints[0].pageUrl.should.equal('http://www.someblog.com/thearticle');
+        datapoints[0].pageNormalizedUrl.should.equal('http://someblog.com/thearticle');
+        datapoints[0].tldrId.toString().should.equal(tldr2._id.toString());
+        datapoints[0].readCount.should.equal(1);
+
+        done();
+      });
+    });
+  });
+
+  it('Should add reads in the same data point for the same couple tldrId normalizedUrl', function (done) {
+    EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr2._id, function () {
+      clock.tick(10000);
+      EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr2._id, function () {
+        EmbedAnalytics.find({}, function (err, datapoints) {
+          datapoints.length.should.equal(1);
+          datapoints[0].firstRead.getTime().should.equal(fakeNow.getTime());
+          datapoints[0].lastRead.getTime().should.equal(fakeNow.getTime() + 10000);
+          datapoints[0].hostname.should.equal('www.someblog.com');
+          datapoints[0].pageUrl.should.equal('http://www.someblog.com/thearticle');
+          datapoints[0].pageNormalizedUrl.should.equal('http://someblog.com/thearticle');
+          datapoints[0].tldrId.toString().should.equal(tldr2._id.toString());
+          datapoints[0].readCount.should.equal(2);
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Should aggregate by normalized url, not url', function (done) {
+    EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr2._id, function () {
+      clock.tick(10000);
+      EmbedAnalytics.addEmbedRead('http://someblog.com/thearticle', tldr2._id, function () {
+        EmbedAnalytics.find({}, function (err, datapoints) {
+          datapoints.length.should.equal(1);
+          datapoints[0].firstRead.getTime().should.equal(fakeNow.getTime());
+          datapoints[0].lastRead.getTime().should.equal(fakeNow.getTime() + 10000);
+          datapoints[0].hostname.should.equal('someblog.com');
+          datapoints[0].pageUrl.should.equal('http://someblog.com/thearticle');
+          datapoints[0].pageNormalizedUrl.should.equal('http://someblog.com/thearticle');
+          datapoints[0].tldrId.toString().should.equal(tldr2._id.toString());
+          datapoints[0].readCount.should.equal(2);
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Dont aggregate in the same point if the tldrids or normalized urls are different', function (done) {
+    EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr2._id, function () {
+      EmbedAnalytics.addEmbedRead('http://www.someblog.com/thearticle', tldr3._id, function () {
+        EmbedAnalytics.addEmbedRead('http://www.someotherblog.com/thearticle', tldr3._id, function () {
+          EmbedAnalytics.find({}, function (err, datapoints) {
+            datapoints.length.should.equal(3);
+            datapoints[0].firstRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[0].lastRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[0].hostname.should.equal('www.someblog.com');
+            datapoints[0].pageUrl.should.equal('http://www.someblog.com/thearticle');
+            datapoints[0].pageNormalizedUrl.should.equal('http://someblog.com/thearticle');
+            datapoints[0].tldrId.toString().should.equal(tldr2._id.toString());
+            datapoints[0].readCount.should.equal(1);
+
+            datapoints[1].firstRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[1].lastRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[1].hostname.should.equal('www.someblog.com');
+            datapoints[1].pageUrl.should.equal('http://www.someblog.com/thearticle');
+            datapoints[1].pageNormalizedUrl.should.equal('http://someblog.com/thearticle');
+            datapoints[1].tldrId.toString().should.equal(tldr3._id.toString());
+            datapoints[1].readCount.should.equal(1);
+
+            datapoints[2].firstRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[2].lastRead.getTime().should.equal(fakeNow.getTime());
+            datapoints[2].hostname.should.equal('www.someotherblog.com');
+            datapoints[2].pageUrl.should.equal('http://www.someotherblog.com/thearticle');
+            datapoints[2].pageNormalizedUrl.should.equal('http://someotherblog.com/thearticle');
+            datapoints[2].tldrId.toString().should.equal(tldr3._id.toString());
+            datapoints[2].readCount.should.equal(1);
+
+            done();
+          });
+        });
+      });
+    });
+  });
+
+});   // ==== End of 'Embed analytics' ==== //
+
+
+

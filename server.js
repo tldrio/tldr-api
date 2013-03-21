@@ -15,7 +15,9 @@ var express = require('express')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
   , notificator = require('./lib/notificator')
-  , h4e = require('h4e');
+  , h4e = require('h4e')
+  , beforeEach = require('express-group-handlers').beforeEach
+  ;
 
 
 
@@ -166,8 +168,14 @@ app.get('/tldrs/embed/:id', routes.website.tldrEmbed);
 
 
 // 3rd party auth with Google
-app.get('/third-party-auth/google', function (req, res, next) { req.session.returnUrl = req.query.returnUrl; next(); }, passport.authenticate('google'));
+app.get('/third-party-auth/google', function (req, res, next) {
+                                      req.session.returnUrl = req.query.returnUrl;
+                                      req.session.googleAuthThroughPopup = req.query.googleAuthThroughPopup;
+                                      next();
+                                    }
+                                  , passport.authenticate('google'));
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
+app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
 
 // Dev routes
@@ -175,7 +183,7 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 /*
  * Routes for the website, which all respond HTML
  */
-customUtils.routesGrouping.beforeEach(app, middleware.websiteRoute, function (app) {
+beforeEach(app, middleware.websiteRoute, function (app) {
   // General pages
   app.get('/about', routes.website.about);
   app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }

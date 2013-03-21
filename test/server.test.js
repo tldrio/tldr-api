@@ -183,11 +183,11 @@ describe('Webserver', function () {
       var someTldrs = []
         , someFunctions = []
         , i, temp, now = new Date()
-        , defaultLimit = 10
+        , defaultLimit = 50
         , older, obj;
 
       // Here we cant use createAndSaveInstance because we want to be able to set createdAt and updatedAt which is not permitted by this function
-      for (i = 0; i <= 25; i += 1) {
+      for (i = 0; i <= 45; i += 1) {
         temp = new Date(now - 10000 * (i + 1));
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
                                 , possibleUrls: ['http://needforair.com/sopa/number' + i]
@@ -208,7 +208,7 @@ describe('Webserver', function () {
 
       saveSync(someTldrs, 0, done, function() {
         Tldr.find({}, function(err,docs) {
-          docs.length.should.equal(30);
+          docs.length.should.equal(50);
 
           // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
           request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/-1'}, function (err, res, body) {
@@ -232,7 +232,7 @@ describe('Webserver', function () {
               obj.length.should.equal(defaultLimit);
 
               // A limit greater than defaultLimit should give defaultLimit objects as well
-              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/11'}, function (err, res, body) {
+              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/' + (defaultLimit + 1)}, function (err, res, body) {
                 obj = JSON.parse(res.body);
                 obj.length.should.equal(defaultLimit);
 
