@@ -18,13 +18,13 @@
     <div class="tutorial">
       <div class="row">
         <div class="span4">
-          <img  src="assets/img/onboarding1.png" alt="Article which has been summarized">
+          <img  src="assets/img/onboarding1-{{browser}}.png" alt="Article which has been summarized">
         </div>
         <div class="span4 click-screenshot">
-          <img  class="screenshot-chrome" src="assets/img/onboarding2.png" alt="Zoom on tldr green page action">
+          <img  class="screenshot-chrome" src="assets/img/onboarding2-{{browser}}.png" alt="Zoom on tldr green page action">
         </div>
         <div class="span4">
-          <img  src="assets/img/onboarding3.png" alt="Summary for the page">
+          <img  src="assets/img/onboarding3-{{browser}}.png" alt="Summary for the page">
         </div>
       </div>
       <div class="row">
@@ -46,7 +46,7 @@
       </div>
     {{/installed}}
     {{^installed}}
-      {{>website/addToChrome}}
+      {{>installButton}}
     {{/installed}}
 
     <hr class="soften">
@@ -61,13 +61,13 @@
     <div class="tutorial">
       <div class="row">
         <div class="span4">
-          <img  src="assets/img/onboarding4.png" alt="Article to be summarized">
+          <img  src="assets/img/onboarding4-{{browser}}.png" alt="Article to be summarized">
         </div>
         <div class="span4 click-screenshot">
-          <img  class="screenshot-chrome" src="assets/img/onboarding5.png" alt="Red Page Action to create summary">
+          <img  class="screenshot-chrome" src="assets/img/onboarding5-{{browser}}.png" alt="Red Page Action to create summary">
         </div>
         <div class="span4">
-          <img  src="assets/img/onboarding6.png" alt="Form to create a summary for the page">
+          <img  src="assets/img/onboarding6-{{browser}}.png" alt="Form to create a summary for the page">
         </div>
       </div>
       <div class="row">
@@ -89,7 +89,7 @@
       </div>
     {{/installed}}
     {{^installed}}
-      {{>website/addToChrome}}
+      {{>installButton}}
     {{/installed}}
 
     <hr class="soften">
@@ -274,7 +274,7 @@
       </div>
     {{/installed}}
   {{^installed}}
-    {{>website/addToChrome}}
+    {{>installButton}}
   {{/installed}}
 </section>
 
