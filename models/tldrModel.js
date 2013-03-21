@@ -352,6 +352,7 @@ TldrSchema.statics.findOneById = function (id, cb) {
  * @param {String or Array of Strings} categories
  * @param {Integer} options.limit
  * @param {Integer} options.skip
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
  */
 TldrSchema.statics.findByCategoryName = function (categories, _options, _callback) {
   Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
@@ -380,6 +381,36 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
         .skip(skip)
         .exec(callback);
 };
+
+
+/**
+ * Find n tldrs from every category
+ * TODO: Absolutely suboptimal for now
+ * @param {Number} options.limit How many tldr from each category to return
+ * @param {String} options.sort Same option as findByCategoryName
+ */
+TldrSchema.statics.findFromEveryCategory = function (options, callback) {
+  var res = [], i = 0;
+
+  Topic.getCategoriesNames(function(err, names) {
+    async.whilst(
+      function () { return i < names.length; }
+    , function (cb) {
+        Tldr.findByCategoryName(names[i], options, function (err, tldrs) {
+          if (err) { return cb(err); }
+          res = res.concat(tldrs);
+          i += 1;
+          return cb();
+        });
+      }
+    , function (err) {
+      if (err) { return callback(err); }
+
+      return callback(null, res);
+    });
+  });
+}
+
 
 
 

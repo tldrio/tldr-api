@@ -621,7 +621,7 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
-  describe.only('Finding tldr', function () {
+  describe('Finding tldr', function () {
 
     it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
       var tldrData = {
@@ -813,6 +813,69 @@ describe('Tldr', function () {
               });
             });
           });
+        });
+      }
+      ], done);
+    });
+
+    it('Can find x tldrs from every category', function (done) {
+      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://needforair.com/3', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://needforair.com/5', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData6 = { url: 'http://needforair.com/6', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData7 = { url: 'http://needforair.com/7', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData8 = { url: 'http://needforair.com/8', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData9 = { url: 'http://needforair.com/9', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        ;
+
+      async.waterfall([
+      function (cb) {
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, _tldr1) {
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, _tldr2) {
+            Tldr.createAndSaveInstance(tldrData3, user, function (err, _tldr3) {
+              Tldr.createAndSaveInstance(tldrData4, user, function (err, _tldr4) {
+                Tldr.createAndSaveInstance(tldrData5, user, function (err, _tldr5) {
+                  Tldr.createAndSaveInstance(tldrData6, user, function (err, _tldr5) {
+                    Tldr.createAndSaveInstance(tldrData7, user, function (err, _tldr5) {
+                      Tldr.createAndSaveInstance(tldrData8, user, function (err, _tldr5) {
+                        Tldr.createAndSaveInstance(tldrData9, user, function (err, _tldr5) {
+                          cb();
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Tldr.findFromEveryCategory({ limit: 2 }, function (err, tldrs) {
+          // We have the two latest for each category
+          tldrs.length.should.equal(6);
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/3');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/2');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/6');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/5');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/9');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/8');
+
+          // The two latest are already sorted
+          var i3 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/3' }))
+            , i2 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/2' }))
+            , i6 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/6' }))
+            , i5 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/5' }))
+            , i9 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/9' }))
+            , i8 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/8' }))
+            ;
+          i2.should.equal(i3 + 1);
+          i5.should.equal(i6 + 1);
+          i8.should.equal(i9 + 1);
+
+          cb();
         });
       }
       ], done);
