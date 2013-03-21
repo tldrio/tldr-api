@@ -356,7 +356,7 @@ TldrSchema.statics.findOneById = function (id, cb) {
  */
 TldrSchema.statics.findByCategoryName = function (categories, _options, _callback) {
   Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
-    if (err) { return callback(err); }
+    if (err) { return _callback(err); }
 
     Tldr.findByCategoryId(topicsIds, _options, _callback);
   });
@@ -419,7 +419,7 @@ TldrSchema.statics.findFromEveryCategory = function (options, callback) {
       return callback(null, res);
     });
   });
-}
+};
 
 
 

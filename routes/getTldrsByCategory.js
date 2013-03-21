@@ -12,7 +12,7 @@ var models = require('../lib/models')
  */
 function getTldrsByCategoryName (req, res, next) {
   var options = {}
-    , defaultLimit = 50;
+    , defaultLimit = 50
     ;
 
   if (!req.query.categories) { return res.send(403, i18n.missingCategoriesNames); }

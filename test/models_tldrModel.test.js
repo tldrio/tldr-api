@@ -864,12 +864,12 @@ describe('Tldr', function () {
           _.pluck(tldrs, 'url').should.contain('http://needforair.com/8');
 
           // The two latest are already sorted
-          var i3 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/3' }))
-            , i2 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/2' }))
-            , i6 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/6' }))
-            , i5 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/5' }))
-            , i9 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/9' }))
-            , i8 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/8' }))
+          var i3 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/3'; }))
+            , i2 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/2'; }))
+            , i6 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/6'; }))
+            , i5 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/5'; }))
+            , i9 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/9'; }))
+            , i8 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/8'; }))
             ;
           i2.should.equal(i3 + 1);
           i5.should.equal(i6 + 1);
