@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "h4e": "0.3.0",
-    "bcrypt": "0.7.x",
+    "bcrypt": "0.7.3",
     "bunyan": "0.7.x",
     "connect-redis": "1.4.x",
     "consolidate": "0.3.x",
