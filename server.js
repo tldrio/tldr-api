@@ -15,7 +15,9 @@ var express = require('express')
   , routes = require('./lib/routes')
   , customUtils = require('./lib/customUtils')
   , notificator = require('./lib/notificator')
-  , h4e = require('h4e');
+  , h4e = require('h4e')
+  , beforeEach = require('express-group-handlers').beforeEach
+  ;
 
 
 
@@ -175,7 +177,7 @@ app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPop
 /*
  * Routes for the website, which all respond HTML
  */
-customUtils.routesGrouping.beforeEach(app, middleware.websiteRoute, function (app) {
+beforeEach(app, middleware.websiteRoute, function (app) {
   // General pages
   app.get('/about', routes.website.about);
   app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
