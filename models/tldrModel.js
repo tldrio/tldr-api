@@ -354,6 +354,19 @@ TldrSchema.statics.findOneById = function (id, cb) {
  * @param {Integer} options.skip
  */
 TldrSchema.statics.findByCategory = function (categories, _options, _callback) {
+  Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
+    if (err) { return callback(err); }
+
+    Tldr.findByCategoryId(topicsIds, _options, _callback);
+  });
+};
+
+
+/**
+ * Find tldrs by category id (faster if we already have the id)
+ * @param {Array} ids Array of category ids
+ */
+TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
   var options = typeof _options === 'function' ? {} : _options
     , callback = typeof _options === 'function' ? _options : _callback
     , skip = options.skip || 0
@@ -361,16 +374,13 @@ TldrSchema.statics.findByCategory = function (categories, _options, _callback) {
     , sort = options.sort || 'createdAt'
     ;
 
-  Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
-    if (err) { return callback(err); }
-
-    Tldr.find({ topics: { $in: topicsIds } })
+    Tldr.find({ topics: { $in: ids } })
         .sort(sort)
         .limit(limit)
         .skip(skip)
         .exec(callback);
-  });
 };
+
 
 
 /**

@@ -784,6 +784,14 @@ describe('Tldr', function () {
           cb();
         });
       }
+      , function (cb) {
+        Tldr.findByCategory('Art Programming', function (err, tldrs) {
+          tldrs.length.should.equal(2);
+          tldrs[0].url.should.equal('http://needforair.com/3');
+          tldrs[1].url.should.equal('http://needforair.com/4');
+          cb();
+        });
+      }
       , function (cb) {   // With custom limit and skip
         Tldr.findByCategory('Startups', { limit: 2, skip: 1 }, function (err, tldrs) {
           tldrs.length.should.equal(2);
