@@ -14,16 +14,13 @@ module.exports = function (req, res, next) {
   values.description = "Private scratchpad to test stuff.";
   partials.content = '{{>website/pages/discover}}';
 
-  Topic.getCategories(function (err, categories) {
-    values.categories = _.pluck(categories, 'name');
 
-    Tldr.findFromEveryCategory({ limit: 10, sort: '-createdAt'}, function(err, tldrs) {
-      values.tldrs = tldrs;
-      console.log(values.tldrs);
+    Tldr.findFromEveryCategory({ limit: 10, sort: '-createdAt'}, function(err, tldrsByCategory) {
+      values.tldrsByCategory = tldrsByCategory;
+      values.categories = _.pluck(tldrsByCategory, 'categoryName');
 
       res.render('website/responsiveLayout', { values: values
                                         , partials: partials
                                         });
     });
-  });
 }

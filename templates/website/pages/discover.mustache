@@ -4,7 +4,7 @@
       <ul class="nav nav-list topics-list">
         {{#categories}}
         <li>
-          <a href="#topic1" data-toggle="tab">
+        <a href="#{{.}}" data-toggle="tab">
             <i class="icon-chevron-right"></i>
             {{.}}
           </a>
@@ -22,13 +22,15 @@
             <a class="option-chosen option-expand" alt="Expand all summaries" href="#">Expand</a>/<a alt="Collapse all summaries" class="option-collapse" href="#">Collapse</a>
           </span>
         </div>
-        <div class="tab-pane active" id="topic1">
+        {{#tldrsByCategory}}
+        <div class="tab-pane" id="{{categoryName}}">
           <ol class="media-list discover-tldr-list">
             {{#tldrs}}
               {{>website/discover.tldr.unit}}
             {{/tldrs}}
           </ol>
         </div>
+        {{/tldrsByCategory}}
         <div class="discover-load-more">
           <button class="btn btn-primary">
             <img src="/assets/img/happy-derp.small.png">
