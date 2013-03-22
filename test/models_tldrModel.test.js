@@ -853,27 +853,21 @@ describe('Tldr', function () {
         });
       }
       , function (cb) {
-        Tldr.findFromEveryCategory({ limit: 2 }, function (err, tldrs) {
-          // We have the two latest for each category
-          tldrs.length.should.equal(6);
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/3');
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/2');
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/6');
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/5');
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/9');
-          _.pluck(tldrs, 'url').should.contain('http://needforair.com/8');
-
-          // The two latest are already sorted
-          var i3 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/3'; }))
-            , i2 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/2'; }))
-            , i6 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/6'; }))
-            , i5 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/5'; }))
-            , i9 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/9'; }))
-            , i8 = tldrs.indexOf(_.find(tldrs, function (t) { return t.url === 'http://needforair.com/8'; }))
-            ;
-          i2.should.equal(i3 + 1);
-          i5.should.equal(i6 + 1);
-          i8.should.equal(i9 + 1);
+        Tldr.findFromEveryCategory({ limit: 2 }, function (err, res) {
+          // We have 3 categories
+          res.length.should.equal(3);
+          res.forEach(function (e) {
+            var tldrs = e.tldrs
+              , newest
+              , oldest
+              ;
+            // We have the 2 latest tldrs per category
+            tldrs.length.should.equal(2);
+            // The two latest are already sorted
+            newest = new Date(tldrs[0].createdAt).getTime();
+            oldest = new Date(tldrs[1].createdAt).getTime();
+            newest.should.be.greaterThan(oldest);
+          });
 
           cb();
         });

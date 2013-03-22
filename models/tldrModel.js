@@ -411,8 +411,11 @@ TldrSchema.statics.findFromEveryCategory = function (options, callback) {
       function () { return i < categories.length; }
     , function (cb) {
         Tldr.findByCategory(categories[i], options, function (err, tldrs) {
+          var el = {};
           if (err) { return cb(err); }
-          res = res.concat(tldrs);
+          el.categoryName = categories[i].name;
+          el.tldrs = tldrs;
+          res = res.concat(el);
           i += 1;
           return cb();
         });
