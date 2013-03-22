@@ -208,7 +208,11 @@ beforeEach(app, middleware.websiteRoute, function (app) {
 
   app.get('/elad', routes.website.elad);
   app.get('/scratchpad', middleware.adminOnly, routes.website.scratchpad);
+
+  //Discover
   app.get('/discover', middleware.websiteRoute, routes.website.discover);
+  app.get('/discover/:topic', middleware.websiteRoute, routes.website.discover);
+  app.get('/discover/:topic/:sort', middleware.websiteRoute, routes.website.discover);
 
   // Tldr page
   app.get('/tldrs/:id/:slug', routes.website.tldrPage);
