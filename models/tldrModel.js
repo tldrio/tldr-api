@@ -24,6 +24,7 @@ var _ = require('underscore')
   , TldrHistory = require('./tldrHistoryModel')
   , Topic = require('./topic')
   , async = require('async')
+  , moment = require('moment')
   ;
 
 
@@ -159,6 +160,11 @@ TldrSchema.virtual('lastEditor').get(function () {
   } else {
     return null;
   }
+});
+
+// Virtualtime saved attribute
+TldrSchema.virtual('timeSaved').get(function () {
+  return moment.duration(customUtils.timeToRead(this.wordCount), 'minutes').humanize();
 });
 
 TldrSchema.set('toJSON', {
