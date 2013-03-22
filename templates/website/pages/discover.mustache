@@ -16,7 +16,9 @@
       <div class="tab-content discover-feed-container">
         <div class="discover-feed-options">
           <span class="options">
-            <a alt="Newest summaries" href="#newest">Newest</a>/<a alt="Most read summaries" href="#mostread">Most read</a>
+            <a alt="Newest summaries" href="/discover/{{activeCategory}}/newest" class="{{#newest}}option-chosen{{/newest}}">Newest</a>
+            /
+            <a alt="Most read summaries" href="/discover/{{activeCategory}}/mostread" class="{{#mostread}}option-chosen{{/mostread}}">Most read</a>
           </span>
           <span class="options options-visual pull-right">
             <a class="option-expand" alt="Expand all summaries" href="#">Expand</a>
