@@ -24,7 +24,7 @@ module.exports = function (req, res, next) {
   async.waterfall([
     function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
-          .populate('tldrsCreated', '_id url slug title hostname readCount summaryBullets', { anonymous: false }, { limit: 14, sort: [['createdAt', -1]] })
+          .populate('tldrsCreated', '_id originalUrl slug title hostname readCount summaryBullets', { anonymous: false }, { limit: 14, sort: [['createdAt', -1]] })
           .populate('history')
           .exec(function (err, user) {
             if (! err && user) {
