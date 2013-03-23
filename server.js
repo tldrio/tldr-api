@@ -198,10 +198,11 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/what-is-tldr', routes.website.whatisit);
   app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
 
-  app.get('/chrome-extension', routes.website.chrome_extension);
-  app.get('/crx', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-  app.get('/extension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
-  app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/chrome-extension'); });
+  app.get('/browser-extension', routes.website.browser_extension);
+  app.get('/chrome-extension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/crx', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/extension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
+  app.get('/chromeextension', function (req, res, next) { return res.redirect(301, '/browser-extension'); });
   app.get('/api-documentation', routes.website.apiDoc);
   app.get('/release-notes', routes.website.releaseNotes);
   app.get('/embedded-tldrs', routes.website.embeddedTldrs);

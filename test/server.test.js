@@ -207,96 +207,99 @@ describe('Webserver', function () {
       older = new Date(now - 10000 * (12));
 
       saveSync(someTldrs, 0, done, function() {
-        Tldr.find({}, function(err,docs) {
-          docs.length.should.equal(50);
+        // All tldrs should be in the latest feed
+        Tldr.update({}, { $set: { 'distributionChannels.latestTldrs': true } }, { multi: true }, function () {
+          Tldr.find({}, function(err,docs) {
+            docs.length.should.equal(50);
 
-          // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/-1'}, function (err, res, body) {
-            obj = JSON.parse(res.body);
-            obj.length.should.equal(defaultLimit);
-            temp = _.map(obj, function (o) { return o.url; });
-            _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
-            _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
-            _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
-
-            // A limit for 0 should give defaultLimit objects as well
-            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/0'}, function (err, res, body) {
+            // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
+            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/-1'}, function (err, res, body) {
               obj = JSON.parse(res.body);
               obj.length.should.equal(defaultLimit);
+              temp = _.map(obj, function (o) { return o.url; });
+              _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+              _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
+              _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
-              // A limit greater than defaultLimit should give defaultLimit objects as well
-              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/' + (defaultLimit + 1)}, function (err, res, body) {
+              // A limit for 0 should give defaultLimit objects as well
+              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/0'}, function (err, res, body) {
                 obj = JSON.parse(res.body);
                 obj.length.should.equal(defaultLimit);
 
-                // Forgetting the limit should force the handler to return defaultLimit objects
-                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest'}, function (err, res, body) {
+                // A limit greater than defaultLimit should give defaultLimit objects as well
+                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/' + (defaultLimit + 1)}, function (err, res, body) {
                   obj = JSON.parse(res.body);
                   obj.length.should.equal(defaultLimit);
 
-                  // Using it normally it should work! And return the 5 latest tldrs
-                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/5'}, function (err, res, body) {
+                  // Forgetting the limit should force the handler to return defaultLimit objects
+                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest'}, function (err, res, body) {
                     obj = JSON.parse(res.body);
-                    obj.length.should.equal(5);
-                    temp = _.map(obj, function (o) { return o. url; });
-                    _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
-                    _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
-                    _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
-                    _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
-                    _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+                    obj.length.should.equal(defaultLimit);
 
-                    // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/asd'}, function (err, res, body) {
+                    // Using it normally it should work! And return the 5 latest tldrs
+                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/5'}, function (err, res, body) {
                       obj = JSON.parse(res.body);
-                      obj.length.should.equal(defaultLimit);
+                      obj.length.should.equal(5);
+                      temp = _.map(obj, function (o) { return o. url; });
+                      _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                      _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                      _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                      _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                      _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
-                      // Called with a non-numeral value for startat, it should use 0 as a default value
-                      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=rew'}, function (err, res, body) {
+                      // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
+                      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/asd'}, function (err, res, body) {
                         obj = JSON.parse(res.body);
-                        obj.length.should.equal(4);
-                        temp = _.map(obj, function (o) { return o. url; });
-                        _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
-                        _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
-                        _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
-                        _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                        obj.length.should.equal(defaultLimit);
 
-                        // With normal values for startat and limit, it should behave normally
-                        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=5'}, function (err, res, body) {
+                        // Called with a non-numeral value for startat, it should use 0 as a default value
+                        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=rew'}, function (err, res, body) {
                           obj = JSON.parse(res.body);
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. url; });
-                          _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
-                          _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
-                          _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
-                          _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
+                          _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                          _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                          _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                          _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
-                          // If startat is too high, no tldr is sent
-                          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=55'}, function (err, res, body) {
+                          // With normal values for startat and limit, it should behave normally
+                          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=5'}, function (err, res, body) {
                             obj = JSON.parse(res.body);
-                            obj.length.should.equal(0);
+                            obj.length.should.equal(4);
+                            temp = _.map(obj, function (o) { return o. url; });
+                            _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
+                            _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+                            _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+                            _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
-                            // Shouldn't return tldrs that are not in the 'latestTldrs' distribution channel
-                            Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { 'distributionChannels.latestTldrs': false } }, { multi: false }, function (err, n) {
-                              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/7'}, function (err, res, body) {
-                                obj = JSON.parse(res.body);
-                                obj.length.should.equal(7);
-                                temp = _.map(obj, function (o) { return o. url; });
-                                _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
-                                _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
-                                _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
-                                _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
-                                _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
-                                _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
-                                _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+                            // If startat is too high, no tldr is sent
+                            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=55'}, function (err, res, body) {
+                              obj = JSON.parse(res.body);
+                              obj.length.should.equal(0);
 
-                                done();
+                              // Shouldn't return tldrs that are not in the 'latestTldrs' distribution channel
+                              Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { 'distributionChannels.latestTldrs': false } }, { multi: false }, function (err, n) {
+                                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/7'}, function (err, res, body) {
+                                  obj = JSON.parse(res.body);
+                                  obj.length.should.equal(7);
+                                  temp = _.map(obj, function (o) { return o. url; });
+                                  _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
+                                  _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
+
+                                  done();
+                                });
                               });
                             });
                           });

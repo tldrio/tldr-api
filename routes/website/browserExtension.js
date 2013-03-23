@@ -4,7 +4,8 @@
  * Proprietary License
 */
 
-var config = require('../../lib/config');
+var config = require('../../lib/config')
+  , r = require('ua-parser');
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
@@ -14,7 +15,14 @@ module.exports = function (req, res, next) {
   values.description = "tldr.io lets you read man-written summaries of interesting content so you can easily select what you want to read, and skim the rest.";
   values.extension = true;
   values.installed = req.query.installed;
-  partials.content = '{{>website/pages/chrome-extension}}';
+  if (r.parse(req.headers['user-agent']).family === 'Firefox') {
+    partials.installButton = '{{>website/addToFirefox}}';
+    values.browser = 'firefox';
+  } else {
+    partials.installButton = '{{>website/addToChrome}}';
+    values.browser = 'chrome';
+  }
+  partials.content = '{{>website/pages/browser-extension}}';
   // Fake tldrs are called tldr1, ..., tldr5
   values.tldr1 = { _id: 'fakeTldrId1'
                  , hostname: 'theregister.co.uk'

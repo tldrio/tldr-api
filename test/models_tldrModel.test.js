@@ -907,7 +907,7 @@ describe('Tldr', function () {
   describe('Moderation', function () {
 
     function checkDefaultModerationStatus (tldr) {
-      tldr.distributionChannels.latestTldrs.should.equal(true);
+      tldr.distributionChannels.latestTldrs.should.equal(false);
       tldr.distributionChannels.latestTldrsRSSFeed.should.equal(false);
       tldr.moderated.should.equal(false);
     }
@@ -962,14 +962,14 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         checkDefaultModerationStatus(tldr);
 
-        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: false, latestTldrsRSSFeed: true }, function () {
+        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: true, latestTldrsRSSFeed: true }, function () {
           Tldr.findOneById(tldr._id, function (err, tldr) {
-            tldr.distributionChannels.latestTldrs.should.equal(false);
+            tldr.distributionChannels.latestTldrs.should.equal(true);
             tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
 
-            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: true }, function () {
+            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: false }, function () {
               Tldr.findOneById(tldr._id, function (err, tldr) {
-                tldr.distributionChannels.latestTldrs.should.equal(true);
+                tldr.distributionChannels.latestTldrs.should.equal(false);
                 tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
 
                 done();
@@ -991,14 +991,14 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         checkDefaultModerationStatus(tldr);
 
-        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'false', latestTldrsRSSFeed: 'true' }, function () {
+        Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'true', latestTldrsRSSFeed: 'true' }, function () {
           Tldr.findOneById(tldr._id, function (err, tldr) {
-            tldr.distributionChannels.latestTldrs.should.equal(false);
+            tldr.distributionChannels.latestTldrs.should.equal(true);
             tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
 
-            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'true' }, function () {
+            Tldr.updateDistributionChannels(tldr._id, { latestTldrs: 'false' }, function () {
               Tldr.findOneById(tldr._id, function (err, tldr) {
-                tldr.distributionChannels.latestTldrs.should.equal(true);
+                tldr.distributionChannels.latestTldrs.should.equal(false);
                 tldr.distributionChannels.latestTldrsRSSFeed.should.equal(true);
 
                 done();

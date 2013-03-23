@@ -250,8 +250,8 @@
       }
     },
     "underscore": {
-      "version": "1.4.4",
-      "from": "underscore@1.4.4"
+      "version": "1.4.2",
+      "from": "underscore@1.4.2"
     },
     "validator": {
       "version": "0.4.11",
@@ -317,6 +317,18 @@
         "methods": {
           "version": "0.0.1",
           "from": "methods@0.0.1"
+        }
+      }
+    },
+    "ua-parser": {
+      "version": "0.3.1",
+      "from": "https://registry.npmjs.org/ua-parser/-/ua-parser-0.3.1.tgz",
+      "resolved": "https://registry.npmjs.org/ua-parser/-/ua-parser-0.3.1.tgz",
+      "dependencies": {
+        "yamlparser": {
+          "version": "0.0.2",
+          "from": "https://registry.npmjs.org/yamlparser/-/yamlparser-0.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/yamlparser/-/yamlparser-0.0.2.tgz"
         }
       }
     },
