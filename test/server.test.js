@@ -310,7 +310,7 @@ describe('Webserver', function () {
                 });
               });
             });
-          })
+          });
         });
       });
     });
