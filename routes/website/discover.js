@@ -7,8 +7,8 @@ var config = require('../../lib/config')
 
 
 function loadTldrs (req, res, next) {
-  Topic.getCategoriesNames(function (err, categories) {
-    req.params.topic = categories;
+  Topic.getCategories(function (err, categories) {
+    req.params.topic = _.pluck(categories, 'name');
     loadTldrsByCategory(req, res, next);
   });
 }

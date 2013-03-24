@@ -9,7 +9,6 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
   , TopicSchema, Topic
-  //, approvedTopics = ['Art','Business', 'Design', 'Education', 'Gaming', 'Health', 'Internet', 'Politics', 'Programming', 'Science', 'Startups', 'World News']
   ;
 
 function validateType (value) {
@@ -21,8 +20,6 @@ function validateType (value) {
     return false;
   }
 }
-
-
 
 TopicSchema = new Schema({
   type: { type: String
@@ -76,40 +73,6 @@ TopicSchema.statics.getCategories = function (callback) {
   });
 };
 
-/**
- * Get all categories names in array form
- */
-TopicSchema.statics.getCategoriesNames = function (callback) {
-  this.find({ type: 'category' }, 'name', function (err, topics) {
-    if (err) {
-      return callback(err);
-    } else {
-      return callback(null, _.map(topics, function(topic) { return topic.name; }));
-    }
-  });
-};
-
-/**
- * Get all categories ids
- */
-TopicSchema.statics.getCategoriesIds = function (callback) {
-  this.find({ type: 'category' }, '_id', function (err, topics) {
-    if (err) {
-      return callback(err);
-    } else {
-      return callback(null, _.map(topics, function (topic) { return topic._id; }));
-    }
-  });
-};
-
-
-/**
- * Get all categories names and ids
- * callback signature: err, [{ categoryId, categoryName }]
- */
-TopicSchema.statics.getCategoriesNamesAndIds = function (callback) {
-  this.find({ type: 'category' }, 'name', callback);
-};
 
 
 /**

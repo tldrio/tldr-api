@@ -52,55 +52,6 @@ describe('Topic', function () {
     });
   });
 
-  it('Get all collections names', function (done) {
-    var topicData1 = { type: 'category', name: 'yepyep' }
-      , topicData2 = { type: 'category', name: 'again' }
-      , topicData3 = { type: 'category', name: 'another' }
-      ;
-
-    Topic.createAndSaveInstance(topicData1, function (err) {
-      Topic.createAndSaveInstance(topicData2, function (err) {
-        Topic.createAndSaveInstance(topicData3, function (err) {
-          Topic.getCategoriesNames(function(err, names) {
-            names.length.should.equal(3);
-            names.should.contain('yepyep');
-            names.should.contain('again');
-            names.should.contain('another');
-
-            done();
-          });
-        });
-      });
-    });
-  });
-
-  it('Get all collections names and ids', function (done) {
-    var topicData1 = { type: 'category', name: 'yepyep' }
-      , topicData2 = { type: 'category', name: 'again' }
-      , topicData3 = { type: 'category', name: 'another' }
-      ;
-
-    Topic.createAndSaveInstance(topicData1, function (err, cat1) {
-      Topic.createAndSaveInstance(topicData2, function (err, cat2) {
-        Topic.createAndSaveInstance(topicData3, function (err, cat3) {
-          Topic.getCategoriesNamesAndIds(function(err, categories) {
-            var f1, f2, f3;
-            categories.length.should.equal(3);
-
-            f1 = _.find(categories, function (c) { return c._id.toString() === cat1._id.toString(); });
-            f1.name.should.equal('yepyep');
-            f2 = _.find(categories, function (c) { return c._id.toString() === cat2._id.toString(); });
-            f2.name.should.equal('again');
-            f3 = _.find(categories, function (c) { return c._id.toString() === cat3._id.toString(); });
-            f3.name.should.equal('another');
-
-            done();
-          });
-        });
-      });
-    });
-  });
-
   it('createAndSaveInstance in safe mode doesnt spout an error on conflict', function (done) {
     var topicData = { type: 'category', name: 'same' }
       ;
