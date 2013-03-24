@@ -77,7 +77,7 @@ TopicSchema.statics.getCategories = function (callback) {
 };
 
 /**
- * Get all categories names
+ * Get all categories names in array form
  */
 TopicSchema.statics.getCategoriesNames = function (callback) {
   this.find({ type: 'category' }, 'name', function (err, topics) {

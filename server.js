@@ -211,9 +211,13 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/scratchpad', middleware.adminOnly, routes.website.scratchpad);
 
   //Discover
-  app.get('/discover', middleware.websiteRoute, routes.website.discover);
-  app.get('/discover/:topic', function (req, res, next) { return res.redirect(301, '/discover/' + req.params.topic + '/newest'); });
-  app.get('/discover/:topic/:sort', middleware.websiteRoute, routes.website.discover);
+  app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+
+  app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+  app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.category); });
+  app.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+
+
 
   // Tldr page
   app.get('/tldrs/:id/:slug', routes.website.tldrPage);

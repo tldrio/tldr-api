@@ -26,15 +26,13 @@
             <a alt="Collapse all summaries" class="option-collapse option-chosen" href="#">Collapse</a>
           </span>
         </div>
-        {{#tldrsByCategory}}
-        <div class="tab-pane {{active}}" id="{{categoryName}}">
+        <div class="tab-pane active">
           <ol class="media-list discover-tldr-list">
             {{#tldrs}}
               {{>website/discover.tldr.unit}}
             {{/tldrs}}
           </ol>
         </div>
-        {{/tldrsByCategory}}
         <div class="discover-load-more">
           <button class="btn btn-primary">
             <img src="/assets/img/happy-derp.small.png">
