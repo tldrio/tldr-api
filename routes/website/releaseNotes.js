@@ -18,6 +18,14 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases = [];
 
+  values.weeklyReleases.push({ header: 'Week from Mar 18th, 2013 to Mar 24th, 2013'
+  , item: [
+            "We ported the Chrome extension to Firefox. You can download it <a target='_blank' href='https://addons.mozilla.org/en-US/firefox/addon/tldr-by-tldrio/'>here</a>!"
+          , "We removed the panel that swiped sometimes to invite you to write a tldr"
+          , "The copy for the share button is more explicit and states the link to original article will be shared along the permalink to the tl;dr."
+          , "Bugfix: The active view wasn't correctly set after login with Google from the Popover view displayed by the badges"
+          ]
+  });
   values.weeklyReleases.push({ header: 'Week from Mar 11th, 2013 to Mar 17th, 2013'
   , item: [
             "You can now use Google login within the Chrome extension."
