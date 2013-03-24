@@ -33,6 +33,36 @@ TopicSchema = new Schema({
 });
 TopicSchema.path('type').index(true);
 
+
+/**
+ * Create a new topic (domain or category)
+ * @param {Boolean} options.safe Safe insert which doesn't raise an error in case of conflict
+ * @param {Function} cb Optional callback, signature err, new topic if created
+ */
+TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
+  var callback, options, safe
+    , topic = new Topic(topicData);
+
+  if (typeof _options === 'function') {
+    options = {};
+    cb = _options;
+  } else {
+    options = _options;
+  }
+
+  callback = cb || function () {};
+  safe = options.safe || false;
+
+  topic.save(function (err, topic) {
+    if (err) {
+      if (!(safe && err.code === 11000)) { return callback(err); }
+    }
+
+    return callback(null, topic);
+  });
+};
+
+
 /**
  * Get all categories
  */
@@ -74,40 +104,11 @@ TopicSchema.statics.getCategoriesIds = function (callback) {
 
 
 /**
- * Get all categories names and ideas
+ * Get all categories names and ids
  * callback signature: err, [{ categoryId, categoryName }]
  */
 TopicSchema.statics.getCategoriesNamesAndIds = function (callback) {
   this.find({ type: 'category' }, 'name', callback);
-};
-
-
-/**
- * Create a new topic (mostly for dev purposes)
- * @param {Boolean} options.safe Safe insert which doesn't raise an error in case of conflict
- * @param {Function} cb Optional callback, signature err, new topic if created
- */
-TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
-  var callback, options, safe
-    , topic = new Topic(topicData);
-
-  if (typeof _options === 'function') {
-    options = {};
-    cb = _options;
-  } else {
-    options = _options;
-  }
-
-  callback = cb || function () {};
-  safe = options.safe || false;
-
-  topic.save(function (err, topic) {
-    if (err) {
-      if (!(safe && err.code === 11000)) { return callback(err); }
-    }
-
-    return callback(null, topic);
-  });
 };
 
 
@@ -131,6 +132,13 @@ TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
   });
 };
 
+
+/**
+ * Get a domain from its name
+ */
+TopicSchema.statics.getDomainFromName = function (name, callback) {
+  this.findOne({ type: 'domain', name: name }, callback);
+}
 
 
 

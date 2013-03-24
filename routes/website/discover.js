@@ -5,7 +5,8 @@ var config = require('../../lib/config')
   , _ = require('underscore')
   ;
 
-module.exports = function (req, res, next) {
+
+function category (req, res, next) {
   var partials = req.renderingPartials || {}
     , values = req.renderingValues || {}
     , topic = req.params.topic
@@ -50,3 +51,7 @@ module.exports = function (req, res, next) {
                                       });
   });
 }
+
+
+// Interface
+module.exports = category;

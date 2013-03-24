@@ -277,4 +277,21 @@ describe('Topic', function () {
 
   });   // ==== End of 'Get topic ids from category names' ==== //
 
+
+  it('Can get a domain from its name', function (done) {
+      var topicData1 = { type: 'domain', name: 'yepyep.com' }
+        ;
+
+      Topic.createAndSaveInstance(topicData1, function (err, d1) {
+        Topic.getDomainFromName('nopez.net', function (err, domain) {
+          assert.isNull(err);
+          assert.isNull(domain);
+          Topic.getDomainFromName('yepyep.com', function (err, domain) {
+            domain._id.toString().should.equal(d1._id.toString());
+            done();
+          });
+        });
+      });
+  });
+
 });
