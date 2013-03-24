@@ -212,6 +212,8 @@ beforeEach(app, middleware.websiteRoute, function (app) {
 
   //Discover
   app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+  app.get('/discover/:sort', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
 
   app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
   app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.category); });
