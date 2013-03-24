@@ -294,18 +294,22 @@ describe('Topic', function () {
       });
   });
 
-  it('Can safely add domains', function (done) {
+  it.only('Can safely add domains', function (done) {
     Topic.find({ type: 'domain' }, function (err, domains) {
       domains.length.should.equal(0);
 
-      Topic.addDomainSafe('yop.com', function (err) {
+      Topic.addDomainSafe('yop.com', function (err, domain) {
         assert.isNull(err);
+        domain.name.should.equal('yop.com');
+        domain.type.should.equal('domain');
         Topic.find({ type: 'domain' }, function (err, domains) {
           domains.length.should.equal(1);
           domains[0].name.should.equal('yop.com');
 
-          Topic.addDomainSafe('yop.com', function (err) {
+          Topic.addDomainSafe('yop.com', function (err, domain) {
             assert.isNull(err);
+            domain.name.should.equal('yop.com');
+            domain.type.should.equal('domain');
             Topic.find({ type: 'domain' }, function (err, domains) {
               domains.length.should.equal(1);
               domains[0].name.should.equal('yop.com');

@@ -140,20 +140,22 @@ TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
  */
 TopicSchema.statics.getDomainFromName = function (name, callback) {
   this.findOne({ type: 'domain', name: name }, callback);
-}
+};
 
 /**
  * Safely add a new domain (do nothing if already added)
- * The callback is optional. Signature: err
+ * The callback is optional. Signature: err, domain
  */
 TopicSchema.statics.addDomainSafe = function (name, cb) {
-  var callback = cb || function () {};
+  var callback = cb || function () {}
+    , self = this;
 
-  this.update( { name: name }
-             , { type: 'domain' }
-             , { upsert: true, multi: false }
-             , function(err, numAffected, rawResponse) { return callback(err); }
-             );
+  self.findOne({ type: 'domain', name: name }, function (err, domain) {
+    if (err) { return callback(err); }
+    if (domain) { return callback(err, domain); }
+
+    self.createAndSaveInstance({ type: 'domain', name: name }, callback);
+  });
 };
 
 
