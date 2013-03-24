@@ -133,12 +133,28 @@ TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
 };
 
 
+
+
 /**
  * Get a domain from its name
  */
 TopicSchema.statics.getDomainFromName = function (name, callback) {
   this.findOne({ type: 'domain', name: name }, callback);
 }
+
+/**
+ * Safely add a new domain (do nothing if already added)
+ * The callback is optional. Signature: err
+ */
+TopicSchema.statics.addDomainSafe = function (name, cb) {
+  var callback = cb || function () {};
+
+  this.update( { name: name }
+             , { type: 'domain' }
+             , { upsert: true, multi: false }
+             , function(err, numAffected, rawResponse) { return callback(err); }
+             );
+};
 
 
 
