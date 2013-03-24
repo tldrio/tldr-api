@@ -112,7 +112,7 @@
               {{#user.numberTldrsCreated}}
               <h3>Latest articles summarized</h3>
               <ul class="unstyled">
-                {{#user.tldrsCreated}}
+                {{#user.completeTldrsCreated}}
                 <li>
                   <div class="tldr-icon">
                   </div>
@@ -122,7 +122,7 @@
                     </p>
                     {{>website/tldrBadge}}
                     <span class="tldr-hostname tldr-hostname-list">
-                      ({{hostname}})
+                      ({{domain.name}})
                     </span>
                   </div>
                   <div class="tldr-metadata-tldrs">
@@ -141,7 +141,7 @@
                     <div class="tldr-read-container">
                       <div class="tldr-tldr">
                         <div class="tldr-header">
-                          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{hostname}}" alt="Favicon for {{hostname}}">
+                          <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{domain.name}}" alt="Favicon for {{domain.name}}">
                           <p class="tldr-title tldr-title-ellipsis">{{title}}</p>
                         </div>
                         <div class="tldr-metadata">
@@ -166,7 +166,7 @@
           </div>
                 <!-- end powertip -->
               </li>
-              {{/user.tldrsCreated}}
+              {{/user.completeTldrsCreated}}
             </ul>
             {{/user.numberTldrsCreated}}
 

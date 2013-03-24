@@ -37,7 +37,7 @@ function wait (millis, cb) {
 /**
  * Tests
  */
-describe.only('Tldr', function () {
+describe('Tldr', function () {
   var user, userbis
     , categories = {}
     ;

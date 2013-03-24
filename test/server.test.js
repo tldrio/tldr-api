@@ -192,7 +192,6 @@ describe('Webserver', function () {
         someTldrs.push(new Tldr({ url: 'http://needforair.com/sopa/number' + i
                                 , possibleUrls: ['http://needforair.com/sopa/number' + i]
                                 , originalUrl: 'http://needforair.com/sopa/number' + i
-                                , hostname: 'needforair.com'
                                 , title: 'sopa'
                                 , slug: 'sopa-' + i
                                 , summaryBullets: ['Great article']
@@ -200,6 +199,7 @@ describe('Webserver', function () {
                                 , resourceDate: new Date()
                                 , creator: user1._id
                                 , history: '111111111111111111111111'   // Dummy _id, the history is not used by this test
+                                , domain: '111111111111111111111111'   // Dummy
                                 , createdAt: new Date()
                                 , updatedAt: temp  }));
       }

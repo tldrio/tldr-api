@@ -29,6 +29,7 @@ module.exports = function (req, res, next) {
         .limit(10)
         .sort('-createdAt')
         .populate('creator', 'deleted username')
+        .populate('domain')
         .exec(function (err, tldrs) {
           values.latestTldrs = tldrs;
           _.each(values.latestTldrs, function (tldr) {
