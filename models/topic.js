@@ -9,6 +9,7 @@ var mongoose = require('mongoose')
   , Schema = mongoose.Schema
   , ObjectId = Schema.ObjectId
   , TopicSchema, Topic
+  , Category = {}, Domain = {}
   ;
 
 function validateType (value) {
@@ -79,7 +80,7 @@ TopicSchema.statics.getCategories = function (callback) {
  * From an array of category names, return the array of corresponding topic _ids
  * @param {String or Array} _names either 'cat1 cat2 ...', [cat1, cat2, ...] or [{ name: cat1}, { name: cat2 }, ... ]  (the three possible expected forms)
  */
-TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
+TopicSchema.statics.getCategoriesFromNames = function (names, cb) {
   var callback = cb || function () {};
 
   names = names || '';
@@ -90,26 +91,18 @@ TopicSchema.statics.getIdsFromCategoryNames = function (names, cb) {
     if (err) {
       return callback(err);
     } else {
-      return callback(null, _.map(topics, function (t) { return t._id; }));
+      return callback(null, topics);
     }
   });
 };
 
 
 
-
 /**
- * Get a domain from its name
- */
-TopicSchema.statics.getDomainFromName = function (name, callback) {
-  this.findOne({ type: 'domain', name: name }, callback);
-};
-
-/**
- * Safely add a new domain (do nothing if already added)
+ * Safely get a domain (add it if it doesn't exist)
  * The callback is optional. Signature: err, domain
  */
-TopicSchema.statics.addDomainSafe = function (name, cb) {
+TopicSchema.statics.getDomainFromName = function (name, cb) {
   var callback = cb || function () {}
     , self = this;
 

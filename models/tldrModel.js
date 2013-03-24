@@ -193,14 +193,14 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     // Initialize categories
-    Topic.getIdsFromCategoryNames(userInput.topics, function (err, topicsIds) {
+    Topic.getCategoriesFromNames(userInput.topics, function (err, topics) {
       // Make sure domain is present in topic
-      Topic.addDomainSafe(customUtils.getHostnameFromUrl(instance.url), function (err, domain) {
+      Topic.getDomainFromName(customUtils.getHostnameFromUrl(instance.url), function (err, domain) {
         instance.history = _history._id;
         instance.creator = creator._id;
         instance.domain = domain && domain._id;   // Fail-safe
         instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-        instance.topics = topicsIds;
+        instance.topics = _.pluck(topics, '_id');
         instance.save(function(err, tldr) {
           if (err) { return callback(err); }
           mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
@@ -366,10 +366,10 @@ TldrSchema.statics.findOneById = function (id, cb) {
  * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
  */
 TldrSchema.statics.findByCategoryName = function (categories, _options, _callback) {
-  Topic.getIdsFromCategoryNames(categories, function (err, topicsIds) {
+  Topic.getCategoriesFromNames(categories, function (err, topics) {
     if (err) { return _callback(err); }
 
-    Tldr.findByCategoryId(topicsIds, _options, _callback);
+    Tldr.findByCategoryId(_.pluck(topics, '_id'), _options, _callback);
   });
 };
 
@@ -500,8 +500,8 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
   //Update the topics field
-  Topic.getIdsFromCategoryNames(updates.topics, function (err, topicsIds) {
-    if (updates.topics) { self.topics = topicsIds; }   // Don't remove topics if you didn't want to update them
+  Topic.getCategoriesFromNames(updates.topics, function (err, topics) {
+    if (updates.topics) { self.topics = _.pluck(topics, '_id'); }   // Don't remove topics if you didn't want to update them
 
     // Try to save it
     self.save(function (err, tldr) {
