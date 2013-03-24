@@ -294,7 +294,7 @@ describe('Topic', function () {
       });
   });
 
-  it.only('Can safely add domains', function (done) {
+  it('Can safely add domains', function (done) {
     Topic.find({ type: 'domain' }, function (err, domains) {
       domains.length.should.equal(0);
 

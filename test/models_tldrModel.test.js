@@ -37,7 +37,7 @@ function wait (millis, cb) {
 /**
  * Tests
  */
-describe('Tldr', function () {
+describe.only('Tldr', function () {
   var user, userbis
     , categories = {}
     ;
@@ -509,7 +509,7 @@ describe('Tldr', function () {
         });
     });
 
-    it('should automatically set required hostname and wordCount', function (done) {
+    it('should automatically set required domain and wordCount', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog', 'Hello how do you do??'],
@@ -520,10 +520,12 @@ describe('Tldr', function () {
 
       Tldr.createAndSaveInstance( tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
-        Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
+        Tldr.findOne({possibleUrls:  'http://needforair.com/'})
+            .populate('domain')
+            .exec(function (err, tldr) {
           if (err) { return done(err); }
-          docs[0].hostname.should.equal('needforair.com');
-          docs[0].wordCount.should.equal(7);
+          tldr.domain.name.should.equal('needforair.com');
+          tldr.wordCount.should.equal(7);
           done();
         });
       });

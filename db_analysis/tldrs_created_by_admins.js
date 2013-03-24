@@ -1,10 +1,3 @@
-/*
- * This migration was necessary once we defined the new required field 'hostname' on tldr
- * We set it to 0 for all tldrs
- * Date: 09/10/2012
- *
- */
-
 var async = require('async')
   , _ = require('underscore')
   , models = require('../lib/models')
@@ -53,7 +46,6 @@ async.waterfall([
     });
   }
 
-  // Add the hostname field to all tldr docs
 , async.apply(adminTldrsBetweenDates, new Date(2012, 8, 17, 0, 0, 0), new Date(2012, 8, 23, 23, 59, 59))
 , async.apply(adminTldrsBetweenDates, new Date(2012, 8, 24, 0, 0, 0), new Date(2012, 8, 30, 23, 59, 59))
 , async.apply(adminTldrsBetweenDates, new Date(2012, 9, 1, 0, 0, 0), new Date(2012, 9, 7, 23, 59, 59))

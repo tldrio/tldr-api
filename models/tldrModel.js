@@ -98,7 +98,8 @@ TldrSchema = new Schema(
                  , required: true
                  , set: customUtils.sanitizeInput
                  }
-  , hostname: { type: String
+  , domain: { type: ObjectId
+              , ref: 'topic'
               , required: true
               }
   , title: { type: String
@@ -191,26 +192,29 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
-    // Initialize topics
+    // Initialize categories
     Topic.getIdsFromCategoryNames(userInput.topics, function (err, topicsIds) {
-      instance.history = _history._id;
-      instance.creator = creator._id;
-      instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-      instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-      instance.topics = topicsIds;
-      instance.save(function(err, tldr) {
-        if (err) { return callback(err); }
-        mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
+      // Make sure domain is present in topic
+      Topic.addDomainSafe(customUtils.getHostnameFromUrl(instance.url), function (err, domain) {
+        instance.history = _history._id;
+        instance.creator = creator._id;
+        instance.domain = domain && domain._id;   // Fail-safe
+        instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
+        instance.topics = topicsIds;
+        instance.save(function(err, tldr) {
+          if (err) { return callback(err); }
+          mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
 
-        // Put it in the creator's list of created tldrs
-        creator.tldrsCreated.push(tldr._id);
-        creator.save(function(err, _user) {
-          if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+          // Put it in the creator's list of created tldrs
+          creator.tldrsCreated.push(tldr._id);
+          creator.save(function(err, _user) {
+            if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-          // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
-          creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
-            if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-            callback(null, tldr);
+            // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+            creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+              if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+              callback(null, tldr);
+            });
           });
         });
       });
@@ -332,6 +336,7 @@ function findOneInternal (selector, cb) {
       .populate('creator', 'deleted username twitterHandle')
       .populate('editors', 'deleted username')
       .populate('topics', 'name')
+      .populate('domain', 'name')
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
@@ -395,6 +400,7 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
         .populate('creator', 'deleted username twitterHandle')
         .populate('editors', 'deleted username')
         .populate('topics', 'name')
+        .populate('domain', 'name')
         .sort(sort)
         .limit(limit)
         .skip(skip)
