@@ -44,7 +44,6 @@ module.exports = function (req, res, next) {
       values.tldrsByCategory[0].active = 'active';
       values.activeCategory = values.tldrsByCategory[0].categoryName;
     }
-    console.log(values.tldrsByCategory);
 
     res.render('website/responsiveLayout', { values: values
                                       , partials: partials

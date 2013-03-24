@@ -212,7 +212,7 @@ beforeEach(app, middleware.websiteRoute, function (app) {
 
   //Discover
   app.get('/discover', middleware.websiteRoute, routes.website.discover);
-  app.get('/discover/:topic', middleware.websiteRoute, routes.website.discover);
+  app.get('/discover/:topic', function (req, res, next) { return res.redirect(301, '/discover/' + req.params.topic + '/newest'); });
   app.get('/discover/:topic/:sort', middleware.websiteRoute, routes.website.discover);
 
   // Tldr page
