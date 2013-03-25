@@ -98,6 +98,7 @@ TldrSchema = new Schema(
                  , required: true
                  , set: customUtils.sanitizeInput
                  }
+  , hostname: { type: String }   // Keep this only until migration 20130325_categoriesAndDomains has been run, necessary to delete the hostname field
   , domain: { type: ObjectId
               , ref: 'topic'
               , required: true

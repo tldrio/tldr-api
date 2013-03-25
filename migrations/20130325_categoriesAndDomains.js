@@ -32,12 +32,13 @@ async.waterfall([
       async.whilst(
         function () { return i < tldrs.length; }
       , function (_cb) {
-          var possibleUrls = [];
+          var tldr = tldrs[i];
 
-          Topic.getDomainFromName(tldrs[i].hostname, function (err, domain) {
+
+          Topic.getDomainFromName(tldrs[i].toObject().hostname, function (err, domain) {
             tldrs[i].domain = domain._id;
             tldrs[i].topics = [];
-            delete tldrs[i].hostname;
+            tldrs[i].hostname = undefined;
 
             tldrs[i].save(function (err) {
               i += 1;
