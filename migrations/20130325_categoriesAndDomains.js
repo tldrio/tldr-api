@@ -1,15 +1,9 @@
-/*
- * Get all word counts for tldrs
- * We set it to true for all tldrs
- * Date: 26/09/2012
- *
- */
-
 var async = require('async')
   , _ = require('underscore')
   , models = require('../lib/models')
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
+  , Topic = models.Topic
   , articleParsing = require('../lib/articleParsing')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
@@ -35,20 +29,20 @@ async.waterfall([
     Tldr.find({}, function(err, tldrs) {
       if (err) { return cb(err); }
 
-      console.log("====");
-      console.log(tldrs.length);
-
       async.whilst(
         function () { return i < tldrs.length; }
       , function (_cb) {
           var possibleUrls = [];
-          console.log('Get tldr word count for: ' + tldrs[i]._id);
 
-          tldrs[i].wordCount = customUtils.getWordCount(tldrs[i].summaryBullets);
+          Topic.getDomainFromName(tldrs[i].hostname, function (err, domain) {
+            tldrs[i].domain = domain._id;
+            tldrs[i].topics = [];
+            delete tldrs[i].hostname;
 
-          tldrs[i].save(function (err) {
-            i += 1;
-            _cb(err);
+            tldrs[i].save(function (err) {
+              i += 1;
+              _cb(err);
+            });
           });
         }
       , cb);
