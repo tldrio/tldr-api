@@ -623,7 +623,7 @@ describe('Tldr', function () {
   });   // ==== End of '#createAndSaveInstance' ==== //
 
 
-  describe('Finding tldr', function () {
+  describe('Finding tldrs', function () {
 
     it('findOneByUrl should be able to find a tldr by a normalized or non normalized url', function (done) {
       var tldrData = {
@@ -688,6 +688,49 @@ describe('Tldr', function () {
       });
     });
 
+    it('findOneByUrl should populate the topics names', function (done) {
+      var tldrData = {
+        title: 'Blog NFA'
+      , summaryBullets: ['Awesome Blog']
+      , resourceAuthor: 'NFA Crew'
+      , url: 'http://needforair.com'
+      , topics: 'Startups'
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
+          tldr._id.toString().should.equal(id.toString());
+          tldr.topics.length.should.equal(1);
+          tldr.topics[0].name.should.equal('Startups');
+          done();
+        });
+      });
+    });
+
+    it('findOneByUrl should populate the domain name', function (done) {
+      var tldrData = {
+        title: 'Blog NFA'
+      , summaryBullets: ['Awesome Blog']
+      , resourceAuthor: 'NFA Crew'
+      , url: 'http://needforair.com/yodude'
+      , topics: 'Startups'
+      }
+      , id
+      ;
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        id = tldr._id;
+        Tldr.findOneByUrl('http://needforair.com/yodude', function (err, tldr) {
+          tldr._id.toString().should.equal(id.toString());
+          tldr.domain.name.should.equal('needforair.com');
+          done();
+        });
+      });
+    });
+
     it('findOneByUrl and findOneById called should result in an increase of the weekly and total read counts', function (done) {
       var tldrData = {
         title: 'Blog NFA',
@@ -733,6 +776,53 @@ describe('Tldr', function () {
             cb();
           });
         }
+      ], done);
+    });
+
+    it('Can find by domain name', function (done) {
+      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://other.com/3', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://otherother.com/5', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        ;
+
+      async.waterfall([
+      function (cb) {
+        Tldr.createAndSaveInstance(tldrData1, user, function (err, _tldr1) {
+          Tldr.createAndSaveInstance(tldrData2, user, function (err, _tldr2) {
+            Tldr.createAndSaveInstance(tldrData3, user, function (err, _tldr3) {
+              Tldr.createAndSaveInstance(tldrData4, user, function (err, _tldr4) {
+                Tldr.createAndSaveInstance(tldrData5, user, function (err, _tldr5) {
+                  cb();
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {   // Can find the tldrs
+        Tldr.findByDomainName('needforair.com', function (err, tldrs) {
+          tldrs.length.should.equal(3);
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/1');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/2');
+          _.pluck(tldrs, 'url').should.contain('http://needforair.com/4');
+          cb();
+        });
+      }
+      , function (cb) {   // Fields to be populated indeed are
+        Tldr.findByDomainName('other.com', function (err, tldrs) {
+          tldrs.length.should.equal(1);
+          tldrs[0].domain.name.should.equal('other.com');
+          cb();
+        });
+      }
+      , function (cb) {   // Non existing domain is not a problem
+        Tldr.findByDomainName('inexistant.com', function (err, tldrs) {
+          tldrs.length.should.equal(0);
+          cb();
+        });
+      }
       ], done);
     });
 

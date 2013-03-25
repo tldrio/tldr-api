@@ -384,6 +384,18 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
 // ========================================================================
 
 /**
+ * Extend Mongoose's Query object to define in only one place the tldr fields
+ * we always need populated
+ */
+mongoose.Query.prototype.populateTldrFields = function () {
+  return this.populate('creator', 'deleted username twitterHandle')
+             .populate('editors', 'deleted username')
+             .populate('topics', 'name')
+             .populate('domain', 'name');
+};
+
+
+/**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
  */
@@ -391,10 +403,7 @@ function findOneInternal (selector, cb) {
   var callback = cb || function () {};
 
   Tldr.findOne(selector)
-      .populate('creator', 'deleted username twitterHandle')
-      .populate('editors', 'deleted username')
-      .populate('topics', 'name')
-      .populate('domain', 'name')
+      .populateTldrFields()
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
@@ -419,15 +428,12 @@ TldrSchema.statics.findOneById = function (id, cb) {
 /**
  * Find tldrs by their category names
  * @param {String or Array of Strings} categories
- * @param {Integer} options.limit
- * @param {Integer} options.skip
- * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
  */
-TldrSchema.statics.findByCategoryName = function (categories, _options, _callback) {
+TldrSchema.statics.findByCategoryName = function (categories, options, callback) {
   Topic.getCategoriesFromNames(categories, function (err, topics) {
-    if (err) { return _callback(err); }
+    if (err) { return callback(err); }
 
-    Tldr.findByCategoryId(_.pluck(topics, '_id'), _options, _callback);
+    Tldr.findByCategoryId(_.pluck(topics, '_id'), options, callback);
   });
 };
 
@@ -435,7 +441,30 @@ TldrSchema.statics.findByCategoryName = function (categories, _options, _callbac
  * Find tldrs by category id (faster if we already have the id)
  * @param {Array} ids Array of category ids
  */
-TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
+TldrSchema.statics.findByCategoryId = function (ids, options, callback) {
+  this.findByQuery({ topics: { $in: ids } }, options, callback);
+};
+
+/**
+ * Find tldrs by domain name
+ */
+TldrSchema.statics.findByDomainName = function (name, options, callback) {
+  Topic.getDomainFromName(name, function (err, domain) {
+    if (err) { return callback(err); }
+
+    Tldr.findByQuery({ domain: domain._id }, options, callback);
+  });
+};
+
+/**
+ * Find tldrs
+ * @generic
+ * @param {Object} options Optional, detailed below.
+ * @param {Integer} options.limit
+ * @param {Integer} options.skip
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
+ */
+TldrSchema.statics.findByQuery = function (query, _options, _callback) {
   var options = typeof _options === 'function' ? {} : _options
     , callback = typeof _options === 'function' ? _options : _callback
     , skip = options.skip || 0
@@ -443,16 +472,14 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
     , sort = options.sort || '-createdAt'   // Sort default: latest
     ;
 
-  Tldr.find({ topics: { $in: ids } })
-      .populate('creator', 'deleted username twitterHandle')
-      .populate('editors', 'deleted username')
-      .populate('topics', 'name')
-      .populate('domain', 'name')
+  Tldr.find(query)
+      .populateTldrFields()
       .sort(sort)
       .limit(limit)
       .skip(skip)
       .exec(callback);
 };
+
 
 /**
  * Find n tldrs from every category
