@@ -880,32 +880,6 @@ describe('Tldr', function () {
   });   // ==== End of 'Finding tldrs' ==== //
 
 
-  describe('Redirection and canonicalization handling', function () {
-
-    it('If a tldr exist with the to url, redirection should add the from as a possible url', function (done) {
-      var tldrData = {
-        title: 'Blog NFA',
-        summaryBullets: ['Awesome Blog'],
-        resourceAuthor: 'NFA Crew',
-        url: 'http://needforair.com',
-      }
-      , id
-      ;
-
-      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-        id = tldr._id;
-        Tldr.registerRedirection('http://bloups.com/bam', 'http://needforair.com', function () {
-          Tldr.findOneByUrl('http://bloups.com/bam', function (err, tldr) {
-            tldr._id.toString().should.equal(id.toString());
-            done();
-          });
-        });
-      });
-    });
-
-  });   // ==== End of 'Redirection and canonicalization handling' ==== //
-
-
   describe('Moderation', function () {
 
     function checkDefaultModerationStatus (tldr) {
