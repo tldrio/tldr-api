@@ -38,7 +38,7 @@ async.waterfall([
           Topic.getDomainFromName(tldrs[i].toObject().hostname, function (err, domain) {
             tldrs[i].domain = domain._id;
             tldrs[i].topics = [];
-            tldrs[i].hostname = undefined;
+            //tldrs[i].hostname = undefined;
 
             tldrs[i].save(function (err) {
               i += 1;
