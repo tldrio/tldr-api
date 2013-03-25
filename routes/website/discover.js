@@ -18,6 +18,8 @@ function loadTldrs (req, res, next) {
     req.renderingValues.newest = true;
   }
 
+  req.renderingValues.currentBaseUrl = '/discover';
+
   Tldr.findAll(options, function (err, tldrs) {
     req.renderingValues.tldrs = tldrs;
     return next();
@@ -33,7 +35,7 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.mostread = true;
   } else {
     options = { sort: '-createdAt' };
-    req.renderingValues.latest = true;
+    req.renderingValues.newest = true;
   }
 
   // First check the type of the topic, then do the correct query
@@ -41,6 +43,7 @@ function loadTldrsByCategory (req, res, next) {
     if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
 
     req.renderingValues.activeTopic = req.params.topic;
+    req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
       Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
