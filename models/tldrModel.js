@@ -373,16 +373,6 @@ TldrSchema.statics.findByCategoryName = function (categories, _options, _callbac
   });
 };
 
-/**
- * Find tldrs by their category
- * @param {Object} category
- * @param {Integer} options.limit
- * @param {Integer} options.skip
- * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
- */
-TldrSchema.statics.findByCategory = function (category, _options, _callback) {
-  Tldr.findByCategoryId([category._id], _options, _callback);
-};
 
 /**
  * Find tldrs by category id (faster if we already have the id)
@@ -396,21 +386,21 @@ TldrSchema.statics.findByCategoryId = function (ids, _options, _callback) {
     , sort = options.sort || '-createdAt'   // Sort default: latest
     ;
 
-    Tldr.find({ topics: { $in: ids } })
-        .populate('creator', 'deleted username twitterHandle')
-        .populate('editors', 'deleted username')
-        .populate('topics', 'name')
-        .populate('domain', 'name')
-        .sort(sort)
-        .limit(limit)
-        .skip(skip)
-        .exec(callback);
+  Tldr.find({ topics: { $in: ids } })
+      .populate('creator', 'deleted username twitterHandle')
+      .populate('editors', 'deleted username')
+      .populate('topics', 'name')
+      .populate('domain', 'name')
+      .sort(sort)
+      .limit(limit)
+      .skip(skip)
+      .exec(callback);
 };
 
 
 /**
  * Find n tldrs from every category
- * TODO: Absolutely suboptimal for now
+ * Absolutely suboptimal for now. If we need to use it, make it acceptable
  * @param {Number} options.limit How many tldr from each category to return
  * @param {String} options.sort Same option as findByCategoryName
  * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
@@ -422,7 +412,7 @@ TldrSchema.statics.findFromEveryCategory = function (options, callback) {
     async.whilst(
       function () { return i < categories.length; }
     , function (cb) {
-        Tldr.findByCategory(categories[i], options, function (err, tldrs) {
+        Tldr.findByCategoryId([categories[i]._id], options, function (err, tldrs) {
           var el = {};
           if (err) { return cb(err); }
           el.categoryName = categories[i].name;
