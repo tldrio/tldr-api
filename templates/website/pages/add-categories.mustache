@@ -1,5 +1,5 @@
 <section class="marketing">
-  <h1>Tldrs in need of some moderation</h1>
+  <h1>Tldrs in need of a category</h1>
   <div class="tldr-base-unit">
     <div class="latest-tldrs-created">
       <ul class="unstyled">
@@ -7,17 +7,13 @@
         <li data-tldr-id="{{_id}}">
           <!-- Channels -->
           <div style="width: 25%; float: right;">
-            <label class="checkbox"><input kind="channel" channel="latestTldrs" type="checkbox"{{#distributionChannels.latestTldrs}} checked{{/distributionChannels.latestTldrs}}><strong>Latest</strong></label>
-            <label class="checkbox"><input kind="channel" channel="latestTldrsRSSFeed" type="checkbox"{{#distributionChannels.latestTldrsRSSFeed}} checked{{/distributionChannels.latestTldrsRSSFeed}}><strong>RSS</strong></label>
-            {{#socialProfiles}}
-              <label class="checkbox">
-                <input type="checkbox" kind="sharing" bufferid="{{id}}">
-                {{service_username}} <span style="color: #999;">({{formatted_service}})</span>
-              </label>
-            {{/socialProfiles}}
+            <select class="category">
+              <option></option>
+              {{#categories}}
+              <option>{{name}}</option>
+              {{/categories}}
+            </select>
             <button class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
-            <button class="btn btn-mini cockblockTldr" type="button">Cockblock</button>
-            <button class="btn btn-danger btn-mini deleteTldr" type="button">Delete</button>
           </div>
 
           <!-- Tldr -->
@@ -53,7 +49,7 @@
       </ul>
 
       {{^tldrs}}
-        Woohoo, no tldrs need to be moderated!
+        Woohoo, all tldrs have a category!
       {{/tldrs}}
     </div>
   </div>

@@ -1,5 +1,5 @@
 var models = require('../../lib/models')
-  , Topic = models.Topic
+  , Thread = models.Thread
   , _ = require('underscore')
   , config = require('../../lib/config')
   , mqClient = require('../../lib/message-queue')
@@ -8,13 +8,13 @@ var models = require('../../lib/models')
 module.exports = function (req, res, next) {
   req.renderingValues = req.renderingValues || {};
 
-  Topic.findOne({ _id: req.params.id }, function (err, topic) {
-    if (err || ! topic) {
+  Thread.findOne({ _id: req.params.id }, function (err, thread) {
+    if (err || ! thread) {
       req.renderingValues.notFound = true;
       return next();
     }
 
-    topic.addPost({ text: req.body.text }, req.user, function(err, post) {
+    thread.addPost({ text: req.body.text }, req.user, function(err, post) {
       if (err) {
         req.renderingValues.displayValidationErrors = true;
         req.renderingValues.validationErrors = _.values(models.getAllValidationErrorsWithExplanations(err.errors));
@@ -22,12 +22,12 @@ module.exports = function (req, res, next) {
         return next();
       } else {
         mqClient.emit('forum.post', { creator: req.user
-                                    , topic: topic
+                                    , thread: thread
                                     , post: post
                                     });
 
-        // Redirect instead of render so that user can reload the topic without the "POST" error message
-        return res.redirect('/forum/topics/' + topic._id + '/' + topic.slug);
+        // Redirect instead of render so that user can reload the thread without the "POST" error message
+        return res.redirect('/forum/threads/' + thread._id + '/' + thread.slug);
       }
     });
   });

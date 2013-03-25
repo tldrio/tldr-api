@@ -1,5 +1,5 @@
 /**
- * Topic of the forum
+ * Thread of the forum
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
  */
@@ -13,7 +13,7 @@ var i18n = require('../lib/i18n')
   , bunyan = require('../lib/logger').bunyan
   , Schema = mongoose.Schema
   , ObjectId = mongoose.Schema.ObjectId
-  , TopicSchema, Topic
+  , ThreadSchema, Thread
   ;
 
 
@@ -36,9 +36,9 @@ function validateTitle (value) {
  */
 
 // Holds the whole history of a tldr, indexed by url
-TopicSchema = new Schema(
+ThreadSchema = new Schema(
   { title: { type: String
-           , validate: [validateTitle, i18n.validateTopicTitle]
+           , validate: [validateTitle, i18n.validateThreadTitle]
            , set: customUtils.sanitizeInput
            , required: true
            }
@@ -55,30 +55,30 @@ TopicSchema = new Schema(
   , votes: { type: Number
            , default: 1
            }
-  , alreadyVoted: [{ type: ObjectId }]   // Array of users who already voted for/against this topic
+  , alreadyVoted: [{ type: ObjectId }]   // Array of users who already voted for/against this thread
   }
 , { strict: true });
 
 // Keep a virtual 'slug' attribute
-TopicSchema.virtual('slug').get(function () {
+ThreadSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
 
 
 /**
- * Used to create a Topic object and prepare it, to be created (=saved) or only validated
- * @param {Object} topicData Data entered to create this topic
- * @param {User} creator Creator of this topic
- * @return {Topic}
+ * Used to create a Thread object and prepare it, to be created (=saved) or only validated
+ * @param {Object} threadData Data entered to create this thread
+ * @param {User} creator Creator of this thread
+ * @return {Thread}
  */
-function prepareTopicForCreation (topicData, creator) {
-  var newTopic = new Topic(topicData)
+function prepareThreadForCreation (threadData, creator) {
+  var newThread = new Thread(threadData)
     , creatorId = creator ? creator._id : null;   // If there is no creator, a validation error will be returned
 
-  newTopic.creator = creatorId;
-  newTopic.alreadyVoted.push(creatorId);
+  newThread.creator = creatorId;
+  newThread.alreadyVoted.push(creatorId);
 
-  return newTopic;
+  return newThread;
 }
 
 
@@ -88,26 +88,26 @@ function prepareTopicForCreation (topicData, creator) {
  */
 
 /**
- * Create a new topic and persist it to the database
- * @param {Object} topicData Data entered to create this topic
- * @param {User} creator Creator of this topic
- * @param {Function} cb Optional callback. Signature: err, topic
+ * Create a new thread and persist it to the database
+ * @param {Object} threadData Data entered to create this thread
+ * @param {User} creator Creator of this thread
+ * @param {Function} cb Optional callback. Signature: err, thread
  */
-TopicSchema.statics.createAndSaveInstance = function (topicData, creator, cb) {
+ThreadSchema.statics.createAndSaveInstance = function (threadData, creator, cb) {
   var callback = cb ? cb : function () {}
-    , newTopic = prepareTopicForCreation(topicData, creator);
+    , newThread = prepareThreadForCreation(threadData, creator);
 
-  newTopic.save(callback);
+  newThread.save(callback);
 };
 
 
 /**
- * Create a new post and add it to the topic
+ * Create a new post and add it to the thread
  * @param {Object} userInput Content of the post
  * @param {User} creator Creator of the post
  * @param {Function} cb Optional callback. Signature: err, post
  */
-TopicSchema.methods.addPost = function (userInput, creator, cb) {
+ThreadSchema.methods.addPost = function (userInput, creator, cb) {
   var callback = cb ? cb : function () {}
     , self = this;
 
@@ -115,11 +115,11 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
     if (err) { return callback(err); }
     self.participants.addToSet(creator._id);
 
-    self.posts.push(post);   // TODO: Mongoose claims this is atomic, but I think it's not. Check MongoDB's doc
+    self.posts.push(post);
     self.lastPost = {};
     self.lastPost.at = new Date();
     self.lastPost.by = creator ? creator._id : null;   // Safe
-    self.save(function (err, topic) {   // There can't be an error here
+    self.save(function (err, thread) {   // There can't be an error here
       callback(null, post);
     });
   });
@@ -127,36 +127,36 @@ TopicSchema.methods.addPost = function (userInput, creator, cb) {
 
 
 /**
- * Create a new topic with a first post in it
- * @param {Object} topicData Data used to create the topic
+ * Create a new thread with a first post in it
+ * @param {Object} threadData Data used to create the thread
  * @param {Object} postData Data used to create the post
- * @param {User} creator Creator of this topic and post
- * @param {Function} cb Optional callback. Signature: err, topic
+ * @param {User} creator Creator of this thread and post
+ * @param {Function} cb Optional callback. Signature: err, thread
  */
-TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, creator, cb) {
-  var newTopic = prepareTopicForCreation(topicData, creator)
+ThreadSchema.statics.createThreadAndFirstPost = function (threadData, postData, creator, cb) {
+  var newThread = prepareThreadForCreation(threadData, creator)
     , firstPost = Post.preparePostForCreation(postData, creator)
     , callback = cb ? cb : function () {}
     ;
 
-  newTopic.validate(function (terr) {
+  newThread.validate(function (terr) {
     firstPost.validate(function (perr) {
 			var errors = customUtils.mergeErrors(terr, perr);
 			if (errors) { return callback(errors); }
 
-      Topic.createAndSaveInstance(topicData, creator, function (err, topic) {
+      Thread.createAndSaveInstance(threadData, creator, function (err, thread) {
         if (err) {   // Shouldn't happen, really
-          bunyan.error("What the heck ? Saving topic failed but validation was OK!");
+          bunyan.error("What the heck ? Saving thread failed but validation was OK!");
           return callback (err);
         }
 
-        topic.addPost(postData, creator, function (err, post) {
+        thread.addPost(postData, creator, function (err, post) {
           if (err) {   // Shouldn't happen, really
             bunyan.error("What the heck ? Saving post failed but validation was OK!");
             return callback (err);
           }
 
-          callback(null, topic);
+          callback(null, thread);
         });
       });
     });
@@ -165,12 +165,12 @@ TopicSchema.statics.createTopicAndFirstPost = function (topicData, postData, cre
 
 
 /**
- * Vote for/against a topic
+ * Vote for/against a thread
  * @param {Number} direction If positive, vote for. If negative, vote against
  * @param {User} voter User who voted (he can't vote again)
- * @param {Function} cb Optional callback. Signature: err, topic
+ * @param {Function} cb Optional callback. Signature: err, thread
  */
-TopicSchema.methods.vote = function (direction, voter, cb) {
+ThreadSchema.methods.vote = function (direction, voter, cb) {
   var callback = cb ? cb : function () {};
 
   if (! voter || ! voter._id) {
@@ -188,14 +188,14 @@ TopicSchema.methods.vote = function (direction, voter, cb) {
 };
 
 
-// Expose prepareTopicForCreation
-TopicSchema.statics.prepareTopicForCreation = prepareTopicForCreation;
+// Expose prepareThreadForCreation
+ThreadSchema.statics.prepareThreadForCreation = prepareThreadForCreation;
 
 
 
 // Define the model
-Topic = mongoose.model('topic', TopicSchema);
+Thread = mongoose.model('thread', ThreadSchema);
 
 
-// Export Topic
-module.exports = Topic;
+// Export Thread
+module.exports = Thread;

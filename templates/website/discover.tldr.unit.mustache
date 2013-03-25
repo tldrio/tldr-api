@@ -1,0 +1,92 @@
+<li class="media discover-tldr-item collapsed">
+<span style="display:none;" class="discover-tldr-data"
+  data-tldr-id="{{_id}}"
+  data-tldr-title="{{title}}"
+  data-tldr-twitterHandle="{{creator.twitterHandle}}"
+  data-tldr-summary="{{summaryBullets}}"
+  data-tldr-thankedBy="{{thankedBy}}"
+  data-tldr-originalUrl="{{originalUrl}}"
+  ></span>
+  <div class="discover-tldr-header">
+    <a class="pull-left" href="#">
+      {{#imageUrl}}
+      <img class="media-object discover-tldr-image" src="{{imageUrl}}" alt="{{title}}">
+      {{/imageUrl}}
+      {{^imageUrl}}
+      <img class="media-object discover-tldr-image" src="http://www.gravatar.com/avatar/?f=y&d=identicon" alt="{{title}}">
+      {{/imageUrl}}
+    </a>
+    <div class="media-body">
+      <h4 class="media-heading">
+        <a href="{{originalUrl}}" class="discover-tldr-title" target="_blank" alt="{{title}}">
+          {{title}}
+        </a>
+      </h4>
+      <div class="tldr-metadata">
+        tl;dr by
+        <span>
+          {{^anonymous}}
+          <a href="/{{creator.username}}" target="_blank"><em>{{creator.username}}</em></a>
+          {{/anonymous}}
+          {{#anonymous}}
+          anonymous
+          {{/anonymous}}
+        </span>
+        via
+        <a href="{{websiteUrl}}/discover/{{domain.name}}">{{domain.name}}</a>,
+        in
+        {{#categories}}
+        <a href="{{websiteUrl}}/discover/{{name}}" class="topic-link">{{name}}</a>
+        {{/categories}}
+      </div>
+      <div class="tldr-stats">
+        <span title="Read {{readCount}} times.">
+          <i class="icon-eye-open"></i> {{readCount}}
+        </span>
+        <span title="It takes ~{{timeSaved}} to read the original article.">
+          &nbsp;&nbsp;<i class="icon-time"></i> {{timeSaved}}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="discover-tldr-foldable">
+    <div class="discover-tldr-summary">
+      <ul>
+        {{#summaryBullets}}
+        <li class="tldr-bullet">
+        <i class="icon-stop"></i>
+        {{.}}
+        </li>
+        {{/summaryBullets}}
+      </ul>
+    </div>
+    <div class="tldr-actions">
+      <div class="thank-container">
+        <div class="btn-group">
+          <button class="btn btn-link thank" >
+            Thank contributor
+          </button>
+        </div>
+      </div>
+      <div class="sharing-container">
+        <div class="btn-group dropup">
+          <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+            Share article with tl;dr
+          </button>
+        </div>
+        <div class="btn-group dropup">
+          <button class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+            Save full article for later
+          </button>
+        </div>
+      </div>
+      <!--<ul>-->
+        <!--<li><a href="">Thank contributor</a></li>-->
+        <!--<li> &middot; <a href="">Share article with tldr</a></li>-->
+        <!--<li> &middot; <a href="">Save full article for later</a></li>-->
+        <!--<li> &middot; <a href="">Embed tldr</a></li>-->
+      <!--</ul>-->
+    </div>
+  </div>
+</li>

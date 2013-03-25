@@ -56,7 +56,6 @@ module.exports = function (req, res, next) {
                                 ]);
     tldrData = JSON.stringify(tldrData);
     tldrData = tldrData.replace(/"/g, '\\"');
-    console.log(tldrData);
 
     values.tldrData = tldrData;
 

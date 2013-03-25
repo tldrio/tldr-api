@@ -5,15 +5,15 @@
 
 <div class="centered-block">
   {{#loggedUser}}
-  <em><a href="/forum/newTopic">Start a new topic</a></em><br><br>
+  <em><a href="/forum/newThread">Start a new thread</a></em><br><br>
   {{/loggedUser}}
   {{^loggedUser}}
-  <em><a href="/login?warning=false&returnUrl=/forum/newTopic">Login to start a new topic</a></em><br><br>
+  <em><a href="/login?warning=false&returnUrl=/forum/newThread">Login to start a new thread</a></em><br><br>
   {{/loggedUser}}
 
 
-  <div id="topic-list" class="list-box">
-    {{#topics}}
+  <div id="thread-list" class="list-box">
+    {{#threads}}
       <div>
         {{>website/voting}}
         <div class="right-of-voting">
@@ -22,8 +22,8 @@
         </div>
       </div>
       <br>
-      <div class="topic-separator"></div>
-    {{/topics}}
+      <div class="thread-separator"></div>
+    {{/threads}}
   </div>
 
 </div>

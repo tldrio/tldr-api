@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-<html>
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{title}}{{^title}}Read summaries of interesting content{{/title}}</title>
     <meta name="description" content="{{description}}{{^description}}Summaries of interesting content, written by people.{{/description}}">
     <meta name="author" content="">
     <meta property="fb:admins" content="619070902">
-
     {{#pageMetaProperties}}
       <meta property="{{key}}" content="{{value}}">
     {{/pageMetaProperties}}
@@ -22,25 +21,17 @@
       <link rel="alternate" type="application/rss+xml" title="Latest summaries from tldr.io" href="http://feeds.feedburner.com/TldrioLatestSummaries">
     {{/rssFeedPromotionLink}}
 
-    <style>
-      /* this needs to be between bootstrap.css and bootstrap-responsive.css, see the docs for further information*/
-      body {
-        padding-top: 60px;
-      }
-    </style>
-    <!--<link rel="stylesheet" href="/assets/css/bootstrap-responsive.min.css">-->
+    <link rel="stylesheet" href="/assets/css/bootstrap-responsive.css">
     <link rel="stylesheet" href="/assets/css/website.css">
 
-    <!--<script src="js/vendor/modernizr-2.6.1.min.js"></script>-->
+
   </head>
 
   <body>
     <div class="all-but-footer">
-      {{>website/navbar}}
+      {{>website/navbar.responsive}}
 
-      <div class="container">
         {{>content}}
-      </div>
     </div>
 
     {{>website/footer}}

@@ -22,7 +22,9 @@ var _ = require('underscore')
   , check = require('validator').check
   , sanitize = require('validator').sanitize
   , TldrHistory = require('./tldrHistoryModel')
+  , Topic = require('./topic')
   , async = require('async')
+  , moment = require('moment')
   ;
 
 
@@ -96,7 +98,9 @@ TldrSchema = new Schema(
                  , required: true
                  , set: customUtils.sanitizeInput
                  }
-  , hostname: { type: String
+  , hostname: { type: String }   // Keep this only until migration 20130325_categoriesAndDomains has been run, necessary to delete the hostname field
+  , domain: { type: ObjectId
+              , ref: 'topic'
               , required: true
               }
   , title: { type: String
@@ -139,6 +143,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
+  , categories: [{ type: ObjectId, ref: 'topic' }]
   , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
@@ -159,11 +164,19 @@ TldrSchema.virtual('lastEditor').get(function () {
   }
 });
 
+// Virtualtime saved attribute
+TldrSchema.virtual('timeSaved').get(function () {
+  return moment.duration(customUtils.timeToRead(this.wordCount), 'minutes').humanize();
+});
+
 TldrSchema.set('toJSON', {
    virtuals: true
 });
 
 
+// ========================================================================
+// Creation, update
+// ========================================================================
 
 /**
  * Create a new instance of Tldr and populate it. Only fields in userSetableFields are handled
@@ -183,24 +196,75 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
 
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
-    instance.history = _history._id;
-    instance.creator = creator._id;
-    instance.hostname = customUtils.getHostnameFromUrl(instance.url);
-    instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-    instance.save(function(err, tldr) {
-      if (err) { return callback(err); }
-      mqClient.emit('tldr.read', { tldr: tldr });   // Give this tldr its first read (by the author)
-      mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
+    // Initialize categories
+    Topic.getCategoriesFromNames(userInput.categories, function (err, categories) {
+      // Make sure domain is present in topic
+      Topic.getDomainFromName(customUtils.getHostnameFromUrl(instance.url), function (err, domain) {
+        instance.history = _history._id;
+        instance.creator = creator._id;
+        instance.domain = domain && domain._id;   // Fail-safe
+        instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
+        instance.categories = _.pluck(categories, '_id');
+        instance.save(function(err, tldr) {
+          if (err) { return callback(err); }
+          mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
 
-      // Put it in the creator's list of created tldrs
-      creator.tldrsCreated.push(tldr._id);
-      creator.save(function(err, _user) {
-        if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
+          // Put it in the creator's list of created tldrs
+          creator.tldrsCreated.push(tldr._id);
+          creator.save(function(err, _user) {
+            if (err) { throw { message: "Unexpected error in Tldr.createAndSaveInstance: couldnt update creator.tldrsCreated" }; }
 
-        // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
-        creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+            // Save the tldr creation action for this user. Don't fail on error as this is not critical, simply log
+            creator.saveAction('tldrCreation', tldr.serialize(), function (err) {
+              if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+              callback(null, tldr);
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+
+/**
+ * Update tldr
+ * Only fields in userUpdatableFields are handled
+ * @param {Object} updates Object containing fields to update with corresponding value
+ * @param {Object} user The contributor who updated this tldr
+ * @param {Function} callback callback to be passed to save method
+ *
+ */
+TldrSchema.methods.updateValidFields = function (updates, user, callback) {
+  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
+    , self = this;
+
+  // First, update the tldr
+  _.each( validUpdateFields, function (validField) {
+    self[validField] = updates[validField];
+  });
+  self.wordCount = customUtils.getWordCount(self.summaryBullets);
+  self.updatedAt = new Date();
+  self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
+
+  //Update the categories field
+  Topic.getCategoriesFromNames(updates.categories, function (err, categories) {
+    if (updates.categories) { self.categories = _.pluck(categories, '_id'); }   // Don't remove categories if you didn't want to update them
+
+    // Try to save it
+    self.save(function (err, tldr) {
+      if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
+
+      // Update both histories
+      // Don't return an error if an history couldnt be saved, simply log it
+      TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
+        history.saveVersion(tldr.serialize(), user, function(err) {
           if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-          callback(null, tldr);
+          user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
+            if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
+
+            callback(null, tldr);
+          });
         });
       });
     });
@@ -219,6 +283,12 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
   var callback = cb || function () {};
   return this.update({ possibleUrls: { $in: batch } }, updateQuery, { multi: true }, callback);
 };
+
+
+
+// ========================================================================
+// Moderation
+// ========================================================================
 
 
 TldrSchema.statics.updateDistributionChannels = function (id, channels, cb) {
@@ -310,6 +380,22 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
 };
 
 
+// ========================================================================
+// Finding tldrs
+// ========================================================================
+
+/**
+ * Extend Mongoose's Query object to define in only one place the tldr fields
+ * we always need populated
+ */
+mongoose.Query.prototype.populateTldrFields = function () {
+  return this.populate('creator', 'deleted username twitterHandle')
+             .populate('editors', 'deleted username')
+             .populate('categories', 'name')
+             .populate('domain', 'name');
+};
+
+
 /**
  * Look for a tldr from within a client (website, extension etc.)
  * Signature for cb: err, tldr
@@ -318,8 +404,7 @@ function findOneInternal (selector, cb) {
   var callback = cb || function () {};
 
   Tldr.findOne(selector)
-      .populate('creator', 'deleted username twitterHandle')
-      .populate('editors', 'deleted username')
+      .populateTldrFields()
       .exec(function (err, tldr) {
 
     if (err) { return callback(err); }
@@ -342,79 +427,111 @@ TldrSchema.statics.findOneById = function (id, cb) {
 
 
 /**
- * A new redirection/canonicalization was found, register it
- * @param {String} from The url from which the redirection comes
- * @param {String} to The url to which the redirection points
- * @param {Function} cb Optional callback
+ * Find tldrs by their category names
+ * @param {String or Array of Strings} categories
  */
-TldrSchema.statics.registerRedirection = function (from, to, cb) {
-  var fromN = customUtils.normalizeUrl(from)
-    , toN = customUtils.normalizeUrl(to)
-    , callback = cb || function () {}
-    ;
-
-  Tldr.findOneByUrl(toN, function (err, tldr) {
+TldrSchema.statics.findByCategoryName = function (categories, options, callback) {
+  Topic.getCategoriesFromNames(categories, function (err, categories) {
     if (err) { return callback(err); }
 
-    if (tldr) {
-      tldr.possibleUrls.addToSet(fromN);
-      tldr.save(callback);
-    }
+    Tldr.findByCategoryId(_.pluck(categories, '_id'), options, callback);
   });
+};
+
+/**
+ * Find tldrs by category id (faster if we already have the id)
+ * @param {Array} ids Array of category ids
+ */
+TldrSchema.statics.findByCategoryId = function (ids, options, callback) {
+  this.findByQuery({ categories: { $in: ids } }, options, callback);
+};
+
+/**
+ * Find tldrs by domain name
+ */
+TldrSchema.statics.findByDomainName = function (name, options, callback) {
+  Topic.getDomainFromName(name, function (err, domain) {
+    if (err) { return callback(err); }
+
+    Tldr.findByQuery({ domain: domain._id }, options, callback);
+  });
+};
+
+/**
+ * Find tldrs by domain id
+ */
+TldrSchema.statics.findByDomainId = function (id, options, callback) {
+  Tldr.findByQuery({ domain: id }, options, callback);
+};
+
+/**
+ * Find all tldrs
+ */
+TldrSchema.statics.findAll = function (options, callback) {
+  Tldr.findByQuery({}, options, callback);
+};
+
+/**
+ * Find tldrs
+ * @generic
+ * @param {Object} options Optional, detailed below.
+ * @param {Integer} options.limit
+ * @param {Integer} options.skip
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
+ */
+TldrSchema.statics.findByQuery = function (query, _options, _callback) {
+  var options = typeof _options === 'function' ? {} : _options
+    , callback = typeof _options === 'function' ? _options : _callback
+    , skip = options.skip || 0
+    , limit = options.limit || 0
+    , sort = options.sort || '-createdAt'   // Sort default: latest
+    ;
+
+  Tldr.find(query)
+      .populateTldrFields()
+      .sort(sort)
+      .limit(limit)
+      .skip(skip)
+      .exec(callback);
 };
 
 
 /**
- * Get the id of this tldr's creator, whether or not the field was populated or not
- * We have a static version for tldrs passed through the node redis pubsub which have lost their methods
+ * Find n tldrs from every category
+ * Absolutely suboptimal for now. If we need to use it, make it acceptable
+ * @param {Number} options.limit How many tldr from each category to return
+ * @param {String} options.sort Same option as findByCategoryName
+ * @param {String} options.sort '-createdAt' for latest, '-readCount' for most read
  */
-TldrSchema.methods.getCreatorId = function () {
-  return this.creator._id || this.creator;
-};
+TldrSchema.statics.findFromEveryCategory = function (options, callback) {
+  var res = [], i = 0;
 
-TldrSchema.statics.getCreatorId = function (tldr) {
-  return tldr.creator._id || tldr.creator;
-};
-
-
-/**
- * Update tldr object.
- * Only fields in userUpdatableFields are handled
- * @param {Object} updates Object containing fields to update with corresponding value
- * @param {Object} user The contributor who updated this tldr
- * @param {Function} callback callback to be passed to save method
- *
- */
-TldrSchema.methods.updateValidFields = function (updates, user, callback) {
-  var validUpdateFields = _.intersection(_.keys(updates), userUpdatableFields)
-    , self = this;
-
-  // First, update the tldr
-  _.each( validUpdateFields, function (validField) {
-    self[validField] = updates[validField];
-  });
-  self.wordCount = customUtils.getWordCount(self.summaryBullets);
-  self.updatedAt = new Date();
-  self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
-
-  // Try to save it
-  self.save(function (err, tldr) {
-    if (err) { return callback(err); }   // If successful, we can update the tldr and its creator's history
-
-    // Update both histories
-    // Don't return an error if an history couldnt be saved, simply log it
-    TldrHistory.findOne({ _id: tldr.history }, function (err, history) {
-      history.saveVersion(tldr.serialize(), user, function(err) {
-        if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-        user.saveAction('tldrUpdate', tldr.serialize(), function (err) {
-          if (err) { bunyan.warn('Tldr.createAndSaveInstance - saveAction part failed '); }
-          callback(null, tldr);
+  Topic.getCategories(function(err, categories) {
+    async.whilst(
+      function () { return i < categories.length; }
+    , function (cb) {
+        Tldr.findByCategoryId([categories[i]._id], options, function (err, tldrs) {
+          var el = {};
+          if (err) { return cb(err); }
+          el.categoryName = categories[i].name;
+          el.tldrs = tldrs;
+          res = res.concat(el);
+          i += 1;
+          return cb();
         });
-      });
+      }
+    , function (err) {
+      if (err) { return callback(err); }
+
+      return callback(null, res);
     });
   });
 };
 
+
+// ========================================================================
+// Tldr history management
+// ========================================================================
 
 /**
  * Return a serialized version of the fields to be remembered
@@ -430,29 +547,6 @@ TldrSchema.methods.serialize = function () {
 
   return JSON.stringify(jsonVersion);
 };
-
-/**
- * Thank the author of the tldr
- * @param {User} thanker User who thanked
- * @param {Function} cb Optional callback. Signature: err, tldr
- */
-TldrSchema.methods.thank = function (thanker , cb) {
-  var callback = cb ? cb : function () {};
-
-  if (! thanker || ! thanker._id) {
-    return callback({ thanker: "required" });
-  }
-
-  // The user managed to thank twice -> dont do anything
-  if (this.thankedBy.indexOf(thanker._id) !== -1) {
-    return callback(null, this);
-  }
-
-  this.thankedBy.addToSet(thanker._id);
-
-  this.save(callback);
-};
-
 
 /**
  * Takes a serialized object string and returns the corresponding object
@@ -489,6 +583,47 @@ TldrSchema.methods.goBackOneVersion = function (callback) {
 
     self.save(callback);
   });
+};
+
+
+
+// ======================================================================
+// Misc
+// ======================================================================
+
+/**
+ * Get the id of this tldr's creator, whether or not the field was populated or not
+ * We have a static version for tldrs passed through the node redis pubsub which have lost their methods
+ */
+TldrSchema.methods.getCreatorId = function () {
+  return this.creator._id || this.creator;
+};
+
+TldrSchema.statics.getCreatorId = function (tldr) {
+  return tldr.creator._id || tldr.creator;
+};
+
+
+/**
+ * Thank the author of the tldr
+ * @param {User} thanker User who thanked
+ * @param {Function} cb Optional callback. Signature: err, tldr
+ */
+TldrSchema.methods.thank = function (thanker , cb) {
+  var callback = cb ? cb : function () {};
+
+  if (! thanker || ! thanker._id) {
+    return callback({ thanker: "required" });
+  }
+
+  // The user managed to thank twice -> dont do anything
+  if (this.thankedBy.indexOf(thanker._id) !== -1) {
+    return callback(null, this);
+  }
+
+  this.thankedBy.addToSet(thanker._id);
+
+  this.save(callback);
 };
 
 

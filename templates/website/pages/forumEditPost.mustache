@@ -1,14 +1,14 @@
 <div class="centered-block">
     <div id="title-and-vote">
-      {{#topic}}{{>website/voting}}{{/topic}}
+      {{#thread}}{{>website/voting}}{{/thread}}
       <div class="right-of-voting">
-        <h1 class="topic-title">{{topic.title}}</h1><br>
-        <span class="post-topic-metadata">{{topic.posts.length}} post{{#topic.moreThanOnePost}}s{{/topic.moreThanOnePost}}</span>
+        <h1 class="thread-title">{{thread.title}}</h1><br>
+        <span class="post-thread-metadata">{{thread.posts.length}} post{{#thread.moreThanOnePost}}s{{/thread.moreThanOnePost}}</span>
       </div>
     </div>
     <br><br>
 
-    <em><a href="/forum/topics/{{topic._id}}/{{topic.slug}}">Back to the topic</a></em>
+    <em><a href="/forum/threads/{{thread._id}}/{{thread.slug}}">Back to the thread</a></em>
 
     <br>
 

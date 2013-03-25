@@ -5,6 +5,7 @@
 */
 
 var models = require('../../lib/models')
+  , Tldr = models.Tldr
   , User = models.User
   , _ = require('underscore')
   , customUtils = require('../../lib/customUtils')
@@ -24,33 +25,41 @@ module.exports = function (req, res, next) {
   async.waterfall([
     function (cb) {   // Only populate the latest tldrs the user created, in a specific object
       User.findOne({ usernameLowerCased: usernameLowerCased })
-          .populate('tldrsCreated', '_id originalUrl slug title hostname readCount summaryBullets', { anonymous: false }, { limit: 14, sort: [['createdAt', -1]] })
           .populate('history')
           .exec(function (err, user) {
-            if (! err && user) {
-              values.description = user.username + ' has contributed ' + user.tldrsCreated.length.toString() + ' tl;drs. Read them on tldr.io';
-              values.user = user;
-              values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
-              values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
-              values.user.numberTldrsCreated = user.tldrsCreated.length ;
-              values.title = user.username + config.titles.branding + config.titles.shortDescription;
 
-              _.each(values.user.tldrsCreated, function (tldr) {
-                tldr.linkToTldrPage = true;
-              });
+        Tldr.find({ _id: { $in: user.tldrsCreated }, anonymous: false }, 'originalUrl slug title readCount summaryBullets domain')
+            .populate('domain')
+            .limit(14)
+            .sort('-createdAt')
+            .exec(function (err, tldrsCreated) {
 
-              // Specific metatags
-              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', values.description);
-              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'author');
-              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + user.username);
-              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', user.gravatar.url + '&s=210');
-              values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', user.bio);
-            } else {
-              return res.json(404, {});
-            }
+          if (! err && user) {
+            values.description = user.username + ' has contributed ' + user.tldrsCreated.length.toString() + ' tl;drs. Read them on tldr.io';
+            values.user = user;
+            values.user.createdAtReadable = customUtils.dateForDisplay(user.createdAt);
+            values.user.lastActiveReadable = customUtils.dateForDisplay(user.lastActive);
+            values.user.numberTldrsCreated = user.tldrsCreated.length ;
+            values.user.completeTldrsCreated = tldrsCreated;
+            values.title = user.username + config.titles.branding + config.titles.shortDescription;
 
-            cb(null);
-          });
+            _.each(values.user.completeTldrsCreated, function (tldr) {
+              tldr.linkToTldrPage = true;
+            });
+
+            // Specific metatags
+            values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', values.description);
+            values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'author');
+            values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/' + user.username);
+            values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', user.gravatar.url + '&s=210');
+            values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', user.bio);
+          } else {
+            return res.json(404, {});
+          }
+
+          cb(null);
+        });
+      });
     }
     // Second query to get the total length of tldrsCreated - Seems Not very optimal but otherwise
     // it would require to populate the entire tldrsCreated array which can lead to even poorer perf

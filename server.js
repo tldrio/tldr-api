@@ -121,6 +121,7 @@ app.get('/users/logout', routes.logout);
 
 // Tldrs
 app.get('/tldrs/search', routes.searchTldrs);
+app.get('/tldrs/filter', routes.getTldrsByCategory.getTldrsByCategoryName);
 app.get('/tldrs/:id/stats', routes.getStats.getStatsForTldr);
 app.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 app.get('/tldrs/latest', routes.getLatestTldrs);
@@ -133,6 +134,9 @@ app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
+// Categories
+app.get('/categories', routes.getCategories);
+
 
 // Admin only routes
 app.get('/:username/admin', middleware.adminOnly, routes.getUser);
@@ -143,8 +147,9 @@ app.get('/tldrs/:id/cockblock', middleware.adminOnly, middleware.apiRouteDisambi
 app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
 app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
 
-// Vote for/against a topic
-app.put('/forum/topics/:id', routes.voteOnTopic);
+// Vote for/against a thread
+app.put('/forum/topics/:id', routes.voteOnThread);   // Legacy
+app.put('/forum/threads/:id', routes.voteOnThread);
 
 // Private Webhooks routes
 app.post('/private/privateMailchimpWebhookSync', routes.mailchimpWebhookSync);
@@ -173,6 +178,8 @@ app.get('/third-party-auth/google', function (req, res, next) {
 app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
 app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
+
+// Dev routes
 
 /*
  * Routes for the website, which all respond HTML
@@ -203,6 +210,16 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/elad', routes.website.elad);
   app.get('/scratchpad', middleware.adminOnly, routes.website.scratchpad);
 
+  //Discover
+  app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+  app.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+
+  app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+  app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
+  app.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+
+
   // Tldr page
   app.get('/tldrs/:id/:slug', routes.website.tldrPage);
 
@@ -226,17 +243,21 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/impact', middleware.loggedInOnly, routes.website.analytics.displayAnalytics);
 
   // Forum
-  app.get('/forum/topics', routes.website.forum);
-  app.get('/forum/topics/:id/:slug', routes.website.forumShowTopic);   // Show a whole topic
-  app.get('/forum/topics/:id', routes.website.forumShowTopic);   // For retrocompatibility, redirects to the correct, above url
-  app.post('/forum/topics/:id/:slug', routes.website.forumAddPost, routes.website.forumShowTopic);  // Post something to this topic
-  app.get('/forum/newTopic', middleware.loggedInOnly, routes.website.forumNewTopic);    // Display the newTopic form
-  app.post('/forum/newTopic', middleware.loggedInOnly, routes.website.forumCreateTopic, routes.website.forumNewTopic);   // Create a new topic with the POSTed data
+  app.get('/forum/threads', routes.website.forum);
+  app.get('/forum/topics', function (req, res, next) { return res.redirect(301, '/forum/threads'); });   // Legacy
+  app.get('/forum/threads/:id/:slug', routes.website.forumShowThread);   // Show a whole thread
+  app.get('/forum/topics/:id/:slug', function (req, res, next) { return res.redirect(301, '/forum/threads/' + req.params.id + '/' + req.params.slug); });   // Legacy
+  app.get('/forum/topics/:id', routes.website.forumShowThread);   // Will 301-redirect to the correct URL
+  app.post('/forum/threads/:id/:slug', routes.website.forumAddPost, routes.website.forumShowThread);  // Post something to this thread
+  app.get('/forum/newThread', middleware.loggedInOnly, routes.website.forumNewThread);
+  app.get('/forum/newTopic', function (req, res, next) { return res.redirect(301, '/forum/newThread'); });   // Legacy
+  app.post('/forum/newThread', middleware.loggedInOnly, routes.website.forumCreateThread, routes.website.forumNewThread);
   app.get('/forum/posts/:id/edit', routes.website.editPost);
   app.post('/forum/posts/:id/edit', routes.website.changePostText);
 
   // Moderation
   app.get('/moderation', middleware.adminOnly, routes.website.moderation);
+  app.get('/add-categories', middleware.adminOnly, routes.website.addCategories);
 
   // User profiles, leaderboard ...
   app.get('/:username', routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched

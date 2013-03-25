@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
   partials.content = '{{>website/pages/browser-extension}}';
   // Fake tldrs are called tldr1, ..., tldr5
   values.tldr1 = { _id: 'fakeTldrId1'
-                 , hostname: 'theregister.co.uk'
+                 , domain: { name: 'theregister.co.uk' }
                  , title: 'Internet Explorer becomes Korean election issue'
                  , creator: { username: 'rocket747' }
                  , summaryBullets: [ 'At the end of the 1990s, Korea decided to develop a home-grown SSL encryption standard (SEED) mandated for all online transactions.'
@@ -36,7 +36,7 @@ module.exports = function (req, res, next) {
                  };
 
   values.tldr2 = { _id: 'fakeTldrId2'
-                 , hostname: '37signals.com'
+                 , domain: { name: '37signals.com'}
                  , title: 'Commercial Freedom'
                  , creator: { username: 'capslocker' }
                  , summaryBullets: [ "Selling software on the internet gives very broad commercial freedom."
@@ -47,7 +47,7 @@ module.exports = function (req, res, next) {
                  };
 
   values.tldr3 = { _id: 'fakeTldrId3'
-                 , hostname: 'salon.com'
+                 , domain: { name: 'salon.com'}
                  , title: 'Bring back the 40-hour work week'
                  , creator: { username: 'stan' }
                  , summaryBullets: [ "Recently working more than 40 hours per week has become cool again, and most people expect to work north of 50 hours per week in a serious job."
@@ -60,7 +60,7 @@ module.exports = function (req, res, next) {
 
 
   values.tldr4 = { _id: 'fakeTldrId4'
-                 , hostname: 'arstechnica.com'
+                 , domain: { name: 'arstechnica.com'}
                  , title: 'Google Fiber is live in Kansas City, real-world speeds at 700 Mbps'
                  , creator: { username: 'Louis' }
                  , summaryBullets: [ "Google Fiber is now live in Kansas City, offering 1 Gbps speeds for $70 per month, significantly faster and cheaper than traditional American ISPs."
@@ -70,7 +70,7 @@ module.exports = function (req, res, next) {
 
 
   values.tldr5 = { _id: 'fakeTldrId5'
-                 , hostname: 'notsureifserious.com'
+                 , domain: { name: 'notsureifserious.com'}
                  , title: 'Show HN: My Life Project, Kickstarter for Dogs'
                  , creator: { username: 'samwer' }
                  , summaryBullets: [ "I love dogs and I want them to be able to fund the projects they like. That's why I created Kickstarter for dogs."

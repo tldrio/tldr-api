@@ -1,5 +1,5 @@
 /**
- * /tldrs page of the website
+ * Moderate all new tldrs
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
 */
@@ -7,32 +7,37 @@
 
 var models = require('../../lib/models')
   , Tldr = models.Tldr
+  , Topic = models.Topic
   , async = require('async')
   , _ = require('underscore')
   , config = require('../../lib/config')
+  , bufferapp = require('../../lib/bufferapp')
   ;
 
 module.exports = function (req, res, next) {
   var values = req.renderingValues || {}
-    , partials = req.renderingPartials || {};
+    , partials = req.renderingPartials || {}
+    ;
 
-  values.tldrs = true;
-  values.rssFeedPromotionLink = true;
-  values.title = "Latest summaries" + config.titles.branding + config.titles.shortDescription;
-  values.description = "Latest summaries contributed by the community. Get the most popular directly in your Twitter feed.";
-  partials.content = '{{>website/pages/latestTldrs}}';
+  values.title = "Tldrs to be moderated";
+  partials.content = '{{>website/pages/add-categories}}';
 
-  async.waterfall(
-  [
-    function (cb) {   // Only populate the latest tldrs the user created, in a specific object
-      Tldr.find({ 'distributionChannels.latestTldrs': true })
-        .limit(10)
+  async.waterfall([
+    function (cb) {
+    Topic.getCategories(function (err, categories) {
+      values.categories = categories;
+      cb();
+    });
+  }
+  , function (cb) {
+      Tldr.find({ moderated: false, categories: { $size: 0 } })
         .sort('-createdAt')
         .populate('creator', 'deleted username')
         .populate('domain')
+        .limit(200)   // So that it doesnt take forever to load
         .exec(function (err, tldrs) {
-          values.latestTldrs = tldrs;
-          _.each(values.latestTldrs, function (tldr) {
+          values.tldrs = tldrs;
+          _.each(values.tldrs, function (tldr) {
             tldr.linkToTldrPage = true;
           });
           cb(null);
@@ -44,4 +49,5 @@ module.exports = function (req, res, next) {
                                        });
   });
 }
+
 

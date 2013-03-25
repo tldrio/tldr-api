@@ -23,19 +23,9 @@ function searchTldrs (req, res, next) {
     }
 
     if (!tldr) {
-      // Advertise admins there is a summary emergency
-      // Only done for official clients (bookmarklet and chrome extension)
-      if (req.clientIsOfficial && req.user && !req.user.isAdmin) {
-        //mailer.sendEmail({ type: 'adminSummaryEmergency'
-                         //, development: false
-                         //, values: { url: url, user: req.user }
-                         //});
-      }
-
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    // Success
     return res.json(200, tldr);
   });
 }

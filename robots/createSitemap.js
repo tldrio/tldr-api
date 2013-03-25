@@ -15,7 +15,7 @@ var fs = require('fs')
   , models = require('../lib/models')
   , Tldr = models.Tldr
   , User = models.User
-  , Topic = models.Topic
+  , Thread = models.Thread
   , writeStream, before, after
   , numberOfUrls = 5   // There are 5 static urls we want google to crawl
   ;
@@ -63,10 +63,10 @@ async.waterfall([
       cb();
     });
   }
-, function (cb) {   // Add topics
-    Topic.find({}, function (err, topics) {
-      _.each(topics, function (topic) {
-        addUrlToMap(writeStream, 'http://tldr.io/forum/topics/' + topic._id + '/' + topic.slug, 'weekly', '0.2');
+, function (cb) {   // Add threads
+    Thread.find({}, function (err, threads) {
+      _.each(threads, function (thread) {
+        addUrlToMap(writeStream, 'http://tldr.io/forum/threads/' + thread._id + '/' + thread.slug, 'weekly', '0.2');
       });
       cb();
     });
