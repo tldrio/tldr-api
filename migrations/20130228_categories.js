@@ -1,5 +1,5 @@
 /*
- * This migration was necessary once we defined the new required field 'topics' on tldr
+ * This migration was necessary once we defined the new required field 'categories' on tldr
  * We set it to 0 for all tldrs
  * Date: 28/02/2013
  *
@@ -28,11 +28,11 @@ async.waterfall([
     });
   }
 
-  // Add the topics field to all tldr docs
+  // Add the categories field to all tldr docs
 , function (cb) {
     var i = 0;
 
-    console.log('Adding and populating the topics field to the tldr schema');
+    console.log('Adding and populating the categories field to the tldr schema');
 
     Tldr.find({}, function(err, tldrs) {
       if (err) { return cb(err); }
@@ -42,7 +42,7 @@ async.waterfall([
       , function (cb) {
           console.log('Adding hostname to: ' + tldrs[i]._id);
 
-          tldrs[i].topics = ['Startups']
+          tldrs[i].categories = ['Startups']
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 
@@ -55,7 +55,7 @@ async.waterfall([
   }
   // test that all the tldrs docs have a hostname field
 , function (cb) {
-    Tldr.find({ topics: { $exists: false } }, function(err, tldrs) {
+    Tldr.find({ categories: { $exists: false } }, function(err, tldrs) {
       if (tldrs.length === 0) {
         console.log("Everything worked");
       } else {

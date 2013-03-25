@@ -574,7 +574,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('Should be able to create a tldr with no topic', function (done) {
+    it('Should be able to create a tldr with no categories', function (done) {
       var tldrData = {
         title: 'Blog NFA'
       , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
@@ -583,37 +583,37 @@ describe('Tldr', function () {
       };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-        tldr.topics.length.should.equal(0);
+        tldr.categories.length.should.equal(0);
         done();
       });
     });
 
-    it('Should be able to create a tldr and initialize topics', function (done) {
+    it('Should be able to create a tldr and initialize categories', function (done) {
       var tldrData = {
             title: 'Blog NFA'
           , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
           , resourceAuthor: 'NFA Crew'
           , url: 'http://needforair.com'
-          , topics: 'Startups'
+          , categories: 'Startups'
           }
         , tldrDataMultiple = {
             title: 'Blog NFA'
           , summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world']
           , resourceAuthor: 'NFA Crew'
           , url: 'http://needforair.com/another'
-          , topics: 'Startups Art'
+          , categories: 'Startups Art'
           };
 
       Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
-        var topicsIds = _.map(tldr.topics, function (t) { return t.toString(); });
-        tldr.topics.length.should.equal(1);
-        topicsIds.should.contain(categories.startups._id.toString());
+        var categoriesIds = _.map(tldr.categories, function (t) { return t.toString(); });
+        tldr.categories.length.should.equal(1);
+        categoriesIds.should.contain(categories.startups._id.toString());
 
         Tldr.createAndSaveInstance(tldrDataMultiple, user, function (err, tldr) {
-          var topicsIds = _.map(tldr.topics, function (t) { return t.toString(); });
-          tldr.topics.length.should.equal(2);
-          topicsIds.should.contain(categories.startups._id.toString());
-          topicsIds.should.contain(categories.art._id.toString());
+          var categoriesIds = _.map(tldr.categories, function (t) { return t.toString(); });
+          tldr.categories.length.should.equal(2);
+          categoriesIds.should.contain(categories.startups._id.toString());
+          categoriesIds.should.contain(categories.art._id.toString());
 
           done();
         });
@@ -688,13 +688,13 @@ describe('Tldr', function () {
       });
     });
 
-    it('findOneByUrl should populate the topics names', function (done) {
+    it('findOneByUrl should populate the categories names', function (done) {
       var tldrData = {
         title: 'Blog NFA'
       , summaryBullets: ['Awesome Blog']
       , resourceAuthor: 'NFA Crew'
       , url: 'http://needforair.com'
-      , topics: 'Startups'
+      , categories: 'Startups'
       }
       , id
       ;
@@ -703,8 +703,8 @@ describe('Tldr', function () {
         id = tldr._id;
         Tldr.findOneByUrl('http://needforair.com', function (err, tldr) {
           tldr._id.toString().should.equal(id.toString());
-          tldr.topics.length.should.equal(1);
-          tldr.topics[0].name.should.equal('Startups');
+          tldr.categories.length.should.equal(1);
+          tldr.categories[0].name.should.equal('Startups');
           done();
         });
       });
@@ -716,7 +716,7 @@ describe('Tldr', function () {
       , summaryBullets: ['Awesome Blog']
       , resourceAuthor: 'NFA Crew'
       , url: 'http://needforair.com/yodude'
-      , topics: 'Startups'
+      , categories: 'Startups'
       }
       , id
       ;
@@ -780,11 +780,11 @@ describe('Tldr', function () {
     });
 
     it('Can find by domain name', function (done) {
-      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData3 = { url: 'http://other.com/3', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData5 = { url: 'http://otherother.com/5', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+      var tldrData1 = { url: 'http://needforair.com/1', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://other.com/3', categories: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://otherother.com/5', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
         ;
 
       async.waterfall([
@@ -827,11 +827,11 @@ describe('Tldr', function () {
     });
 
     it('Find tldrs by topic', function (done) {
-      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData3 = { url: 'http://needforair.com/3', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData5 = { url: 'http://needforair.com/5', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+      var tldrData1 = { url: 'http://needforair.com/1', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://needforair.com/3', categories: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://needforair.com/5', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
         , tldr1, tldr2, tldr3, tldr4, tldr5
         ;
 
@@ -911,15 +911,15 @@ describe('Tldr', function () {
     });
 
     it('Can find x tldrs from every category', function (done) {
-      var tldrData1 = { url: 'http://needforair.com/1', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData2 = { url: 'http://needforair.com/2', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData3 = { url: 'http://needforair.com/3', topics: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData4 = { url: 'http://needforair.com/4', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData5 = { url: 'http://needforair.com/5', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData6 = { url: 'http://needforair.com/6', topics: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData7 = { url: 'http://needforair.com/7', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData8 = { url: 'http://needforair.com/8', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
-        , tldrData9 = { url: 'http://needforair.com/9', topics: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+      var tldrData1 = { url: 'http://needforair.com/1', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://needforair.com/3', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData5 = { url: 'http://needforair.com/5', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData6 = { url: 'http://needforair.com/6', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData7 = { url: 'http://needforair.com/7', categories: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData8 = { url: 'http://needforair.com/8', categories: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData9 = { url: 'http://needforair.com/9', categories: 'Art', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
         ;
 
       async.waterfall([
@@ -1313,14 +1313,14 @@ describe('Tldr', function () {
                       , resourceAuthor: 'new3'
                       , createdAt: '2012'
                       , imageUrl: 'http://g.com/second.png'
-                      , topics: 'Art'
+                      , categories: 'Art'
                       }
           , tldrData = { title: 'Blog NFA'
                        , url: 'http://mydomain.com'
                        , summaryBullets: ['coin']
                        , resourceAuthor: 'bloup'
                        , imageUrl: 'http://g.com/first.png'
-                       , topics: 'Startups'
+                       , categories: 'Startups'
                        };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err) {
@@ -1335,8 +1335,8 @@ describe('Tldr', function () {
             tldr.resourceAuthor.should.equal('bloup');
             tldr.imageUrl.should.equal('http://g.com/first.png');
             tldr.wordCount.should.equal(1);
-            tldr.topics.length.should.equal(1);
-            tldr.topics[0].toString().should.equal(categories.startups._id.toString());
+            tldr.categories.length.should.equal(1);
+            tldr.categories[0].toString().should.equal(categories.startups._id.toString());
 
             // Perform update
             tldr.updateValidFields(updated, user, function(err) {
@@ -1349,8 +1349,8 @@ describe('Tldr', function () {
               tldr.createdAt.should.not.equal('2012');
               tldr.imageUrl.should.equal('http://g.com/first.png');
               tldr.wordCount.should.equal(4);
-              tldr.topics.length.should.equal(1);
-              tldr.topics[0].toString().should.equal(categories.art._id.toString());
+              tldr.categories.length.should.equal(1);
+              tldr.categories[0].toString().should.equal(categories.art._id.toString());
 
               done();
             });
@@ -1358,7 +1358,7 @@ describe('Tldr', function () {
         });
     });
 
-    it('An update that doesnt specify topics should not change them', function (done) {
+    it('An update that doesnt specify categories should not change them', function (done) {
         var updated = {url: 'http://myotherdomain.com'
                       , summaryBullets: ['new2', 'glip glop glup']
                       , title: 'Blog NeedForAir'
@@ -1371,19 +1371,19 @@ describe('Tldr', function () {
                        , summaryBullets: ['coin']
                        , resourceAuthor: 'bloup'
                        , imageUrl: 'http://g.com/first.png'
-                       , topics: 'Startups'
+                       , categories: 'Startups'
                        };
 
       Tldr.createAndSaveInstance(tldrData, user, function(err) {
           Tldr.find({resourceAuthor: 'bloup'}, function (err,docs) {
             var tldr = docs[0];
-            tldr.topics.length.should.equal(1);
-            tldr.topics[0].toString().should.equal(categories.startups._id.toString());
+            tldr.categories.length.should.equal(1);
+            tldr.categories[0].toString().should.equal(categories.startups._id.toString());
 
             // Perform update
             tldr.updateValidFields(updated, user, function(err) {
-              tldr.topics.length.should.equal(1);
-              tldr.topics[0].toString().should.equal(categories.startups._id.toString());
+              tldr.categories.length.should.equal(1);
+              tldr.categories[0].toString().should.equal(categories.startups._id.toString());
 
               done();
             });

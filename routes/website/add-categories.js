@@ -30,10 +30,11 @@ module.exports = function (req, res, next) {
     });
   }
   , function (cb) {
-      Tldr.find({ moderated: false, topics: { $size: 0 } })
+      Tldr.find({ moderated: false, categories: { $size: 0 } })
         .sort('-createdAt')
         .populate('creator', 'deleted username')
         .populate('domain')
+        .limit(200)   // So that it doesnt take forever to load
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
           _.each(values.tldrs, function (tldr) {

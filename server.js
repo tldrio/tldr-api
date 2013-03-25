@@ -134,7 +134,7 @@ app.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 // routes for emails gathered during a product launch
 app.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
-// Topics
+// Categories
 app.get('/categories', routes.getCategories);
 
 

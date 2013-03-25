@@ -143,7 +143,7 @@ TldrSchema = new Schema(
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?
   , discoverable: { type: Boolean, default: true }     // Has it been reviewed by a moderator yet?
   , thankedBy: [{ type: ObjectId }]
-  , topics: [{ type: ObjectId, ref: 'topic' }]
+  , categories: [{ type: ObjectId, ref: 'topic' }]
   , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
@@ -197,14 +197,14 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
   // Initialize tldr history and save first version
   history.saveVersion(instance.serialize(), creator, function (err, _history) {
     // Initialize categories
-    Topic.getCategoriesFromNames(userInput.topics, function (err, topics) {
+    Topic.getCategoriesFromNames(userInput.categories, function (err, categories) {
       // Make sure domain is present in topic
       Topic.getDomainFromName(customUtils.getHostnameFromUrl(instance.url), function (err, domain) {
         instance.history = _history._id;
         instance.creator = creator._id;
         instance.domain = domain && domain._id;   // Fail-safe
         instance.wordCount = customUtils.getWordCount(instance.summaryBullets);
-        instance.topics = _.pluck(topics, '_id');
+        instance.categories = _.pluck(categories, '_id');
         instance.save(function(err, tldr) {
           if (err) { return callback(err); }
           mqClient.emit('tldr.created', { tldr: tldr, creator: creator });
@@ -247,9 +247,9 @@ TldrSchema.methods.updateValidFields = function (updates, user, callback) {
   self.updatedAt = new Date();
   self.versionDisplayed = 0;   // We will display the newly entered tldr now, so we reset the version
 
-  //Update the topics field
-  Topic.getCategoriesFromNames(updates.topics, function (err, topics) {
-    if (updates.topics) { self.topics = _.pluck(topics, '_id'); }   // Don't remove topics if you didn't want to update them
+  //Update the categories field
+  Topic.getCategoriesFromNames(updates.categories, function (err, categories) {
+    if (updates.categories) { self.categories = _.pluck(categories, '_id'); }   // Don't remove categories if you didn't want to update them
 
     // Try to save it
     self.save(function (err, tldr) {
@@ -391,7 +391,7 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
 mongoose.Query.prototype.populateTldrFields = function () {
   return this.populate('creator', 'deleted username twitterHandle')
              .populate('editors', 'deleted username')
-             .populate('topics', 'name')
+             .populate('categories', 'name')
              .populate('domain', 'name');
 };
 
@@ -431,10 +431,10 @@ TldrSchema.statics.findOneById = function (id, cb) {
  * @param {String or Array of Strings} categories
  */
 TldrSchema.statics.findByCategoryName = function (categories, options, callback) {
-  Topic.getCategoriesFromNames(categories, function (err, topics) {
+  Topic.getCategoriesFromNames(categories, function (err, categories) {
     if (err) { return callback(err); }
 
-    Tldr.findByCategoryId(_.pluck(topics, '_id'), options, callback);
+    Tldr.findByCategoryId(_.pluck(categories, '_id'), options, callback);
   });
 };
 
@@ -443,7 +443,7 @@ TldrSchema.statics.findByCategoryName = function (categories, options, callback)
  * @param {Array} ids Array of category ids
  */
 TldrSchema.statics.findByCategoryId = function (ids, options, callback) {
-  this.findByQuery({ topics: { $in: ids } }, options, callback);
+  this.findByQuery({ categories: { $in: ids } }, options, callback);
 };
 
 /**
