@@ -75,7 +75,6 @@ TopicSchema.statics.getCategories = function (callback) {
 };
 
 
-
 /**
  * From an array of category names, return the array of corresponding topic _ids
  * @param {String or Array} _names either 'cat1 cat2 ...', [cat1, cat2, ...] or [{ name: cat1}, { name: cat2 }, ... ]  (the three possible expected forms)
@@ -95,7 +94,6 @@ TopicSchema.statics.getCategoriesFromNames = function (names, cb) {
     }
   });
 };
-
 
 
 /**

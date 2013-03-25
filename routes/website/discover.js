@@ -6,18 +6,27 @@ var config = require('../../lib/config')
   ;
 
 
+// Get 100 tldrs according to our sort
 function loadTldrs (req, res, next) {
-  Topic.getCategories(function (err, categories) {
-    req.params.topic = _.pluck(categories, 'name');
-    loadTldrsByCategory(req, res, next);
+  var options = { limit: 100 };
+
+  if (req.params.sort === 'mostread') {
+    options.sort = '-readCount';
+    req.renderingValues.mostread = true;
+  } else {
+    options.sort = '-createdAt';
+    req.renderingValues.newest = true;
+  }
+
+  Tldr.findAll(options, function (err, tldrs) {
+    req.renderingValues.tldrs = tldrs;
+    return next();
   });
 }
 
-
+// Get 100 tldrs from the given topic
 function loadTldrsByCategory (req, res, next) {
-  var options = { sort: req.params.sort === 'mostread' ? '-readCount' : '-createdAt'
-                , limit: 100
-                };
+  var options = { limit: 100 };
 
   if (req.params.sort === 'mostread') {
     options = { sort: '-readCount' };
@@ -27,13 +36,25 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.latest = true;
   }
 
-  Tldr.findByCategoryName(req.params.topic, options, function (err, tldrs) {
-    req.renderingValues.tldrs = tldrs;
-    return next();
+  // First check the type of the topic, then do the correct query
+  Topic.findOne({ name: req.params.topic }, function (err, topic) {
+    if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
+
+    if (topic.type === 'domain') {
+      Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
+        req.renderingValues.tldrs = tldrs;
+        return next();
+      });
+    } else {
+      Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
+        req.renderingValues.tldrs = tldrs;
+        return next();
+      });
+    }
   });
 }
 
-
+// Display the discover page
 function displayPage (req, res, next) {
   var partials = req.renderingPartials || {}
     , values = req.renderingValues || {}

@@ -457,6 +457,20 @@ TldrSchema.statics.findByDomainName = function (name, options, callback) {
 };
 
 /**
+ * Find tldrs by domain id
+ */
+TldrSchema.statics.findByDomainId = function (id, options, callback) {
+  Tldr.findByQuery({ domain: id }, options, callback);
+};
+
+/**
+ * Find all tldrs
+ */
+TldrSchema.statics.findAll = function (options, callback) {
+  Tldr.findByQuery({}, options, callback);
+};
+
+/**
  * Find tldrs
  * @generic
  * @param {Object} options Optional, detailed below.
