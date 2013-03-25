@@ -257,6 +257,7 @@ beforeEach(app, middleware.websiteRoute, function (app) {
 
   // Moderation
   app.get('/moderation', middleware.adminOnly, routes.website.moderation);
+  app.get('/add-categories', middleware.adminOnly, routes.website.addCategories);
 
   // User profiles, leaderboard ...
   app.get('/:username', routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
