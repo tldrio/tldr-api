@@ -133,7 +133,7 @@ TldrSchema = new Schema(
   , wordCount: { type: Number, default: 0 }
   , history: { type: ObjectId, ref: 'tldrHistory', required: true }
   , versionDisplayed: { type: Number, default: 0 }   // Holds the current version being displayed. 0 is the most recent
-  , distributionChannels: { latestTldrs: { type: Boolean, default: true }
+  , distributionChannels: { latestTldrs: { type: Boolean, default: false }
                           , latestTldrsRSSFeed: { type: Boolean, default: false }
                           }
   , moderated: { type: Boolean, default: false }     // Has it been reviewed by a moderator yet?

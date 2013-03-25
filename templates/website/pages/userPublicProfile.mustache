@@ -96,7 +96,12 @@
                 <span>{{user.lastActiveReadable}}</span>
               </dd>
               <dt>
-                <a href="{{dbguiUrl}}/users/{{user._id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
+                <i class="icon icon-hdd"></i>
+                <a href="https://mixpanel.com/report/125076/explore/#user?distinct_id={{user.username}}">Mixpanel</a>
+              </dt>
+              <dt>
+                <i class="icon icon-edit"></i>
+                <a href="{{dbguiUrl}}/users/{{user._id}}/edit">admin in db</a>
               </dt>
             </dl>
           </div>
@@ -118,7 +123,7 @@
                   </div>
                   <div class="tldr-title-wrapper">
                     <p class="tldr-title-ellipsis">
-                      <a href="{{url}}" target="_blank">{{title}}</a>
+                      <a href="{{originalUrl}}" target="_blank">{{title}}</a>
                     </p>
                     {{>website/tldrBadge}}
                     <span class="tldr-hostname tldr-hostname-list">
