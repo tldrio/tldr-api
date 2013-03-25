@@ -40,6 +40,8 @@ function loadTldrsByCategory (req, res, next) {
   Topic.findOne({ name: req.params.topic }, function (err, topic) {
     if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
 
+    req.renderingValues.activeTopic = req.params.topic;
+
     if (topic.type === 'domain') {
       Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
@@ -61,13 +63,20 @@ function displayPage (req, res, next) {
     , topic = req.params.topic
     ;
 
-  values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
-  values.description = "Discover tldrs";
-  partials.content = '{{>website/pages/discover}}';
+  Topic.getCategories(function (err, categories) {
+    values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
+    values.description = "Discover tldrs";
+    values.categories = categories;
+    values.categories.forEach(function (c) {
+      if (c.name === values.activeTopic) { c.active = true; }
+    });
 
-  res.render('website/responsiveLayout', { values: values
-                                    , partials: partials
-                                    });
+    partials.content = '{{>website/pages/discover}}';
+
+    res.render('website/responsiveLayout', { values: values
+                                           , partials: partials
+                                           });
+  });
 }
 
 
