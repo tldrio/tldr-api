@@ -8,7 +8,8 @@ var config = require('../../lib/config')
 
 // Get 100 tldrs according to our sort
 function loadTldrs (req, res, next) {
-  var options = { limit: 100 };
+  var options = { limit: 100 }
+    , language = req.query.lang || 'en';
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
@@ -20,7 +21,7 @@ function loadTldrs (req, res, next) {
 
   req.renderingValues.currentBaseUrl = '/discover';
 
-  Tldr.findAll(options, function (err, tldrs) {
+  Tldr.findByQuery( { 'language.language': language },options, function (err, tldrs) {
     req.renderingValues.tldrs = tldrs;
     return next();
   });
@@ -28,7 +29,8 @@ function loadTldrs (req, res, next) {
 
 // Get 100 tldrs from the given topic
 function loadTldrsByCategory (req, res, next) {
-  var options = { limit: 100 };
+  var options = { limit: 100 }
+    , language = req.query.lang || 'en';
 
   if (req.params.sort === 'mostread') {
     options = { sort: '-readCount' };
@@ -46,12 +48,14 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
-      Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
+      Tldr.findByQuery({ categories: { $in: topic._id }, 'language.language': language }, options, function (err, tldrs) {
+      //Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
     } else {
-      Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
+      //Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
+      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language }, options,  function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
