@@ -128,6 +128,13 @@ TldrSchema = new Schema(
                }
                , required: false
   , creator: { type: ObjectId, ref: 'user', required: true }
+  , language: { language: { type: String
+                          , default: 'en'
+                          }
+              , confidence: { type: Number
+                            , default: 0
+                            }
+              }
   , readCount: { type: Number, default: 0 }
   , readCountThisWeek: { type: Number, default: 0 }
   , articleWordCount: { type: Number   // Number I made up after a bit of Googling
