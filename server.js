@@ -217,7 +217,7 @@ beforeEach(app, middleware.websiteRoute, function (app) {
 
   app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
   app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
-  app.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+  app.get('/discover/:topic/sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
 
 
   // Tldr page
