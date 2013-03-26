@@ -99,9 +99,9 @@ async.waterfall([
     });
   }
 , function (cb) {
-    var tldrData1 = {url: 'http://www.nytimes.com/2013/03/06/opinion/the-country-that-stopped-reading.html', categories: 'Startups', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
-      , tldrData2 = {url: 'http://www.avc.com/a_vc/2013/03/why-the-unlocking-phones-debate-is-important.html', categories: 'Startups', articleWordCount: 500, title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
-      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', categories: 'Startups', articleWordCount: 700, title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark' }
+    var tldrData1 = {url: 'http://www.nytimes.com/2013/03/06/opinion/the-country-that-stopped-reading.html', language: { language: 'en', confidence: 1}, categories: 'Startups', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+      , tldrData2 = {url: 'http://www.avc.com/a_vc/2013/03/why-the-unlocking-phones-debate-is-important.html', language: { language: 'en', confidence: 1}, categories: 'Startups', articleWordCount: 500, title:'mba-monday', summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      , tldrData3 = {url: 'http://bothsidesofthetable.com/deflationnary-economics', categories: 'Startups', language: { language: 'en', confidence: 1}, articleWordCount: 700, title: 'deflationary economics', summaryBullets: ['Sustering is my religion'], resourceAuthor: 'Mark' }
       ;
 
     console.log("Creating three tldrs");

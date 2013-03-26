@@ -16,14 +16,20 @@
       <div class="tab-content discover-feed-container">
         <div class="discover-feed-options">
           <span class="options">
-            <a alt="Newest summaries" href="{{currentBaseUrl}}" class="{{#newest}}option-chosen{{/newest}}">Newest</a>
+            {{#mostread}}
+            <a alt="Newest summaries" href="{{currentBaseUrl}}">Newest</a>
             /
-            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread" class="{{#mostread}}option-chosen{{/mostread}}">Most read</a>
+            <span class="option-chosen">Most read</span>
+            {{/mostread}}
+            {{#newest}}
+            <span class="option-chosen">Newest</span>
+            /
+            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread">Most read</a>
+            {{/newest}}
           </span>
           <span class="options options-visual pull-right">
-            <a class="option-expand" alt="Expand all summaries" href="#">Expand</a>
-            /
-            <a alt="Collapse all summaries" class="option-collapse option-chosen" href="#">Collapse</a>
+            <a class="option-expand" alt="Expand all summaries" href="#">Expand all</a>
+            <a class="option-collapse" alt="Collapse all summaries" href="#" style="display:none;">Collapse all</a>
           </span>
         </div>
         <div class="tab-pane active">
@@ -34,7 +40,7 @@
           </ol>
         </div>
         <div class="discover-load-more">
-          <button class="btn btn-primary">
+          <button class="btn btn-primary btn-load-more">
             <img src="/assets/img/happy-derp.small.png">
             Load more...
           </button>
