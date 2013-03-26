@@ -18,6 +18,7 @@ function loadTldrs (req, res, next) {
     req.renderingValues.newest = true;
   }
 
+  req.renderingValues.activeTopic = 'All the things';
   req.renderingValues.currentBaseUrl = '/discover';
 
   Tldr.findAll(options, function (err, tldrs) {
@@ -70,6 +71,7 @@ function displayPage (req, res, next) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.description = "Discover tldrs";
     values.categories = categories;
+    values.categories.unshift({name: 'All the things'});
     values.categories.forEach(function (c) {
       if (c.name === values.activeTopic) { c.active = true; }
     });
