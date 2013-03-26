@@ -68,12 +68,14 @@ function displayPage (req, res, next) {
   var partials = req.renderingPartials || {}
     , values = req.renderingValues || {}
     , topic = req.params.topic
+    , specificLanguage = req.query.lang !== 'en' ? req.query.lang : null;
     ;
 
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.description = "Discover tldrs";
     values.categories = categories;
+    values.specificLanguage = specificLanguage;
     values.categories.forEach(function (c) {
       if (c.name === values.activeTopic) { c.active = true; }
     });
