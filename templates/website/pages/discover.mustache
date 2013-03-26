@@ -1,10 +1,17 @@
 <div class="container main-container">
+  {{#specificLanguage}}
+  <div class="alert alert-language">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    We detected that you were in a non english country and tried to display tldrs in you native language. If you want to see much more tldrs in english click <a href="?lang=en">here</a>!
+  </div>
+  {{/specificLanguage}}
   <div class="row">
     <div class="span3 topics-list-column">
       <ul class="nav nav-list topics-list">
         {{#categories}}
         <li{{#active}} class="active"{{/active}}>
         <a href="/discover">
+          <a href="/discover/{{name}}{{#specificLanguage}}?lang={{specificLanguage}}{{/specificLanguage}}">
             <i class="icon-chevron-right"></i>
             {{name}}
           </a>
