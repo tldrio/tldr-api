@@ -173,7 +173,7 @@ TldrSchema.virtual('lastEditor').get(function () {
 
 // Virtualtime saved attribute
 TldrSchema.virtual('timeSaved').get(function () {
-  return moment.duration(customUtils.timeToRead(this.wordCount), 'minutes').humanize();
+  return moment.duration(customUtils.timeToRead(this.articleWordCount), 'hours').humanize();
 });
 
 TldrSchema.set('toJSON', {
