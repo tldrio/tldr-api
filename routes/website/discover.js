@@ -18,7 +18,7 @@ function loadTldrs (req, res, next) {
     req.renderingValues.newest = true;
   }
 
-  req.renderingValues.activeTopic = 'All the things';
+  req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
   Tldr.findAll(options, function (err, tldrs) {
