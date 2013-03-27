@@ -26,7 +26,7 @@ async.waterfall([
 , function (cb) {
     var i = 0, errorCount = 0;
 
-    Tldr.find({}, function(err, tldrs) {
+    Tldr.find({ categories: {$exists: false} }, function(err, tldrs) {
       if (err) { return cb(err); }
 
       async.whilst(
@@ -35,16 +35,17 @@ async.waterfall([
           var tldr = tldrs[i];
 
 
-          Topic.getDomainFromName(tldrs[i].toObject().hostname, function (err, domain) {
-            tldrs[i].domain = domain._id;
-            tldrs[i].topics = [];
+          //Topic.getDomainFromName(tldrs[i].toObject().hostname, function (err, domain) {
+            //tldrs[i].domain = domain._id;
+            tldrs[i].categories = [];
             //tldrs[i].hostname = undefined;
+            console.log('Adding categories to', tldrs[i]._id);
 
             tldrs[i].save(function (err) {
               i += 1;
               _cb(err);
             });
-          });
+          //});
         }
       , cb);
     });
