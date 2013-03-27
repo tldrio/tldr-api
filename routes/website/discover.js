@@ -49,7 +49,7 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
-      Tldr.findByQuery({ categories: { $in: topic._id }, 'language.language': language }, options, function (err, tldrs) {
+      Tldr.findByQuery({ domain: topic._id , 'language.language': language }, options, function (err, tldrs) {
       //Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
