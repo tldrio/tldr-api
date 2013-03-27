@@ -30,8 +30,8 @@ describe('Topic', function () {
 
 
   it('One certain types are available', function (done) {
-    var badTopicData = { type: 'nope', name: 'yep' }
-      , goodTopicData = { type: 'category', name: 'yepyep' }
+    var badTopicData = { type: 'nope', name: 'yep', slug: 'yep' }
+      , goodTopicData = { type: 'category', name: 'yepyep', slug: 'yepyep' }
       , badTopic = new Topic(badTopicData)
       , goodTopic= new Topic(goodTopicData)
       ;
@@ -46,6 +46,7 @@ describe('Topic', function () {
         assert.isNull(err);
         topic.type.should.equal('category');
         topic.name.should.equal('yepyep');
+        topic.slug.should.equal('yepyep');
 
         done();
       });
@@ -53,7 +54,7 @@ describe('Topic', function () {
   });
 
   it('createAndSaveInstance in safe mode doesnt spout an error on conflict', function (done) {
-    var topicData = { type: 'category', name: 'same' }
+    var topicData = { type: 'category', name: 'same', slug: 'same' }
       ;
 
     Topic.createAndSaveInstance(topicData, function (err) {
@@ -78,13 +79,28 @@ describe('Topic', function () {
     });
   });
 
+  it('createAndSaveInstance creates slugs correctly', function (done) {
+    var topicData1 = { type: 'category', name: 'Same shit as AlWays' }
+      , topicData2 = { type: 'domain', name: 'loltrain.com' }
+      ;
+
+    Topic.createAndSaveInstance(topicData1, function (err) {
+      Topic.createAndSaveInstance(topicData2, function (err) {
+        Topic.find({}, function (err, topics) {
+          topics[0].slug.should.equal('same-shit-as-always');
+          topics[1].slug.should.equal('loltrain.com');
+          done();
+        });
+      });
+    });
+  });
 
   describe('Get topics from category names', function () {
 
     it('Can use a space separated string to get category names', function (done) {
-      var topicData1 = { type: 'category', name: 'yepyep' }
-      , topicData2 = { type: 'category', name: 'again' }
-      , topicData3 = { type: 'category', name: 'another' }
+      var topicData1 = { type: 'category', name: 'yepyep', slug: 'yepyep' }
+      , topicData2 = { type: 'category', name: 'again', slug: 'again' }
+      , topicData3 = { type: 'category', name: 'another', slug: 'another' }
       ;
 
       Topic.createAndSaveInstance(topicData1, function (err, topic1) {
@@ -117,9 +133,9 @@ describe('Topic', function () {
     });
 
     it('Can use an array of category names', function (done) {
-      var topicData1 = { type: 'category', name: 'yepyep' }
-        , topicData2 = { type: 'category', name: 'again' }
-        , topicData3 = { type: 'category', name: 'another' }
+      var topicData1 = { type: 'category', name: 'yepyep', slug: 'yepyep' }
+        , topicData2 = { type: 'category', name: 'again', slug: 'again' }
+        , topicData3 = { type: 'category', name: 'another', slug: 'another' }
         ;
 
       Topic.createAndSaveInstance(topicData1, function (err, topic1) {
@@ -152,9 +168,9 @@ describe('Topic', function () {
     });
 
     it('Can use an array of objects with a nam property', function (done) {
-      var topicData1 = { type: 'category', name: 'yepyep' }
-        , topicData2 = { type: 'category', name: 'again' }
-        , topicData3 = { type: 'category', name: 'another' }
+      var topicData1 = { type: 'category', name: 'yepyep', slug: 'yepyep' }
+        , topicData2 = { type: 'category', name: 'again', slug: 'again' }
+        , topicData3 = { type: 'category', name: 'another', slug: 'another' }
         ;
 
       Topic.createAndSaveInstance(topicData1, function (err, topic1) {
@@ -183,9 +199,9 @@ describe('Topic', function () {
     });
 
     it('No problem with undefined or null', function (done) {
-      var topicData1 = { type: 'category', name: 'yepyep' }
-        , topicData2 = { type: 'category', name: 'again' }
-        , topicData3 = { type: 'category', name: 'another' }
+      var topicData1 = { type: 'category', name: 'yepyep', slug: 'yepyep' }
+        , topicData2 = { type: 'category', name: 'again', slug: 'again' }
+        , topicData3 = { type: 'category', name: 'another', slug: 'another' }
         ;
 
       Topic.createAndSaveInstance(topicData1, function (err, topic1) {
@@ -205,9 +221,9 @@ describe('Topic', function () {
     });
 
     it('Outputs no dupplicates', function (done) {
-      var topicData1 = { type: 'category', name: 'yepyep' }
-        , topicData2 = { type: 'category', name: 'again' }
-        , topicData3 = { type: 'category', name: 'another' }
+      var topicData1 = { type: 'category', name: 'yepyep', slug: 'yepyep' }
+        , topicData2 = { type: 'category', name: 'again', slug: 'again' }
+        , topicData3 = { type: 'category', name: 'another', slug: 'another' }
         ;
 
       Topic.createAndSaveInstance(topicData1, function (err, topic1) {

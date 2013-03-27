@@ -28,6 +28,7 @@ TopicSchema = new Schema({
         , validate: [validateType, i18n.topic.badType]
         }
 , name: { type: String, required: true, unique: true }
+, slug: { type: String, required: true, unique: true }
 });
 TopicSchema.path('type').index(true);
 
@@ -38,8 +39,14 @@ TopicSchema.path('type').index(true);
  * @param {Function} cb Optional callback, signature err, new topic if created
  */
 TopicSchema.statics.createAndSaveInstance = function (topicData, _options, cb) {
-  var callback, options, safe
-    , topic = new Topic(topicData);
+  var callback, options, safe, topic;
+
+  if (topicData.type !== 'domain') {
+    topicData.slug = customUtils.slugify(topicData.name);
+  } else {
+    topicData.slug = topicData.name;
+  }
+  topic = new Topic(topicData);
 
   if (typeof _options === 'function') {
     options = {};
