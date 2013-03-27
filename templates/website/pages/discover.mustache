@@ -18,16 +18,16 @@
         {{/categories}}
       </ul>
       <div class="options options-lang">
-        {{#german}}
-        <a alt="Newest summaries" href="">English</a>
+        {{#specificLanguage}}
+        <a alt="Newest summaries" href="?lang=en">English</a>
         /
         <span class="option-chosen">German</span>
-        {{/german}}
-        {{^german}}
+        {{/specificLanguage}}
+        {{^specificLanguage}}
         <span class="option-chosen">English</span>
         /
-        <a alt="Most read summaries" href="">German</a>
-        {{/german}}
+        <a alt="Most read summaries" href="?lang=de">German</a>
+        {{/specificLanguage}}
       </div>
     </div>
     <div class="span9 discover-feed-column">
