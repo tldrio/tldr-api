@@ -38,7 +38,7 @@ module.exports = function (req, res, next) {
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
           _.each(values.tldrs, function (tldr) {
-            tldr.linkToTldrPage = true;
+            tldr.displayCategories = values.categories;
           });
           cb(null);
         });
