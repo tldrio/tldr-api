@@ -179,8 +179,6 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
 
-// Dev routes
-
 /*
  * Routes for the website, which all respond HTML
  */
@@ -214,6 +212,9 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
   app.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
   app.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/all', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/all/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+  app.get('/discover/all/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
 
   app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
   app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });

@@ -398,8 +398,8 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
 mongoose.Query.prototype.populateTldrFields = function () {
   return this.populate('creator', 'deleted username twitterHandle')
              .populate('editors', 'deleted username')
-             .populate('categories', 'name')
-             .populate('domain', 'name');
+             .populate('categories', 'name slug')
+             .populate('domain', 'name slug');
 };
 
 

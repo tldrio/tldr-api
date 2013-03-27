@@ -19,7 +19,7 @@ function loadTldrs (req, res, next) {
     req.renderingValues.newest = true;
   }
 
-  req.renderingValues.activeTopic = 'All the things';
+  req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
   Tldr.findByQuery( { 'language.language': language },options, function (err, tldrs) {
@@ -42,7 +42,7 @@ function loadTldrsByCategory (req, res, next) {
   }
 
   // First check the type of the topic, then do the correct query
-  Topic.findOne({ name: req.params.topic }, function (err, topic) {
+  Topic.findOne({ slug: req.params.topic }, function (err, topic) {
     if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
 
     req.renderingValues.activeTopic = req.params.topic;
@@ -77,10 +77,10 @@ function displayPage (req, res, next) {
     values.discover = true;
     values.description = "Discover tldrs";
     values.categories = categories;
-    values.categories.unshift({name: 'All the things'});
     values.specificLanguage = specificLanguage;
+    values.categories.unshift({name: 'All the things', slug: 'all'});
     values.categories.forEach(function (c) {
-      if (c.name === values.activeTopic) { c.active = true; }
+      if (c.slug === values.activeTopic) { c.active = true; }
     });
 
     partials.content = '{{>website/pages/discover}}';
