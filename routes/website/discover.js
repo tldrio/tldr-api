@@ -75,7 +75,7 @@ function displayPage (req, res, next) {
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;
-    values.description = "Discover tldrs";
+    values.description = "Discover summaries of interesting content contributed by the community.";
     values.categories = _.sortBy(categories, function (c) { return c.name; });
     values.specificLanguage = specificLanguage;
     values.categories.unshift({name: 'All the things', slug: 'all'});
