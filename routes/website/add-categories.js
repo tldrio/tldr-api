@@ -30,7 +30,7 @@ module.exports = function (req, res, next) {
     });
   }
   , function (cb) {
-      Tldr.find({ moderated: false, 'language.language': 'en', categories: { $size: 0 } })
+      Tldr.find({  'language.language': 'en', categories: { $size: 0 } })
         .sort('-createdAt')
         .populate('creator', 'deleted username')
         .populate('domain')
