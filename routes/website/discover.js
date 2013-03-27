@@ -22,7 +22,7 @@ function loadTldrs (req, res, next) {
   req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
-  Tldr.findByQuery( { 'language.language': language },options, function (err, tldrs) {
+  Tldr.findByQuery( { 'language.language': language,'distributionChannels.latestTldrs': true},options, function (err, tldrs) {
     req.renderingValues.tldrs = tldrs;
     return next();
   });
@@ -49,14 +49,14 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
-      Tldr.findByQuery({ domain: topic._id , 'language.language': language }, options, function (err, tldrs) {
+      Tldr.findByQuery({ domain: topic._id , 'language.language': language, 'distributionChannels.latestTldrs': true }, options, function (err, tldrs) {
       //Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
     } else {
       //Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
-      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language }, options,  function (err, tldrs) {
+      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language, 'distributionChannels.latestTldrs': true }, options,  function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
