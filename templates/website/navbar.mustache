@@ -5,13 +5,13 @@
       <a class="brand" href="/">tl;dr</a>
 
       <ul class="nav">
-        <li{{#tldrs}} class="active"{{/tldrs}}><a href="/latest-summaries">Latest tldrs</a></li>
+        <li{{#discover}} class="active"{{/discover}}><a href="/discover">Discover</a></li>
         <li{{#extension}} class="active"{{/extension}}><a href="/browser-extension">Browser extension</a></li>
-        <li{{#forum}} class="active"{{/forum}}><a href="/forum/threads">Forum</a></li>
-        <li{{#whatisit}} class="active"{{/whatisit}}><a href="/what-is-tldr">What is tldr?</a></li>
         {{#loggedUser}}
           <li{{#impact}} class="active"{{/impact}}><a href="/impact">Your impact <span class="label label-warning" id="your-impact-new-badge">new</span></a></li>
         {{/loggedUser}}
+        <li{{#forum}} class="active"{{/forum}}><a href="/forum/threads">Forum</a></li>
+        <li><a href="http://blog.tldr.io">Blog</a></li>
       </ul>
 
       <!-- Right part of the navbar, holding the signup and login links -->
