@@ -74,6 +74,7 @@ function displayPage (req, res, next) {
 
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
+    values.discover = true;
     values.description = "Discover tldrs";
     values.categories = categories;
     values.categories.unshift({name: 'All the things'});
