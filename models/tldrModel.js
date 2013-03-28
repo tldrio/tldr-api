@@ -623,9 +623,9 @@ TldrSchema.methods.thank = function (thanker , cb) {
     return callback({ thanker: "required" });
   }
 
-  // The user managed to thank twice -> dont do anything call the callback
+  // The user managed to thank twice -> dont do anything. Return cb with 3rd arg to true
   if (this.thankedBy.indexOf(thanker._id) !== -1) {
-    return;
+    return callback(null, this, true);
   }
 
   this.thankedBy.addToSet(thanker._id);
