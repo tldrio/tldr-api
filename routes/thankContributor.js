@@ -25,10 +25,12 @@ function thankContributor (req, res, next) {
     if (err) {
       return next({ statusCode: 500, body: { message: i18n.mongoInternErrUpdateTldr} } );
     }
-    tldr.thank( req.user, function (err, tldr) {
+    tldr.thank( req.user, function (err, tldr, silent) {
       if (err) { return next(i18n.se_thanking); }
 
-      mqClient.emit('tldr.thank', { thanker: req.user, tldr: tldr });
+      if (!silent) {
+        mqClient.emit('tldr.thank', { thanker: req.user, tldr: tldr });
+      }
       return res.json(200, tldr);
     });
   }) ;
