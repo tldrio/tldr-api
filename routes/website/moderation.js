@@ -31,6 +31,7 @@ module.exports = function (req, res, next) {
         .populate('creator', 'deleted username')
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
+          values.count = tldrs.length;
           _.each(values.tldrs, function (tldr) {
             tldr.linkToTldrPage = true;
           });
