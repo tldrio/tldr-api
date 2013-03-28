@@ -28,9 +28,10 @@ module.exports = function (req, res, next) {
     function (cb) {
       Tldr.find({ moderated: false })
         .sort('-createdAt')
-        .populate('creator', 'deleted username')
+        .populateTldrFields()
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
+          values.count = tldrs.length;
           _.each(values.tldrs, function (tldr) {
             tldr.linkToTldrPage = true;
           });

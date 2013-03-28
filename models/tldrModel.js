@@ -173,7 +173,7 @@ TldrSchema.virtual('lastEditor').get(function () {
 
 // Virtualtime saved attribute
 TldrSchema.virtual('timeSaved').get(function () {
-  return moment.duration(customUtils.timeToRead(this.wordCount), 'minutes').humanize();
+  return moment.duration(customUtils.timeToRead(this.articleWordCount), 'hours').humanize();
 });
 
 TldrSchema.set('toJSON', {
@@ -398,8 +398,8 @@ TldrSchema.methods.deleteIfPossible = function (user, cb) {
 mongoose.Query.prototype.populateTldrFields = function () {
   return this.populate('creator', 'deleted username twitterHandle')
              .populate('editors', 'deleted username')
-             .populate('categories', 'name')
-             .populate('domain', 'name');
+             .populate('categories', 'name slug')
+             .populate('domain', 'name slug');
 };
 
 
@@ -623,9 +623,9 @@ TldrSchema.methods.thank = function (thanker , cb) {
     return callback({ thanker: "required" });
   }
 
-  // The user managed to thank twice -> dont do anything
+  // The user managed to thank twice -> dont do anything call the callback
   if (this.thankedBy.indexOf(thanker._id) !== -1) {
-    return callback(null, this);
+    return;
   }
 
   this.thankedBy.addToSet(thanker._id);

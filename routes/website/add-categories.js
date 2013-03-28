@@ -30,7 +30,7 @@ module.exports = function (req, res, next) {
     });
   }
   , function (cb) {
-      Tldr.find({ moderated: false, categories: { $size: 0 } })
+      Tldr.find({  'language.language': 'en', categories: { $size: 0 } })
         .sort('-createdAt')
         .populate('creator', 'deleted username')
         .populate('domain')
@@ -38,7 +38,7 @@ module.exports = function (req, res, next) {
         .exec(function (err, tldrs) {
           values.tldrs = tldrs;
           _.each(values.tldrs, function (tldr) {
-            tldr.linkToTldrPage = true;
+            tldr.displayCategories = values.categories;
           });
           cb(null);
         });
@@ -48,6 +48,6 @@ module.exports = function (req, res, next) {
                                        , partials: partials
                                        });
   });
-}
+};
 
 

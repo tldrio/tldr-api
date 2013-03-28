@@ -1,8 +1,8 @@
 <div class="container main-container">
   {{#specificLanguage}}
-  <div class="alert alert-language">
+  <div class="alert alert-info alert-block alert-language" style="margin:10px 28px 0 20px">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
-    We detected that you were in a non english country and tried to display tldrs in you native language. If you want to see much more tldrs in english click <a href="?lang=en">here</a>!
+    <strong>Hello!</strong> We think you likely speak <strong>German</strong> so we are displaying German summaries for you. If this is a mistake or if you want to see more content in English click <a href="?lang=en"><strong>here</strong></a>!
   </div>
   {{/specificLanguage}}
   <div class="row">
@@ -10,7 +10,7 @@
       <ul class="nav nav-list topics-list">
         {{#categories}}
         <li{{#active}} class="active"{{/active}}>
-          <a href="/discover/{{name}}{{#specificLanguage}}?lang={{specificLanguage}}{{/specificLanguage}}">
+        <a href="/discover/{{slug}}{{#specificLanguage}}?lang={{specificLanguage}}{{/specificLanguage}}">
             <i class="icon-chevron-right"></i>
             {{name}}
           </a>
@@ -18,16 +18,34 @@
         {{/categories}}
       </ul>
       <div class="options options-lang">
-        {{#german}}
-        <a alt="Newest summaries" href="">English</a>
+        {{#specificLanguage}}
+        <a alt="Newest summaries" href="?lang=en">English</a>
         /
         <span class="option-chosen">German</span>
-        {{/german}}
-        {{^german}}
+        {{/specificLanguage}}
+        {{^specificLanguage}}
         <span class="option-chosen">English</span>
         /
-        <a alt="Most read summaries" href="">German</a>
-        {{/german}}
+        <a alt="Most read summaries" href="?lang=de">German</a>
+        {{/specificLanguage}}
+      </div>
+        <hr class="soften">
+      <div class="options options-follow">
+        <p>
+          Subscribe to get featured summaries
+        </p>
+        <div class="subscribe-medium">
+          <div class="twitter-follow">
+            <a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-width="103px" data-lang="en" data-count="none">Follow @tldrio</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+          </div>
+          <div class="fb-like">
+            <iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Ftldr.io&amp;send=false&amp;layout=button_count&amp;width=450&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:95px; height:21px;" allowTransparency="true"></iframe>
+          </div>
+          <div >
+            <a class="latest-rss-feed-link" href="http://feeds.feedburner.com/TldrioLatestSummaries" target="_blank"><img src="/assets/img/feed-icon-28x28.png" class="rss-feed-icon">RSS feed (2/day)</a>
+          </div>
+        </div>
       </div>
     </div>
     <div class="span9 discover-feed-column">
@@ -35,14 +53,14 @@
         <div class="discover-feed-options">
           <span class="options">
             {{#mostread}}
-            <a alt="Newest summaries" href="{{currentBaseUrl}}">Newest</a>
+            <a alt="Newest summaries" href="{{currentBaseUrl}}{{#specificLanguage}}?lang=de{{/specificLanguage}}">Newest</a>
             /
             <span class="option-chosen">Most read</span>
             {{/mostread}}
             {{#newest}}
             <span class="option-chosen">Newest</span>
             /
-            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread">Most read</a>
+            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread{{#specificLanguage}}?lang=de{{/specificLanguage}}">Most read</a>
             {{/newest}}
           </span>
           <span class="options options-visual pull-right">
@@ -53,7 +71,7 @@
         <div class="tab-pane active">
           <ol class="media-list discover-tldr-list">
             {{#tldrs}}
-              {{>website/discover.tldr.unit}}
+            {{>website/discover.tldr.unit}}
             {{/tldrs}}
           </ol>
         </div>

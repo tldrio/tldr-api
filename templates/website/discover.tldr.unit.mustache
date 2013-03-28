@@ -8,14 +8,14 @@
   data-tldr-originalUrl="{{originalUrl}}"
   ></span>
   <div class="discover-tldr-header">
-    <a class="pull-left" href="#">
+    <div class="pull-left">
       {{#imageUrl}}
       <img class="media-object discover-tldr-image" src="{{imageUrl}}" alt="{{title}}">
       {{/imageUrl}}
       {{^imageUrl}}
-      <img class="media-object discover-tldr-image" src="http://www.gravatar.com/avatar/?f=y&d=identicon" alt="{{title}}">
+      <img class="media-object discover-tldr-image" src="/assets/img/placeholder1.png" alt="{{title}}">
       {{/imageUrl}}
-    </a>
+    </div>
     <div class="media-body">
       <h4 class="media-heading">
         <a href="{{originalUrl}}" class="discover-tldr-title" target="_blank" alt="{{title}}">
@@ -36,7 +36,7 @@
         <a href="{{websiteUrl}}/discover/{{domain.name}}">{{domain.name}}</a>,
         in
         {{#categories}}
-        <a href="{{websiteUrl}}/discover/{{name}}{{#specificLanguage}}?lang={{.}}{{/specificLanguage}}" class="topic-link">{{name}}</a>
+        <a href="{{websiteUrl}}/discover/{{slug}}{{#specificLanguage}}?lang=de{{/specificLanguage}}" class="topic-link">{{name}}</a>
         {{/categories}}
       </div>
       <div class="tldr-stats">

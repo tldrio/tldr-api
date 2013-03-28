@@ -19,10 +19,10 @@ function loadTldrs (req, res, next) {
     req.renderingValues.newest = true;
   }
 
-  req.renderingValues.activeTopic = 'All the things';
+  req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
-  Tldr.findByQuery( { 'language.language': language },options, function (err, tldrs) {
+  Tldr.findByQuery( { 'language.language': language,'distributionChannels.latestTldrs': true},options, function (err, tldrs) {
     req.renderingValues.tldrs = tldrs;
     return next();
   });
@@ -42,21 +42,21 @@ function loadTldrsByCategory (req, res, next) {
   }
 
   // First check the type of the topic, then do the correct query
-  Topic.findOne({ name: req.params.topic }, function (err, topic) {
+  Topic.findOne({ slug: req.params.topic }, function (err, topic) {
     if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
 
     req.renderingValues.activeTopic = req.params.topic;
     req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
-      Tldr.findByQuery({ categories: { $in: topic._id }, 'language.language': language }, options, function (err, tldrs) {
+      Tldr.findByQuery({ domain: topic._id , 'language.language': language, 'distributionChannels.latestTldrs': true }, options, function (err, tldrs) {
       //Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
     } else {
       //Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
-      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language }, options,  function (err, tldrs) {
+      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language, 'distributionChannels.latestTldrs': true }, options,  function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
@@ -74,12 +74,20 @@ function displayPage (req, res, next) {
 
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
+<<<<<<< HEAD
     values.description = "Discover tldrs";
     values.categories = categories;
     values.specificLanguage = specificLanguage;
     values.categories.unshift({name: 'All the things'});
+=======
+    values.discover = true;
+    values.description = "Discover summaries of interesting content contributed by the community.";
+    values.categories = _.sortBy(categories, function (c) { return c.name; });
+    values.specificLanguage = specificLanguage;
+    values.categories.unshift({name: 'All the things', slug: 'all'});
+>>>>>>> master
     values.categories.forEach(function (c) {
-      if (c.name === values.activeTopic) { c.active = true; }
+      if (c.slug === values.activeTopic) { c.active = true; }
     });
 
     partials.content = '{{>website/pages/discover}}';

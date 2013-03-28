@@ -1,4 +1,4 @@
-<section class="marketing">
+<section class="marketing admin">
   <h1>Tldrs in need of a category</h1>
   <div class="tldr-base-unit">
     <div class="latest-tldrs-created">
@@ -7,11 +7,11 @@
         <li data-tldr-id="{{_id}}">
           <!-- Channels -->
           <div style="width: 25%; float: right;">
-            <select class="category">
+            <select class="category" multiple>
               <option></option>
-              {{#categories}}
+              {{#displayCategories}}
               <option>{{name}}</option>
-              {{/categories}}
+              {{/displayCategories}}
             </select>
             <button class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
           </div>
@@ -42,6 +42,7 @@
               {{/summaryBullets}}
             </ul>
           </div>
+          <a target="_blank" href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
 
           <hr style="clear: both; height: 1px; background-color: #333; border: none;">
         </li>

@@ -64,6 +64,9 @@ ThreadSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
 
+ThreadSchema.set('toJSON', {
+   virtuals: true
+});
 
 /**
  * Used to create a Thread object and prepare it, to be created (=saved) or only validated

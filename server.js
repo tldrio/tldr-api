@@ -179,21 +179,19 @@ app.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle
 app.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
 
-// Dev routes
-
 /*
  * Routes for the website, which all respond HTML
  */
 beforeEach(app, middleware.websiteRoute, function (app) {
   // General pages
   app.get('/about', routes.website.about);
-  app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/latest-summaries'); }
+  app.get('/', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, '/discover'); }
                                         , ifNotLogged: routes.website.index }));
-  app.get('/signup', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/latest-summaries'); }
+  app.get('/signup', middleware.loggedInCheck({ ifLogged: function (req, res, next) { return res.redirect(302, req.query.returnUrl || '/discover'); }
                                               , ifNotLogged: routes.website.signup }));
 
-  app.get('/latest-summaries', routes.website.latestTldrs);
-  app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/latest-summaries'); });
+  app.get('/tldrs', function (req, res, next) { return res.redirect(301, '/discover'); });
+  app.get('/latest-summaries', function (req, res, next) { return res.redirect(301, '/discover'); });
 
   app.get('/what-is-tldr', routes.website.whatisit);
   app.get('/whatisit', function (req, res, next) { return res.redirect(301, '/what-is-tldr'); });
@@ -214,6 +212,9 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
   app.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
   app.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/all', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  app.get('/discover/all/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+  app.get('/discover/all/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
 
   app.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
   app.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
@@ -248,6 +249,7 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/forum/threads/:id/:slug', routes.website.forumShowThread);   // Show a whole thread
   app.get('/forum/topics/:id/:slug', function (req, res, next) { return res.redirect(301, '/forum/threads/' + req.params.id + '/' + req.params.slug); });   // Legacy
   app.get('/forum/topics/:id', routes.website.forumShowThread);   // Will 301-redirect to the correct URL
+  app.get('/forum/threads/:id', routes.website.forumShowThread);   // Will 301-redirect to the correct URL
   app.post('/forum/threads/:id/:slug', routes.website.forumAddPost, routes.website.forumShowThread);  // Post something to this thread
   app.get('/forum/newThread', middleware.loggedInOnly, routes.website.forumNewThread);
   app.get('/forum/newTopic', function (req, res, next) { return res.redirect(301, '/forum/newThread'); });   // Legacy
