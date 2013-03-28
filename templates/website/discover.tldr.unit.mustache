@@ -8,14 +8,14 @@
   data-tldr-originalUrl="{{originalUrl}}"
   ></span>
   <div class="discover-tldr-header">
-    <a class="pull-left" href="#">
+    <div class="pull-left">
       {{#imageUrl}}
       <img class="media-object discover-tldr-image" src="{{imageUrl}}" alt="{{title}}">
       {{/imageUrl}}
       {{^imageUrl}}
       <img class="media-object discover-tldr-image" src="/assets/img/placeholder1.png" alt="{{title}}">
       {{/imageUrl}}
-    </a>
+    </div>
     <div class="media-body">
       <h4 class="media-heading">
         <a href="{{originalUrl}}" class="discover-tldr-title" target="_blank" alt="{{title}}">
