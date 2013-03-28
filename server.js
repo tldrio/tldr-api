@@ -249,6 +249,7 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/forum/threads/:id/:slug', routes.website.forumShowThread);   // Show a whole thread
   app.get('/forum/topics/:id/:slug', function (req, res, next) { return res.redirect(301, '/forum/threads/' + req.params.id + '/' + req.params.slug); });   // Legacy
   app.get('/forum/topics/:id', routes.website.forumShowThread);   // Will 301-redirect to the correct URL
+  app.get('/forum/threads/:id', routes.website.forumShowThread);   // Will 301-redirect to the correct URL
   app.post('/forum/threads/:id/:slug', routes.website.forumAddPost, routes.website.forumShowThread);  // Post something to this thread
   app.get('/forum/newThread', middleware.loggedInOnly, routes.website.forumNewThread);
   app.get('/forum/newTopic', function (req, res, next) { return res.redirect(301, '/forum/newThread'); });   // Legacy
