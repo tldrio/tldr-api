@@ -53,14 +53,14 @@
         <div class="discover-feed-options">
           <span class="options">
             {{#mostread}}
-            <a alt="Newest summaries" href="{{currentBaseUrl}}">Newest</a>
+            <a alt="Newest summaries" href="{{currentBaseUrl}}{{#specificLanguage}}?lang=de{{/specificLanguage}}">Newest</a>
             /
             <span class="option-chosen">Most read</span>
             {{/mostread}}
             {{#newest}}
             <span class="option-chosen">Newest</span>
             /
-            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread">Most read</a>
+            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread{{#specificLanguage}}?lang=de{{/specificLanguage}}">Most read</a>
             {{/newest}}
           </span>
           <span class="options options-visual pull-right">
