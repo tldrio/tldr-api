@@ -35,9 +35,9 @@ function sendReadReport (cb) {
           return _cb();
         }
         var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } ) ;
-        if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) { 
+        if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) {
           console.log('no enough read count for', user.username);
-          return _cb(); 
+          return _cb();
         }   // Read counts are too low, this is ridiculous
 
         console.log('Will send to', user.username);
@@ -48,6 +48,7 @@ function sendReadReport (cb) {
                    , user: user
                    , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
                    , analytics: analyticsValues.allTime
+                   , analyticsThisWeek: analyticsValues.past30Days
                    };
 
           mailer.sendReadReport({ development: true
@@ -71,7 +72,7 @@ function resetWeeklyReadCount(cb) {
     async.whilst(
       function () { return i < tldrs.length; }
     , function (_cb) {
-        //tldrs[i].readCountThisWeek = 0;
+        tldrs[i].readCountThisWeek = 0;
         tldrs[i].save(function () {
           i += 1;
           _cb();
