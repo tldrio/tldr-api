@@ -614,7 +614,7 @@ TldrSchema.statics.getCreatorId = function (tldr) {
 /**
  * Thank the author of the tldr
  * @param {User} thanker User who thanked
- * @param {Function} cb Optional callback. Signature: err, tldr
+ * @param {Function} cb Optional callback. Signature: err, tldr, silent
  */
 TldrSchema.methods.thank = function (thanker , cb) {
   var callback = cb ? cb : function () {};
@@ -630,7 +630,7 @@ TldrSchema.methods.thank = function (thanker , cb) {
 
   this.thankedBy.addToSet(thanker._id);
 
-  this.save(callback);
+  this.save(function (err, tldr) { return callback(err, tldr, false); });
 };
 
 
