@@ -34,6 +34,10 @@ function sendReadReport (cb) {
           console.log('no tldrs created for', user.username);
           return _cb();
         }
+        if (!user.notificationsSettings.read) {
+          console.log('User unsubscribed from this report', user.username);
+          return _cb();
+        }
         var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } ) ;
         if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) {
           console.log('no enough read count for', user.username);
@@ -49,6 +53,7 @@ function sendReadReport (cb) {
                    , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
                    , analytics: analyticsValues.allTime
                    , analyticsThisWeek: analyticsValues.past30Days
+                   , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
                    };
 
           mailer.sendReadReport({ development: true
@@ -72,7 +77,7 @@ function resetWeeklyReadCount(cb) {
     async.whilst(
       function () { return i < tldrs.length; }
     , function (_cb) {
-        tldrs[i].readCountThisWeek = 0;
+        //tldrs[i].readCountThisWeek = 0
         tldrs[i].save(function () {
           i += 1;
           _cb();
