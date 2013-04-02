@@ -432,6 +432,10 @@ TldrSchema.statics.findOneById = function (id, cb) {
   findOneInternal({ _id: id }, cb);
 };
 
+TldrSchema.statics.findByBatch = function (batch, options, callback) {
+  this.findByQuery({ possibleUrls: { $in: batch } }, options, callback);
+};
+
 
 /**
  * Find tldrs by their category names
