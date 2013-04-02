@@ -42,7 +42,7 @@ function createNewTldr (req, res, next) {
         // Send congratulory email
         mailer.sendEmail({ type: 'congratulationsFirstTldr'
                          , to: req.user.email
-                         , development: true
+                         , development: false
                          , values: { tldr: tldr, creator: req.user }
                          });
       }
