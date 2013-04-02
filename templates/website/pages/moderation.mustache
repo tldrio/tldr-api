@@ -28,6 +28,10 @@
               ({{domain.name}})
             </span>
             <div class="tldr-metadata-tldrs">
+              In
+              {{#categories}}
+                <span><a href="{{websiteUrl}}/discover/{{name}}" target="_blank"><em>{{name}}</em></a></span> ·
+              {{/categories}}
               <span class="tldr-creator">
                 contributed by <em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em> {{#anonymous}} anonymously{{/anonymous}}
               </span>
@@ -46,7 +50,6 @@
               {{/summaryBullets}}
             </ul>
           </div>
-            <a target="_blank" href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><i class="icon icon-edit"></i>admin in db</a>
 
           <hr style="clear: both; height: 1px; background-color: #333; border: none;">
         </li>
