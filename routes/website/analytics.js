@@ -61,8 +61,10 @@ module.exports.displayAnalytics = function (req, res, next) {
       }
 
       values.analytics = rawData;
-      values[analytics30Days.selection] = analytics30Days;
-      values[analyticsAllTime.selection] = analyticsAllTime;
+      values.past30Days = analytics30Days;
+      values.past30Days.selection = 'past30Days';
+      values.allTime = analyticsAllTime;
+      values.allTime.selection = 'allTime';
       res.render('website/basicLayout', { values: values
                                         , partials: partials
                                         });
