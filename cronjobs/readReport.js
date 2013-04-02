@@ -38,27 +38,33 @@ function sendReadReport (cb) {
           console.log('User unsubscribed from this report', user.username);
           return _cb();
         }
-        var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } ) ;
-        if (bestTldrThisWeek.readCountThisWeek < thresholdSendMail) {
+        var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } )
+          , totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; })
+                                                     , function (memo, n) { return memo + n; }
+                                                     , 0);
+
+        if (totalReadCountThisWeek < thresholdSendMail) {
           console.log('no enough read count for', user.username);
           return _cb();
         }   // Read counts are too low, this is ridiculous
 
         console.log('Will send to', user.username);
 
-        analytics.getAnalyticsForUser( user, 7 , function (analyticsValues) {
+        analytics.getAnalyticsForUser( user, 7 , function (analyticsThisWeek) {
+          analytics.getAnalyticsForUser( user, null, function (analyticsAllTime) {
 
-          values = { bestTldrThisWeek: bestTldrThisWeek
-                   , user: user
-                   , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
-                   , analytics: analyticsValues.allTime
-                   , analyticsThisWeek: analyticsValues.past30Days
-                   };
+            values = { bestTldrThisWeek: bestTldrThisWeek
+                     , user: user
+                     , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
+                     , analytics: analyticsAllTime.allTime
+                     , analyticsThisWeek: analyticsThisWeek.past7Days
+                     };
 
-          mailer.sendReadReport({ development: true
-                           , values: values
-                           , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
-                           }, _cb)
+            mailer.sendReadReport({ development: true
+                             , values: values
+                             , to: config.env === 'development' ? 'hello+test@tldr.io' : user.email
+                             }, _cb)
+          });
         });
       }
     , function (err) {
