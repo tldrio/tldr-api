@@ -76,7 +76,7 @@ function resetWeeklyReadCount(cb) {
     async.whilst(
       function () { return i < tldrs.length; }
     , function (_cb) {
-        //tldrs[i].readCountThisWeek = 0
+        tldrs[i].readCountThisWeek = 0
         tldrs[i].save(function () {
           i += 1;
           _cb();
