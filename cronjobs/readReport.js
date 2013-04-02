@@ -53,7 +53,6 @@ function sendReadReport (cb) {
                    , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
                    , analytics: analyticsValues.allTime
                    , analyticsThisWeek: analyticsValues.past30Days
-                   , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
                    };
 
           mailer.sendReadReport({ development: true
