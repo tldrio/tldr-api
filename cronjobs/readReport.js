@@ -38,8 +38,8 @@ function sendReadReport (cb) {
           console.log('User unsubscribed from this report', user.username);
           return _cb();
         }
-        var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; } )
-          , totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCountThisWeek; })
+        var bestTldrThisWeek = _.max( user.tldrsCreated, function (_tldr) { return _tldr.readCount; } )
+          , totalReadCountThisWeek = _.reduce( _.map(user.tldrsCreated, function (_tldr) { return _tldr.readCount; })
                                                      , function (memo, n) { return memo + n; }
                                                      , 0);
 
