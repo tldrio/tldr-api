@@ -1,4 +1,4 @@
-Hi {{user.username}}!<br>
+Hi {{creator.username}}!<br>
 
 <br>
 We are excited to see that you took some time to write your first <em>tl;dr</em>!<br>
@@ -8,10 +8,11 @@ Every time you contribute a tl;dr you <strong>save time for a gazillion people</
 <br>
 Now you can: <br>
 - Share it with this <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">link</a>.<br>
-- See all your contributions on your <a href="{{websiteUrl}}/{{user.username}}">user profile</a>.
+- Check your impact on your <a href="{{websiteUrl}}/impact">analytics dashboard</a>.
 <br>
 <br>
 
+{{>emails/tldrEmbed}}
 
 <br>
 Tame the web, you know you want it.
