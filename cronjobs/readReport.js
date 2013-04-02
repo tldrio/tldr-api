@@ -50,14 +50,17 @@ function sendReadReport (cb) {
 
         console.log('Will send to', user.username);
 
-        analytics.getAnalyticsForUser( user, 7 , function (analyticsThisWeek) {
-          analytics.getAnalyticsForUser( user, null, function (analyticsAllTime) {
+        analytics.getAnalyticsForUser( user, 7 , function (err,analyticsThisWeek, rawData) {
+          analytics.getAnalyticsForUser( user, null, function (err, analyticsAllTime, rawData) {
+            if (err) {
+              return _cb(err);
+            }
 
             values = { bestTldrThisWeek: bestTldrThisWeek
                      , user: user
                      , dataForUnsubscribe: customUtils.createDataForUnsubscribeLink(user._id)
-                     , analytics: analyticsAllTime.allTime
-                     , analyticsThisWeek: analyticsThisWeek.past7Days
+                     , analytics: analyticsAllTime
+                     , analyticsThisWeek: analyticsThisWeek
                      };
 
             mailer.sendReadReport({ development: true
