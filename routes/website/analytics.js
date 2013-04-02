@@ -41,9 +41,9 @@ module.exports.displayAnalytics = function (req, res, next) {
         ;
 
       // figure out correct subtitle depending on activity
-      if (analyticsAllTime.readCount > 0) {   // User already made some tldrs
+      if (parseInt(analyticsAllTime.readCount, 10) > 0) {   // User already made some tldrs
         values.hasBeenActive = true;
-        if (analytics30Days.tldrsCreated > 0) {
+        if (parseInt(analytics30Days.tldrsCreated, 10) > 0) {
           values.active = true;
           values.subtitle = 'Looks like the world owes you a one!';
         } else {
