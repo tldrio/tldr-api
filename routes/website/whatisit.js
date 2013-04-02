@@ -11,7 +11,7 @@ module.exports = function (req, res, next) {
     , partials = req.renderingPartials || {};
 
   values.whatisit = true;
-  values.title = "What is this?" + config.titles.branding + config.titles.shortDescription;
+  values.title = "What is tldr.io? " +  config.titles.shortDescription;
   values.description = "tldr.io lets you read man-written summaries of interesting content so you can easily select what you want to read, and skim the rest.";
   partials.content = '{{>website/pages/whatisit}}';
 
