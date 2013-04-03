@@ -82,7 +82,9 @@ website.get('/third-party-auth/google/successPopup', routes.website.googleSSOWit
  */
 beforeEach(website, middleware.websiteRoute, function (website) {
   // Tldr page
-  website.get('/tldrs/:id', routes.website.tldrPage);
+  website.get('/tldrs/search', routes.website.tldrPage.byUrl);
+  website.get('/tldrs/:id/:slug', routes.website.tldrPage.byId);
+  website.get('/tldrs/:id', routes.website.tldrPage.byId);
 
   // General pages
   website.get('/about', routes.website.about);
@@ -106,8 +108,6 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/release-notes', routes.website.releaseNotes);
   website.get('/embedded-tldrs', routes.website.embeddedTldrs);
 
-  website.get('/elad', routes.website.elad);
-
   //Discover
   website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
   website.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
@@ -119,10 +119,6 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
   website.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
   website.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
-
-
-  // Tldr page
-  website.get('/tldrs/:id/:slug', routes.website.tldrPage);
 
   // Login, logout
   website.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });
@@ -138,10 +134,12 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/notifications/unsubscribe', routes.website.unsubscribe);
 
   // Private pages
-  website.get('/account', middleware.loggedInOnly, routes.website.account);
-  website.get('/tldrscreated', middleware.loggedInOnly, routes.website.tldrscreated);
-  website.get('/notifications', middleware.loggedInOnly, routes.website.notifications);
-  website.get('/impact', middleware.loggedInOnly, routes.website.analytics.displayAnalytics);
+  beforeEach(website, middleware.loggedInOnly, function (website) {
+    website.get('/account', routes.website.account);
+    website.get('/tldrscreated', routes.website.tldrscreated);
+    website.get('/notifications', routes.website.notifications);
+    website.get('/impact', routes.website.analytics.displayAnalytics);
+  });
 
   // Forum
   website.get('/forum/threads', routes.website.forum);
@@ -169,8 +167,6 @@ beforeEach(website, middleware.websiteRoute, function (website) {
 
   // User profiles, leaderboard ...
   website.get('/:username', routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
-
-  // Admin only
 });
 
 

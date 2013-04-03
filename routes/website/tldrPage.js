@@ -2,7 +2,7 @@
  * The tldr page, at last with the same layout as the rest of the website
  * Copyright (C) 2012 L. Chatriot, S. Marion, C. Miglietti
  * Proprietary License
-*/
+ */
 
 var _ = require('underscore')
   , Tldr = require('../../lib/models').Tldr
@@ -11,54 +11,71 @@ var _ = require('underscore')
   , customUtils = require('../../lib/customUtils')
   ;
 
-module.exports = function (req, res, next) {
+// Actually display the tldr page
+function displayPage (req, res, tldr) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {}
-    , tldrData
+    , tldrData;
     ;
 
   partials.content = '{{>website/pages/tldrPage}}';
   partials.fbmetatags = '{{#tldr}} {{>website/metatags/metatagsPage}} {{/tldr}}'
 
+  values.tldr = tldr;
+  values.title = 'Summary of "' +
+                 tldr.title.substring(0, 60) +
+                 (tldr.title.length > 60 ? '..."' : '"') +
+                 config.titles.branding + config.titles.shortDescription;
+  // Warning: don't use double quotes in the meta description tag
+  if (tldr.creator) { values.description = "Summary written by " + tldr.creator.usernameForDisplay + " of '" + tldr.title.replace(/"/g, '') + "'"; }
+
+  // Specific metatags for the tldr page
+  values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
+  values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'article');
+  values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug);
+  values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
+  if (tldr.creator) {values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || ''); }
+  if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
+
+  tldrData = tldr.toJSON();
+  tldrData = _.pick(tldrData, [ 'title'
+                              , '_id'
+                              , 'url'
+                              , 'summaryBullets'
+                              , 'slug'
+                              , 'originalUrl'
+                              , 'thankedBy'
+                              ]);
+  tldrData = JSON.stringify(tldrData);
+  tldrData = tldrData.replace(/"/g, '\\"');
+
+  values.tldrData = tldrData;
+
+  return res.render('website/basicLayout', { values: values , partials: partials });
+}
+
+
+// Display the tldr page when it's called by its id
+module.exports.byId = function (req, res, next) {
   Tldr.findOneById(req.params.id, function (err, tldr) {
     if (err || !tldr) { return res.json(404, {}); }
 
     // Redirect to the correct url if the slug is not the right one. Will result in partial double counting
     // but also in much simpler code
     if (req.params.slug !== customUtils.slugify(tldr.title)) {
-      return res.redirect(301, '/tldrs/' + tldr._id + '/' + tldr.slug);
+      return res.redirect(302, '/tldrs/' + tldr._id + '/' + tldr.slug);
     }
 
-    values.tldr = tldr;
-    values.title = 'Summary of "' +
-                   tldr.title.substring(0, 60) +
-                   (tldr.title.length > 60 ? '..."' : '"') +
-                   config.titles.branding + config.titles.shortDescription;
-    // Warning: don't use double quotes in the meta description tag
-    if (tldr.creator) { values.description = "Summary written by " + tldr.creator.usernameForDisplay + " of '" + tldr.title.replace(/"/g, '') + "'"; }
+    displayPage(req, res, tldr);
+  });
+};
 
-    // Specific metatags for the tldr page
-    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:title', tldr.title);
-    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:type', 'article');
-    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:url', 'http://tldr.io/tldrs/' + tldr._id + '/' + tldr.slug);
-    values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
-    if (tldr.creator) {values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || ''); }
-    if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
 
-    tldrData = tldr.toJSON();
-    tldrData = _.pick(tldrData, [ 'title'
-                                , '_id'
-                                , 'url'
-                                , 'summaryBullets'
-                                , 'slug'
-                                , 'originalUrl'
-                                , 'thankedBy'
-                                ]);
-    tldrData = JSON.stringify(tldrData);
-    tldrData = tldrData.replace(/"/g, '\\"');
+// Display the tldr page when it's called by the url of the article
+module.exports.byUrl = function (req, res, next) {
+  Tldr.findOneByUrl(req.query.url, function (err, tldr) {
+    if (err || !tldr) { return res.json(404, {}); }
 
-    values.tldrData = tldrData;
-
-    return res.render('website/basicLayout', { values: values , partials: partials });
+    res.redirect(302, '/tldrs/' + tldr._id + '/' + tldr.slug);
   });
 };
