@@ -3,11 +3,11 @@
  */
 
 var express = require('express')
+  , website = express()
   , http = require('http')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan // Audit logger for express
   , models = require('./lib/models')
-  , website                               // Will store our express website
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
@@ -16,10 +16,6 @@ var express = require('express')
   , h4e = require('h4e')
   , beforeEach = require('express-group-handlers').beforeEach
   ;
-
-
-
-website = express();
 
 
 // Set up templating
@@ -57,15 +53,6 @@ website.use(middleware.decorateRequest); //Middleware for assigning an id to eac
 website.use(middleware.logAPIUsage);
 website.use(website.router); // Map routes
 website.use(middleware.handleErrors); // Use middleware to handle errors
-
-/*
- * Environments declaration and
- * Express' default environment is 'development'
- */
-
-website.configure('development', 'staging', 'production', function () {
-  bunyan.setToLog = true;
-});
 
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers

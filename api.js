@@ -3,11 +3,11 @@
  */
 
 var express = require('express')
+  , api = express()
   , http = require('http')
   , fs = require('fs')
   , bunyan = require('./lib/logger').bunyan
   , models = require('./lib/models')
-  , api
   , config = require('./lib/config')
   , middleware = require('./lib/middleware')
   , passport = require('./lib/passport')
@@ -15,10 +15,6 @@ var express = require('express')
   , customUtils = require('./lib/customUtils')
   , beforeEach = require('express-group-handlers').beforeEach
   ;
-
-
-
-api = express();
 
 
 // Trust the nginx proxy
@@ -38,15 +34,6 @@ api.use(middleware.decorateRequest); //Middleware for assigning an id to each re
 api.use(middleware.logAPIUsage);
 api.use(api.router); // Map routes
 api.use(middleware.handleErrors); // Use middleware to handle errors
-
-
-/*
- * Environments declaration and
- * Express' default environment is 'development'
- */
-api.configure('development', 'staging', 'production', function () {
-  bunyan.setToLog = true;
-});
 
 
 // Email confirmation

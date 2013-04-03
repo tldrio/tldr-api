@@ -12,10 +12,17 @@ var DbObject = require('./lib/db')
   , notificator = require('./lib/notificator')   // We need to launch the notificator somewhere
   ;
 
+// Create connection to the database
 app.db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
                      );
+
+
+// Bunyan should not log in tests or the report will be cluttered
+if (config.env !== 'test') {
+  bunyan.setToLog = true;
+}
 
 
 /**
