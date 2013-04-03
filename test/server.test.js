@@ -425,7 +425,7 @@ describe('Webserver', function () {
                      , uri: websiteRoot + '/tldrs/' + tldr2._id + '/some-bad-slug'
                      , followRedirect: false }
                    , function (err, res, body) {
-          res.statusCode.should.equal(301);
+          res.statusCode.should.equal(302);
           res.headers['content-type'].should.contain('text/html');
           res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
 
@@ -436,7 +436,7 @@ describe('Webserver', function () {
                        , uri: websiteRoot + '/tldrs/' + tldr2._id
                        , followRedirect: false }
                      , function (err, res, body) {
-              res.statusCode.should.equal(301);
+              res.statusCode.should.equal(302);
               res.headers.location.should.match(new RegExp('/tldrs/' + tldr2._id + '/' + tldr2.slug + '$'));
 
               Tldr.findOne({ _id: tldr2._id }, function (err, _tldr) {
