@@ -28,6 +28,8 @@ module.exports = function (req, res, next) {
           .populate('history')
           .exec(function (err, user) {
 
+        if (err || !user) { return res.redirect(302, '/'); }
+
         Tldr.find({ _id: { $in: user.tldrsCreated }, anonymous: false }, 'originalUrl slug title readCount summaryBullets domain')
             .populate('domain')
             .limit(14)

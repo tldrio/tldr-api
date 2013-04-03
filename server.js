@@ -139,13 +139,15 @@ app.get('/categories', routes.getCategories);
 
 
 // Admin only routes
-app.get('/:username/admin', middleware.adminOnly, routes.getUser);
-app.get('/tldrs/:id/admin', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.getTldrById));
-app.get('/tldrs/:id/delete', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.deleteTldr));
-app.get('/tldrs/:id/moderate', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.moderateTldr));
-app.get('/tldrs/:id/cockblock', middleware.adminOnly, middleware.apiRouteDisambiguation(routes.cockblockTldr));
-app.put('/tldrs/:id/distribution-channels', middleware.adminOnly, routes.updateDistributionChannels);
-app.put('/tldrs/:id/sharing-buffer', middleware.adminOnly, routes.shareThroughBuffer);
+beforeEach(app, middleware.adminOnly, function (app) {
+  app.get('/:username/admin', routes.getUser);
+  app.get('/tldrs/:id/admin', middleware.apiRouteDisambiguation(routes.getTldrById));
+  app.get('/tldrs/:id/delete', middleware.apiRouteDisambiguation(routes.deleteTldr));
+  app.get('/tldrs/:id/moderate', middleware.apiRouteDisambiguation(routes.moderateTldr));
+  app.get('/tldrs/:id/cockblock', middleware.apiRouteDisambiguation(routes.cockblockTldr));
+  app.put('/tldrs/:id/distribution-channels', routes.updateDistributionChannels);
+  app.put('/tldrs/:id/sharing-buffer', routes.shareThroughBuffer);
+});
 
 // Vote for/against a thread
 app.put('/forum/topics/:id', routes.voteOnThread);   // Legacy
@@ -206,7 +208,6 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/embedded-tldrs', routes.website.embeddedTldrs);
 
   app.get('/elad', routes.website.elad);
-  app.get('/scratchpad', middleware.adminOnly, routes.website.scratchpad);
 
   //Discover
   app.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
@@ -257,15 +258,20 @@ beforeEach(app, middleware.websiteRoute, function (app) {
   app.get('/forum/posts/:id/edit', routes.website.editPost);
   app.post('/forum/posts/:id/edit', routes.website.changePostText);
 
-  // Moderation
-  app.get('/moderation', middleware.adminOnly, routes.website.moderation);
-  app.get('/add-categories', middleware.adminOnly, routes.website.addCategories);
+  // Admin inbcluding moderation
+  beforeEach(app, middleware.adminOnly, function (app) {
+    app.get('/scratchpad', routes.website.scratchpad);
+    app.get('/moderation', routes.website.moderation);
+    app.get('/add-categories', routes.website.addCategories);
+    app.get('/embed-admin', function (req, res, next) { return res.redirect(302, '/embed-admin/14'); });
+    app.get('/embed-admin/:daysBack', routes.website.embedAdmin);
+    app.get('/:username/impact', routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
+  });
 
   // User profiles, leaderboard ...
   app.get('/:username', routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 
   // Admin only
-  app.get('/:username/impact', middleware.adminOnly, routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
 });
 
 
