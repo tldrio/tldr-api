@@ -6,7 +6,7 @@ var should = require('chai').should()
   , normalizeUrl = customUtils.normalizeUrl
   , redis = require('redis')
   , redisClient = redis.createClient()
-  , app = require('../app')
+  , globals = require('../lib/globals')
   , config = require('../lib/config')
   ;
 
@@ -22,10 +22,10 @@ describe('Total read count', function () {
   });
 
   it('Should be able to get/set a global count even if it is not yet set', function (done) {
-    app.getGlobalCount('thetest', function (err, count) {
+    globals.getGlobalCount('thetest', function (err, count) {
       count.should.equal(0);
-      app.incrementGlobalCount('thetest', 1, function () {
-        app.getGlobalCount('thetest', function (err, count) {
+      globals.incrementGlobalCount('thetest', 1, function () {
+        globals.getGlobalCount('thetest', function (err, count) {
           count.should.equal(1);
           done();
         });
@@ -34,15 +34,15 @@ describe('Total read count', function () {
   });
 
   it('Should be able to get a global count and increase it if it is set', function (done) {
-    app.getGlobalCount('thetest', function (err, count) {
+    globals.getGlobalCount('thetest', function (err, count) {
       count.should.equal(0);
-      app.incrementGlobalCount('thetest', 1, function () {
-        app.getGlobalCount('thetest', function (err, count) {
+      globals.incrementGlobalCount('thetest', 1, function () {
+        globals.getGlobalCount('thetest', function (err, count) {
           count.should.equal(1);
-          app.incrementGlobalCount('thetest', 1, function () {
-            app.incrementGlobalCount('thetest', 1, function () {
-              app.incrementGlobalCount('thetest', 1, function () {
-                app.getGlobalCount('thetest', function (err, count) {
+          globals.incrementGlobalCount('thetest', 1, function () {
+            globals.incrementGlobalCount('thetest', 1, function () {
+              globals.incrementGlobalCount('thetest', 1, function () {
+                globals.getGlobalCount('thetest', function (err, count) {
                   count.should.equal(4);
                   done();
                 });
@@ -55,19 +55,19 @@ describe('Total read count', function () {
   });
 
   it('Increasing a global count should not affect the others', function (done) {
-    app.getGlobalCount('thetest', function (err, count) {
+    globals.getGlobalCount('thetest', function (err, count) {
       count.should.equal(0);
-      app.getGlobalCount('another', function (err, count) {
+      globals.getGlobalCount('another', function (err, count) {
         count.should.equal(0);
-        app.incrementGlobalCount('thetest', 1, function () {
-          app.getGlobalCount('thetest', function (err, count) {
+        globals.incrementGlobalCount('thetest', 1, function () {
+          globals.getGlobalCount('thetest', function (err, count) {
             count.should.equal(1);
-            app.getGlobalCount('another', function (err, count) {
+            globals.getGlobalCount('another', function (err, count) {
               count.should.equal(0);
-              app.incrementGlobalCount('another', 4, function () {
-                app.getGlobalCount('thetest', function (err, count) {
+              globals.incrementGlobalCount('another', 4, function () {
+                globals.getGlobalCount('thetest', function (err, count) {
                   count.should.equal(1);
-                  app.getGlobalCount('another', function (err, count) {
+                  globals.getGlobalCount('another', function (err, count) {
                     count.should.equal(4);
                     done();
                   });

@@ -9,7 +9,7 @@ var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
-  , app = require('../server')
+  , app = require('../app')
   , models = require('../lib/models')
   , db = app.db
   , mongoose = require('mongoose')
@@ -17,7 +17,8 @@ var should = require('chai').should()
   , Tldr = models.Tldr
   , Credentials = models.Credentials
   , User = models.User
-  , rootUrl = 'http://localhost:8686'
+  , apiRoot = 'http://localhost:8686'
+  , websiteRoot = 'http://localhost:8585'
   , bcrypt = require('bcrypt')
   , request = require('request')
   , customUtils = require('../lib/customUtils')
@@ -33,7 +34,7 @@ var should = require('chai').should()
 // Usable by async to log a user in or out
 function logUserIn(email, password, cb) {
   request.post({ headers: {"Accept": "application/json"}
-               , uri: rootUrl + '/users/login'
+               , uri: apiRoot + '/users/login'
                , json: { email: email, password: password } }
     , function (error, response, body) {
         response.statusCode.should.equal(200);   // If we couldnt log in the test will fail
@@ -43,7 +44,7 @@ function logUserIn(email, password, cb) {
 
 function logUserOut(cb) {
   request.get({ headers: {"Accept": "application/json"}
-              , uri: rootUrl + '/users/logout' }, function (error, response, body) { cb(error); });
+              , uri: apiRoot + '/users/logout' }, function (error, response, body) { cb(error); });
 }
 
 // Check for existence of tldr. Usable by async
@@ -68,11 +69,11 @@ describe('Webserver', function () {
   // before mocha quits
 
   before(function (done) {
-    app.launchServer(done);
+    app.launch(done);
   });
 
   after(function (done) {
-    app.stopServer(done);
+    app.stop(done);
   });
 
   // Synchronously saves an array of tldrs to the database. Used for tests that need a lot of tldrs in the database (getTldrsWithQuery for example)
@@ -137,7 +138,7 @@ describe('Webserver', function () {
     it('an existing tldr given an url with /tldrs/search?', function (done) {
 
       request.get({ headers: {"Accept": "application/json"}
-                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
+                  , uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
         var obj = JSON.parse(body);
         response.statusCode.should.equal(200);
         obj.url.should.equal('http://needforair.com/sopa');
@@ -148,7 +149,7 @@ describe('Webserver', function () {
 
     it('a non existing tldr given an url with /tldrs/search?', function (done) {
 
-      request.get({ uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com') }, function (err, res, body) {
+      request.get({ uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://3niggas4bitches.com') }, function (err, res, body) {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(404);
         obj.should.have.ownProperty('message');
@@ -159,7 +160,7 @@ describe('Webserver', function () {
     });
 
     it('an existing tldr given an _id with /tldrs/:id', function (done) {
-      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, body) {
+      request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/' + tldr2._id}, function (err, res, body) {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(200);
         obj.url.should.equal('http://avc.com/mba-monday');
@@ -170,7 +171,7 @@ describe('Webserver', function () {
 
     it('should reply with a 403 to a GET /tldrs/:id if the objectId is not valid (not a 24 characters string)', function (done) {
 
-      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/invalidId'}, function (err, res, body) {
+      request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/invalidId'}, function (err, res, body) {
         var obj = JSON.parse(res.body);
         res.statusCode.should.equal(403);
         assert.isNotNull(obj._id);
@@ -213,7 +214,7 @@ describe('Webserver', function () {
             docs.length.should.equal(50);
 
             // Tests that giving a negative limit value only gives up to defaultLimit (here 10) tldrs AND that they are the 10 most recent
-            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/-1'}, function (err, res, body) {
+            request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/-1'}, function (err, res, body) {
               obj = JSON.parse(res.body);
               obj.length.should.equal(defaultLimit);
               temp = _.map(obj, function (o) { return o.url; });
@@ -229,22 +230,22 @@ describe('Webserver', function () {
               _.indexOf(temp, 'http://needforair.com/sopa/number5').should.not.equal(-1);
 
               // A limit for 0 should give defaultLimit objects as well
-              request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/0'}, function (err, res, body) {
+              request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/0'}, function (err, res, body) {
                 obj = JSON.parse(res.body);
                 obj.length.should.equal(defaultLimit);
 
                 // A limit greater than defaultLimit should give defaultLimit objects as well
-                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/' + (defaultLimit + 1)}, function (err, res, body) {
+                request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/' + (defaultLimit + 1)}, function (err, res, body) {
                   obj = JSON.parse(res.body);
                   obj.length.should.equal(defaultLimit);
 
                   // Forgetting the limit should force the handler to return defaultLimit objects
-                  request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest'}, function (err, res, body) {
+                  request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest'}, function (err, res, body) {
                     obj = JSON.parse(res.body);
                     obj.length.should.equal(defaultLimit);
 
                     // Using it normally it should work! And return the 5 latest tldrs
-                    request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/5'}, function (err, res, body) {
+                    request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/5'}, function (err, res, body) {
                       obj = JSON.parse(res.body);
                       obj.length.should.equal(5);
                       temp = _.map(obj, function (o) { return o. url; });
@@ -255,12 +256,12 @@ describe('Webserver', function () {
                       _.indexOf(temp, 'http://needforair.com/sopa/number0').should.not.equal(-1);
 
                       // Calling with a non-numeral value for limit should make it return defaultLimit tldrs
-                      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/asd'}, function (err, res, body) {
+                      request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/asd'}, function (err, res, body) {
                         obj = JSON.parse(res.body);
                         obj.length.should.equal(defaultLimit);
 
                         // Called with a non-numeral value for startat, it should use 0 as a default value
-                        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=rew'}, function (err, res, body) {
+                        request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/4?startat=rew'}, function (err, res, body) {
                           obj = JSON.parse(res.body);
                           obj.length.should.equal(4);
                           temp = _.map(obj, function (o) { return o. url; });
@@ -270,7 +271,7 @@ describe('Webserver', function () {
                           _.indexOf(temp, 'http://needforair.com/sopa').should.not.equal(-1);
 
                           // With normal values for startat and limit, it should behave normally
-                          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=5'}, function (err, res, body) {
+                          request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/4?startat=5'}, function (err, res, body) {
                             obj = JSON.parse(res.body);
                             obj.length.should.equal(4);
                             temp = _.map(obj, function (o) { return o. url; });
@@ -280,13 +281,13 @@ describe('Webserver', function () {
                             _.indexOf(temp, 'http://needforair.com/sopa/number4').should.not.equal(-1);
 
                             // If startat is too high, no tldr is sent
-                            request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/4?startat=55'}, function (err, res, body) {
+                            request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/4?startat=55'}, function (err, res, body) {
                               obj = JSON.parse(res.body);
                               obj.length.should.equal(0);
 
                               // Shouldn't return tldrs that are not in the 'latestTldrs' distribution channel
                               Tldr.update({ url: 'http://needforair.com/sopa/number1' }, { $set: { 'distributionChannels.latestTldrs': false } }, { multi: false }, function (err, n) {
-                                request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/latest/7'}, function (err, res, body) {
+                                request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/7'}, function (err, res, body) {
                                   obj = JSON.parse(res.body);
                                   obj.length.should.equal(7);
                                   temp = _.map(obj, function (o) { return o. url; });
@@ -319,10 +320,10 @@ describe('Webserver', function () {
     it('Search tldrs with custom query', function (done) {
       var obj;
 
-      request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://idontexist.com/nope') }, function (err, res, body) {
+      request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://idontexist.com/nope') }, function (err, res, body) {
         res.statusCode.should.equal(404);
 
-        request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://bothsidesofthetable.com/deflationnary-economics') }, function (err, res, body) {
+        request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://bothsidesofthetable.com/deflationnary-economics') }, function (err, res, body) {
           res.statusCode.should.equal(200);
           obj = JSON.parse(res.body);
           obj.url.should.equal('http://bothsidesofthetable.com/deflationnary-economics');
@@ -374,14 +375,14 @@ describe('Webserver', function () {
         batch = ['http://needforair.com/sopa/number0?toto=ata', 'http://needforair.com/sopa/number5','http://needforair.com/sopa/number9', 'http://toto.com/resourcedoesntexist#test' ];
         // Should return empty array if request is not well formed
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/tldrs/searchBatch'
+                     , uri: apiRoot + '/tldrs/searchBatch'
                      , json: { badObject: batch } } , function (err, res, body) {
 
           body.tldrs.length.should.be.equal(0);
 
           // Try with a batch thats too large
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/tldrs/searchBatch'
+                       , uri: apiRoot + '/tldrs/searchBatch'
                        , json: { batch: batchTooLarge } } , function (err, res, body) {
 
             res.statusCode.should.equal(403);
@@ -390,7 +391,7 @@ describe('Webserver', function () {
 
             // Request should return existing tldrs in the batch array
             request.post({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/tldrs/searchBatch'
+                         , uri: apiRoot + '/tldrs/searchBatch'
                          , json: { batch: batch } } , function (err, res, body) {
 
               var tldrs = body.tldrs
@@ -421,7 +422,7 @@ describe('Webserver', function () {
         previousReadCount = _tldr.readCount;
 
         request.get( { headers: {"Accept": "text/html"}
-                     , uri: rootUrl + '/tldrs/' + tldr2._id + '/some-bad-slug'
+                     , uri: websiteRoot + '/tldrs/' + tldr2._id + '/some-bad-slug'
                      , followRedirect: false }
                    , function (err, res, body) {
           res.statusCode.should.equal(301);
@@ -432,7 +433,7 @@ describe('Webserver', function () {
             _tldr.readCount.should.equal(previousReadCount + 1);   // OK, double counting
 
           request.get( { headers: {"Accept": "text/html"}
-                       , uri: rootUrl + '/tldrs/' + tldr2._id
+                       , uri: websiteRoot + '/tldrs/' + tldr2._id
                        , followRedirect: false }
                      , function (err, res, body) {
               res.statusCode.should.equal(301);
@@ -450,7 +451,7 @@ describe('Webserver', function () {
     });
 
     it('Should serve 404 if a non existing tldr-page was requested', function (done) {
-      request.get({ headers: {"Accept": "text/html"}, uri: rootUrl + '/tldrs/bloup/50af46f20bc6851111111111' }, function (err, res, body) {
+      request.get({ headers: {"Accept": "text/html"}, uri: websiteRoot + '/tldrs/50af46f20bc6851111111111/bloup' }, function (err, res, body) {
         res.statusCode.should.equal(404);
         done();
       });
@@ -461,7 +462,7 @@ describe('Webserver', function () {
 
   describe('DELETE tldrs - through the use of GET', function() {
     function deleteTldr(id, expectedCode, cb) {
-      request.get({ uri: rootUrl + '/tldrs/' + id + '/delete'}, function (err, res, body) {
+      request.get({ uri: apiRoot + '/tldrs/' + id + '/delete'}, function (err, res, body) {
         res.statusCode.should.equal(expectedCode);
         cb();
       });
@@ -517,7 +518,7 @@ describe('Webserver', function () {
           resourceAuthor: 'bozo le clown',
         };
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(401);
           done();
         });
@@ -542,7 +543,7 @@ describe('Webserver', function () {
           resourceAuthor: 'bozo le clown',
         };
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(201);
           obj.title.should.equal('A title');
           obj.createdAt.should.not.be.null;
@@ -573,7 +574,7 @@ describe('Webserver', function () {
           , updatedAt: new Date()
         };
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(200);
           Tldr.find({possibleUrls: 'http://needforair.com/nutcrackers'}, function(err, docs) {
             var tldr = docs[0];
@@ -588,7 +589,7 @@ describe('Webserver', function () {
       it('Shouldn\'t create a new tldr with POST if there is no url provided', function (done) {
         var tldrData = { summaryBullets: ['summary'] };   // Summary can't be empty
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
             res.statusCode.should.equal(403);
             obj.should.have.property('url');
             Tldr.find({}, function(err, docs) {
@@ -603,7 +604,7 @@ describe('Webserver', function () {
         var tldrData = { url: 'http://nfa.com'
           , summaryBullets: [''] };   // Summary can't be empty
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
             obj.should.have.property('summaryBullets');
             res.statusCode.should.equal(403);
             Tldr.find({}, function(err, docs) {
@@ -623,7 +624,7 @@ describe('Webserver', function () {
       it('Should not be able to update an existing tldr with PUT', function (done) {
         var tldrData = { summaryBullets: ['A new summary'] };
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/' + tldr2._id}, function (err, res, obj) {
           res.statusCode.should.equal(401);
           done();
         });
@@ -631,7 +632,7 @@ describe('Webserver', function () {
 
       it('Should not be able to thank the contributor for a tldr', function (done) {
 
-        request.put({  uri: rootUrl + '/tldrs/'+ tldr2._id + '/thank' }, function (err, res, obj) {
+        request.put({  uri: apiRoot + '/tldrs/'+ tldr2._id + '/thank' }, function (err, res, obj) {
           res.statusCode.should.equal(401);
           Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
             tldr.thankedBy.length.should.equal(0);
@@ -646,7 +647,7 @@ describe('Webserver', function () {
 
         Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
           prevReadCount = tldr.readCount;
-          request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+          request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/' + tldr2._id}, function (err, res, obj) {
             res.statusCode.should.equal(204);
 
             Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
@@ -671,7 +672,7 @@ describe('Webserver', function () {
       it('Should update an existing tldr with PUT motherfucker', function (done) {
         var tldrData = { summaryBullets: ['A new summary'] };
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/' + tldr2._id}, function (err, res, obj) {
           res.statusCode.should.equal(200);
           Tldr.find({}, function(err, docs) {
             var tldr;
@@ -690,7 +691,7 @@ describe('Webserver', function () {
       it('Should handle bad PUT request', function (done) {
         var tldrData = { summaryBullets: ['A new summary'] };
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/thisisnotanobjectid'}, function (err, res, obj) {
           res.statusCode.should.equal(404);
           done();
         });
@@ -699,7 +700,7 @@ describe('Webserver', function () {
       it('Should handle PUT request with non existent _id', function (done) {
 
         var tldrData = { summaryBullets: ['A new summary'] };
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/222222222222222222222222'}, function (err, res, obj) {
           res.statusCode.should.equal(404);
           done();
         });
@@ -708,7 +709,7 @@ describe('Webserver', function () {
       it('Should not update an existing tldr with PUT if there are validation errors', function (done) {
         var tldrData = { summaryBullets: [''] };
 
-        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs/' + tldr2._id}, function (err, res, obj) {
+        request.put({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs/' + tldr2._id}, function (err, res, obj) {
           obj.should.have.property('summaryBullets');
           res.statusCode.should.equal(403);
           Tldr.find({}, function(err, docs) {
@@ -728,7 +729,7 @@ describe('Webserver', function () {
       it('Should be able to thank the contributor of a tldr', function (done) {
         Tldr.findOne({ _id: tldr2._id}, function (err, tldr) {
           tldr.thankedBy.should.not.include(user1._id.toString());
-          request.put( {uri: rootUrl + '/tldrs/' + tldr2._id +'/thank'}, function (err, res, obj) {
+          request.put( {uri: apiRoot + '/tldrs/' + tldr2._id +'/thank'}, function (err, res, obj) {
             var tldr = JSON.parse(obj);
             res.statusCode.should.equal(200);
             tldr.thankedBy.should.include(user1._id.toString());
@@ -749,10 +750,10 @@ describe('Webserver', function () {
           updatedAt: new Date()
         };
 
-        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: rootUrl + '/tldrs'}, function (err, res, obj) {
+        request.post({ headers: {"Accept": "application/json"}, json: tldrData, uri: apiRoot + '/tldrs'}, function (err, res, obj) {
           res.statusCode.should.equal(201);
 
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
+          request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://yetanotherunusedurl.com/yomama#ewrwerwr')}, function (err, res, obj) {
             res.statusCode.should.equal(200);
 
             done();
@@ -771,7 +772,7 @@ describe('Webserver', function () {
       async.waterfall([
         async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
       , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+          request.get({ headers: {"Accept": "application/json"}, uri: websiteRoot + '/' + user1.username }, function (err, res, body) {
             res.statusCode.should.equal(200);
             body.should.not.contain('only-admin-infos');
             cb();
@@ -779,7 +780,7 @@ describe('Webserver', function () {
         }
       , async.apply(logUserIn, 'louis.chatriot@gmail.com', 'supersecret')
       , function (cb) {
-          request.get({ headers: {"Accept": "application/json"}, uri: rootUrl + '/' + user1.username }, function (err, res, body) {
+          request.get({ headers: {"Accept": "application/json"}, uri: websiteRoot + '/' + user1.username }, function (err, res, body) {
             res.statusCode.should.equal(200);
             body.should.contain('only-admin-infos');
 
@@ -799,21 +800,21 @@ describe('Webserver', function () {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
         response.statusCode.should.equal(200);
         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: apiRoot + '/users/you'
                      , json: { username: "yepyep"
                              , email: 'yadoo@bl.com'
                              , twitterHandle: "@fuckyeah"
                              , bio: "yipee yop" } }, function (error, response, body) {
 
           request.get({ headers: {"Accept": "application/json"}
-                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                      , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
@@ -831,19 +832,19 @@ describe('Webserver', function () {
     it('should not do anything on update user info if input fields are empty', function (done) {
       var obj;
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
         response.statusCode.should.equal(200);
         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: apiRoot + '/users/you'
                      , json: { } }, function (error, response, body) {
 
           response.statusCode.should.equal(200);
           request.get({ headers: {"Accept": "application/json"}
-                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                      , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
@@ -859,14 +860,14 @@ describe('Webserver', function () {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
         response.statusCode.should.equal(200);
         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you/updatePassword'
+                     , uri: apiRoot + '/users/you/updatePassword'
                      , json: { oldPassword: "supersecret"
                              , newPassword: "fantomas"
                              , confirmPassword: "fantomasBAD" } }, function (error, response, body) {
@@ -875,23 +876,23 @@ describe('Webserver', function () {
             body.confirmPassword.should.equal(i18n.passwordNoMatch);
 
             request.put({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you/updatePassword'
+                         , uri: apiRoot + '/users/you/updatePassword'
                          , json: { oldPassword: "supersecret"
                                  , newPassword: "fantomas"
                                  , confirmPassword: "fantomas" } }, function (error, response, body) {
                 request.get({ headers: {"Accept": "application/json"}
-                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                            , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
                   response.statusCode.should.equal(200);
                   request.post({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/users/login'
+                               , uri: apiRoot + '/users/login'
                                , json: { email: "user1@nfa.com", password: "fantomas" } }, function (error, response, body) {
 
                     response.statusCode.should.equal(200);
                     body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
                     request.get({ headers: {"Accept": "application/json"}
-                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                                , uri: apiRoot + '/users/logout' }, function (error, response, body) {
                       done();
                     });
                   });
@@ -910,14 +911,14 @@ describe('Webserver', function () {
       assert.isNull(err);
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
         response.statusCode.should.equal(200);
         body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: apiRoot + '/users/you'
                      , json: { password: "abad"
                              , twitterHandle: 'BjashkgfshdfgjhasgfdadhgfAD'
                              , username: "to" } }, function (error, response, body) { // THis will just update profile
@@ -927,14 +928,14 @@ describe('Webserver', function () {
           assert.isDefined(body.twitterHandle);
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you'
+                     , uri: apiRoot + '/users/you'
                      , json: { username: "blip" } }, function (error, response, body) {
 
             response.statusCode.should.equal(409);
             body.duplicateField.should.equal("usernameLowerCased");
 
         request.put({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/you/updatePassword'
+                     , uri: apiRoot + '/users/you/updatePassword'
                      , json: { oldPassword: "sUPERseCRet"
                              , newPassword: "fantomas"
                              , confirmPassword: "fantomas" }}, function (error, response, body) {
@@ -943,7 +944,7 @@ describe('Webserver', function () {
             assert.isDefined(body.oldPassword);
 
             request.put({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you/updatePassword'
+                         , uri: apiRoot + '/users/you/updatePassword'
                          , json: { oldPassword: "supersecret"
                                  , newPassword: "fantomas"
                                  , confirmPassword: "fanToMas" }}, function (error, response, body) {
@@ -952,11 +953,11 @@ describe('Webserver', function () {
                 body.confirmPassword.should.equal(i18n.passwordNoMatch);
 
                 request.get({ headers: {"Accept": "application/json"}
-                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                            , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
                   response.statusCode.should.equal(200);
                   request.post({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/users/login'
+                               , uri: apiRoot + '/users/login'
                                , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
                     response.statusCode.should.equal(200);
@@ -964,7 +965,7 @@ describe('Webserver', function () {
                     body.username.should.equal("UserOne");
 
                     request.get({ headers: {"Accept": "application/json"}
-                                , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                                , uri: apiRoot + '/users/logout' }, function (error, response, body) {
                       done();
                     });
                   });
@@ -988,7 +989,7 @@ describe('Webserver', function () {
       , async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/you/updateGravatarEmail'
+                       , uri: apiRoot + '/users/you/updateGravatarEmail'
                        , json: { newGravatarEmail: 'louis.chatriot@gmail.com' } }, function (error, response, body) {
             response.statusCode.should.equal(200);
             User.findOne({ email: 'user1@nfa.com' }, function (err, user) {
@@ -1011,7 +1012,7 @@ describe('Webserver', function () {
       User.find({}, function(err, users) {
         userNumber = users.length;
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users'
+                     , uri: apiRoot + '/users'
                      , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
 
           // Only the data we want to send is sent
@@ -1023,7 +1024,7 @@ describe('Webserver', function () {
             users.length.should.equal(userNumber + 1);   // The user really is created
 
             request.get({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                         , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
               obj = JSON.parse(body);
               obj.email.should.equal("valid@email.com");
@@ -1041,13 +1042,13 @@ describe('Webserver', function () {
       User.find({}, function(err, users) {
         userNumber = users.length;
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users'
+                     , uri: apiRoot + '/users'
                      , json: {username: "Louiiis", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
 
           response.statusCode.should.equal(201);
 
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users'
+                       , uri: apiRoot + '/users'
                        , json: {username: "Charles", email: "valid@email.com", password: "supersecret"} }, function (error, response, body) {
 
             response.statusCode.should.equal(409);
@@ -1069,7 +1070,7 @@ describe('Webserver', function () {
 
     it('Should not be able to log in as UserOne with a wrong password', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
         response.headers['www-authenticate'].should.equal(i18n.invalidPwd);
@@ -1079,7 +1080,7 @@ describe('Webserver', function () {
 
     it('Should not be able to log in with a wrong username', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "anotheruser@nfa.com", password: "superse" } }, function (error, response, body) {
         response.statusCode.should.equal(401);
         response.headers['www-authenticate'].should.equal(i18n.unknownUser);
@@ -1089,19 +1090,19 @@ describe('Webserver', function () {
 
     it('Should not be able to log in with a missing part of the credentials', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "anotheruser@nfa.com" } }, function (error, response, body) {
         //Passport doesnt set www-authenticate when missing credentials
         // but just send error 401
         response.statusCode.should.equal(401);
 
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/login'
+                     , uri: apiRoot + '/users/login'
                      , json: { password: "anothe" } }, function (error, response, body) {
           response.statusCode.should.equal(401);
 
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/users/login'
+                       , uri: apiRoot + '/users/login'
                        , json: {} }, function (error, response, body) {
             response.statusCode.should.equal(401);
 
@@ -1117,7 +1118,7 @@ describe('Webserver', function () {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                   , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
         response.statusCode.should.equal(401);
         response.headers['www-authenticate'].should.equal(i18n.unknownUser);
@@ -1126,7 +1127,7 @@ describe('Webserver', function () {
         assert.isUndefined(obj.email);
 
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/login'
+                     , uri: apiRoot + '/users/login'
                      , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
           response.statusCode.should.equal(200);
@@ -1134,7 +1135,7 @@ describe('Webserver', function () {
           assert.isUndefined(body.password);
 
           request.get({ headers: {"Accept": "application/json"}
-                      , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                      , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
             response.statusCode.should.equal(200);
             obj = JSON.parse(body);
@@ -1142,12 +1143,12 @@ describe('Webserver', function () {
             assert.isUndefined(obj.password);
 
             request.get({ headers: {"Accept": "application/json"}
-                        , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                        , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
               response.statusCode.should.equal(200);
 
               request.get({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/you' }, function (error, response, body) {
+                           , uri: apiRoot + '/users/you' }, function (error, response, body) {
 
                 response.statusCode.should.equal(401);
                 response.headers['www-authenticate'].should.equal(i18n.unknownUser);
@@ -1156,7 +1157,7 @@ describe('Webserver', function () {
                 assert.isUndefined(obj.email);
 
                 request.get({ headers: {"Accept": "application/json"}
-                            , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                            , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
                   response.statusCode.should.equal(400);
 
@@ -1202,36 +1203,36 @@ describe('Webserver', function () {
         async.apply(logUserIn, 'user1@nfa.com', 'supersecret')
       , function(cb) {
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/tldrs'
+                       , uri: apiRoot + '/tldrs'
                        , json: tldrData1 }, function (error, response, body) {
 
             Tldr.findOne({possibleUrls: 'http://myfile.com/movie'}, function(err, tldr) {
 
               request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/users/login'
+                           , uri: apiRoot + '/users/login'
                            , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
                 user = body;
                 user.email.should.equal("user1@nfa.com");   // Login successful as User 1
                 request.post({ headers: {"Accept": "application/json"}
-                             , uri: rootUrl + '/tldrs'
+                             , uri: apiRoot + '/tldrs'
                              , json: tldrData2 }, function (error, response, body) {
 
                   tldr = body;
                   tldr.creator.username.should.equal('UserOne');   // Should be an ObjectId, hence length of 24
                   request.post({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/tldrs'
+                               , uri: apiRoot + '/tldrs'
                                , json: tldrData3 }, function (error, response, body) {
 
                     request.get({ headers: {"Accept": "application/json"}
-                                 , uri: rootUrl + '/users/you/createdtldrs' }, function (error, response, body) {
+                                 , uri: apiRoot + '/users/you/createdtldrs' }, function (error, response, body) {
 
                       obj = JSON.parse(body);
                       obj[1].url.should.equal("http://another.com/movie");
                       obj[0].url.should.equal("http://another.com/again");
 
                       request.get({ headers: {"Accept": "application/json"}
-                                  , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                                  , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
                         // Logout in case we have other tests after this one
                         cb();
@@ -1259,21 +1260,21 @@ describe('Webserver', function () {
 
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
         response.statusCode.should.equal(200);
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/tldrs'
+                     , uri: apiRoot + '/tldrs'
                      , json: tldrData1 }, function (error, response, body) {
 
         request.get({ headers: {"Accept": "application/json"}
-                  , uri: rootUrl + '/tldrs/search?url=' + encodeURIComponent('http://myfile.com/movie') }, function (error, response, body) {
+                  , uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://myfile.com/movie') }, function (error, response, body) {
               response.statusCode.should.equal(200);
               obj = JSON.parse(body);
               obj.creator.username.should.equal('UserOne');
               request.get({ headers: {"Accept": "application/json"}
-                          , uri: rootUrl + '/users/logout' }, function (error, response, body) {
+                          , uri: apiRoot + '/users/logout' }, function (error, response, body) {
 
                 // Logout in case we have other tests after this one
                 done();
@@ -1287,7 +1288,7 @@ describe('Webserver', function () {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "UsEr1@nFA.Com", password: "supersecret" } }, function (error, response, body) {
 
          response.statusCode.should.equal(200);
@@ -1305,14 +1306,14 @@ describe('Webserver', function () {
       var obj, confirmEmailToken;
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
          response.statusCode.should.equal(200);
          body.email.should.equal("user1@nfa.com");   // We can use body directly it is json parsed by request
 
          request.post({ headers: {"Accept": "application/json"}
-                      , uri: rootUrl + '/confirm'
+                      , uri: apiRoot + '/confirm'
                       , json: {} }, function (error, response, body) {
 
            // Should return 400 if code is the provided as parameter
@@ -1324,7 +1325,7 @@ describe('Webserver', function () {
              user.confirmedEmail.should.be.false;
 
              request.post({ headers: {"Accept": "application/json"}
-                          , uri: rootUrl + '/confirm'
+                          , uri: apiRoot + '/confirm'
                           , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
                response.statusCode.should.equal(200);
@@ -1333,7 +1334,7 @@ describe('Webserver', function () {
 
                  // Second call to confirm just returns validation ok
                  request.post({ headers: {"Accept": "application/json"}
-                              , uri: rootUrl + '/confirm'
+                              , uri: apiRoot + '/confirm'
                               , json: { confirmEmailToken: confirmEmailToken, email: user.email } }, function (error, response, body) {
 
                    response.statusCode.should.equal(200);
@@ -1352,7 +1353,7 @@ describe('Webserver', function () {
       var obj;
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/users/login'
+                   , uri: apiRoot + '/users/login'
                    , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
          response.statusCode.should.equal(200);
@@ -1360,7 +1361,7 @@ describe('Webserver', function () {
          body.confirmedEmail.should.be.false;
 
            request.post({ headers: {"Accept": "application/json"}
-                         , uri: rootUrl + '/confirm'
+                         , uri: apiRoot + '/confirm'
                          , json: { confirmEmailToken: "badToken", email: 'user1@nfa.com' } }, function (error, response, body) {
 
              response.statusCode.should.equal(403);
@@ -1373,11 +1374,11 @@ describe('Webserver', function () {
       var obj;
 
       request.get({ headers: {"Accept": "application/json"}
-                  , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
+                  , uri: apiRoot + '/resendConfirmToken' }, function (error, response, body) {
         response.statusCode.should.equal(401);
         response.headers['www-authenticate'].should.equal(i18n.unknownUser);
         request.post({ headers: {"Accept": "application/json"}
-                     , uri: rootUrl + '/users/login'
+                     , uri: apiRoot + '/users/login'
                      , json: { email: "user1@nfa.com", password: "supersecret" } }, function (error, response, body) {
 
           response.statusCode.should.equal(200);
@@ -1389,7 +1390,7 @@ describe('Webserver', function () {
               var previousToken = user.confirmEmailToken;
 
               request.get({ headers: {"Accept": "application/json"}
-                          , uri: rootUrl + '/resendConfirmToken' }, function (error, response, body) {
+                          , uri: apiRoot + '/resendConfirmToken' }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
                 User.findOne({ email: "user1@nfa.com" }, function (err, user) {
@@ -1409,7 +1410,7 @@ describe('Webserver', function () {
     it('Should send a reset password email if a token and an email are supplied', function (done) {
 
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , uri: apiRoot + '/user/sendResetPasswordEmail'
                    , json: { } }, function (error, response, body) {
         response.statusCode.should.equal(403);
 
@@ -1417,7 +1418,7 @@ describe('Webserver', function () {
           assert.isUndefined(user.resetPasswordToken);
 
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/user/sendResetPasswordEmail'
+                       , uri: apiRoot + '/user/sendResetPasswordEmail'
                        , json: { email: "" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
@@ -1426,7 +1427,7 @@ describe('Webserver', function () {
               assert.isUndefined(user.resetPasswordToken);
 
               request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/user/sendResetPasswordEmail'
+                           , uri: apiRoot + '/user/sendResetPasswordEmail'
                            , json: { email: "user1@nfa.com" } }, function (error, response, body) {
 
                 response.statusCode.should.equal(200);
@@ -1445,27 +1446,27 @@ describe('Webserver', function () {
 
     it('Should not be able to reset password if some parameters are not supplied', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , uri: apiRoot + '/user/sendResetPasswordEmail'
                    , json: { email: "user1@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(200);
 
         User.findOne({ email: 'user1@nfa.com' }, function(err, user) {
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/user/resetPassword'
+                       , uri: apiRoot + '/user/resetPassword'
                        , json: { email: "user1@nfa.com" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
             response.body.message.should.equal(i18n.wrongTokenOrEmail);
 
               request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/user/resetPassword'
+                           , uri: apiRoot + '/user/resetPassword'
                            , json: { token: "atoken" } }, function (error, response, body) {
 
                 response.statusCode.should.equal(403);
                 response.body.message.should.equal(i18n.wrongTokenOrEmail);
 
                   request.post({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/user/resetPassword'
+                               , uri: apiRoot + '/user/resetPassword'
                                , json: { email: 'rweee', resetPasswordToken: "atoken" } }, function (error, response, body) {
 
                     response.statusCode.should.equal(403);
@@ -1481,27 +1482,27 @@ describe('Webserver', function () {
 
     it('Should not be able to reset password if some parameters are not valid', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , uri: apiRoot + '/user/sendResetPasswordEmail'
                    , json: { email: "user1@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(200);
 
         User.findOne({ email: 'user1@nfa.com' }).populate('credentials').exec(function(err, user) {
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/user/resetPassword'
+                       , uri: apiRoot + '/user/resetPassword'
                        , json: { email: "BAD@nfa.com", resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
 
             response.statusCode.should.equal(403);
             response.body.message.should.equal(i18n.wrongTokenOrEmail);
 
             request.post({ headers: {"Accept": "application/json"}
-                           , uri: rootUrl + '/user/resetPassword'
+                           , uri: apiRoot + '/user/resetPassword'
                            , json: { email: user.email, resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "BAD" } }, function (error, response, body) {
 
                 response.statusCode.should.equal(403);
                 response.body.password.should.equal(i18n.validateUserPwd);
 
                   request.post({ headers: {"Accept": "application/json"}
-                               , uri: rootUrl + '/user/resetPassword'
+                               , uri: apiRoot + '/user/resetPassword'
                                , json: { email: 'user1@nfa.com', resetPasswordToken: "badtoken", newPassword: "goodpassword" } }, function (error, response, body) {
 
                     response.statusCode.should.equal(403);
@@ -1517,13 +1518,13 @@ describe('Webserver', function () {
 
     it('Should be able to reset password if all parameters are valid', function (done) {
       request.post({ headers: {"Accept": "application/json"}
-                   , uri: rootUrl + '/user/sendResetPasswordEmail'
+                   , uri: apiRoot + '/user/sendResetPasswordEmail'
                    , json: { email: "user1@nfa.com" } }, function (error, response, body) {
         response.statusCode.should.equal(200);
 
         User.findOne({ email: 'user1@nfa.com' }).populate('credentials').exec(function(err, user) {
           request.post({ headers: {"Accept": "application/json"}
-                       , uri: rootUrl + '/user/resetPassword'
+                       , uri: apiRoot + '/user/resetPassword'
                        , json: { email: "user1@nfa.com", resetPasswordToken: user.credentials[0].resetPasswordToken, newPassword: "goodpassword" } }, function (error, response, body) {
 
             response.statusCode.should.equal(200);
@@ -1549,7 +1550,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/threads/' + thread1._id}, function (err, res, obj) {
+                      , uri: apiRoot + '/forum/threads/' + thread1._id}, function (err, res, obj) {
             res.statusCode.should.equal(401);
 
             cb();
@@ -1564,7 +1565,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/threads/123456789009876543211234' }, function (err, res, obj) {
+                      , uri: apiRoot + '/forum/threads/123456789009876543211234' }, function (err, res, obj) {
             res.statusCode.should.equal(404);
 
             cb();
@@ -1579,7 +1580,7 @@ describe('Webserver', function () {
       , function (cb) {
           request.put({ headers: {"Accept": "application/json"}
                       , json: { direction: 1 }
-                      , uri: rootUrl + '/forum/threads/' + thread1._id }, function (err, res, obj) {
+                      , uri: apiRoot + '/forum/threads/' + thread1._id }, function (err, res, obj) {
             res.statusCode.should.equal(200);
             Thread.findOne({ _id: thread1._id }, function (err, thread) {
               thread.votes.should.equal(2);
