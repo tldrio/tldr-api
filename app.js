@@ -41,6 +41,7 @@ app.launch = function (cb) {
     , self = this;
 
   self.db.connectToDatabase(function(err) {
+    bunyan.info('Connection to the database opened');
     api.launchServer(function () {
       website.launchServer(function () {
         callback();
