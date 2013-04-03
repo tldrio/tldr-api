@@ -55,6 +55,21 @@ function displayPage (req, res, tldr) {
 }
 
 
+// Display the "missing tldr page"
+function displayMissingTldrPage (req, res) {
+  var values = req.renderingValues || {}
+    , partials = req.renderingPartials || {}
+    ;
+
+  partials.content = '{{>website/pages/missingTldrPage}}';
+
+  values.title = "This tldr doesn't exist" + config.titles.branding;
+  values.articleUrl = req.query.url;
+
+  return res.render('website/basicLayout', { values: values , partials: partials });
+}
+
+
 // Display the tldr page when it's called by its id
 module.exports.byId = function (req, res, next) {
   Tldr.findOneById(req.params.id, function (err, tldr) {
@@ -74,7 +89,7 @@ module.exports.byId = function (req, res, next) {
 // Display the tldr page when it's called by the url of the article
 module.exports.byUrl = function (req, res, next) {
   Tldr.findOneByUrl(req.query.url, function (err, tldr) {
-    if (err || !tldr) { return res.json(404, {}); }
+    if (err || !tldr) { return displayMissingTldrPage(req, res); }
 
     res.redirect(302, '/tldrs/' + tldr._id + '/' + tldr.slug);
   });
