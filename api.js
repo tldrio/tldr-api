@@ -76,6 +76,7 @@ api.get('/tldrs/filter', routes.getTldrsByCategory.getTldrsByCategoryName);
 api.get('/tldrs/:id/stats', routes.getStats.getStatsForTldr);
 api.get('/tldrs/latest/:quantity', routes.getLatestTldrs);
 api.get('/tldrs/latest', routes.getLatestTldrs);
+api.get('/tldrs/:id', routes.getTldrById);
 api.post('/tldrs', routes.createNewTldr);
 api.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
 api.put('/tldrs/:id', routes.updateTldrWithId);
@@ -113,8 +114,6 @@ api.options('*', function (req, res, next) {
   res.send(200);
 });
 
-// API/website hybrid for retrocompatibility
-api.get('/tldrs/:id', middleware.contentNegotiationHTML_JSON(routes.website.tldrPage, routes.getTldrById));
 
 
 
