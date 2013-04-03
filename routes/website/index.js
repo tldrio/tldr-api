@@ -5,7 +5,7 @@
 */
 
 var config = require('../../lib/config')
-  , app = require('../../app')
+  , globals = require('../../lib/globals')
   , customUtils = require('../../lib/customUtils')
   , moment = require('moment')
   , _s = require('underscore.string')
@@ -13,7 +13,7 @@ var config = require('../../lib/config')
   ;
 
 module.exports = function (req, res, next) {
-  app.getTotalWordsSaved(function (err, totalWordsSaved) {
+  globals.getTotalWordsSaved(function (err, totalWordsSaved) {
     var values = req.renderingValues || {}
       , partials = req.renderingPartials || {}
       , totalTimeSaved = customUtils.timeToRead(totalWordsSaved);

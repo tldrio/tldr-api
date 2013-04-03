@@ -1,69 +1,78 @@
 /**
- * Global static object to be shared with any module
- * Contains all global methods
+ * Main module, responsible for connecting to the db and launching the
+ * two Express apps (website and api)
  */
 
-var redis = require('redis')
-  , redisClient = redis.createClient()
+var DbObject = require('./lib/db')
   , config = require('./lib/config')
-  , analytics = require('./models/analytics')
+  , bunyan = require('./lib/logger').bunyan
+  , api = require('./api')
+  , website = require('./website')
+  , app = {}
+  , notificator = require('./lib/notificator')   // We need to launch the notificator somewhere
   ;
 
+app.db = new DbObject( config.dbHost
+                     , config.dbName
+                     , config.dbPort
+                     );
+
 
 /**
- * Get from redis a global count defined by its key
- * Callback signature: err, count
+ * Last wall of defense. If an exception makes its way to the top, the service shouldn't
+ * stop if it is run in production, but log a fatal error and send an email to us.
+ * Of course, this piece of code should NEVER have to be called
+ *
+ * For development, we want the app to stop to understand what went wrong
+ *
+ * We don't do this for tests as it messes up mocha
+ * The process needs to keep on running
  */
-function getGlobalCount (key, callback) {
-  var keyInRedis = 'global:' + key;
+if (config.env === 'staging' || config.env === 'production') {
+  process.on('uncaughtException', function(err) {
+    bunyan.fatal({error: err, message: 'An uncaught exception was thrown'});
+  });
+}
 
-  redisClient.select(config.redisDb, function () {
-    redisClient.exists(keyInRedis, function (err, exists) {
-      if (err) { return callback(err); }
-      if (!exists) {
-        return callback(null, 0);
-      } else {
-        redisClient.get(keyInRedis, function (err, count) {
-          if (err) { return callback(err); }
-          return callback(null, parseInt(count, 10));
-        });
-      }
+
+// Launch da lil mafucca
+app.launch = function (cb) {
+  var callback = cb || function () {}
+    , self = this;
+
+  self.db.connectToDatabase(function(err) {
+    api.launchServer(function () {
+      website.launchServer(function () {
+        callback();
+      });
     });
   });
-}
-module.exports.getGlobalCount = getGlobalCount;
+};
 
 
-/**
- * Increment by inc a global count defined by its key
- * Callback is optional, signature: err, newCount
- */
-function incrementGlobalCount (key, inc, cb) {
-  var keyInRedis = 'global:' + key
-    , callback = cb || function () {};
+// Stop it, duh
+app.stop = function (cb) {
+  var callback = cb || function () {}
+    , self = this;
 
-  redisClient.select(config.redisDb, function () {
-    redisClient.incrby(keyInRedis, inc, callback);
+  api.stopServer(function () {
+    website.stopServer(function () {
+      self.db.closeDatabaseConnection(function () {
+        bunyan.info('Connection to the database closed');
+        callback();
+      });
+    });
   });
+};
+
+
+
+/*
+ * Automatically launch the application if the module was not required
+ */
+if (module.parent === null) {
+  app.launch();
 }
-module.exports.incrementGlobalCount = incrementGlobalCount;
 
 
-// Short hands for the total tldr read count
-module.exports.getTotalTldrReadCount = function (callback) {
-  getGlobalCount('totalTldrReadCount', callback);
-};
-
-module.exports.incrementTotalTldrReadCount = function (cb) {
-  incrementGlobalCount('totalTldrReadCount', 1, cb);
-};
-
-
-// Short hands for the total words saved count
-module.exports.getTotalWordsSaved = function (callback) {
-  getGlobalCount('totalWordsSaved', callback);
-};
-
-module.exports.incrementTotalWordsSaved = function (n, cb) {
-  incrementGlobalCount('totalWordsSaved', n, cb);
-};
+module.exports = app;

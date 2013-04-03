@@ -8,7 +8,7 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
-  , app = require('../server')
+  , app = require('../app')
   , i18n = require('../lib/i18n')
   , mongoose = require('mongoose') // ODM for Mongo
   , models = require('../lib/models')
@@ -38,11 +38,11 @@ if (config.env === 'testMail') {
       , tldrData = {url: 'http://needforair.com/nutcrackers', title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles', resourceDate: new Date(), createdAt: new Date(), updatedAt: new Date()};
 
   before(function (done) {
-    app.launchServer(done);
+    app.launch(done);
   });
 
   after(function (done) {
-    app.stopServer(done);
+    app.stop(done);
   });
 
     beforeEach(function (done) {
