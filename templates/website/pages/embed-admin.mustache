@@ -2,8 +2,18 @@
   <h1>Embed analytics since {{daysBack}} days back</h1>
 
 {{#data}}
-{{readCount}}<br>
+<div style="font-weight: bold; font-size: 16px;">{{hostname}}</div>
+Total read count: {{readCount}}<br>
+First read: {{firstRead}}<br>
+Last read: {{lastRead}}<br>
+Pages:
+<ul>
+{{#pagesData}}
+  <li><a href="{{url}}">{{url}} ({{readCount}})</a></li>
+{{/pagesData}}
+</ul>
 
+<br>
 {{/data}}
 
 </section>
