@@ -25,6 +25,7 @@ module.exports = function (req, res, next) {
     values.title = "tldr.io" + config.titles.shortDescription;
     values.description = "Save time and discover great content by reading and writing summaries of the best of the web.";
     partials.content = '{{>website/pages/index}}';
+    partials.socialMedia = '{{>website/socialMedia}}';
     if (r.parse(req.headers['user-agent']).family === 'Firefox') {
       partials.installButton = '{{>website/addToFirefox}}';
     } else {
