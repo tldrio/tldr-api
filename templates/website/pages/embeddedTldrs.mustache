@@ -4,25 +4,77 @@
 </header>
 
 <div class="centered-block list-box">
+  <h4>What do they look like?</h4>
   <p>
-  They look like this summary of <a href="http://paulgraham.com/hw.html" target="_blank">The HardWare Renaissance</a> by Paul Graham:
+  For example, this is the embedded summary of Pau; Graham's essay, <a href="http://paulgraham.com/hw.html" target="_blank">"The HardWare Renaissance"</a>:
   </p>
-  <blockquote class="tldr-embed-widget" data-show-title="true" data-align="center">      <p>      <a href="http://tldr.io/tldrs/50892d082ae967407d000016/the-hardware-renaissance" class="link-to-tldr-page" target="_blank">Summary of "The Hardware Renaissance"</a> (via <a href="http://tldr.io" target="_blank">tldr.io</a>)      <ul>          <li style="margin-bottom: 10px; line-height: 130%;">Hardware startups are more and more hype. Out of 84 companies 7 were making hardware in the last YC batch.</li>          <li style="margin-bottom: 10px; line-height: 130%;">Hardware can be prototyped, manufactured and sold easily now with new technologies (e.g. 3D printing) and emerging marketplaces (e.g. Kickstarter).</li>          <li style="margin-bottom: 10px; line-height: 130%;">Ambitious founders with possibly rapidly growing hardware startups will lead investors to reconsider investing in this field.</li>      </ul>      </p></blockquote><script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"></script>
+  <blockquote data-url="http://paulgraham.com/hw.html" data-show-title="true" class="tldr-embed-widget" style="display: none;"></blockquote> <script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"></script>
 
   <br>
-  <h4>I want them on my blog?</h4>
+  <h4>I want them on my blog!</h4>
   <p>
-    Three choices:
+    Good idea! You have three options. The first is the easiest but the other two work everywhere, not only Wordpress.
     <ul>
-      <li><a href="#use-wordpress-plugin">Use our Wordpress plugin (easiest)</a></li>
-      <li>Use the embed code in a tldr</li>
-      <li>Use a custom embed code (advanced users)</li>
+      <li><a href="#use-wordpress-plugin">Use our Wordpress plugin</a></li>
+      <li><a href="#use-tldr-embed-code">Use the embed code in a tldr</a></li>
+      <li><a href="#use-custom-code">Use a custom embed code</a></li>
     </ul>
   </p>
 
   <br>
-  <h4 id="use-wordpress-plugin">Using the Wordpress plugin</h4>
+  <div id="use-wordpress-plugin" class="anchor-before-h4-title"></div>
+  <h4>1. Using the Wordpress plugin</h4>
   <p>
-    With the tldr.io Wordpress plugin, you only need to use our custom shortcode, <pre>[tldrio_embed]</pre>
+    With the tldr.io Wordpress plugin, you only need to put the custom shortcode <code>[tldrio_embed]</code> where you want the embedded summary of
+    your post to be.
+  </p>
+  <img src="/assets/img/embed-screenshot-1.png" alt="Embedding the summary of your own article" class="img-rounded embed-screenshot">
+  <p>
+    You can also embed the summary of another article with the shortcode <code>[tldrio_embed someurl]</code> where <code>someurl</code> is the
+    url of the article whose summary you want to embed. For example if you want the same embed as the one at the top of this page:
+  </p>
+  <img src="/assets/img/embed-screenshot-2.png" alt="Embedding the summary of any article" class="img-rounded embed-screenshot">
+  <p>
+    We are still waiting for the plugin to be reviewed by the Wordpress.org plugin directory. In the meantime <a target="_blank" href="https://www.dropbox.com/s/zul78qoloxop1x9/embed-wordpress-plugin.zip">you can download it</a>
+    and upload it to your Wordpress blog manually.
+  </p>
+
+  <br>
+  <div id="use-tldr-embed-code" class="anchor-before-h4-title"></div>
+  <h4>2. Using the embed code in a tldr</h4>
+  <p>
+    If you don't have Wordpress, don't worry, this method and the next work everywhere. Wherever a tldr is displayed, you can easily get the HTML embed code.
+    You can find it on the website and on the extension, and it's always at the same place: bottom right of the tldr:
+  </p>
+  <img src="/assets/img/embed-screenshot-4.png" alt="Embedding the summary of any article" class="img-rounded embed-screenshot">
+
+  <br><br>
+  <div id="use-custom-code" class="anchor-before-h4-title"></div>
+  <h4>3. Using a custom code</h4>
+  <p>
+    Use this option for maximum flexibility or if you think the embed codes used in option #2 are too big. Here you need to use a small HTML code and choose
+    the parameters you want to use with it.
+  </p>
+  <p>
+    The code looks like this:<br>
+    <code>
+      &lt;blockquote OPTIONS_HERE class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;<br>
+      &lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;
+    </code>
+  </p>
+  <p>
+    And the options:
+    <ul>
+      <li><code>data-use-own-tldr="true"</code> if you want to embed the summary of your own post</li>
+      <li><code>data-url="some_url"</code> if you want to embed the summary an arbitrary url (if no tldr exists for the url the embed wil stay invisible)</li>
+      <li><code>data-show-title="true|false"</code> if you want to show the title of the article in the embed (defaults to false)</li>
+    </ul>
+  </p>
+  <p>
+    For example, to show the same embed as the one at the top of the page, you need this code:<br>
+    <code>
+      &lt;blockquote data-url="http://paulgraham.com/hw.html" data-show-title="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
+      &lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;
+    </code>
   </p>
 </div>
