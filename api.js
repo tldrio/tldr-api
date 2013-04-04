@@ -80,10 +80,10 @@ api.get('/categories', routes.getCategories);
 // Admin only routes
 beforeEach(api, middleware.adminOnly, function (api) {
   api.get('/:username/admin', routes.getUser);
-  api.get('/tldrs/:id/admin', middleware.apiRouteDisambiguation(routes.getTldrById));
-  api.get('/tldrs/:id/delete', middleware.apiRouteDisambiguation(routes.deleteTldr));
-  api.get('/tldrs/:id/moderate', middleware.apiRouteDisambiguation(routes.moderateTldr));
-  api.get('/tldrs/:id/cockblock', middleware.apiRouteDisambiguation(routes.cockblockTldr));
+  api.get('/tldrs/:id/admin', routes.getTldrById);
+  api.get('/tldrs/:id/delete', routes.deleteTldr);
+  api.get('/tldrs/:id/moderate', routes.moderateTldr);
+  api.get('/tldrs/:id/cockblock', routes.cockblockTldr);
   api.put('/tldrs/:id/distribution-channels', routes.updateDistributionChannels);
   api.put('/tldrs/:id/sharing-buffer', routes.shareThroughBuffer);
 });
