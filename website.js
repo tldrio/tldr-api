@@ -63,7 +63,7 @@ website.options('*', function (req, res, next) {
 
 
 // Tldr embed in any webpage
-website.get('/tldrs/embed/:id', routes.website.tldrEmbed);
+website.get('/tldrs/embed', routes.website.tldrEmbed);
 
 
 // 3rd party auth with Google
