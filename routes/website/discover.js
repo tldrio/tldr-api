@@ -72,6 +72,10 @@ function displayPage (req, res, next) {
     , specificLanguage = req.query.lang !== 'en' ? req.query.lang : null;
     ;
 
+  req.renderingValues.tldrs.forEach(function (tldr) {
+    tldr.tldrData = tldr.serializeForDataAttribute();
+  });
+
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;

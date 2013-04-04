@@ -638,6 +638,28 @@ TldrSchema.methods.thank = function (thanker , cb) {
 };
 
 
+/**
+ * Serialize the tldr in a string that can be put in a data attribute, so that a client can
+ * recreate the object (in fact only a subset of its fields)
+ */
+TldrSchema.methods.serializeForDataAttribute = function () {
+  var tldrData;
+
+  tldrData = this.toJSON();
+  tldrData = _.pick(tldrData, [ 'title'
+                              , '_id'
+                              , 'url'
+                              , 'summaryBullets'
+                              , 'slug'
+                              , 'originalUrl'
+                              , 'thankedBy'
+                              ]);
+  tldrData = JSON.stringify(tldrData);
+  tldrData = tldrData.replace(/"/g, '\\"');
+
+  return tldrData;
+};
+
 
 // Define tldr model
 Tldr = mongoose.model('tldr', TldrSchema);

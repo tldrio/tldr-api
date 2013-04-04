@@ -15,7 +15,7 @@ var _ = require('underscore')
 function displayPage (req, res, tldr) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {}
-    , tldrData;
+    , tldrData = tldr.serializeForDataAttribute();
     ;
 
   partials.content = '{{>website/pages/tldrPage}}';
@@ -36,18 +36,6 @@ function displayPage (req, res, tldr) {
   values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:description', tldr.summaryBullets.join(' - '));
   if (tldr.creator) {values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'tldrCreatorTwitterHandle', tldr.creator.twitterHandle || ''); }
   if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
-
-  tldrData = tldr.toJSON();
-  tldrData = _.pick(tldrData, [ 'title'
-                              , '_id'
-                              , 'url'
-                              , 'summaryBullets'
-                              , 'slug'
-                              , 'originalUrl'
-                              , 'thankedBy'
-                              ]);
-  tldrData = JSON.stringify(tldrData);
-  tldrData = tldrData.replace(/"/g, '\\"');
 
   values.tldrData = tldrData;
 
