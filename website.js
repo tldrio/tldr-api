@@ -50,7 +50,6 @@ website.use(express.session(config.session));
 website.use(passport.initialize());// Use Passport for authentication and sessions
 website.use(passport.session());
 website.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
-website.use(middleware.logAPIUsage);
 website.use(website.router); // Map routes
 website.use(middleware.handleErrors); // Use middleware to handle errors
 
