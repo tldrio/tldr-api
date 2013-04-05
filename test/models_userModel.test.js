@@ -446,6 +446,7 @@ describe('User', function () {
           pub.createdAt.should.equal(user.createdAt);
           pub.twitterHandle.should.equal(user.twitterHandle);
           pub.bio.should.equal(user.bio);
+          assert.isUndefined(pub.tldrsCreated);
 
           done();
         });
