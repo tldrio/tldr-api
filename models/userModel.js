@@ -358,7 +358,10 @@ UserSchema.methods.getPublicProfile = function () {
 UserSchema.methods.getPublicCreatedTldrs = function (callback) {
   if (this.deleted) { return callback(null, []); }
 
-  Tldr.find({ creator: this._id, anonymous: false }, callback);
+  Tldr.find({ creator: this._id, anonymous: false })
+      .populate('domain')
+      .populate('categories')
+      .exec(callback);
 };
 
 

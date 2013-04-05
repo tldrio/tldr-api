@@ -492,6 +492,25 @@ describe('User', function () {
       });
     });
 
+    it('In the gotten public tldrs, domain and categories should be populated', function (done) {
+      tldr1.anonymous = true;
+      tldr2.anonymous = true;
+      tldr1.save(function () {
+        tldr2.save(function () {
+          user1.getPublicCreatedTldrs(function (err, tldrs) {
+            var publicTldr3 = tldrs[0];
+
+            publicTldr3._id.toString().should.equal(tldr3._id.toString());
+            publicTldr3.domain.name.should.equal('bothsidesofthetable.com');
+            // We can trust categories are also populated (dont want to change too much
+            // in user tests for such a peripheral function).
+
+            done();
+          });
+        });
+      });
+    });
+
     it('Return nothing if user was deleted', function (done) {
       var id = user1._id;
 
