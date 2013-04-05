@@ -162,6 +162,10 @@ TldrSchema.virtual('slug').get(function () {
   return customUtils.slugify(this.title);
 });
 
+// Also keep the permalink to the tldrpage
+TldrSchema.virtual('permalink').get(function () {
+  return config.websiteUrl + '/tldrs/' + this._id + '/' + this.slug;
+});
 
 TldrSchema.virtual('lastEditor').get(function () {
   if (this.editors.length) {
@@ -561,6 +565,7 @@ TldrSchema.methods.getPublicData = function () {
                      , 'anonymous'
                      , 'timeSaved'
                      , 'slug'
+                     , 'permalink'
                      , 'domain'
                      , 'categories'
                      , 'imageUrl'

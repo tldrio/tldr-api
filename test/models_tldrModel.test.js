@@ -554,7 +554,7 @@ describe('Tldr', function () {
       });
     });
 
-    it('should automatically set virtual slug', function (done) {
+    it('should automatically set virtual slug and permalink', function (done) {
       var tldrData = {
         title: 'Blog NFA',
         summaryBullets: ['Awesome Blog', 'The best team in the whole fucking world'],
@@ -566,6 +566,7 @@ describe('Tldr', function () {
       Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
         if (err) { return done(err); }
         tldr.slug.should.equal('blog-nfa');
+        tldr.permalink.should.equal('http://localhost:8888/tldrs/' + tldr._id + '/' + tldr.slug);
         Tldr.find({possibleUrls:  'http://needforair.com/'}, function (err, docs) {
           if (err) { return done(err); }
           docs[0].slug.should.equal('blog-nfa');
@@ -981,6 +982,7 @@ describe('Tldr', function () {
         pub.moderated.should.equal(false);
         pub.title.should.equal('yop a title');
         pub.slug.should.equal('yop-a-title');
+        pub.permalink.should.equal('http://localhost:8888/tldrs/' + pub._id + '/yop-a-title');
 
         done();
       });
