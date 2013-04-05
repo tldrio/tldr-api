@@ -57,6 +57,7 @@ reservedUsernames = {
   , 'forum': true
   , 'users': true
   , 'whatisit': true
+  , 'you': true
 };
 
 
@@ -318,6 +319,46 @@ UserSchema.methods.getAuthorizedFields = function () {
   });
 
   return res;
+};
+
+
+/**
+ * Return an object that only contains the public part of a user's info
+ */
+UserSchema.methods.getPublicProfile = function () {
+  var res = {}
+    , publicFields = [ '_id'
+                     , 'username'
+                     , 'lastActive'
+                     , 'createdAt'
+                     , 'twitterHandle'
+                     , 'bio'
+                     ]
+    , self = this
+    ;
+
+  // This shouldn't be called with a deleted user but let's keep this security anyway
+  if (self.deleted) { return res; }
+
+  publicFields.forEach(function (field) {
+    if (self[field]) {
+      res[field] = self[field];
+    }
+  });
+
+  res.gravatar = { url: self.gravatar.url };
+
+  return res;
+};
+
+
+/**
+ * Return the list of created tldrs that are public (= non anonymous)
+ */
+UserSchema.methods.getPublicCreatedTldrs = function (callback) {
+  if (this.deleted) { return callback(null, []); }
+
+  Tldr.find({ creator: this._id, anonymous: false }, callback);
 };
 
 

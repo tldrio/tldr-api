@@ -426,6 +426,87 @@ describe('User', function () {
   });   // ==== End of '#createAndSaveInstance and #createAndSaveBareProfile' ==== //
 
 
+  describe('Get public data', function () {
+
+    it('Get only the public fields in public profile', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , twitterHandle: 'sometwitter'
+                     };
+
+      User.createAndSaveInstance(userData, function (err, user) {
+        user.bio = "saloute";
+        user.save(function (err, user) {
+          var pub = user.getPublicProfile();
+
+          pub._id.toString().should.equal(user._id.toString());
+          pub.username.should.equal(user.username);
+          pub.lastActive.should.equal(user.lastActive);
+          pub.createdAt.should.equal(user.createdAt);
+          pub.twitterHandle.should.equal(user.twitterHandle);
+          pub.bio.should.equal(user.bio);
+
+          done();
+        });
+      });
+    });
+
+    it('Dont return any public data for a deleted user', function (done) {
+      var userData = { username: 'NFADeploy'
+                     , email: 'valid@email.com'
+                     , password: 'supersecret'
+                     , twitterHandle: 'sometwitter'
+                     }
+        , id
+        ;
+
+      User.createAndSaveInstance(userData, function (err, user) {
+        id = user._id;
+        user.deleteAccount(function () {
+          User.findOne({ _id: id }, function (err, user) {
+            var pub = user.getPublicProfile();
+
+            assert.isDefined(user.createdAt);   // This data has not been deleted
+            Object.keys(pub).length.should.equal(0);   // No data returned though
+
+            done();
+          });
+        });
+      });
+    });
+
+    it('Get only the public (ie non anonymous) tldrs', function (done) {
+      tldr2.anonymous = true;
+      tldr2.save(function () {
+        user1.getPublicCreatedTldrs(function (err, tldrs) {
+          var tldrsStringifiedIds = _.map(tldrs, function (t) { return t._id.toString(); });
+
+          tldrs.length.should.equal(2);
+          tldrsStringifiedIds.should.contain(tldr1._id.toString());
+          tldrsStringifiedIds.should.contain(tldr3._id.toString());
+
+          done();
+        });
+      });
+    });
+
+    it('Return nothing if user was deleted', function (done) {
+      var id = user1._id;
+
+      user1.deleteAccount(function () {
+        User.findOne({ _id: id }, function (err, user1) {
+          user1.getPublicCreatedTldrs(function (err, tldrs) {
+            tldrs.length.should.equal(0);
+            done();
+          });
+        });
+      });
+    });
+
+  });   // ==== End of 'Get public data' ==== //
+
+
   describe('#signupWithGoogleSSO', function () {
 
     it('Upon signup with Google, create the new user, google creds and basic creds if the latter dont exist', function (done) {

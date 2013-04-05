@@ -57,6 +57,8 @@ api.delete('/users/you', routes.deleteUser);
 api.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
 api.get('/users/logout', routes.logout);
 
+api.get('/users/:username', routes.getUser);
+
 // Tldrs
 api.get('/tldrs/search', routes.searchTldrs);
 api.get('/tldrs/filter', routes.getTldrsByCategory.getTldrsByCategoryName);
@@ -79,7 +81,6 @@ api.get('/categories', routes.getCategories);
 
 // Admin only routes
 beforeEach(api, middleware.adminOnly, function (api) {
-  api.get('/:username/admin', routes.getUser);
   api.get('/tldrs/:id/admin', routes.getTldrById);
   api.get('/tldrs/:id/delete', routes.deleteTldr);
   api.get('/tldrs/:id/moderate', routes.moderateTldr);

@@ -14,12 +14,8 @@ module.exports = function (req, res, next) {
     return next({ statusCode: 404, body: { message: i18n.resourceNotFound }});
   }
 
-  User.findOne({ usernameLowerCased: req.params.username.toLowerCase() })
-      .populate('history')
-      .exec(function (err, user) {
-    if (err || !user) {
-      return next({ statusCode: 404, body: { message: i18n.resourceNotFound }});
-    }
+  User.findOne({ usernameLowerCased: req.params.username.toLowerCase(), deleted: false }, function (err, user) {
+    if (err || !user) { return res.json(404, { message: i18n.resourceNotFound }); }
 
     return res.json(200, user);
   });
