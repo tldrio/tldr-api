@@ -57,7 +57,8 @@ api.delete('/users/you', routes.deleteUser);
 api.post('/users/login', passport.authenticate('local'), routes.getLoggedUser);
 api.get('/users/logout', routes.logout);
 
-api.get('/users/:username', routes.getUser);
+api.get('/users/:username', routes.getUser.getPublicProfile);
+api.get('/users/:username/tldrs[cC]reated', routes.getUser.getTldrsCreated);
 
 // Tldrs
 api.get('/tldrs/search', routes.searchTldrs);
