@@ -19,7 +19,13 @@ module.exports = function (req, res, next) {
 
     var publicData = user.getPublicProfile();
     user.getPublicCreatedTldrs(function (err, tldrs) {
-      publicData.tldrsCreated = tldrs;
+      var tldrsCreated = [];
+
+      tldrs.forEach(function (tldr) {
+        tldrsCreated.push(tldr.getPublicData());
+      });
+
+      publicData.tldrsCreated = tldrsCreated;
 
       return res.json(200, publicData);
     });
