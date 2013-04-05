@@ -37,8 +37,7 @@ module.exports = function (req, res, next) {
        mqClient.emit('tldr.read.embed', { tldr: tldr, pageUrl: req.query.pageUrl });
 
        values.tldr = tldr;
-       values.titlePart = showTitle ? 'tl;dr of "' + tldr.title + '"'
-                                    : 'tl;dr';
+       values.showTitle = showTitle;
 
        return res.render('website/tldrEmbed', { values: values });
   });

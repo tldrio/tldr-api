@@ -10,7 +10,15 @@
       <div class="tldr-base-unit page-tldr-container">
         <div class="tldr-read-container">
           <span class="tldr-header">
-            <span class="tldr-title">{{titlePart}}</span> <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
+            <span class="tldr-title">
+              {{#showTitle}}
+                tl;dr of <a href="{{tldr.originalUrl}}" target="_blank">"{{tldr.title}}"</a>
+              {{/showTitle}}
+              {{^showTitle}}
+                tl;dr
+              {{/showTitle}}
+            </span>
+            <span class="provider">(via <a href="http://tldr.io" target="_blank">tldr.io</a>)</span>
           </span>
 
           <div class="tldr-summary">
