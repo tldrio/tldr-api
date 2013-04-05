@@ -171,7 +171,7 @@ TldrSchema.virtual('lastEditor').get(function () {
   }
 });
 
-// Virtualtime saved attribute
+// Virtual time saved attribute
 TldrSchema.virtual('timeSaved').get(function () {
   return moment.duration(customUtils.timeToRead(this.articleWordCount), 'hours').humanize();
 });
@@ -537,6 +537,49 @@ TldrSchema.statics.findFromEveryCategory = function (options, callback) {
       return callback(null, res);
     });
   });
+};
+
+
+/**
+ * Get a tldr's public data
+ */
+TldrSchema.methods.getPublicData = function () {
+  var res = {}
+    , publicFields = [ '_id'
+                     , 'originalUrl'
+                     , 'title'
+                     , 'moderated'
+                     , 'distributionChannels'
+                     , 'wordCount'
+                     , 'articleWordCount'
+                     , 'readCount'
+                     , 'language'
+                     , 'createdAt'
+                     , 'updatedAt'
+                     , 'summaryBullets'
+                     , 'possibleUrls'
+                     , 'anonymous'
+                     , 'timeSaved'
+                     , 'slug'
+                     , 'domain'
+                     , 'categories'
+                     , 'imageUrl'
+                     ]
+    , self = this
+    ;
+
+  publicFields.forEach(function (field) {
+    if (self[field] !== undefined && self[field] !== null) {
+      res[field] = self[field];
+    }
+  });
+
+  if (!res.anonymous) {
+    res.creator = self.creator;
+    res.editors = self.editors;
+  }
+
+  return res;
 };
 
 

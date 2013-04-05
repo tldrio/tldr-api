@@ -341,7 +341,7 @@ UserSchema.methods.getPublicProfile = function () {
   if (self.deleted) { return res; }
 
   publicFields.forEach(function (field) {
-    if (self[field]) {
+    if (self[field] !== undefined && self[field] !== null) {
       res[field] = self[field];
     }
   });

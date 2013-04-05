@@ -17,6 +17,11 @@ module.exports = function (req, res, next) {
   User.findOne({ usernameLowerCased: req.params.username.toLowerCase(), deleted: false }, function (err, user) {
     if (err || !user) { return res.json(404, { message: i18n.resourceNotFound }); }
 
-    return res.json(200, user);
+    var publicData = user.getPublicProfile();
+    user.getPublicCreatedTldrs(function (err, tldrs) {
+      publicData.tldrsCreated = tldrs;
+
+      return res.json(200, publicData);
+    });
   });
 };

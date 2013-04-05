@@ -967,6 +967,25 @@ describe('Tldr', function () {
       ], done);
     });
 
+    it('Possible to only get the public data of a tldr', function (done) {
+      var tldrData = { title: 'yop a title'
+        , url: 'http://mydomain.com'
+        , summaryBullets: ['coin', 'piou']
+        , imageUrl: 'http://google.com/image.png'
+        , articleWordCount: 437
+        };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        var pub = tldr.getPublicData();
+
+        pub.moderated.should.equal(false);
+        pub.title.should.equal('yop a title');
+        pub.slug.should.equal('yop-a-title');
+
+        done();
+      });
+    });
+
   });   // ==== End of 'Finding tldrs' ==== //
 
 
