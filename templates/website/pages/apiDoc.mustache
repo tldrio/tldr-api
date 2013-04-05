@@ -1,61 +1,26 @@
-<section class="marketing">
-  <h1>API documentation</h1>
+<header class="marketing">
+<h1>API documentation</h1>
+</header>
 
+<div class="centered-block list-box">
+  <h4>General information</h4>
   <p>
-    For now only the read-only part is open, enabling you to get the latest tldrs or to search tldrs by url.
-    What's here shouldn't change, but we may add new routes along the way. Still, keep in mind this is experimental
-        so don't hesitate to drop us an email at <a href="mailto:hello@tldr.io">hello@tldr.io</a> if you have a question or
-    if something doesn't work!
+    For now only the read-only part of the API is open.
+    This is a JSON API whose base url is: <code>https://api.tldr.io</code>.<br><br>
+
+    All requests must contain two extra headers to authenticate them:
+    <ul>
+      <li><code>api-client-name</code>: the name of your application</li>
+      <li><code>api-client-key</code>: your secret key</li>
+    </ul>
+
+    To request a developer account with your own credentials, <a href="mailto:hello@tldr.io">drop us an email</a>, tell us what you want to use our
+    API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining why the request
+    was refused (unknown username or wrong secret key).
   </p>
 
-  <h2>General information</h2>
-  This is a JSON API whose base url is: <code>https://api.tldr.io</code>.<br><br>
-
-  All requests will contain two extra headers to authenticate them:
-  <ul>
-  <li><code>api-client-name</code>: the name of your application</li>
-  <li><code>api-client-key</code>: your secret key</li>
-  </ul>
-
-  To request a developer account with your own credentials, <a href="mailto:hello@tldr.io">drop us an email</a>, tell us what you want to use our
-  API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining you why the request
-  was refused (unknown username or wrong secret key).
-
-  <hr class="soften">
-
-  <h2>Format of the tldr objects</h2>
-  <p>For now, almost the data we have about a tldr is in the object you receive. Some of it is useful for you, some probably less so (we use it internally).</p>
-  <strong>Useful</strong>
-  <ul>
-    <li><code>title</code> <em class="muted">(String)</em> The title of the article</li>
-    <li><code>summaryBullets</code> <em class="muted">(Array of String)</em> The bullet points composing the summary (maximum: 5)</li>
-    <li><code>readCount</code> <em class="muted">(Integer)</em> Number of times the tldr has been read</li>
-    <li><code>originalUrl</code> <em class="muted">(String)</em> The url of the page the tldr is the summary of</li>
-    <li><code>url</code> <em class="muted">(String)</em> The url above, normalized and used to index the tldr. There is a lot of content that is available
-        through different urls (e.g. different utm query strings), we want the same tldr to correspond to all of them. This is not a perfect solution,
-        and we improve it regularly. We have plans for an additional system to take care of shitty geo-dependent urls such as blogpost's.</li>
-    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, with two fields: <code>username</code> and
-        <code>twitterHandle</code> (if the user registered it)</li>
-    <li><code>imageUrl</code> <em class="muted">(String)</em> Link to the Open Graph image of the corresponding webpage, if there is one</li>
-    <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
-    <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
-    <li><code>moderated</code> <em class="muted">(Boolean)</em> True if a moderator has reviewed this tldr and deemed it accurate</li>
-    <li><code>distributionChannels</code> <em class="muted">(Object)</em> Some channels do not distribute all tldrs. This object tells
-        where this tldr will be distributed. For now the two channels are 'latestTldrs' (the latest tldrs page as well as the results from
-        GET /tldrs/latest) and 'latestTldrsRSSFeed'.</li>
-  </ul><br>
-
-  <strong>Not so useful (if you disagree please tell us!)</strong>
-  <ul>
-    <li><code>versionDisplayed</code> <em class="muted">(Integer)</em> If edits were made, what is the public version. Most of the time at 0 (= 'latest')</li>
-    <li><code>slug</code> <em class="muted">(String)</em> Slug of the title used in the website's url for the tldr</li>
-    <li><code>history</code> <em class="muted">(ObjectId)</em> Pointer to the tldr's history (not public)</li>
-    <li><code>hostname</code> <em class="muted">(String)</em> Hostname for this tldr's corresponding webpage (used to find favicons)</li>
-
-  </ul><br>
-
-
-  <h2>Routes</h2>
+  <br>
+  <h4>Routes</h4>
   <strong>GET /tldrs/latest/<em>:number</em></strong><br>
   Get the <code>:number</code> latest tldrs. You can get between 1 and 50 tldrs.<br><br>
 
@@ -67,15 +32,62 @@
   <strong>POST /tldrs/searchBatch</strong><br>
   Search the tldrs for a batch of urls, not just one as in the route above.<br>
   The body of the request must be a JSON object of the form <code>{ batch: [url1, url2, ...] }</code><br>
-  The response will be of the form <code>{ tldrs: [tldr1, tldr2, ...] }.</code><br><br>
-  This route can only return up to 100 tldrs, if your batch contains more than 100 urls the response will be a 403 error.
+  The response will be of the form <code>{ tldrs: [tldr1, tldr2, ...] }.</code><br>
+  This route can only return up to 100 tldrs, if your batch contains more than 100 urls the response will be a 403 error.<br><br>
 
-  <hr class="soften">
+  <strong>GET /users/<em>:username</em></strong><br>
+  Get all public data available about this user.<br><br>
 
-  <h2>Clients</h2>
+  <strong>GET /users/<em>:username</em>/tldrsCreated</strong><br>
+  Get all tldrs created by this user.<br><br>
+
+  <br>
+  <h4>Format of the data you receive</h4>
+  <strong>tldrs</strong>
+  <ul>
+    <li><code>title</code> <em class="muted">(String)</em> The title of the article</li>
+    <li><code>slug</code> <em class="muted">(String)</em> Slug of the title, used for the permalink to a tldr which is of the type
+                          <code>http://tldr.io/tldrs/:id/:slug</code>
+    </li>
+    <li><code>summaryBullets</code> <em class="muted">(Array of String)</em> The bullet points composing the summary (maximum: 5)</li>
+    <li><code>readCount</code> <em class="muted">(Integer)</em> Number of times the tldr has been read</li>
+    <li><code>originalUrl</code> <em class="muted">(String)</em> The url of the page the tldr is the summary of</li>
+    <li><code>possibleUrls</code> <em class="muted">(String)</em> Array of normalized urls that correspond to this tldr. The url normalization is
+        a procedure we use to make sure that different urls returning the same content are linked to the same tldr. For example, no website (that we know of)
+        serves different version depending on whether you use the 'www' subdomain, so the 'www' (if any) is removed during normalization.
+    </li>
+    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, with two fields: <code>username</code> and
+        <code>twitterHandle</code> (if the user registered it)</li>
+    <li><code>imageUrl</code> <em class="muted">(String)</em> Link to the Open Graph image of the corresponding webpage, if there is one</li>
+    <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
+    <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
+    <li><code>moderated</code> <em class="muted">(Boolean)</em> True if a moderator has reviewed this tldr and deemed it accurate</li>
+    <li><code>distributionChannels</code> <em class="muted">(Object)</em> Some channels do not distribute all tldrs. This object tells
+        where this tldr will be distributed. For now the two channels are 'latestTldrs' (the latest tldrs page as well as the results from
+        GET /tldrs/latest) and 'latestTldrsRSSFeed'.
+    </li>
+    <li><code>anonymous</code> <em class="muted">(Boolean)</em></li>
+    <li><code>wordCount</code> <em class="muted">(Integer)</em> The number of words in the tldr</li>
+    <li><code>articleWordCount</code> <em class="muted">(Integer)</em> The number of words in the underlying article (we get that from Readability's API)</li>
+    <li><code>timeSaved</code> <em class="muted">(String)</em> Human-readable string of the estimation of the amount of time a tldr saves someone who reads it</li>
+    <li><code>language.language</code> <em class="muted">(String)</em> Language of the tldr (from Google Translate's API)</li>
+    <li><code>domain.name</code> <em class="muted">(String)</em> The domain of the underlying article, for example 'avc.com'</li>
+    <li><code>categories</code> <em class="muted">(Array)</em> Categories the tldr is filed under</li>
+  </ul>
+  <strong>users</strong>
+  <ul>
+    <li><code>username</code> <em class="muted">(String)</em></li>
+    <li><code>twitterHandle</code> <em class="muted">(String)</em> Defined only if user made it public</li>
+    <li><code>bio</code> <em class="muted">(String)</em> Defined only if user entered it</li>
+    <li><code>gravatar.url</code> <em class="muted">(String)</em></li>
+    <li><code>createdAt</code> <em class="muted">(Date)</em></li>
+    <li><code>lastActive</code> <em class="muted">(Date)</em></li>
+  </ul>
+
+  <br>
+  <h4>Clients</h4>
   <p>
     This API is very simple but we still made a Javascript client for the browser. You can find it <a href="https://github.com/tldrio/api-js-client" target="_blank">here</a>.
   </p>
 
-
-</section>
+</div>
