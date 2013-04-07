@@ -18,7 +18,6 @@ var express = require('express')
   ;
 
 
-
 // Set up templating
 h4e.setup({ app: website
           , baseDir: config.templatesDir
