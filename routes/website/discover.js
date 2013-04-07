@@ -42,7 +42,7 @@ function loadTldrsByCategory (req, res, next) {
   }
 
   // First check the type of the topic, then do the correct query
-  Topic.findOne({ slug: req.params.topic }, function (err, topic) {
+  Topic.findOne({ slug: req.params.topic.toLowerCase() }, function (err, topic) {
     if (err || !topic) { req.renderingValues.tldrs = []; return next(); }
 
     req.renderingValues.activeTopic = req.params.topic;
