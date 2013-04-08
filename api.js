@@ -69,6 +69,7 @@ api.get('/tldrs/latest', routes.getLatestTldrs);
 api.get('/tldrs/:id', routes.getTldrById);
 api.post('/tldrs', routes.createNewTldr);
 api.post('/tldrs/searchBatch', routes.searchTldrsByBatch);
+api.put('/tldrs/incrementReadCountByBatch', routes.incrementReadCountByBatch);
 api.put('/tldrs/:id', routes.updateTldrWithId);
 api.put('/tldrs/:id/thank', routes.thankContributor);
 api.delete('/tldrs/:id', routes.deleteTldrIfPossible);

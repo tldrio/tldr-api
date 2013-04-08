@@ -442,6 +442,24 @@ TldrSchema.statics.findByUrlBatch = function (batch, options, callback) {
 
 
 /**
+ * Register a read for multiple tldrs at once
+ */
+TldrSchema.statics.incrementReadCountByBatch = function (ids, cb) {
+  var callback = cb || function () {};
+
+  this.find({ _id: { $in: ids } }, function (err, tldrs) {
+    if (err) { return callback(err); }
+
+    tldrs.forEach(function (tldr) {
+      mqClient.emit('tldr.read', { tldr: tldr });
+    });
+
+    return callback();
+  });
+};
+
+
+/**
  * Find tldrs by their category names
  * @param {String or Array of Strings} categories
  */

@@ -988,6 +988,61 @@ describe('Tldr', function () {
       });
     });
 
+    it('Can increment the readcount of multiple tldrs at once', function (done) {
+      var tldrData1 = { url: 'http://needforair.com/1', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData2 = { url: 'http://needforair.com/2', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData3 = { url: 'http://needforair.com/3', categories: 'Startups', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldrData4 = { url: 'http://needforair.com/4', categories: 'Programming', title: 'Blog NFA' , summaryBullets: ['Awesome Blog'] }
+        , tldr1, tldr2, tldr3, tldr4
+        ;
+
+      async.waterfall([
+        function (cb) {
+          Tldr.createAndSaveInstance(tldrData1, user, function (err, _tldr1) {
+            tldr1 = _tldr1;
+            tldr1.readCount.should.equal(0);
+            Tldr.createAndSaveInstance(tldrData2, user, function (err, _tldr2) {
+              tldr2 = _tldr2;
+              tldr2.readCount.should.equal(0);
+              Tldr.createAndSaveInstance(tldrData3, user, function (err, _tldr3) {
+                tldr3 = _tldr3;
+                tldr3.readCount.should.equal(0);
+                Tldr.createAndSaveInstance(tldrData4, user, function (err, _tldr4) {
+                  tldr4 = _tldr4;
+                  tldr4.readCount.should.equal(0);
+                  return cb();
+                });
+              });
+            });
+          });
+        }
+      , function (cb) {
+          // Can find whether the _ids are stringified or not
+          Tldr.incrementReadCountByBatch([tldr1._id.toString(), tldr4._id.toString()], function () {
+            setTimeout(cb, 100);
+          });
+        }
+      , function (cb) {
+          Tldr.findOne({ _id: tldr1._id }, function (err, _tldr1) {
+            _tldr1.readCount.should.equal(1);
+            Tldr.findOne({ _id: tldr4._id }, function (err, _tldr4) {
+              _tldr4.readCount.should.equal(1);
+              return cb();
+            });
+          });
+        }
+      , function (cb) {
+          Tldr.findOne({ _id: tldr2._id }, function (err, _tldr2) {
+            _tldr2.readCount.should.equal(0);
+            Tldr.findOne({ _id: tldr3._id }, function (err, _tldr3) {
+              _tldr3.readCount.should.equal(0);
+              return cb();
+            });
+          });
+        }
+      ], done);
+    });
+
   });   // ==== End of 'Finding tldrs' ==== //
 
 
