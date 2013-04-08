@@ -18,6 +18,22 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases = [];
 
+  values.weeklyReleases.push({ header: 'Week from Apr 1st, 2013 to Apr 7th, 2013'
+  , items: [
+            "New, much clearer read report email with the same analytics as the Impact page."
+          , "<a href='http://wordpress.org/extend/plugins/embed-tldrio-summaries/' target='_blank'>Wordpress plugin</a> to embed summaries in your own blog or website."
+          , "Improved embedded tldrs (default permalink even if the tldr has not yet been created)."
+          , "Better scraping of the title with Clearly."
+          , "Bugfixes: case-insensitive search by category, small display bugs."
+          ]
+  });
+  values.weeklyReleases.push({ header: 'Week from Mar 25th, 2013 to Mar 31st, 2013'
+  , items: [
+            "Added categories to tldrs so that you can read only the ones you're most interested in."
+          , "Revamped the discover page. Improved UX and added ability to filter by category and domain."
+          , "Bugfixes: long usernames in public profiles, switch to read/edit view in extension right after login."
+          ]
+  });
   values.weeklyReleases.push({ header: 'Week from Mar 25th, 2013 to Mar April 3rd, 2013'
   , items: [
             "Added categories to tldrs so that you can read only the ones you're most interested in."
