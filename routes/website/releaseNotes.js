@@ -18,6 +18,13 @@ module.exports = function (req, res, next) {
 
   values.weeklyReleases = [];
 
+  values.weeklyReleases.push({ header: 'Week from Mar 25th, 2013 to Mar April 3rd, 2013'
+  , items: [
+            "Added categories to tldrs so that you can read only the ones you're most interested in."
+          , "Revamped the discover page. Improved UX and added ability to filter by category and domain."
+          , "Bugfixes: long usernames in public profiles, switch to read/edit view in extension right after login."
+          ]
+  });
   values.weeklyReleases.push({ header: 'Week from Mar 18th, 2013 to Mar 24th, 2013'
   , items: [
             "We ported the Chrome extension to Firefox. You can download it <a target='_blank' href='https://addons.mozilla.org/en-US/firefox/addon/tldr-by-tldrio/'>here</a>!"
