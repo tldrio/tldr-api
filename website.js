@@ -45,13 +45,13 @@ if (config.env === 'development') {
  */
 website.use(middleware.CORS);
 website.use(express.bodyParser());
-website.use(express.cookieParser());// Parse cookie data and use redis to store session data
+website.use(express.cookieParser());
 website.use(express.session(config.session));
-website.use(passport.initialize());// Use Passport for authentication and sessions
+website.use(passport.initialize());
 website.use(passport.session());
 website.use(middleware.decorateRequest); //Middleware for assigning an id to each request and add logging
-website.use(website.router); // Map routes
-website.use(middleware.handleErrors); // Use middleware to handle errors
+website.use(website.router);
+website.use(middleware.handleErrors);
 
 
 // Respond to OPTIONS request - CORS middleware sets all the necessary headers
@@ -108,16 +108,18 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/embedded-tldrs', routes.website.embeddedTldrs);
 
   //Discover
-  website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
-  website.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
-  website.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
-  website.get('/discover/all', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
-  website.get('/discover/all/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
-  website.get('/discover/all/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+  beforeEach(website, middleware.populateLanguages, function (website) {
+    website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+    website.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+    website.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+    website.get('/discover/all', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+    website.get('/discover/all/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
+    website.get('/discover/all/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
 
-  website.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
-  website.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
-  website.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+    website.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+    website.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
+    website.get('/discover/:topic/:sort', routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
+  });
 
   // Login, logout
   website.get('/logout', function (req, res, next) { req.logOut(); res.redirect('/'); });

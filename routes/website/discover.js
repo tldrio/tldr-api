@@ -8,8 +8,7 @@ var config = require('../../lib/config')
 
 // Get 100 tldrs according to our sort
 function loadTldrs (req, res, next) {
-  var options = { limit: 100 }
-    , language = req.query.lang || 'en';
+  var options = { limit: 100 };
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
@@ -22,7 +21,9 @@ function loadTldrs (req, res, next) {
   req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
-  Tldr.findByQuery( { 'language.language': language,'distributionChannels.latestTldrs': true},options, function (err, tldrs) {
+  Tldr.findByQuery( { 'language.language': { $in: req.renderingValues.languages }
+                    , 'distributionChannels.latestTldrs': true }
+                  ,options, function (err, tldrs) {
     req.renderingValues.tldrs = tldrs;
     return next();
   });
@@ -30,8 +31,7 @@ function loadTldrs (req, res, next) {
 
 // Get 100 tldrs from the given topic
 function loadTldrsByCategory (req, res, next) {
-  var options = { limit: 100 }
-    , language = req.query.lang || 'en';
+  var options = { limit: 100 };
 
   if (req.params.sort === 'mostread') {
     options = { sort: '-readCount' };
@@ -49,14 +49,18 @@ function loadTldrsByCategory (req, res, next) {
     req.renderingValues.currentBaseUrl = '/discover/' + req.params.topic;
 
     if (topic.type === 'domain') {
-      Tldr.findByQuery({ domain: topic._id , 'language.language': language, 'distributionChannels.latestTldrs': true }, options, function (err, tldrs) {
+      Tldr.findByQuery({ domain: topic._id
+                       , 'language.language': { $in: req.renderingValues.languages }
+                       , 'distributionChannels.latestTldrs': true }, options, function (err, tldrs) {
       //Tldr.findByDomainId(topic._id, options, function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
     } else {
       //Tldr.findByCategoryId([topic._id], options, function (err, tldrs) {
-      Tldr.findByQuery({ categories: { $in: [topic._id] } , 'language.language': language, 'distributionChannels.latestTldrs': true }, options,  function (err, tldrs) {
+      Tldr.findByQuery({ categories: { $in: [topic._id] }
+                       , 'language.language': { $in: req.renderingValues.languages }
+                       , 'distributionChannels.latestTldrs': true }, options,  function (err, tldrs) {
         req.renderingValues.tldrs = tldrs;
         return next();
       });
@@ -71,6 +75,9 @@ function displayPage (req, res, next) {
     , topic = req.params.topic
     , specificLanguage = req.query.lang !== 'en' ? req.query.lang : null;
     ;
+
+  //res.cookie('languages', ['en', 'de'], { path: '/', maxAge: 3600 });
+  //res.cookie('languages', undefined, { path: '/', maxAge: 3600 });
 
   req.renderingValues.tldrs.forEach(function (tldr) {
     tldr.tldrData = tldr.serializeForDataAttribute();
