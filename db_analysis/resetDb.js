@@ -64,12 +64,15 @@ async.waterfall([
 , function (cb) {
     var bmLocal = { name: 'bm-local', key: 'fF5TVeCAlTqsLjEpNCb9', isOfficial: true }
       , crxLocal = { name: 'chrome-ext-local', key: 'JjlZcfAW8NMFWXSCIeiz', isOfficial: true }
+      , xpiLocal = { name: 'firefox-ext-local', key: 'VkLGTWnKPMWQhDkvtDBz', isOfficial: true }
       ;
 
     console.log("Recreating the two local clients");
     APIClient.createAndSaveInstance(bmLocal, function (err, apic) {
       APIClient.createAndSaveInstance(crxLocal, function (err, apic) {
-        cb();
+        APIClient.createAndSaveInstance(xpiLocal, function (err, apic) {
+          cb();
+        });
       });
     });
   }
