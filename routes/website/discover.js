@@ -76,7 +76,7 @@ function displayPage (req, res, next) {
     ;
 
   // Ensure cookie is set and tell template which boxes need to be checked
-  res.cookie('languages', req.renderingValues.languages, { path: '/', maxAge: 365 * 24 * 3600 });
+  res.cookie('languages', JSON.stringify(req.renderingValues.languages), { path: '/', maxAge: 365 * 24 * 3600 });
   req.renderingValues.languagesToDisplay = {};
   req.renderingValues.languages.forEach(function (language) {
     req.renderingValues.languagesToDisplay[language] = true;
