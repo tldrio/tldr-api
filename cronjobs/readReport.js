@@ -14,7 +14,7 @@ var _ = require('underscore')
   , analytics = require('../lib/analytics')
   , Tldr = models.Tldr
   , User = models.User
-  , thresholdSendMail = 20   // Don't send email with ridiculously low amounts
+  , thresholdSendMail = 10   // Don't send email with ridiculously low amounts
   ;
 
 h4e.setup({ extension: 'mustache'
