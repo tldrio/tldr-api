@@ -1,16 +1,10 @@
 <div class="container main-container">
-  {{#specificLanguage}}
-  <div class="alert alert-info alert-block alert-language" style="margin:10px 28px 0 20px">
-    <button type="button" class="close" data-dismiss="alert">&times;</button>
-    <strong>Hello!</strong> We think you likely speak <strong>German</strong> so we are displaying German summaries for you. If this is a mistake or if you want to see more content in English click <a href="?lang=en"><strong>here</strong></a>!
-  </div>
-  {{/specificLanguage}}
   <div class="row">
     <div class="span3 topics-list-column">
       <ul class="nav nav-list topics-list">
         {{#categories}}
         <li{{#active}} class="active"{{/active}}>
-        <a href="/discover/{{slug}}{{#specificLanguage}}?lang={{specificLanguage}}{{/specificLanguage}}">
+        <a href="/discover/{{slug}}">
             <i class="icon-chevron-right"></i>
             {{name}}
           </a>
@@ -18,16 +12,8 @@
         {{/categories}}
       </ul>
       <div class="options options-lang">
-        {{#specificLanguage}}
-        <a alt="Newest summaries" href="?lang=en">English</a>
-        /
-        <span class="option-chosen">German</span>
-        {{/specificLanguage}}
-        {{^specificLanguage}}
-        <span class="option-chosen">English</span>
-        /
-        <a alt="Most read summaries" href="?lang=de">German</a>
-        {{/specificLanguage}}
+        <label class="checkbox"><input type="checkbox"{{#languagesToDisplay.en}} checked="checked"{{/languagesToDisplay.en}}> English</label>
+        <label class="checkbox"><input type="checkbox"{{#languagesToDisplay.de}} checked="checked"{{/languagesToDisplay.de}}> German</label>
       </div>
         <hr class="soften">
       <div class="options options-follow">
@@ -53,14 +39,14 @@
         <div class="discover-feed-options">
           <span class="options">
             {{#mostread}}
-            <a alt="Newest summaries" href="{{currentBaseUrl}}{{#specificLanguage}}?lang=de{{/specificLanguage}}">Newest</a>
+            <a alt="Newest summaries" href="{{currentBaseUrl}}">Newest</a>
             /
             <span class="option-chosen">Most read</span>
             {{/mostread}}
             {{#newest}}
             <span class="option-chosen">Newest</span>
             /
-            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread{{#specificLanguage}}?lang=de{{/specificLanguage}}">Most read</a>
+            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread">Most read</a>
             {{/newest}}
           </span>
           <span class="options options-visual pull-right">

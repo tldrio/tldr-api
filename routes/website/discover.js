@@ -73,11 +73,14 @@ function displayPage (req, res, next) {
   var partials = req.renderingPartials || {}
     , values = req.renderingValues || {}
     , topic = req.params.topic
-    , specificLanguage = req.query.lang !== 'en' ? req.query.lang : null;
     ;
 
-  //res.cookie('languages', ['en', 'de'], { path: '/', maxAge: 3600 });
-  //res.cookie('languages', undefined, { path: '/', maxAge: 3600 });
+  // Ensure cookie is set and tell template which boxes need to be checked
+  res.cookie('languages', req.renderingValues.languages, { path: '/', maxAge: 365 * 24 * 3600 });
+  req.renderingValues.languagesToDisplay = {};
+  req.renderingValues.languages.forEach(function (language) {
+    req.renderingValues.languagesToDisplay[language] = true;
+  });
 
   req.renderingValues.tldrs.forEach(function (tldr) {
     tldr.tldrData = tldr.serializeForDataAttribute();
@@ -88,7 +91,6 @@ function displayPage (req, res, next) {
     values.discover = true;
     values.description = "Discover summaries of interesting content contributed by the community.";
     values.categories = _.sortBy(categories, function (c) { return c.name; });
-    values.specificLanguage = specificLanguage;
     values.categories.unshift({name: 'All the things', slug: 'all'});
     values.categories.forEach(function (c) {
       if (c.slug === values.activeTopic) { c.active = true; }
