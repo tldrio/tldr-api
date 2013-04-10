@@ -7,7 +7,6 @@ function getLatestTldrs (req, res, next) {
     , startat = req.query.startat || 0
     ;
 
-
   // Check that limit is an integer and clip it between 1 and defaultLimit
   if (isNaN(limit)) { limit = defaultLimit; }
   limit = Math.max(0, Math.min(defaultLimit, limit));
