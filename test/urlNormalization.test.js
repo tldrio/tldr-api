@@ -10,8 +10,38 @@ var should = require('chai').should()
   , _ = require('underscore')
   , i18n = require('../lib/i18n')
   , urlNormalization = require('../lib/urlNormalization')
+  , Offenders = urlNormalization.Offenders
   , normalizeUrl = urlNormalization.normalizeUrl
+  , config = require('../lib/config')
+  , DbObject = require('../lib/db')
+  , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
   ;
+
+
+describe.only('Offenders', function () {
+
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+  beforeEach(function (done) {
+    function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
+
+    Offenders.resetCachedQuerystringOffenders;
+    theRemove(Offenders, done);
+  });
+
+
+  it('By default, getting all querystring offenders', function (done) {
+    console.log(Offenders.getAllQuerystringOffenders());
+    done();
+  });
+
+});
 
 
 describe('#normalizeUrl', function() {
