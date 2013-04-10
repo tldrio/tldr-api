@@ -5,6 +5,7 @@ function getLatestTldrs (req, res, next) {
   var defaultLimit = 50
     , limit = req.params.quantity || defaultLimit
     , startat = req.query.startat || 0
+    , dataToReturn = []
     ;
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
@@ -20,11 +21,15 @@ function getLatestTldrs (req, res, next) {
    .sort('-updatedAt')
    .limit(limit)
    .skip(startat)
-   .populate('creator', 'deleted username twitterHandle')
+   .populateTldrFields()
    .exec(function(err, docs) {
      if (err) { return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} }); }
 
-     res.json(200, docs);
+      docs.forEach(function (tldr) {
+        dataToReturn.push(tldr.getPublicData());
+      });
+
+     res.json(200, dataToReturn);
    });
 }
 

@@ -217,7 +217,7 @@ describe('Webserver', function () {
             request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/-1'}, function (err, res, body) {
               obj = JSON.parse(res.body);
               obj.length.should.equal(defaultLimit);
-              temp = _.map(obj, function (o) { return o.url; });
+              temp = _.map(obj, function (o) { return o.originalUrl; });
               _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
               _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
               _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -248,7 +248,7 @@ describe('Webserver', function () {
                     request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/5'}, function (err, res, body) {
                       obj = JSON.parse(res.body);
                       obj.length.should.equal(5);
-                      temp = _.map(obj, function (o) { return o. url; });
+                      temp = _.map(obj, function (o) { return o.originalUrl; });
                       _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                       _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                       _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -264,7 +264,7 @@ describe('Webserver', function () {
                         request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/4?startat=rew'}, function (err, res, body) {
                           obj = JSON.parse(res.body);
                           obj.length.should.equal(4);
-                          temp = _.map(obj, function (o) { return o. url; });
+                          temp = _.map(obj, function (o) { return o.originalUrl; });
                           _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                           _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                           _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -274,7 +274,7 @@ describe('Webserver', function () {
                           request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/4?startat=5'}, function (err, res, body) {
                             obj = JSON.parse(res.body);
                             obj.length.should.equal(4);
-                            temp = _.map(obj, function (o) { return o. url; });
+                            temp = _.map(obj, function (o) { return o.originalUrl; });
                             _.indexOf(temp, 'http://needforair.com/sopa/number1').should.not.equal(-1);
                             _.indexOf(temp, 'http://needforair.com/sopa/number2').should.not.equal(-1);
                             _.indexOf(temp, 'http://needforair.com/sopa/number3').should.not.equal(-1);
@@ -290,7 +290,7 @@ describe('Webserver', function () {
                                 request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/latest/7'}, function (err, res, body) {
                                   obj = JSON.parse(res.body);
                                   obj.length.should.equal(7);
-                                  temp = _.map(obj, function (o) { return o. url; });
+                                  temp = _.map(obj, function (o) { return o.originalUrl; });
                                   _.indexOf(temp, 'http://bothsidesofthetable.com/deflationnary-economics').should.not.equal(-1);
                                   _.indexOf(temp, 'http://avc.com/mba-monday').should.not.equal(-1);
                                   _.indexOf(temp, 'http://needforair.com/nutcrackers').should.not.equal(-1);
@@ -326,7 +326,7 @@ describe('Webserver', function () {
         request.get({ headers: {"Accept": "application/json"}, uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://bothsidesofthetable.com/deflationnary-economics') }, function (err, res, body) {
           res.statusCode.should.equal(200);
           obj = JSON.parse(res.body);
-          obj.url.should.equal('http://bothsidesofthetable.com/deflationnary-economics');
+          obj.originalUrl.should.equal('http://bothsidesofthetable.com/deflationnary-economics');
           obj._id.toString().should.equal(tldr3._id.toString());
           done();
         });
