@@ -112,9 +112,11 @@ beforeEach(website, middleware.websiteRoute, function (website) {
     website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
     website.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
     website.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
-    website.get('/discover/all', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
-    website.get('/discover/all/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
-    website.get('/discover/all/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
+
+    // Aliases necessary to keep the discover template clean
+    website.get('/discover/all', function (req, res, next) { return res.redirect(301, '/discover'); });
+    website.get('/discover/all/newest', function (req, res, next) { return res.redirect(301, '/discover/newest'); });
+    website.get('/discover/all/mostread', function (req, res, next) { return res.redirect(301, '/discover/mostread'); });
 
     website.get('/discover/:topic', function (req, res, next) { req.params.sort = 'newest'; next(); }, routes.website.discover.loadTldrsByCategory, routes.website.discover.displayPage);
     website.get('/discover/:topic/newest', function (req, res, next) { return res.redirect(302, '/discover/' + req.params.topic); });
