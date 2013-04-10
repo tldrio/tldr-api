@@ -396,11 +396,11 @@ describe('Webserver', function () {
 
               var tldrs = body.tldrs
                 , urls = body.urls
-                , tldrizedUrls = _.pluck(tldrs, 'url');
+                , tldrsOriginalUrls = _.pluck(tldrs, 'originalUrl');
 
-              tldrizedUrls.length.should.equal(3);
-              tldrizedUrls.should.contain('http://needforair.com/sopa/number0');
-              tldrizedUrls.should.not.contain('http://toto.com/resourcedoesntexist');
+              tldrsOriginalUrls.length.should.equal(3);
+              tldrsOriginalUrls.should.contain('http://needforair.com/sopa/number0');
+              tldrsOriginalUrls.should.not.contain('http://toto.com/resourcedoesntexist');
               tldrs[0].creator.username.should.equal('UserOne');
               assert.isUndefined(tldrs[0].creator.password);
 
