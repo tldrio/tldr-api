@@ -91,9 +91,11 @@ async.waterfall([
     console.log("Recreating three fake accounts");
     User.createAndSaveInstance(_louis, function (err, __louis) {
       louis = __louis;
-      User.createAndSaveInstance(_stan, function () {
-        User.createAndSaveInstance(_charles, function () {
-          cb();
+      User.createAndSaveInstance(_stan, function (err, __stan) {
+        User.createAndSaveInstance(_charles, function (err, __charles) {
+          User.update({ _id: { $in: [ __louis._id, __stan._id, __charles._id ] } }, { $set: { confirmedEmail: true } }, { multi: true }, function () {
+            cb();
+          });
         });
       });
     });

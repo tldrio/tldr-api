@@ -1,11 +1,17 @@
-var Tldr = require('../lib/models').Tldr
-  , i18n = require('../lib/i18n');
+var models = require('../lib/models')
+  , Tldr = models.Tldr
+  , Topic = models.Topic
+  , i18n = require('../lib/i18n')
+  , async = require('async')
+  ;
 
 function getLatestTldrs (req, res, next) {
   var defaultLimit = 50
     , limit = req.params.quantity || defaultLimit
     , startat = req.query.startat || 0
     , dataToReturn = []
+    , options = {}
+    , query = { 'distributionChannels.latestTldrs': true }
     ;
 
   // Check that limit is an integer and clip it between 1 and defaultLimit
@@ -17,20 +23,32 @@ function getLatestTldrs (req, res, next) {
   if (isNaN(startat)) { startat = 0; }
   startat = Math.max(0, startat);
 
-  Tldr.find({ 'distributionChannels.latestTldrs': true })
-   .sort('-updatedAt')
-   .limit(limit)
-   .skip(startat)
-   .populateTldrFields()
-   .exec(function(err, docs) {
-     if (err) { return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} }); }
+  options.limit = limit;
+  options.skip = startat;
+  options.sort = '-updatedAt';
 
-      docs.forEach(function (tldr) {
-        dataToReturn.push(tldr.getPublicData());
-      });
+  async.waterfall([
+  function (cb) {
+    if (! req.query.category) { return cb(); }
 
-     res.json(200, dataToReturn);
-   });
+    Topic.findOne({ slug: req.query.category.toLowerCase() }, function (err, topic) {
+      if (err || !topic) { return res.send(200, []); }   // No topic found
+
+      query.categories = topic._id;
+      return cb();
+    });
+  }
+  ],function () {
+    Tldr.findByQuery(query, options, function (err, tldrs) {
+      if (err) { return res.send(500, { message: i18n.mongoInternErrQuery } ); }
+
+       tldrs.forEach(function (tldr) {
+         dataToReturn.push(tldr.getPublicData());
+       });
+
+      res.json(200, dataToReturn);
+    });
+  });
 }
 
 // Module interface

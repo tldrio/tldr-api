@@ -34,10 +34,10 @@ function loadTldrsByCategory (req, res, next) {
   var options = { limit: 100 };
 
   if (req.params.sort === 'mostread') {
-    options = { sort: '-readCount' };
+    options.sort = '-readCount';
     req.renderingValues.mostread = true;
   } else {
-    options = { sort: '-createdAt' };
+    options.sort = '-createdAt';
     req.renderingValues.newest = true;
   }
 
