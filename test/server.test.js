@@ -141,7 +141,7 @@ describe('Webserver', function () {
                   , uri: apiRoot + '/tldrs/search?url=' + encodeURIComponent('http://needforair.com/sopa') }, function (error, response, body) {
         var obj = JSON.parse(body);
         response.statusCode.should.equal(200);
-        obj.url.should.equal('http://needforair.com/sopa');
+        obj.originalUrl.should.equal('http://needforair.com/sopa');
         done();
       });
 

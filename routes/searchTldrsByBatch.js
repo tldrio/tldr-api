@@ -35,13 +35,16 @@ function searchTldrsByBatch (req, res, next) {
 
   //Search by batch
   Tldr.findByUrlBatch( batch, {}, function (err, docs) {
-      if (err) {
-        return next({ statusCode: 500, body: {message: i18n.mongoInternErrQuery} });
-      }
-      // We dont update the read count here it's done when hovering on the tldr labels
+    var tldrsToReturn = [];
 
-      return res.json(200, { tldrs: docs, urls: urls} );
+    if (err) { return res.send(500, { message: i18n.mongoInternErrQuery }); }
+
+    docs.forEach(function (tldr) {
+      tldrsToReturn.push(tldr.getPublicData());
     });
+
+    return res.json(200, { tldrs: tldrsToReturn, urls: urls} );
+  });
 
 }
 

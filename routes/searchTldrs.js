@@ -26,7 +26,7 @@ function searchTldrs (req, res, next) {
       return next({ statusCode: 404, body: { message: i18n.resourceNotFound} } );
     }
 
-    return res.json(200, tldr);
+    return res.json(200, tldr.getPublicData());
   });
 }
 
