@@ -21,8 +21,13 @@
 
   <br>
   <h4>Routes</h4>
-  <strong>GET /tldrs/latest/<em>:number</em></strong><br>
-  Get the <code>:number</code> latest tldrs. You can get between 1 and 50 tldrs.<br><br>
+  <strong>GET /categories</strong><br>
+  Get the list of categories (useful for the route below)<br><br>
+
+  <strong>GET /tldrs/latest/<em>:number</em>?category=<em>:category</em></strong><br>
+  Get the <code>:number</code> latest tldrs. You can get between 1 and 50 tldrs.<br>
+  Use the <code>?category=:category</code> to filter by category (use above route to get the list). <code>:category</code> is case-insensitive.
+  This parameter and optional, if ommited no filtering is done.<br><br>
 
   <strong>GET /tldrs/search?url=<em>:url</em></strong><br>
   Search the summary of the webpage whose url is <code>:url</code>. <code>:url</code>
