@@ -53,6 +53,53 @@ describe.only('Offenders', function () {
     });
   });
 
+  it('Can reset the cache without changing the database', function (done) {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase('badboy.com', function () {
+      Object.keys(qso.getCache()).length.should.equal(1);
+      qso.getCache()['badboy.com'].should.equal(true);
+
+      Offenders.find({}, function (err, offenders) {
+        offenders.length.should.equal(1);
+        offenders[0].domainName.should.equal('badboy.com');
+
+        qso.resetCache();
+        Object.keys(qso.getCache()).length.should.equal(0);
+
+        // No change in the DB state
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(1);
+          offenders[0].domainName.should.equal('badboy.com');
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Can update the cache from the database', function (done) {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase('badboy.com', function () {
+      qso.addDomainToCacheAndDatabase('another.com', function () {
+        Object.keys(qso.getCache()).length.should.equal(2);
+        qso.resetCache();
+        Object.keys(qso.getCache()).length.should.equal(0);
+
+        qso.updateCacheFromDatabase(function () {
+          Object.keys(qso.getCache()).length.should.equal(2);
+          qso.getCache()['badboy.com'].should.equal(true);
+          qso.getCache()['another.com'].should.equal(true);
+
+          done();
+        });
+      });
+    });
+  });
+
 });
 
 
