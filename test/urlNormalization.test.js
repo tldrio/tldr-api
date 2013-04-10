@@ -11,6 +11,7 @@ var should = require('chai').should()
   , i18n = require('../lib/i18n')
   , urlNormalization = require('../lib/urlNormalization')
   , Offenders = urlNormalization.Offenders
+  , QuerystringOffenders = urlNormalization.QuerystringOffenders
   , normalizeUrl = urlNormalization.normalizeUrl
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
@@ -31,14 +32,25 @@ describe.only('Offenders', function () {
   beforeEach(function (done) {
     function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
 
-    Offenders.resetCachedQuerystringOffenders;
     theRemove(Offenders, done);
   });
 
 
-  it('By default, getting all querystring offenders', function (done) {
-    console.log(Offenders.getAllQuerystringOffenders());
-    done();
+  it('Can add a querystring offender to both cache and database', function (done) {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase('badboy.com', function () {
+      Object.keys(qso.getCache()).length.should.equal(1);
+      qso.getCache()['badboy.com'].should.equal(true);
+
+      Offenders.find({}, function (err, offenders) {
+        offenders.length.should.equal(1);
+        offenders[0].domainName.should.equal('badboy.com');
+
+        done();
+      });
+    });
   });
 
 });
