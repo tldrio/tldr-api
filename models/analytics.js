@@ -5,6 +5,7 @@
  */
 
 var mongoose = require('mongoose')
+  , urlNormalization = require('../lib/urlNormalization')
   , customUtils = require('../lib/customUtils')
   , mqClient = require('../lib/message-queue')
   , _ = require('underscore')
@@ -246,7 +247,7 @@ EmbedAnalyticsSchema.index({ pageNormalizedUrl: 1, tldrId: 1 });
  */
 EmbedAnalyticsSchema.statics.addEmbedRead = function (pageUrl, tldrId, cb) {
   var callback = cb || function () {}
-    , pageNormalizedUrl = customUtils.normalizeUrl(pageUrl)
+    , pageNormalizedUrl = urlNormalization.normalizeUrl(pageUrl)
     , hostname = customUtils.getHostnameFromUrl(pageUrl)
     , self = this
     ;

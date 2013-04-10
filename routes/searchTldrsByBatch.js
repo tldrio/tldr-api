@@ -8,7 +8,8 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , _ = require('underscore')
-  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  , urlNormalization = require('../lib/urlNormalization')
+  , normalizeUrl = urlNormalization.normalizeUrl
   , i18n = require('../lib/i18n');
 
 /**

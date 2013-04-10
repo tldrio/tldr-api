@@ -11,6 +11,7 @@ var _ = require('underscore')
   , mailer = require('../lib/mailer')
   , mqClient = require('../lib/message-queue')
   , mongoose = require('mongoose')
+  , urlNormalization = require('../lib/urlNormalization')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
   , Schema = mongoose.Schema
@@ -90,7 +91,7 @@ TldrSchema = new Schema(
          , unique: true
          , required: true
          , validate: [validateUrl, i18n.validateTldrUrl]
-         , set: customUtils.normalizeUrl
+         , set: urlNormalization.normalizeUrl
          }
   , anonymous: { type: Boolean, default: false }
   , possibleUrls: [{ type: String, unique: true }]   // All urls that correspond to this tldr. Multikey-indexed.
@@ -429,7 +430,7 @@ function findOneInternal (selector, cb) {
 }
 
 TldrSchema.statics.findOneByUrl = function (url, cb) {
-  findOneInternal({ possibleUrls: customUtils.normalizeUrl(url) }, cb);
+  findOneInternal({ possibleUrls: urlNormalization.normalizeUrl(url) }, cb);
 };
 
 TldrSchema.statics.findOneById = function (id, cb) {

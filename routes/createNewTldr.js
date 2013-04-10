@@ -7,7 +7,8 @@ var bunyan = require('../lib/logger').bunyan
   , mqClient = require('../lib/message-queue')
   , Tldr = models.Tldr
   , updateTldrWithId = require('./updateTldrWithId')
-  , normalizeUrl = require('../lib/customUtils').normalizeUrl
+  , urlNormalization = require('../lib/urlNormalization')
+  , normalizeUrl = urlNormalization.normalizeUrl
   ;
 
 

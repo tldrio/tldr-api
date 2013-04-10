@@ -8,6 +8,7 @@
 var async = require('async')
   , _ = require('underscore')
   , models = require('../lib/models')
+  , urlNormalization = require('../lib/urlNormalization')
   , customUtils = require('../lib/customUtils')
   , Tldr = models.Tldr
   , DbObject = require('../lib/db')
@@ -41,9 +42,9 @@ async.waterfall([
           var possibleUrls = [];
           console.log('Renormalizing: ' + tldrs[i]._id);
 
-          tldrs[i].url = customUtils.normalizeUrl(tldrs[i].url);
+          tldrs[i].url = urlNormalization.normalizeUrl(tldrs[i].url);
           tldrs[i].possibleUrls.forEach(function (url) {
-            possibleUrls.push(customUtils.normalizeUrl(url));
+            possibleUrls.push(urlNormalization.normalizeUrl(url));
           });
           tldrs[i].possibleUrls = possibleUrls;
           tldrs[i].hostname = customUtils.getHostnameFromUrl(tldrs[i].url);

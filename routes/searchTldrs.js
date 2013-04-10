@@ -8,7 +8,6 @@
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
   , mailer = require('../lib/mailer')
-  , normalizeUrl = require('../lib/customUtils').normalizeUrl
   , i18n = require('../lib/i18n');
 
 /**
