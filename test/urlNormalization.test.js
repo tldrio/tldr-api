@@ -100,6 +100,15 @@ describe.only('Offenders', function () {
     });
   });
 
+  it('If we asynchronously add a domain, the cache gets updated immediately even though the database doesnt', function () {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase('badboy.com');
+    Object.keys(qso.getCache()).length.should.equal(1);
+    qso.getCache()['badboy.com'].should.equal(true);
+  });
+
 });
 
 
