@@ -38,6 +38,8 @@ describe('Offenders', function () {
   beforeEach(function (done) {
     function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
 
+    urlNormalization.querystringOffenders.resetCache();
+
     async.waterfall([
       async.apply(theRemove, User)
     , async.apply(theRemove, Credentials)
@@ -165,8 +167,6 @@ describe('Offenders', function () {
                      }
         , tldr
         , qso = urlNormalization.querystringOffenders;
-
-      qso.resetCache();
 
       async.waterfall([
       function (cb) {
