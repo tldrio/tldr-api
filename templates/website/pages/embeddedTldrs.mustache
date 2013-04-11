@@ -32,7 +32,9 @@
   </p>
   <p>
     With the tldr.io Wordpress plugin, you only need to put the custom shortcode <code>[tldrio_embed]</code> where you want the embedded summary of
-    your post to be.
+    your post to be. By default, if the summary has not yet been created, nothing will be displayed. You can change this in the plugin settings, so that
+    a link to tldr.io is displayed. That allows you to make sure the plugin works correctly. Once you make the summary, the default link will be replaced
+    by the embed.
   </p>
   <img src="/assets/img/embed-screenshot-1.png" alt="Embedding the summary of your own article" class="img-rounded embed-screenshot">
   <p>
@@ -40,6 +42,10 @@
     url of the article whose summary you want to embed. For example if you want the same embed as the one at the top of this page:
   </p>
   <img src="/assets/img/embed-screenshot-2.png" alt="Embedding the summary of any article" class="img-rounded embed-screenshot">
+  <p>
+    If you're feeling lazy, the plugin even adds a 'tldr.io' button in your editor (you can see in the screenshots). Click on it to insert the
+    <code>[tldrio_embed]</code> shortcode.
+  </p>
   <p>
     <strong>Make your blog awesome now! </strong> Install the plugin through your admin dashboard or <a target="_blank" href="http://downloads.wordpress.org/plugin/embed-tldrio-summaries.zip">download it</a>.
   </p>
@@ -61,26 +67,22 @@
     the parameters you want to use with it.
   </p>
   <p>
-    The code looks like this:<br>
-    <code>
-      &lt;blockquote OPTIONS_HERE class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;<br>
-      &lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;
-    </code>
+    <br><strong>To embed the tldr of your own post</strong><br>
+<textarea class="code-textarea" rows="2">&lt;blockquote data-use-own-tldr="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
+&lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;</textarea>
+
+    <br><br><strong>To embed the tldr of another post and display the article title</strong><br>
+<textarea class="code-textarea" rows="2">&lt;blockquote data-url="http://example.com/article" data-show-title="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
+&lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;</textarea>
+
   </p>
   <p>
-    And the options:
+    As you can see, it's always the same code, in which you specify options using data attributes:
     <ul>
       <li><code>data-use-own-tldr="true"</code> if you want to embed the summary of your own post</li>
       <li><code>data-url="some_url"</code> if you want to embed the summary an arbitrary url (if no tldr exists for the url the embed wil stay invisible)</li>
       <li><code>data-show-title="true|false"</code> if you want to show the title of the article in the embed (defaults to false)</li>
     </ul>
-  </p>
-  <p>
-    For example, to show the same embed as the one at the top of the page, you need this code:<br>
-    <code>
-      &lt;blockquote data-url="http://paulgraham.com/hw.html" data-show-title="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
-      &lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;
-    </code>
   </p>
 
   <br>
