@@ -109,6 +109,36 @@ describe('Offenders', function () {
     qso.getCache()['badboy.com'].should.equal(true);
   });
 
+  it('Can add the same domain multiple times without raising an error and keeping the docs unique', function (done) {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase('badboy.com', function (err) {
+      assert.isUndefined(err);
+      Object.keys(qso.getCache()).length.should.equal(1);
+      qso.getCache()['badboy.com'].should.equal(true);
+
+      Offenders.find({}, function (err, docs) {
+        docs.length.should.equal(1);
+        docs[0].domainName.should.equal('badboy.com');
+
+        // No error and no change if we add it again
+        qso.addDomainToCacheAndDatabase('badboy.com', function (err) {
+          assert.isUndefined(err);
+          Object.keys(qso.getCache()).length.should.equal(1);
+          qso.getCache()['badboy.com'].should.equal(true);
+
+          Offenders.find({}, function (err, docs) {
+            docs.length.should.equal(1);
+            docs[0].domainName.should.equal('badboy.com');
+
+            done();
+          });
+        });
+      });
+    });
+  });
+
 });
 
 
