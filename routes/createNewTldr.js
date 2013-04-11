@@ -14,6 +14,7 @@ var bunyan = require('../lib/logger').bunyan
 
 function createNewTldr (req, res, next) {
   var tldrToSend
+    , isQuerystringOffender = req.query.isQuerystringOffender === 'true'
     , url;
 
   if (!req.user) { return res.json(401, { message: i18n.needToBeLogged }); }
@@ -46,6 +47,8 @@ function createNewTldr (req, res, next) {
                          , values: { tldr: tldr, creator: req.user }
                          });
       }
+
+      if (isQuerystringOffender) { mqClient.emit('tldr.created.querystringoffender', { tldr: tldr }); }
 
       // Return the complete tldr with all populations
       Tldr.findOneById(tldr._id, function (err, tldr) {

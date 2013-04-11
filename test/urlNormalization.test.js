@@ -163,6 +163,7 @@ describe('Offenders', function () {
                      , imageUrl: 'http://google.com/image.png'
                      , articleWordCount: 437
                      }
+        , tldr
         , qso = urlNormalization.querystringOffenders;
 
       async.waterfall([
@@ -174,7 +175,8 @@ describe('Offenders', function () {
         });
       }
       , function (cb) {
-        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr) {
+          tldr = _tldr;
           tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
           tldr.possibleUrls.length.should.equal(1);
           tldr.possibleUrls[0].should.equal('http://mydomain.com/article');
@@ -186,6 +188,25 @@ describe('Offenders', function () {
 
             return cb();
           });
+        });
+      }
+      , function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(1);
+        qso.getCache()['mydomain.com'].should.equal(true);
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(1);
+          offenders[0].domainName.should.equal('mydomain.com');
+          return cb();
+        });
+      }
+      // If it has been done once, a new call to the handleQSO function shouldn't change anything
+      , function (cb) {
+        urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err, tldr) {
+          tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+          tldr.possibleUrls.length.should.equal(1);
+          tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
+
+          return cb();
         });
       }
       , function (cb) {
