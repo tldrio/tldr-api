@@ -23,7 +23,6 @@ function createNewTldr (req, res, next) {
       if (err.errors) { return res.json(403, models.getAllValidationErrorsWithExplanations(err.errors)); }
       if (err.code !== 11000 && err.code !== 11001) { return res.json(500, { message: i18n.mongoInternErrCreateTldr }); }
 
-      // POST on existing resource so we act as if it's an update
       url = normalizeUrl(req.body.url);
       return Tldr.findOne({ possibleUrls: url }, function (err, tldr) {
         req.params = { id: tldr._id };

@@ -8,6 +8,10 @@
 var should = require('chai').should()
   , assert = require('chai').assert
   , _ = require('underscore')
+  , models = require('../lib/models')
+  , Tldr = models.Tldr
+  , User = models.User
+  , Credentials = models.Credentials
   , i18n = require('../lib/i18n')
   , urlNormalization = require('../lib/urlNormalization')
   , Offenders = urlNormalization.Offenders
@@ -16,10 +20,12 @@ var should = require('chai').should()
   , config = require('../lib/config')
   , DbObject = require('../lib/db')
   , db = new DbObject(config.dbHost, config.dbName, config.dbPort)
+  , async = require('async')
   ;
 
 
 describe('Offenders', function () {
+  var user;
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -32,7 +38,18 @@ describe('Offenders', function () {
   beforeEach(function (done) {
     function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
 
-    theRemove(Offenders, done);
+    async.waterfall([
+      async.apply(theRemove, User)
+    , async.apply(theRemove, Credentials)
+    , async.apply(theRemove, Tldr)
+    , async.apply(theRemove, Offenders)
+    , function (cb) {
+        User.createAndSaveInstance({ email: 'valid@email.com', username: 'youpla', password: 'supersecret' }, function (err, _user) {
+          user = _user;
+          return cb();
+        });
+      }
+    ], done);
   });
 
 
@@ -129,8 +146,6 @@ describe('Offenders', function () {
           qso.getCache()['badboy.com'].should.equal(true);
 
           Offenders.find({}, function (err, docs) {
-            console.log("==============");
-            console.log(docs);
             docs.length.should.equal(1);
             docs[0].domainName.should.equal('badboy.com');
 
@@ -139,6 +154,52 @@ describe('Offenders', function () {
         });
       });
     });
+  });
+
+  it('handleQuerystringOffender can hanlde the fact that a tldr is a qso', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/article?var=value'
+                     , summaryBullets: ['coin']
+                     , imageUrl: 'http://google.com/image.png'
+                     , articleWordCount: 437
+                     }
+        , qso = urlNormalization.querystringOffenders;
+
+      async.waterfall([
+      function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(0);
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(0);
+          return cb();
+        });
+      }
+      , function (cb) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+          tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+          tldr.possibleUrls.length.should.equal(1);
+          tldr.possibleUrls[0].should.equal('http://mydomain.com/article');
+
+          urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err, tldr) {
+            tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
+
+            return cb();
+          });
+        });
+      }
+      , function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(1);
+        qso.getCache()['mydomain.com'].should.equal(true);
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(1);
+          offenders[0].domainName.should.equal('mydomain.com');
+          return cb();
+        });
+      }
+      ], done);
+
+
   });
 
 });
