@@ -129,6 +129,8 @@ describe('Offenders', function () {
           qso.getCache()['badboy.com'].should.equal(true);
 
           Offenders.find({}, function (err, docs) {
+            console.log("==============");
+            console.log(docs);
             docs.length.should.equal(1);
             docs[0].domainName.should.equal('badboy.com');
 
