@@ -15,6 +15,7 @@ var async = require('async')
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
   , customUtils = require('../lib/customUtils')
+  , urlNormalization = require('../lib/urlNormalization')
   , louis, tldr1, tldr2, tldr3, tldr4
   , now = new Date()
   , oneday = 24 * 3600 * 1000
@@ -99,6 +100,35 @@ async.waterfall([
         });
       });
     });
+  }
+, function (cb) {
+    // The state of the querystring offenders before we switched to a DB-backed solution
+    var defaultQuerystringOffenders = [
+      'youtube.com'
+    , 'spacex.com'
+    , 'groklaw.net'
+    , 'blog.tanyakhovanova.com'
+    , 'news.ycombinator.com'
+    , 'bennjordan.com'
+    , 'aarongreenspan.com'
+    , 'play.google.com'
+    , 'network-tools.com'
+    , 'mcahogarth.org'
+    , 'dendory.net'
+    , 'datacenteracceleration.com'
+    , 'code.google.com'
+    , 'symbo1ics.com'
+    , 'chartjs.org'
+    , 'us2.campaign-archive1.com'
+    , 'universityventuresfund.com'
+    , 'youell.com'
+    ]
+    , qso = new urlNormalization.QuerystringOffenders();
+
+    console.log("Initializing the querystring offenders in database");
+    async.each(defaultQuerystringOffenders, function (item, _cb) {
+      qso.addDomainToCacheAndDatabase(item, _cb)
+    }, cb);
   }
 , function (cb) {
     var tldrData1 = {url: 'http://www.nytimes.com/2013/03/06/opinion/the-country-that-stopped-reading.html', language: { language: 'en', confidence: 1}, categories: 'Startups', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }

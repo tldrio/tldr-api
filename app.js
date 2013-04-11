@@ -60,8 +60,6 @@ app.launch = function (cb) {
     urlNormalization.querystringOffenders.updateCacheFromDatabase(cb);
   }
   , function (cb) {
-    console.log("==============");
-    console.log(urlNormalization.querystringOffenders);
     api.launchServer(function () {
       website.launchServer(function () {
         cb();
