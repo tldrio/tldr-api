@@ -181,12 +181,15 @@ describe('Offenders', function () {
           tldr.possibleUrls.length.should.equal(1);
           tldr.possibleUrls[0].should.equal('http://mydomain.com/article');
 
-          urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err, tldr) {
-            tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
-            tldr.possibleUrls.length.should.equal(1);
-            tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
+          urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err) {
+            assert.isNull(err);
+            Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+              tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+              tldr.possibleUrls.length.should.equal(1);
+              tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
 
-            return cb();
+              return cb();
+            });
           });
         });
       }
@@ -201,12 +204,15 @@ describe('Offenders', function () {
       }
       // If it has been done once, a new call to the handleQSO function shouldn't change anything
       , function (cb) {
-        urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err, tldr) {
-          tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
-          tldr.possibleUrls.length.should.equal(1);
-          tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
+        urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err) {
+          assert.isNull(err);
+          Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+            tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
 
-          return cb();
+            return cb();
+          });
         });
       }
       , function (cb) {
