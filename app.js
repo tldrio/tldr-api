@@ -9,6 +9,8 @@ var DbObject = require('./lib/db')
   , api = require('./api')
   , website = require('./website')
   , app = {}
+  , async = require('async')
+  , urlNormalization = require('./lib/urlNormalization')
   , notificator = require('./lib/notificator')   // We need to launch the notificator somewhere
   ;
 
@@ -47,14 +49,27 @@ app.launch = function (cb) {
   var callback = cb || function () {}
     , self = this;
 
-  self.db.connectToDatabase(function(err) {
-    bunyan.info('Connection to the database opened');
+  async.waterfall([
+  function (cb) {
+    self.db.connectToDatabase(function (err) {
+      if (!err) { bunyan.info('Connection to the database opened'); }
+      return cb(err);
+    });
+  }
+  , function (cb) {
+    urlNormalization.querystringOffenders.updateCacheFromDatabase(cb);
+  }
+  , function (cb) {
+    console.log("==============");
+    console.log(urlNormalization.querystringOffenders);
     api.launchServer(function () {
       website.launchServer(function () {
-        callback();
+        cb();
       });
     });
-  });
+  }
+  ], callback);
+
 };
 
 

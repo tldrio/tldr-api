@@ -19,7 +19,7 @@ var should = require('chai').should()
   ;
 
 
-describe.only('Offenders', function () {
+describe('Offenders', function () {
 
   before(function (done) {
     db.connectToDatabase(done);
@@ -113,6 +113,28 @@ describe.only('Offenders', function () {
 
 
 describe('#normalizeUrl', function() {
+
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+  beforeEach(function (done) {
+    function theRemove(Collection, cb) { Collection.remove({}, function () { cb(); }); }
+
+    urlNormalization.querystringOffenders.resetCache();
+    theRemove(Offenders, function () {
+      urlNormalization.querystringOffenders.addDomainToCacheAndDatabase('youtube.com', function () {
+        urlNormalization.querystringOffenders.addDomainToCacheAndDatabase('news.ycombinator.com', function () {
+          done();
+        });
+      });
+    });
+  });
+
 
   it('Should keep correctly formatted urls unchanged', function () {
     var theUrl = "http://domain.tld/path/file.extension";
@@ -305,6 +327,18 @@ describe('#normalizeUrl', function() {
 
     theUrl = "https://lemonde.fr/about/me";
     normalizeUrl(theUrl).should.equal("http://lemonde.fr/about/me");
+  });
+
+  it('Should be able to update the querystring offenders and work synchronously with them', function () {
+    var theUrl;
+
+    theUrl = "http://lemonde.fr/about/me?var=value";
+    normalizeUrl(theUrl).should.equal("http://lemonde.fr/about/me");
+
+    urlNormalization.querystringOffenders.addDomainToCacheAndDatabase('lemonde.fr');
+
+    theUrl = "http://lemonde.fr/about/me?var=value";
+    normalizeUrl(theUrl).should.equal("http://lemonde.fr/about/me?var=value");
   });
 
   it('The normalize function should be idempotent', function () {
