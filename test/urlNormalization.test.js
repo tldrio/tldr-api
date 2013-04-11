@@ -166,6 +166,8 @@ describe('Offenders', function () {
         , tldr
         , qso = urlNormalization.querystringOffenders;
 
+      qso.resetCache();
+
       async.waterfall([
       function (cb) {
         Object.keys(qso.getCache()).length.should.equal(0);
