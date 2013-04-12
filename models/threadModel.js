@@ -56,6 +56,7 @@ ThreadSchema = new Schema(
            , default: 1
            }
   , alreadyVoted: [{ type: ObjectId }]   // Array of users who already voted for/against this thread
+  , archived: { type: Boolean, default: false }
   }
 , { strict: true });
 
