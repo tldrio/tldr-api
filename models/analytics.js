@@ -16,6 +16,7 @@ var mongoose = require('mongoose')
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
   , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
   , EmbedAnalyticsSchema, EmbedAnalytics
+  , TwitterAnalyticsSchema, TwitterAnalytics
   ;
 
 
@@ -271,6 +272,58 @@ EmbedAnalytics = mongoose.model('embedanalytics', EmbedAnalyticsSchema);
 
 
 
+// ========================================================================
+// Analytics on links on our users' Twitter timelines
+// ========================================================================
+
+TwitterAnalyticsSchema = new Schema({
+  urls: [{ type: String, unique: true }]
+, requestedCount: { type: Number, default: 1 }
+, requestedBy: [{ type: ObjectId, ref: 'user' }]
+, firstRequest: { type: Date }
+, lastRequest: { type: Date }
+});
+
+/**
+ * Update the analytics following a twitter request
+ * @param {ObjectId} options.userId Id of the user who made the request if any
+ * @param {Array of urls} options.urls The urls in the links
+ * @param {Object} options.expandedUrls Mapping between the urls and their expanded counterparts (inverse of link shortening by Twitter)
+ */
+TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
+  var callback = cb || function () {};
+
+  options.urls.forEach(function (url) {
+    var possibleUrls = [url]
+      , updateQuery = { $inc: { requestedCount: 1 }, lastRequest: new Date() }
+      ;
+
+    if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
+    if (options.userId) { updateQuery.$addToSet = { requestedBy: options.userId }; }
+
+    TwitterAnalytics.update( { urls: { $in: possibleUrls } }
+               , updateQuery
+               , { upsert: true, multi: false }
+               , function(err, numAffected, rawResponse) {
+                   if (err) { return callback(err); }
+
+                   // Make sure all of possibleUrls is in urls and the first request is set
+                   var updateQuery = { $addToSet: { urls: possibleUrls } };
+                   if (!rawResponse.updatedExisting) { updateQuery.firstRequest = new Date(); }
+
+                   TwitterAnalytics.update( { urls: { $in: possibleUrls } }
+                              , updateQuery
+                              , { multi: false }
+                              , function (err) { return callback(err); }
+                              );
+                 });
+  });
+};
+
+TwitterAnalytics = mongoose.model('twitteranalytics', TwitterAnalyticsSchema);
+
+
+
 // =============================
 // Handle all events
 // =============================
@@ -311,3 +364,4 @@ module.exports.Event = Event;
 module.exports.TldrAnalytics = TldrAnalytics;
 module.exports.UserAnalytics = UserAnalytics;
 module.exports.EmbedAnalytics = EmbedAnalytics;
+module.exports.TwitterAnalytics = TwitterAnalytics;

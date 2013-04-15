@@ -10,7 +10,9 @@ var bunyan = require('../lib/logger').bunyan
   , _ = require('underscore')
   , urlNormalization = require('../lib/urlNormalization')
   , normalizeUrl = urlNormalization.normalizeUrl
-  , i18n = require('../lib/i18n');
+  , i18n = require('../lib/i18n')
+  , mqClient = require('../lib/message-queue')
+  ;
 
 /**
  * Search tldrs by batch
@@ -23,6 +25,10 @@ function searchTldrsByBatch (req, res, next) {
     , urls = {}
     , maxBatchSize = 100
     ;
+
+  if (req.header('origin') === 'https://twitter.com') {
+    mqClient.emit('searchBatch.twitter', { urls: req.body.batch, expandedUrls: req.body.expandedUrls, userId: req.user ? req.user._id : null });
+  }
 
   if (!req.body.batch) { req.body.batch = []; }
   if (req.body.batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
