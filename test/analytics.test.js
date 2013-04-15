@@ -17,6 +17,7 @@ var should = require('chai').should()
   , TldrAnalytics = models.TldrAnalytics
   , UserAnalytics = models.UserAnalytics
   , EmbedAnalytics = models.EmbedAnalytics
+  , TwitterAnalytics = require('../models/analytics').TwitterAnalytics
   , config = require('../lib/config')
   , mqClient = require('../lib/message-queue')
   , DbObject = require('../lib/db')
@@ -905,10 +906,10 @@ describe.only('Twitter analytics', function () {
   });
 
   beforeEach(function (done) {
-    var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
-      , tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
-      , tldrData3 = {url: 'http://avc.com/mba-monday/tuesday', title:'mba-mondaddy', articleWordCount: 700, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
-      , userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
+    //var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
+      //, tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+      //, tldrData3 = {url: 'http://avc.com/mba-monday/tuesday', title:'mba-mondaddy', articleWordCount: 700, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
+    var userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
       , userbisData = { username: "easdeee", password: "eeeeeeee", email: "validagain@email.com", twitterHandle: 'zetwitkk' }
       ;
 
@@ -919,12 +920,12 @@ describe.only('Twitter analytics', function () {
       async.apply(theRemove, Credentials)
     , async.apply(theRemove, User)
     , async.apply(theRemove, Tldr)
-    , async.apply(theRemove, EmbedAnalytics)
+    , async.apply(theRemove, TwitterAnalytics)
     , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
     , function (cb) { User.createAndSaveInstance(userbisData, function(err, _user) { userbis = _user; cb(err); }); }
-    , function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
-    , function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
-    , function (cb) { Tldr.createAndSaveInstance(tldrData3, userbis, function(err, _tldr) { tldr3 = _tldr; cb(err); }); }
+    //, function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
+    //, function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
+    //, function (cb) { Tldr.createAndSaveInstance(tldrData3, userbis, function(err, _tldr) { tldr3 = _tldr; cb(err); }); }
     ], done);
   });
 
@@ -933,8 +934,96 @@ describe.only('Twitter analytics', function () {
     done();
   });
 
-  it('Dummy', function () {
+  it('Can create a new twitter analytics upon first call today', function (done) {
+    var options = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      ;
 
+    TwitterAnalytics.addRequest(options, function (err) {
+      TwitterAnalytics.find({}, function (err, tas) {
+        var ta;
+
+        tas.length.should.equal(1);
+        ta = tas[0];
+        ta.urls.length.should.equal(2);
+        ta.urls.should.contain('http://blop.com');
+        ta.urls.should.contain('http://yes.com');
+        ta.requestedCount.should.equal(1);
+        ta.requestedBy.length.should.equal(1);
+        ta.requestedBy[0].toString().should.equal(user._id.toString());
+        ta.timestamp.getTime().should.equal(dayNow.getTime());
+
+        done();
+      });
+    });
   });
+
+  it('Can increment the request count for the same urls but not the same user', function (done) {
+    var options = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options, function (err) {
+      options.userId = userbis._id;
+      TwitterAnalytics.addRequest(options, function (err) {
+        TwitterAnalytics.find({}, function (err, tas) {
+          var ta;
+
+          tas.length.should.equal(1);
+          ta = tas[0];
+          ta.urls.length.should.equal(2);
+          ta.urls.should.contain('http://blop.com');
+          ta.urls.should.contain('http://yes.com');
+          ta.requestedCount.should.equal(2);
+          ta.requestedBy.length.should.equal(2);
+          _.map(ta.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
+          _.map(ta.requestedBy, function (i) { return i.toString(); }).should.contain(userbis._id.toString());
+          ta.timestamp.getTime().should.equal(dayNow.getTime());
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Can add the new urls to the right object if there is an overlap', function (done) {
+    var options1 = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      , options2 = { urls: ['http://blaaap.com']
+                  , expandedUrls: { 'http://blaaap.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options1, function (err) {
+      TwitterAnalytics.addRequest(options2, function (err) {
+        TwitterAnalytics.find({}, function (err, tas) {
+          var ta;
+
+          tas.length.should.equal(1);
+          ta = tas[0];
+          ta.urls.length.should.equal(3);
+          ta.urls.should.contain('http://blop.com');
+          ta.urls.should.contain('http://blaaap.com');
+          ta.urls.should.contain('http://yes.com');
+          ta.requestedCount.should.equal(2);
+          ta.requestedBy.length.should.equal(1);
+          _.map(ta.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
+          ta.timestamp.getTime().should.equal(dayNow.getTime());
+
+          done();
+        });
+      });
+    });
+  });
+
+
+
 
 });

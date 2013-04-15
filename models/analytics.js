@@ -5,6 +5,7 @@
  */
 
 var mongoose = require('mongoose')
+  , async = require('async')
   , urlNormalization = require('../lib/urlNormalization')
   , customUtils = require('../lib/customUtils')
   , mqClient = require('../lib/message-queue')
@@ -280,8 +281,7 @@ TwitterAnalyticsSchema = new Schema({
   urls: [{ type: String, unique: true }]
 , requestedCount: { type: Number, default: 1 }
 , requestedBy: [{ type: ObjectId, ref: 'user' }]
-, firstRequest: { type: Date }
-, lastRequest: { type: Date }
+, timestamp: { type: Date }
 });
 
 /**
@@ -293,9 +293,12 @@ TwitterAnalyticsSchema = new Schema({
 TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
   var callback = cb || function () {};
 
-  options.urls.forEach(function (url) {
+  async.each(options.urls
+  , function (url, cb) {
     var possibleUrls = [url]
-      , updateQuery = { $inc: { requestedCount: 1 }, lastRequest: new Date() }
+      , updateQuery = { $inc: { requestedCount: 1 }
+                      , timestamp: customUtils.getDayResolution(new Date())
+                      }
       ;
 
     if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
@@ -305,19 +308,20 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
                , updateQuery
                , { upsert: true, multi: false }
                , function(err, numAffected, rawResponse) {
-                   if (err) { return callback(err); }
+                   if (err) { return cb(err); }
 
-                   // Make sure all of possibleUrls is in urls and the first request is set
-                   var updateQuery = { $addToSet: { urls: possibleUrls } };
-                   if (!rawResponse.updatedExisting) { updateQuery.firstRequest = new Date(); }
+                   // Make sure all of possibleUrls is in urls
+                   var query = rawResponse.upserted ? { _id: rawResponse.upserted } : { urls: { $in: possibleUrls } }
+                     , updateQuery = { $addToSet: { urls: { $each: possibleUrls } } }
+                     ;
 
-                   TwitterAnalytics.update( { urls: { $in: possibleUrls } }
+                   TwitterAnalytics.update( query
                               , updateQuery
                               , { multi: false }
-                              , function (err) { return callback(err); }
+                              , function (err) { return cb(err); }
                               );
                  });
-  });
+  }, callback);
 };
 
 TwitterAnalytics = mongoose.model('twitteranalytics', TwitterAnalyticsSchema);
