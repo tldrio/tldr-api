@@ -893,7 +893,7 @@ describe('Embed analytics', function () {
 
 
 
-describe.only('Twitter analytics', function () {
+describe('Twitter analytics', function () {
 
   var user, userbis, tldr1, tldr2, tldr3;
 
@@ -1023,6 +1023,87 @@ describe.only('Twitter analytics', function () {
     });
   });
 
+  it('Creates two objects for two separate sets of urls', function (done) {
+    var options1 = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      , options2 = { urls: ['http://blaaap.com']
+                  , expandedUrls: { 'http://blaaap.com': 'http://no.com' }
+                  , userId: userbis._id
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options1, function (err) {
+      TwitterAnalytics.addRequest(options2, function (err) {
+        TwitterAnalytics.find({}, function (err, tas) {
+          var ta1, ta2;
+
+          tas.length.should.equal(2);
+
+          ta1 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === user._id.toString(); });
+          ta1.urls.length.should.equal(2);
+          ta1.urls.should.contain('http://blop.com');
+          ta1.urls.should.contain('http://yes.com');
+          ta1.requestedCount.should.equal(1);
+          ta1.requestedBy.length.should.equal(1);
+          _.map(ta1.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
+          ta1.timestamp.getTime().should.equal(dayNow.getTime());
+
+          ta2 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === userbis._id.toString(); });
+          ta2.urls.length.should.equal(2);
+          ta2.urls.should.contain('http://blaaap.com');
+          ta2.urls.should.contain('http://no.com');
+          ta2.requestedCount.should.equal(1);
+          ta2.requestedBy.length.should.equal(1);
+          _.map(ta2.requestedBy, function (i) { return i.toString(); }).should.contain(userbis._id.toString());
+          ta2.timestamp.getTime().should.equal(dayNow.getTime());
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Creates two objects for two separate timestamps', function (done) {
+    var options = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , userId: user._id
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options, function (err) {
+      clock.tick(24 * 3600000);
+      options.userId = userbis._id;
+      TwitterAnalytics.addRequest(options, function (err) {
+        TwitterAnalytics.find({}, function (err, tas) {
+          var ta1, ta2;
+
+          tas.length.should.equal(2);
+
+          ta1 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === user._id.toString(); });
+          ta1.urls.length.should.equal(2);
+          ta1.urls.should.contain('http://blop.com');
+          ta1.urls.should.contain('http://yes.com');
+          ta1.requestedCount.should.equal(1);
+          ta1.requestedBy.length.should.equal(1);
+          _.map(ta1.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
+          ta1.timestamp.getTime().should.equal(dayNow.getTime());
+
+          ta2 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === userbis._id.toString(); });
+          ta2.urls.length.should.equal(2);
+          ta2.urls.should.contain('http://blop.com');
+          ta2.urls.should.contain('http://yes.com');
+          ta2.requestedCount.should.equal(1);
+          ta2.requestedBy.length.should.equal(1);
+          _.map(ta2.requestedBy, function (i) { return i.toString(); }).should.contain(userbis._id.toString());
+          ta2.timestamp.getTime().should.equal(tomorrow.getTime());
+
+          done();
+        });
+      });
+    });
+  });
 
 
 

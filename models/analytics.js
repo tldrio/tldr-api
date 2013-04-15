@@ -283,6 +283,7 @@ TwitterAnalyticsSchema = new Schema({
 , requestedBy: [{ type: ObjectId, ref: 'user' }]
 , timestamp: { type: Date }
 });
+TwitterAnalyticsSchema.index({ timestamp: 1, urls: 1 });
 
 /**
  * Update the analytics following a twitter request
@@ -291,20 +292,22 @@ TwitterAnalyticsSchema = new Schema({
  * @param {Object} options.expandedUrls Mapping between the urls and their expanded counterparts (inverse of link shortening by Twitter)
  */
 TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
-  var callback = cb || function () {};
+  var callback = cb || function () {}
+    , timestamp = customUtils.getDayResolution(new Date())
+    ;
 
   async.each(options.urls
   , function (url, cb) {
     var possibleUrls = [url]
       , updateQuery = { $inc: { requestedCount: 1 }
-                      , timestamp: customUtils.getDayResolution(new Date())
+                      //, timestamp: timestamp
                       }
       ;
 
     if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
     if (options.userId) { updateQuery.$addToSet = { requestedBy: options.userId }; }
 
-    TwitterAnalytics.update( { urls: { $in: possibleUrls } }
+    TwitterAnalytics.update( { urls: { $in: possibleUrls }, timestamp: timestamp }
                , updateQuery
                , { upsert: true, multi: false }
                , function(err, numAffected, rawResponse) {
