@@ -73,6 +73,7 @@ function displayPage (req, res, next) {
   var partials = req.renderingPartials || {}
     , values = req.renderingValues || {}
     , topic = req.params.topic
+    , limit = 10
     ;
 
   // Ensure cookie is set and tell template which boxes need to be checked
@@ -85,6 +86,10 @@ function displayPage (req, res, next) {
   req.renderingValues.tldrs.forEach(function (tldr) {
     tldr.tldrData = tldr.serializeForDataAttribute();
   });
+
+  if (values.tldrs.length >= limit) {
+    values.loadMoreButton = true;
+  }
 
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
