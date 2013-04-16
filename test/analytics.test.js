@@ -906,9 +906,6 @@ describe('Twitter analytics', function () {
   });
 
   beforeEach(function (done) {
-    //var tldrData1 = {url: 'http://needforair.com/nutcrackers', articleWordCount: 400, title:'nutcrackers', summaryBullets: ['Awesome Blog'], resourceAuthor: 'Charles' }
-      //, tldrData2 = {url: 'http://avc.com/mba-monday', title:'mba-monday', articleWordCount: 500, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
-      //, tldrData3 = {url: 'http://avc.com/mba-monday/tuesday', title:'mba-mondaddy', articleWordCount: 700, summaryBullets: ['Fred Wilson is my God'], resourceAuthor: 'Fred' }
     var userData = { username: "eeee", password: "eeeeeeee", email: "valid@email.com", twitterHandle: 'zetwit' }
       , userbisData = { username: "easdeee", password: "eeeeeeee", email: "validagain@email.com", twitterHandle: 'zetwitkk' }
       ;
@@ -923,9 +920,6 @@ describe('Twitter analytics', function () {
     , async.apply(theRemove, TwitterAnalytics)
     , function (cb) { User.createAndSaveInstance(userData, function(err, _user) { user = _user; cb(err); }); }
     , function (cb) { User.createAndSaveInstance(userbisData, function(err, _user) { userbis = _user; cb(err); }); }
-    //, function (cb) { Tldr.createAndSaveInstance(tldrData1, user, function(err, _tldr) { tldr1 = _tldr; cb(err); }); }
-    //, function (cb) { Tldr.createAndSaveInstance(tldrData2, user, function(err, _tldr) { tldr2 = _tldr; cb(err); }); }
-    //, function (cb) { Tldr.createAndSaveInstance(tldrData3, userbis, function(err, _tldr) { tldr3 = _tldr; cb(err); }); }
     ], done);
   });
 
@@ -934,10 +928,11 @@ describe('Twitter analytics', function () {
     done();
   });
 
-  it('Can create a new twitter analytics upon first call today', function (done) {
+  it('Can create a new twitter analytics upon first call today and normalize the urls', function (done) {
     var options = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       ;
 
@@ -948,8 +943,8 @@ describe('Twitter analytics', function () {
         tas.length.should.equal(1);
         ta = tas[0];
         ta.urls.length.should.equal(2);
-        ta.urls.should.contain('http://blop.com');
-        ta.urls.should.contain('http://yes.com');
+        ta.urls.should.contain('http://blop.com/');
+        ta.urls.should.contain('http://yes.com/');
         ta.requestedCount.should.equal(1);
         ta.requestedBy.length.should.equal(1);
         ta.requestedBy[0].toString().should.equal(user._id.toString());
@@ -964,6 +959,7 @@ describe('Twitter analytics', function () {
     var options = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       ;
 
@@ -976,8 +972,8 @@ describe('Twitter analytics', function () {
           tas.length.should.equal(1);
           ta = tas[0];
           ta.urls.length.should.equal(2);
-          ta.urls.should.contain('http://blop.com');
-          ta.urls.should.contain('http://yes.com');
+          ta.urls.should.contain('http://blop.com/');
+          ta.urls.should.contain('http://yes.com/');
           ta.requestedCount.should.equal(2);
           ta.requestedBy.length.should.equal(2);
           _.map(ta.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
@@ -994,10 +990,12 @@ describe('Twitter analytics', function () {
     var options1 = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       , options2 = { urls: ['http://blaaap.com']
                   , expandedUrls: { 'http://blaaap.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       ;
 
@@ -1009,9 +1007,9 @@ describe('Twitter analytics', function () {
           tas.length.should.equal(1);
           ta = tas[0];
           ta.urls.length.should.equal(3);
-          ta.urls.should.contain('http://blop.com');
-          ta.urls.should.contain('http://blaaap.com');
-          ta.urls.should.contain('http://yes.com');
+          ta.urls.should.contain('http://blop.com/');
+          ta.urls.should.contain('http://blaaap.com/');
+          ta.urls.should.contain('http://yes.com/');
           ta.requestedCount.should.equal(2);
           ta.requestedBy.length.should.equal(1);
           _.map(ta.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
@@ -1027,10 +1025,12 @@ describe('Twitter analytics', function () {
     var options1 = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       , options2 = { urls: ['http://blaaap.com']
                   , expandedUrls: { 'http://blaaap.com': 'http://no.com' }
                   , userId: userbis._id
+                  , testing: true
                   }
       ;
 
@@ -1043,8 +1043,8 @@ describe('Twitter analytics', function () {
 
           ta1 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === user._id.toString(); });
           ta1.urls.length.should.equal(2);
-          ta1.urls.should.contain('http://blop.com');
-          ta1.urls.should.contain('http://yes.com');
+          ta1.urls.should.contain('http://blop.com/');
+          ta1.urls.should.contain('http://yes.com/');
           ta1.requestedCount.should.equal(1);
           ta1.requestedBy.length.should.equal(1);
           _.map(ta1.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
@@ -1052,8 +1052,8 @@ describe('Twitter analytics', function () {
 
           ta2 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === userbis._id.toString(); });
           ta2.urls.length.should.equal(2);
-          ta2.urls.should.contain('http://blaaap.com');
-          ta2.urls.should.contain('http://no.com');
+          ta2.urls.should.contain('http://blaaap.com/');
+          ta2.urls.should.contain('http://no.com/');
           ta2.requestedCount.should.equal(1);
           ta2.requestedBy.length.should.equal(1);
           _.map(ta2.requestedBy, function (i) { return i.toString(); }).should.contain(userbis._id.toString());
@@ -1069,6 +1069,7 @@ describe('Twitter analytics', function () {
     var options = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }
                   , userId: user._id
+                  , testing: true
                   }
       ;
 
@@ -1083,8 +1084,8 @@ describe('Twitter analytics', function () {
 
           ta1 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === user._id.toString(); });
           ta1.urls.length.should.equal(2);
-          ta1.urls.should.contain('http://blop.com');
-          ta1.urls.should.contain('http://yes.com');
+          ta1.urls.should.contain('http://blop.com/');
+          ta1.urls.should.contain('http://yes.com/');
           ta1.requestedCount.should.equal(1);
           ta1.requestedBy.length.should.equal(1);
           _.map(ta1.requestedBy, function (i) { return i.toString(); }).should.contain(user._id.toString());
@@ -1092,8 +1093,8 @@ describe('Twitter analytics', function () {
 
           ta2 = _.find(tas, function (ta) { return ta.requestedBy[0].toString() === userbis._id.toString(); });
           ta2.urls.length.should.equal(2);
-          ta2.urls.should.contain('http://blop.com');
-          ta2.urls.should.contain('http://yes.com');
+          ta2.urls.should.contain('http://blop.com/');
+          ta2.urls.should.contain('http://yes.com/');
           ta2.requestedCount.should.equal(1);
           ta2.requestedBy.length.should.equal(1);
           _.map(ta2.requestedBy, function (i) { return i.toString(); }).should.contain(userbis._id.toString());
@@ -1107,4 +1108,4 @@ describe('Twitter analytics', function () {
 
 
 
-});
+});   // ==== End of 'Twitter Analytics' ==== //

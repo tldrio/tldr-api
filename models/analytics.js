@@ -290,6 +290,7 @@ TwitterAnalyticsSchema.index({ timestamp: 1, urls: 1 });
  * @param {ObjectId} options.userId Id of the user who made the request if any
  * @param {Array of urls} options.urls The urls in the links
  * @param {Object} options.expandedUrls Mapping between the urls and their expanded counterparts (inverse of link shortening by Twitter)
+ * @param {Boolean} options.testing Set it to true for testing so as to avoid waiting ofr the redirect chain
  */
 TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
   var callback = cb || function () {}
@@ -299,31 +300,44 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
   async.each(options.urls
   , function (url, cb) {
     var possibleUrls = [url]
-      , updateQuery = { $inc: { requestedCount: 1 }
-                      //, timestamp: timestamp
-                      }
+      , updateQuery = { $inc: { requestedCount: 1 } }
       ;
 
-    if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
     if (options.userId) { updateQuery.$addToSet = { requestedBy: options.userId }; }
+    if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
 
-    TwitterAnalytics.update( { urls: { $in: possibleUrls }, timestamp: timestamp }
-               , updateQuery
-               , { upsert: true, multi: false }
-               , function(err, numAffected, rawResponse) {
-                   if (err) { return cb(err); }
+    async.waterfall([
+      function (cb) {
+        if (options.testing) { return cb(); }
 
-                   // Make sure all of possibleUrls is in urls
-                   var query = rawResponse.upserted ? { _id: rawResponse.upserted } : { urls: { $in: possibleUrls } }
-                     , updateQuery = { $addToSet: { urls: { $each: possibleUrls } } }
-                     ;
+        customUtils.getRedirectionChain(possibleUrls, function (err, chain) {
+          possibleUrls = chain;
+          return cb();
+        });
+      }
+      , function () {
+        possibleUrls = _.map(possibleUrls, function (url) { return urlNormalization.normalizeUrl(url); });
 
-                   TwitterAnalytics.update( query
-                              , updateQuery
-                              , { multi: false }
-                              , function (err) { return cb(err); }
-                              );
-                 });
+        TwitterAnalytics.update( { urls: { $in: possibleUrls }, timestamp: timestamp }
+                   , updateQuery
+                   , { upsert: true, multi: false }
+                   , function(err, numAffected, rawResponse) {
+                       if (err) { return cb(err); }
+
+                       // Make sure all of possibleUrls is in urls
+                       var query = rawResponse.upserted ? { _id: rawResponse.upserted } : { urls: { $in: possibleUrls } }
+                         , updateQuery = { $addToSet: { urls: { $each: possibleUrls } } }
+                         ;
+
+                       TwitterAnalytics.update( query
+                                  , updateQuery
+                                  , { multi: false }
+                                  , function (err) { return cb(err); }
+                                  );
+                     });
+      }
+    ]);
+
   }, callback);
 };
 
@@ -363,6 +377,10 @@ mqClient.on('tldr.created', function (data) {
 mqClient.on('tldr.read.embed', function (data) {
   if (!data || !data.pageUrl || !data.tldr || !data.tldr._id) { return; }
   EmbedAnalytics.addEmbedRead(data.pageUrl, data.tldr._id);
+});
+
+mqClient.on('searchBatch.twitter', function (data) {
+  TwitterAnalytics.addRequest(data);
 });
 
 
