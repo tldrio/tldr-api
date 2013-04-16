@@ -588,6 +588,7 @@ TldrSchema.methods.getPublicData = function () {
                      , 'domain'
                      , 'categories'
                      , 'imageUrl'
+                     , 'thankedBy'
                      ]
     , self = this
     ;
