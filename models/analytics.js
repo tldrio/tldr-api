@@ -320,6 +320,7 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
       , function (cb) {   // Normalize all urls and dont save analytics if they're from a useless hostname
         var notrackHostnames = { 'instagram.com': true
                                , 'plus.google.com': true
+                               , 'twitter.com': true
                                }
           ;
 
