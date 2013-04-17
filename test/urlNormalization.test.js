@@ -160,7 +160,8 @@ describe('Offenders', function () {
 
   it('handleQuerystringOffender can hanlde the fact that a tldr is a qso', function (done) {
       var tldrData = { title: 'Blog NFA'
-                     , url: 'http://mydomain.com/article?var=value'
+                     , url: 'http://www.mydomain.com/article?var=value'
+                     // The hostname is normalized
                      , summaryBullets: ['coin']
                      , imageUrl: 'http://google.com/image.png'
                      , articleWordCount: 437
@@ -179,14 +180,14 @@ describe('Offenders', function () {
       , function (cb) {
         Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr) {
           tldr = _tldr;
-          tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+          tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value');
           tldr.possibleUrls.length.should.equal(1);
           tldr.possibleUrls[0].should.equal('http://mydomain.com/article');
 
           urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err) {
             assert.isNull(err);
             Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
-              tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+              tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value');
               tldr.possibleUrls.length.should.equal(1);
               tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
 
@@ -209,7 +210,7 @@ describe('Offenders', function () {
         urlNormalization.handleQuerystringOffender({ tldr: tldr }, function (err) {
           assert.isNull(err);
           Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
-            tldr.originalUrl.should.equal('http://mydomain.com/article?var=value');
+            tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value');
             tldr.possibleUrls.length.should.equal(1);
             tldr.possibleUrls[0].should.equal('http://mydomain.com/article?var=value');
 
