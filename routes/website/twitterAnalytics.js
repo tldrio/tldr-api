@@ -10,8 +10,14 @@ module.exports = function (req, res, next) {
     , today = customUtils.getDayResolution(new Date())
     , beg = new Date(today.getTime() - daysBack * 24 * 3600 * 1000)
     , small = 0, big = 0
+    , smallCount = 0, bigCount = 0
     , cutoffRead = 5
     ;
+
+  values.small = 0;
+  values.big = 0;
+  values.smallCount = 0;
+  values.bigCount = 0;
 
   partials.content = '{{>website/pages/twitterAnalytics}}';
 
@@ -21,16 +27,16 @@ module.exports = function (req, res, next) {
     tas.forEach(function (ta) {
       ta.requestedByLength = ta.requestedBy.length;
       if (ta.requestedCount < cutoffRead) {
-        small += ta.requestedCount;
+        values.small += ta.requestedCount;
+        values.smallCount += 1;
       } else {
-        big += ta.requestedCount;
+        values.big += ta.requestedCount;
+        values.bigCount += 1;
       }
     });
 
     values.tas = tas;
     values.daysBack = daysBack;
-    values.small = small;
-    values.big = big;
 
     res.render('website/basicLayout', { values: values
                                       , partials: partials
