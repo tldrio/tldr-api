@@ -165,6 +165,8 @@ beforeEach(website, middleware.websiteRoute, function (website) {
     website.get('/scratchpad', routes.website.scratchpad);
     website.get('/moderation', routes.website.moderation);
     website.get('/add-categories', routes.website.addCategories);
+    website.get('/twitter-analytics', function (req, res, next) { return res.redirect(302, '/twitter-analytics/0'); });
+    website.get('/twitter-analytics/:daysBack', routes.website.twitterAnalytics);
     website.get('/embed-admin', function (req, res, next) { return res.redirect(302, '/embed-admin/14'); });
     website.get('/embed-admin/:daysBack', routes.website.embedAdmin);
     website.get('/:username/impact', routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
