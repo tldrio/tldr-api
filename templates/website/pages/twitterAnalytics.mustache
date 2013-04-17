@@ -17,11 +17,22 @@
 
   <br>
 
-  <strong>Details</strong>
+  <strong>Details per request</strong>
   <ul>
-    {{#tas}}
+    {{#tasR}}
       <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedCount}})</li>
-    {{/tas}}
+    {{/tasR}}
   </ul>
+
+  <br>
+
+  <strong>Details per user</strong>
+  <ul>
+    {{#tasU}}
+      <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedByLength}})</li>
+    {{/tasU}}
+  </ul>
+
+  <br>
 
 </section>
