@@ -1,9 +1,19 @@
 <section class="marketing">
   <h1>Twitter analytics since {{daysBack}} days back</h1>
 
-{{#tas}}
-<div style="font-weight: bold; font-size: 16px;">{{representativeUrl}} ({{requestedCount}})</div>
-Requested by count: {{requestedByLength}}<br><br>
-{{/tas}}
+  <strong>Recap</strong>
+  <ul>
+    <li>Small: {{small}}</li>
+    <li>Big: {{big}}</li>
+  </ul>
+
+  <br>
+
+  <strong>Details</strong>
+  <ul>
+    {{#tas}}
+      <li><a href="">{{representativeUrl}}</a> ({{requestedCount}})</li>
+    {{/tas}}
+  </ul>
 
 </section>

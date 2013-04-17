@@ -9,6 +9,8 @@ module.exports = function (req, res, next) {
     , daysBack = req.params.daysBack
     , today = customUtils.getDayResolution(new Date())
     , beg = new Date(today.getTime() - daysBack * 24 * 3600 * 1000)
+    , small = 0, big = 0
+    , cutoffRead = 5
     ;
 
   partials.content = '{{>website/pages/twitterAnalytics}}';
@@ -18,10 +20,17 @@ module.exports = function (req, res, next) {
 
     tas.forEach(function (ta) {
       ta.requestedByLength = ta.requestedBy.length;
+      if (ta.requestedCount < cutoffRead) {
+        small += ta.requestedCount;
+      } else {
+        big += ta.requestedCount;
+      }
     });
 
     values.tas = tas;
     values.daysBack = daysBack;
+    values.small = small;
+    values.big = big;
 
     res.render('website/basicLayout', { values: values
                                       , partials: partials
