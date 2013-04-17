@@ -955,6 +955,25 @@ describe('Twitter analytics', function () {
     });
   });
 
+  it('Doesnt track analytics for blacklisted domains', function (done) {
+    var options = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://instagram.com/photo' }
+                  , userId: user._id
+                  , testing: true
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options, function (err) {
+      TwitterAnalytics.find({}, function (err, tas) {
+        var ta;
+
+        tas.length.should.equal(0);
+
+        done();
+      });
+    });
+  });
+
   it('Can increment the request count for the same urls but not the same user', function (done) {
     var options = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://yes.com' }

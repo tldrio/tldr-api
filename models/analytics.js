@@ -279,6 +279,7 @@ EmbedAnalytics = mongoose.model('embedanalytics', EmbedAnalyticsSchema);
 
 TwitterAnalyticsSchema = new Schema({
   urls: [{ type: String, unique: true }]
+, representativeUrl: { type: String }
 , requestedCount: { type: Number, default: 1 }
 , requestedBy: [{ type: ObjectId, ref: 'user' }]
 , timestamp: { type: Date }
@@ -307,16 +308,30 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
     if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
 
     async.waterfall([
-      function (cb) {
+      function (cb) {   // Add the whole redirection chain to the possible urls if not on test
         if (options.testing) { return cb(); }
 
         customUtils.getRedirectionChain(possibleUrls, function (err, chain) {
+          updateQuery.representativeUrl = chain[chain.length - 1];
           possibleUrls = chain;
           return cb();
         });
       }
-      , function () {
+      , function (cb) {   // Normalize all urls and dont save analytics if they're from a useless hostname
+        var notrackHostnames = { 'instagram.com': true
+                               , 'plus.google.com': true
+                               }
+          ;
+
         possibleUrls = _.map(possibleUrls, function (url) { return urlNormalization.normalizeUrl(url); });
+
+        if (notrackHostnames[customUtils.getHostnameFromUrl(possibleUrls[possibleUrls.length - 1])]) {
+          return callback();   // Stop execution
+        } else {
+          return cb();
+        }
+      }
+      , function () {
 
         TwitterAnalytics.update( { urls: { $in: possibleUrls }, timestamp: timestamp }
                    , updateQuery

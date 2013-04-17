@@ -18,7 +18,6 @@ module.exports = function (req, res, next) {
 
     tas.forEach(function (ta) {
       ta.requestedByLength = ta.requestedBy.length;
-      ta.representativeUrl = ta.urls[ta.urls.length - 1];
     });
 
     values.tas = tas;
