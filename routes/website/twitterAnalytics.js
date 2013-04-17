@@ -12,12 +12,18 @@ module.exports = function (req, res, next) {
     , small = 0, big = 0
     , smallCount = 0, bigCount = 0
     , cutoffRead = 4
+    , cutoffReadBU = 4
     ;
 
   values.small = 0;
   values.big = 0;
   values.smallCount = 0;
   values.bigCount = 0;
+
+  values.smallBU = 0;
+  values.bigBU = 0;
+  values.smallCountBU = 0;
+  values.bigCountBU = 0;
 
   partials.content = '{{>website/pages/twitterAnalytics}}';
 
@@ -32,6 +38,14 @@ module.exports = function (req, res, next) {
       } else {
         values.big += ta.requestedCount;
         values.bigCount += 1;
+      }
+
+      if (ta.requestedCount < cutoffReadBU) {
+        values.smallBU += ta.requestedCount;
+        values.smallCountBU += 1;
+      } else {
+        values.bigBU += ta.requestedCount;
+        values.bigCountBU += 1;
       }
     });
 
