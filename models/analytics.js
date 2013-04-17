@@ -321,6 +321,7 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
         var notrackHostnames = { 'instagram.com': true
                                , 'plus.google.com': true
                                , 'twitter.com': true
+                               , 'facebook.com': true
                                }
           ;
 
