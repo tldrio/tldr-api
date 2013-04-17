@@ -26,11 +26,14 @@ module.exports = function (req, res, next) {
   values.smallCountBU = 0;
   values.bigCountBU = 0;
 
+  values.averageRedundancy = 0;
+
   partials.content = '{{>website/pages/twitterAnalytics}}';
 
   TwitterAnalytics.find({ timestamp: { $gte: beg, $lte: today } }, function (err, tas) {
     tas.forEach(function (ta) {
       ta.requestedByLength = ta.requestedBy.length;
+      values.averageRedundancy += ta.requestedCount - ta.requestedByLength - ta.anonymousRequests;
       if (ta.requestedCount < cutoffRead) {
         values.small += ta.requestedCount;
         values.smallCount += 1;
@@ -48,6 +51,8 @@ module.exports = function (req, res, next) {
       }
     });
 
+    values.averageRedundancy = values.averageRedundancy / tas.length;
+
     tas.sort(function (a, b) { return b.requestedCount - a.requestedCount; });
     values.tasR = [];
     for (i = 0; i < Math.min(60, tas.length); i += 1) { values.tasR.push(tas[i]); }
@@ -56,10 +61,6 @@ module.exports = function (req, res, next) {
     console.log(tas);
     values.tasU = [];
     for (i = 0; i < Math.min(60, tas.length); i += 1) { values.tasU.push(tas[i]); }
-
-    console.log(tas.length);
-
-
 
     values.tas = tas;
     values.daysBack = daysBack;

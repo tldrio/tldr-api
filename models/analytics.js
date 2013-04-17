@@ -282,6 +282,7 @@ TwitterAnalyticsSchema = new Schema({
 , representativeUrl: { type: String }
 , requestedCount: { type: Number, default: 1 }
 , requestedBy: [{ type: ObjectId, ref: 'user' }]
+, anonymousRequests: { type: Number, default: 0 }
 , timestamp: { type: Date }
 });
 TwitterAnalyticsSchema.index({ timestamp: 1, urls: 1 });
@@ -304,7 +305,11 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
       , updateQuery = { $inc: { requestedCount: 1 } }
       ;
 
-    if (options.userId) { updateQuery.$addToSet = { requestedBy: options.userId }; }
+    if (options.userId) {
+      updateQuery.$addToSet = { requestedBy: options.userId };
+    } else {
+      updateQuery.$inc.anonymousRequests = 1;
+    }
     if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
 
     async.waterfall([

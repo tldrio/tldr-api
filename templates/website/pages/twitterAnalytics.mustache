@@ -1,6 +1,8 @@
 <section class="marketing">
   <h1>Twitter analytics since {{daysBack}} days back</h1>
 
+  Average redundancy: {{averageRedundancy}}<br>
+
   <strong>Recap by requests</strong>
   <ul>
     <li>Small: {{small}} mentions, {{smallCount}} articles</li>
@@ -29,7 +31,7 @@
   <strong>Details per user</strong>
   <ul>
     {{#tasU}}
-      <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedByLength}})</li>
+      <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedByLength}} and {{anonymousRequests}} anonymous requests, {{requestedCount}} mentions)</li>
     {{/tasU}}
   </ul>
 

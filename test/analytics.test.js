@@ -955,6 +955,32 @@ describe('Twitter analytics', function () {
     });
   });
 
+  it('Counts also anonymous requests', function (done) {
+    var options = { urls: ['http://blop.com']
+                  , expandedUrls: { 'http://blop.com': 'http://yes.com' }
+                  , testing: true
+                  }
+      ;
+
+    TwitterAnalytics.addRequest(options, function (err) {
+      TwitterAnalytics.find({}, function (err, tas) {
+        var ta;
+
+        tas.length.should.equal(1);
+        ta = tas[0];
+        ta.urls.length.should.equal(2);
+        ta.urls.should.contain('http://blop.com/');
+        ta.urls.should.contain('http://yes.com/');
+        ta.requestedCount.should.equal(1);
+        ta.requestedBy.length.should.equal(0);
+        ta.anonymousRequests.should.equal(1);
+        ta.timestamp.getTime().should.equal(dayNow.getTime());
+
+        done();
+      });
+    });
+  });
+
   it('Doesnt track analytics for blacklisted domains', function (done) {
     var options = { urls: ['http://blop.com']
                   , expandedUrls: { 'http://blop.com': 'http://instagram.com/photo' }
