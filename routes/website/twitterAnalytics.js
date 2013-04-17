@@ -11,7 +11,7 @@ module.exports = function (req, res, next) {
     , beg = new Date(today.getTime() - daysBack * 24 * 3600 * 1000)
     , small = 0, big = 0
     , smallCount = 0, bigCount = 0
-    , cutoffRead = 5
+    , cutoffRead = 4
     ;
 
   values.small = 0;
