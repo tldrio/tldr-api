@@ -41,10 +41,10 @@ module.exports = function (req, res, next) {
       }
 
       if (ta.requestedCount < cutoffReadBU) {
-        values.smallBU += ta.requestedCount;
+        values.smallBU += ta.requestedBy.length;
         values.smallCountBU += 1;
       } else {
-        values.bigBU += ta.requestedCount;
+        values.bigBU += ta.requestedBy.length;
         values.bigCountBU += 1;
       }
     });
