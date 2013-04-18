@@ -14,7 +14,7 @@ var models = require('../../lib/models')
   , async = require('async');
 
 
-module.exports = function (req, res, next) {
+function displayProfile (req, res, next) {
   var values = req.renderingValues || {}
     , partials = req.renderingPartials || {}
     , usernameLowerCased = req.params.username ? req.params.username.toLowerCase() : '';
@@ -63,8 +63,6 @@ module.exports = function (req, res, next) {
         });
       });
     }
-    // Second query to get the total length of tldrsCreated - Seems Not very optimal but otherwise
-    // it would require to populate the entire tldrsCreated array which can lead to even poorer perf
     , function (cb) {
       User.findOne({ usernameLowerCased: usernameLowerCased })
           .populate('tldrsCreated', '_id', { anonymous: false })
@@ -85,3 +83,6 @@ module.exports = function (req, res, next) {
                                          });
 }
 
+
+// Interface
+module.exports.displayProfile = displayProfile;

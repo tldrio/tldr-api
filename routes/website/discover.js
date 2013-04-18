@@ -77,7 +77,6 @@ function displayPage (req, res, next) {
     ;
 
   // Ensure cookie is set and tell template which boxes need to be checked
-  res.cookie('languages', JSON.stringify(req.renderingValues.languages), { path: '/', maxAge: 365 * 24 * 3600 });
   req.renderingValues.languagesToDisplay = {};
   req.renderingValues.languages.forEach(function (language) {
     req.renderingValues.languagesToDisplay[language] = true;
@@ -110,7 +109,27 @@ function displayPage (req, res, next) {
 }
 
 
+function serveCategoryRSSFeed (req, res, next) {
+  var partials = req.renderingPartials || {}
+    , values = req.renderingValues || {}
+    , category = req.params.topic
+    ;
+
+  values.title = "Latest summaries in " + category;
+  values.link = "http://tldr.io/discover/" + category;
+  values.description = "Latest summaries in " + category + " - tldr.io - interesting content summarized by people";
+
+  res.render('rss/feed', { values: values, partials: partials }, function(err, xml) {
+    res.type('xml');
+    res.send(200, xml);
+  });
+}
+
+
+
+
 // Interface
 module.exports.loadTldrs = loadTldrs;
 module.exports.loadTldrsByCategory = loadTldrsByCategory;
 module.exports.displayPage = displayPage;
+module.exports.serveCategoryRSSFeed = serveCategoryRSSFeed;

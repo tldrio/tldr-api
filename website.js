@@ -21,7 +21,7 @@ var express = require('express')
 // Set up templating
 h4e.setup({ app: website
           , baseDir: config.templatesDir
-          , toCompileDirs: ['website', 'emails']
+          , toCompileDirs: ['website', 'emails', 'rss']
           , extension: 'mustache'
           });
 
@@ -107,8 +107,12 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/release-notes', routes.website.releaseNotes);
   website.get('/embedded-tldrs', routes.website.embeddedTldrs);
 
-  //Discover
+
+  // Discover
   beforeEach(website, middleware.populateLanguages, function (website) {
+    // RSS feed for the discover pages
+    website.get( '/discover/:topic/feed.xml' , routes.website.discover.loadTldrsByCategory , routes.website.discover.serveCategoryRSSFeed);
+
     website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);
     website.get('/discover/newest', function (req, res, next) { return res.redirect(302, '/discover'); });
     website.get('/discover/mostread', function (req, res, next) { req.params.sort = 'mostread'; next(); }, routes.website.discover.loadTldrs, routes.website.discover.displayPage);
@@ -172,8 +176,8 @@ beforeEach(website, middleware.websiteRoute, function (website) {
     website.get('/:username/impact', routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
   });
 
-  // User profiles, leaderboard ...
-  website.get('/:username', routes.website.userPublicProfile);   // Routes are matched in order so this one is matched if nothing above is matched
+  // User profiles and RSS feeds
+  website.get('/:username', routes.website.userPublicProfile.displayProfile);   // Routes are matched in order so this one is matched if nothing above is matched
 });
 
 
