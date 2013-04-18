@@ -110,7 +110,7 @@ beforeEach(website, middleware.websiteRoute, function (website) {
 
   // Discover
   beforeEach(website, middleware.populateLanguages, function (website) {
-    // RSS feed for the discover pages
+    // RSS feed
     website.get( '/discover/:topic/feed.xml' , routes.website.discover.loadTldrsByCategory , routes.website.discover.serveCategoryRSSFeed);
 
     website.get('/discover', routes.website.discover.loadTldrs, routes.website.discover.displayPage);

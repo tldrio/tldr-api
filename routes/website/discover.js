@@ -90,6 +90,13 @@ function displayPage (req, res, next) {
     values.loadMoreButton = true;
   }
 
+  // Non default RSS feed
+  if (topic) {
+    values.rssFeed = { url: config.websiteUrl + "/discover/" + topic + "/feed.xml?languages=" + values.languages.join(",")
+                     , topic: topic
+                     };
+  }
+
   Topic.getCategories(function (err, categories) {
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;

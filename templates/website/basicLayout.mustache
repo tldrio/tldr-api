@@ -18,9 +18,12 @@
     <link rel="shortcut icon" href="/assets/img/favicon.ico" type="image/x-icon">
     <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/ohmamcbkcmfalompaelgoepcnbnpiioe">
 
-    {{#rssFeedPromotionLink}}
+    {{^rssFeed}}
       <link rel="alternate" type="application/rss+xml" title="Latest summaries from tldr.io" href="http://feeds.feedburner.com/TldrioLatestSummaries">
-    {{/rssFeedPromotionLink}}
+    {{/rssFeed}}
+    {{#rssFeed}}
+    <link rel="alternate" type="application/rss+xml" title="Latest summaries in {{topic}}" href="{{url}}">
+    {{/rssFeed}}
 
     <style>
       /* this needs to be between bootstrap.css and bootstrap-responsive.css, see the docs for further information*/
