@@ -3,6 +3,7 @@ var config = require('../../lib/config')
   , Topic = models.Topic
   , Tldr = models.Tldr
   , _ = require('underscore')
+  , mqClient = require('../../lib/message-queue')
   ;
 
 
@@ -125,6 +126,8 @@ function serveCategoryRSSFeed (req, res, next) {
   values.title = "Latest summaries in " + category;
   values.link = "http://tldr.io/discover/" + category;
   values.description = "Latest summaries in " + category + " - tldr.io - interesting content summarized by people";
+
+  mqClient.emit('rssfeed.get', { feedUrl: '/discover/' + category + '/feed.xml' });
 
   res.render('rss/feed', { values: values, partials: partials }, function(err, xml) {
     res.type('xml');

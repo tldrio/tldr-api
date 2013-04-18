@@ -17,6 +17,7 @@ var mongoose = require('mongoose')
   , TldrAnalyticsSchemaData, TldrAnalyticsSchema = {}, TldrAnalytics = {}
   , UserAnalyticsSchemaData, UserAnalyticsSchema = {}, UserAnalytics = {}
   , EmbedAnalyticsSchema, EmbedAnalytics
+  , RSSAnalyticsSchema, RSSAnalytics
   , TwitterAnalyticsSchema, TwitterAnalytics
   ;
 
@@ -274,6 +275,38 @@ EmbedAnalytics = mongoose.model('embedanalytics', EmbedAnalyticsSchema);
 
 
 // ========================================================================
+// RSS feeds analytics
+// Goal: know which RSS feeds are the most read
+// ========================================================================
+RSSAnalyticsSchema = new Schema({
+  timestamp: { type: Date }
+, feedUrl: { type: String }
+, getCount: { type: Number }
+});
+RSSAnalyticsSchema.index({ feedUrl: 1, timestamp: 1 });
+
+/**
+ * Increment the get counter for an RSS feed
+ * @param {ObjectId} feedUrl
+ * @param {Function} cb Optional callback, signature: err
+ */
+RSSAnalyticsSchema.statics.addGet = function (feedUrl, cb) {
+  var callback = cb || function () {}
+    ;
+
+  RSSAnalytics.update( { feedUrl: feedUrl, timestamp: customUtils.getDayResolution(new Date()) }
+             , { $inc: { getCount: 1 } }
+             , { upsert: true, multi: false }
+             , function(err) { return callback(err); }
+             );
+};
+
+RSSAnalytics = mongoose.model('rssanalytics', RSSAnalyticsSchema);
+
+
+
+
+// ========================================================================
 // Analytics on links on our users' Twitter timelines
 // ========================================================================
 
@@ -405,10 +438,17 @@ mqClient.on('searchBatch.twitter', function (data) {
   TwitterAnalytics.addRequest(data);
 });
 
+mqClient.on('rssfeed.get', function (data) {
+  if (data.feedUrl) {
+    RSSAnalytics.addGet(data.feedUrl);
+  }
+});
+
 
 // Interface
 module.exports.Event = Event;
 module.exports.TldrAnalytics = TldrAnalytics;
 module.exports.UserAnalytics = UserAnalytics;
 module.exports.EmbedAnalytics = EmbedAnalytics;
+module.exports.RSSAnalytics = RSSAnalytics;
 module.exports.TwitterAnalytics = TwitterAnalytics;

@@ -17,6 +17,7 @@ var should = require('chai').should()
   , TldrAnalytics = models.TldrAnalytics
   , UserAnalytics = models.UserAnalytics
   , EmbedAnalytics = models.EmbedAnalytics
+  , RSSAnalytics = models.RSSAnalytics
   , TwitterAnalytics = require('../models/analytics').TwitterAnalytics
   , config = require('../lib/config')
   , mqClient = require('../lib/message-queue')
@@ -891,6 +892,96 @@ describe('Embed analytics', function () {
 
 });   // ==== End of 'Embed analytics' ==== //
 
+
+describe('RSS analytics', function () {
+
+  var user, userbis, tldr1, tldr2, tldr3;
+
+  before(function (done) {
+    db.connectToDatabase(done);
+  });
+
+  after(function (done) {
+    db.closeDatabaseConnection(done);
+  });
+
+  beforeEach(function (done) {
+    clock = sinon.useFakeTimers(fakeNow.getTime());
+    function theRemove(collection, cb) { collection.remove({}, function(err) { cb(err); }); }   // Remove everything from collection
+
+    async.waterfall([
+      async.apply(theRemove, RSSAnalytics)
+    ], done);
+  });
+
+  afterEach(function (done) {
+    clock.restore();
+    done();
+  });
+
+  it('Can add one to different feeds and counter gets aggregated', function (done) {
+    RSSAnalytics.addGet('/firstfeed', function (err) {
+      RSSAnalytics.find({}, function (err, rssas) {
+        rssas.length.should.equal(1);
+        rssas[0].getCount.should.equal(1);
+        rssas[0].feedUrl.should.equal('/firstfeed');
+        rssas[0].timestamp.getTime().should.equal(dayNow.getTime());
+
+        RSSAnalytics.addGet('/firstfeed', function (err) {
+          RSSAnalytics.find({}, function (err, rssas) {
+            rssas.length.should.equal(1);
+            rssas[0].getCount.should.equal(2);
+            rssas[0].feedUrl.should.equal('/firstfeed');
+            rssas[0].timestamp.getTime().should.equal(dayNow.getTime());
+
+            RSSAnalytics.addGet('/another', function (err) {
+              RSSAnalytics.find({}, function (err, rssas) {
+                rssas.length.should.equal(2);
+                // No need to check for order, it is guaranteed by the index
+                rssas[0].getCount.should.equal(2);
+                rssas[0].feedUrl.should.equal('/firstfeed');
+                rssas[0].timestamp.getTime().should.equal(dayNow.getTime());
+                rssas[1].getCount.should.equal(1);
+                rssas[1].feedUrl.should.equal('/another');
+                rssas[1].timestamp.getTime().should.equal(dayNow.getTime());
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('Different periods make the api create different documents', function (done) {
+    RSSAnalytics.addGet('/firstfeed', function (err) {
+      RSSAnalytics.find({}, function (err, rssas) {
+        rssas.length.should.equal(1);
+        rssas[0].getCount.should.equal(1);
+        rssas[0].feedUrl.should.equal('/firstfeed');
+        rssas[0].timestamp.getTime().should.equal(dayNow.getTime());
+
+        clock.tick(24 * 3600 * 1000);
+
+        RSSAnalytics.addGet('/firstfeed', function (err) {
+          RSSAnalytics.find({}, function (err, rssas) {
+            rssas.length.should.equal(2);
+            rssas[0].getCount.should.equal(1);
+            rssas[0].feedUrl.should.equal('/firstfeed');
+            rssas[0].timestamp.getTime().should.equal(dayNow.getTime());
+            rssas[1].getCount.should.equal(1);
+            rssas[1].feedUrl.should.equal('/firstfeed');
+            rssas[1].timestamp.getTime().should.equal(tomorrow.getTime());
+
+            done();
+          });
+        });
+      });
+    });
+  });
+
+});   // ==== End of 'RSS Analytics' ==== //
 
 
 describe('Twitter analytics', function () {
