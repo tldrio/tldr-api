@@ -23,8 +23,7 @@ function searchTldrsByBatch (req, res, next) {
   var query = req.query
     , batch = []
     , urls = {}
-    , maxBatchSize = 100
-    ;
+    , maxBatchSize = req.body.nolimit ? 5000 : 100;
 
   if (req.header('origin') === 'https://twitter.com') {
     mqClient.emit('searchBatch.twitter', { urls: req.body.batch, expandedUrls: req.body.expandedUrls, userId: req.user ? req.user._id : null });
