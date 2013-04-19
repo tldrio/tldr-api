@@ -30,7 +30,7 @@ var should = require('chai').should()
 
 
 
-describe.only('Tldr with redirected urls', function () {
+describe('Tldr with redirected urls', function () {
 
   var user, userbis, tldr1, tldr2, tldr3;
 
@@ -132,22 +132,68 @@ describe.only('Tldr with redirected urls', function () {
         TwitterAnalytics.addRequest(taOptions1, function () {
           clock.tick(24 * 3600 * 1000);
           TwitterAnalytics.addRequest(taOptions2, function () {
-          tldrsWithRedirectedUrls.checkTARedirectionChain(tldrMessage, function () {
-            Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
-              tldr._id.toString().should.equal(tldr2._id.toString());
-              tldr.possibleUrls.length.should.equal(3);
-              tldr.possibleUrls.should.contain('http://yes.com/article');
-              tldr.possibleUrls.should.contain('http://blop.com/article');
-              tldr.possibleUrls.should.contain('http://blioup.com/article');
+            tldrsWithRedirectedUrls.checkTARedirectionChain(tldrMessage, function () {
+              Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+                tldr._id.toString().should.equal(tldr2._id.toString());
+                tldr.possibleUrls.length.should.equal(3);
+                tldr.possibleUrls.should.contain('http://yes.com/article');
+                tldr.possibleUrls.should.contain('http://blop.com/article');
+                tldr.possibleUrls.should.contain('http://blioup.com/article');
 
-              done();
-            });
+                done();
+              });
             });
           });
         });
       });
     });
   });
+
+  it('Upon receiving a new equivalence class, does nothing if it doesnt concern any tldr', function (done) {
+    Tldr.find({}, function (err, tldrs) {
+      var possibleUrlsArray = _.pluck(tldrs, 'possibleUrls');
+      tldrs.length.should.equal(3);
+      possibleUrlsArray = possibleUrlsArray[0].concat(possibleUrlsArray[1], possibleUrlsArray[2]);
+      possibleUrlsArray.length.should.equal(3);
+      possibleUrlsArray.should.contain('http://needforair.com/nutcrackers');
+      possibleUrlsArray.should.contain('http://yes.com/article');
+      possibleUrlsArray.should.contain('http://avc.com/mba-monday/tuesday');
+
+      tldrsWithRedirectedUrls.registerNewEquivalenceClass(['http://unrelated.com/article', 'http://another.com/article'], function () {
+        // No change
+        Tldr.find({}, function (err, tldrs) {
+          var possibleUrlsArray = _.pluck(tldrs, 'possibleUrls');
+          tldrs.length.should.equal(3);
+          possibleUrlsArray = possibleUrlsArray[0].concat(possibleUrlsArray[1], possibleUrlsArray[2]);
+          possibleUrlsArray.length.should.equal(3);
+          possibleUrlsArray.should.contain('http://needforair.com/nutcrackers');
+          possibleUrlsArray.should.contain('http://yes.com/article');
+          possibleUrlsArray.should.contain('http://avc.com/mba-monday/tuesday');
+
+
+          done();
+        });
+      });
+    });
+  });
+
+  it('Upon receiving a new equivalence class, affects the right tldr', function (done) {
+    Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+      tldr.possibleUrls.length.should.equal(1);
+      tldr.possibleUrls[0].should.equal('http://yes.com/article');
+
+      tldrsWithRedirectedUrls.registerNewEquivalenceClass(['http://related.com/article', 'http://yes.com/article'], function () {
+        Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+          tldr.possibleUrls.length.should.equal(2);
+          tldr.possibleUrls.should.contain('http://yes.com/article');
+          tldr.possibleUrls.should.contain('http://related.com/article');
+
+          done();
+        });
+      });
+    });
+  });
+
 
 });   // ==== End of 'Tldrs with redirected urls' ==== //
 

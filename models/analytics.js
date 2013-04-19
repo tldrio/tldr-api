@@ -372,7 +372,6 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
         }
       }
       , function () {
-
         TwitterAnalytics.update( { urls: { $in: possibleUrls }, timestamp: timestamp }
                    , updateQuery
                    , { upsert: true, multi: false }
@@ -383,6 +382,8 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
                        var query = rawResponse.upserted ? { _id: rawResponse.upserted } : { urls: { $in: possibleUrls } }
                          , updateQuery = { $addToSet: { urls: { $each: possibleUrls } } }
                          ;
+
+                       mqClient.emit('new.equivalenceclass', { newEquivalenceClass: possibleUrls });
 
                        TwitterAnalytics.update( query
                                   , updateQuery
