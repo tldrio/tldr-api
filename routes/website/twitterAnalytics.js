@@ -58,7 +58,6 @@ module.exports = function (req, res, next) {
     for (i = 0; i < Math.min(60, tas.length); i += 1) { values.tasR.push(tas[i]); }
 
     tas.sort(function (a, b) { return b.requestedBy.length - a.requestedBy.length; });
-    console.log(tas);
     values.tasU = [];
     for (i = 0; i < Math.min(60, tas.length); i += 1) { values.tasU.push(tas[i]); }
 
