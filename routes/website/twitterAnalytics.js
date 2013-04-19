@@ -42,7 +42,7 @@ module.exports = function (req, res, next) {
         values.bigCount += 1;
       }
 
-      if (ta.requestedCount < cutoffReadBU) {
+      if (ta.requestedBy.length < cutoffReadBU) {
         values.smallBU += ta.requestedBy.length;
         values.smallCountBU += 1;
       } else {
