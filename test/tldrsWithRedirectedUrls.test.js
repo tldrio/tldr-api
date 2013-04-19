@@ -105,4 +105,50 @@ describe.only('Tldr with redirected urls', function () {
     });
   });
 
+
+  it('Will find url redirects across days', function (done) {
+    var tldrMessage = { possibleUrls: [ 'http://yes.com/article' ], _id: tldr2._id }
+      , taOptions1 = { urls: ['http://blop.com/article']
+                  , expandedUrls: { 'http://blop.com/article': 'http://yes.com/article' }
+                  , userId: user._id
+                  , testing: true
+                  }
+      , taOptions2 = { urls: ['http://blioup.com/article']
+                  , expandedUrls: { 'http://blioup.com/article': 'http://yes.com/article' }
+                  , userId: user._id
+                  , testing: true
+                  }
+      ;
+
+    // Nothing registered in the Twitter Analytics yet
+    tldrsWithRedirectedUrls.checkTARedirectionChain(tldrMessage, function () {
+      Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+        tldr._id.toString().should.equal(tldr2._id.toString());
+
+        tldr.possibleUrls.length.should.equal(1);
+        tldr.possibleUrls.should.contain('http://yes.com/article');
+
+        // Now we test again after adding a Twitter Analytics 2 days in a row
+        TwitterAnalytics.addRequest(taOptions1, function () {
+          clock.tick(24 * 3600 * 1000);
+          TwitterAnalytics.addRequest(taOptions2, function () {
+          tldrsWithRedirectedUrls.checkTARedirectionChain(tldrMessage, function () {
+            Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+              tldr._id.toString().should.equal(tldr2._id.toString());
+              tldr.possibleUrls.length.should.equal(3);
+              tldr.possibleUrls.should.contain('http://yes.com/article');
+              tldr.possibleUrls.should.contain('http://blop.com/article');
+              tldr.possibleUrls.should.contain('http://blioup.com/article');
+
+              done();
+            });
+            });
+          });
+        });
+      });
+    });
+  });
+
 });   // ==== End of 'Tldrs with redirected urls' ==== //
+
+
