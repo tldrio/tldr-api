@@ -24,7 +24,7 @@ var should = require('chai').should()
   ;
 
 
-describe('Offenders', function () {
+describe.only('Offenders', function () {
   var user;
 
   before(function (done) {

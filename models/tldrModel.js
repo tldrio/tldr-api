@@ -155,7 +155,7 @@ TldrSchema = new Schema(
   , editors: [{ type: ObjectId, ref: 'user'}]
   }
 , { strict: true });
-
+TldrSchema.index({ possibleUrls: 1 }, { unique: true });
 
 
 // Keep virtual 'slug' attributes and send it when requested

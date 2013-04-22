@@ -1503,7 +1503,7 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
-  describe.only('Renormalization', function () {
+  describe('Renormalization', function () {
 
     it('Renormalize a tldr softly', function (done) {
       var tldrData = { title: 'Blog NFA'
@@ -1642,7 +1642,7 @@ describe('Tldr', function () {
               // Update them to give them querystrings
               Tldr.update({ _id: tldr1._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that'] } }, {}, function (err) {
                 assert.isNull(err);
-                Tldr.update({ _id: tldr2._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that'] } }, {}, function (err) {
+                Tldr.update({ _id: tldr2._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=thistoo'] } }, {}, function (err) {
                   assert.isNull(err);
                   Tldr.update({ _id: tldr3._id }, { $set: { possibleUrls: ['http://notthesame.com/anotherarticle?forget=that'] } }, {}, function (err) {
                     assert.isNull(err);
@@ -1656,24 +1656,33 @@ describe('Tldr', function () {
       }
       , function (cb) {
         Tldr.renormalizeDomain({ domainName: 'mydomain.com' }, function (err) {
+          var failed = true;
           assert.isNull(err);
-          Tldr.findOne({ _id: tldr1._id }, function (err, tldr) {
-            console.log(tldr);
-            tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
-            tldr.possibleUrls.length.should.equal(1);
-            tldr.possibleUrls.should.contain('http://mydomain.com/article');
+          Tldr.findOne({ _id: tldr1._id }, function (err, tldr1) {
+            tldr1.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+            tldr1.possibleUrls.length.should.equal(1);
 
-            Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
-              console.log("==============");
-              console.log(tldr);
-              tldr.originalUrl.should.equal('http://mydomain.com/anotherarticle?bouh=bad');
-              tldr.possibleUrls.length.should.equal(1);
-              tldr.possibleUrls.should.contain('http://mydomain.com/article?this=too');
+            Tldr.findOne({ _id: tldr2._id }, function (err, tldr2) {
+              tldr2.originalUrl.should.equal('http://mydomain.com/anotherarticle?bouh=bad');
+              tldr2.possibleUrls.length.should.equal(1);
 
-              Tldr.findOne({ _id: tldr3._id }, function (err, tldr) {
-                tldr.originalUrl.should.equal('http://notthesame.com/anotherarticle?bouh=bad');
-                tldr.possibleUrls.length.should.equal(1);
-                tldr.possibleUrls.should.contain('http://notthesame.com/anotherarticle?forget=that');
+              console.log(tldr1.possibleUrls);
+              console.log(tldr2.possibleUrls);
+              // Don't know the order of the renormalization and hence the tldr
+              // that provoked the duplicate error
+              if (tldr1.possibleUrls[0] === 'http://mydomain.com/article?forget=that' && tldr2.possibleUrls[0] === 'http://mydomain.com/article') {
+                failed = false;
+              }
+              if (tldr1.possibleUrls[0] === 'http://mydomain.com/article' && tldr2.possibleUrls[0] === 'http://mydomain.com/article?forget=thistoo') {
+                failed = false;
+              }
+
+              if (failed) { throw { message: 'Duplicate error wasnt raised' }; }
+
+              Tldr.findOne({ _id: tldr3._id }, function (err, tldr3) {
+                tldr3.originalUrl.should.equal('http://notthesame.com/anotherarticle?bouh=bad');
+                tldr3.possibleUrls.length.should.equal(1);
+                tldr3.possibleUrls.should.contain('http://notthesame.com/anotherarticle?forget=that');
 
                 done();
               });
@@ -1684,7 +1693,7 @@ describe('Tldr', function () {
       ], done);
     });
 
-  });
+  });   // ==== End of 'Renormalization' ==== //
 
 
   describe('#getCreatorId - both static and dynamic versions', function () {
