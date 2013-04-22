@@ -204,6 +204,7 @@ TldrSchema.statics.createAndSaveInstance = function (userInput, creator, callbac
     , history = new TldrHistory();
 
   instance.originalUrl = validFields.url;
+  // instance.url is normalized by the url setter
   if (instance.url) { instance.possibleUrls.push(instance.url); }
 
   // Initialize tldr history and save first version
@@ -299,8 +300,9 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
 
 /**
  * Renormalize a tldr
- * @param {Boolean} hard Optional. If set to true, make a "hard" renormalization,
+ * @param {Boolean} options.hard Optional. If set to true, make a "hard" renormalization,
  *                       i.e. reinitialize possibleUrls to [ normalizeUrl(originalUrl) ]
+ * @param {Function} cb Optional callback, signature: err, tldr
  */
 TldrSchema.methods.renormalize = function (options, cb) {
   var callback = cb || function () {}
@@ -318,6 +320,39 @@ TldrSchema.methods.renormalize = function (options, cb) {
 
   this.save(function (err, tldr) { return callback(err, tldr); });
 };
+
+
+/**
+ * Renormalize all tldrs for a given domain name
+ * @param {String} options.domainName Domain for which we renormalize all tldrs
+ * @param {Boolean} options.hard Optional. If set to true, make a "hard" renormalization,
+ *                       i.e. reinitialize possibleUrls to [ normalizeUrl(originalUrl) ]
+ * @param {Function} cb Optional callback, signature: err
+ */
+TldrSchema.statics.renormalizeDomain = function (options, cb) {
+  var callback = cb || function () {};
+
+  Topic.getDomainFromName(options.domainName, function (err, domain) {
+    if (err) { return callback(err); }
+
+    Tldr.find({ domain: domain._id }, function (err, tldrs) {
+      if (err) { return callback(err); }
+
+      async.each(tldrs
+      , function (tldr, cb) {
+        tldr.renormalize(options, function (err) {
+          // Swallow error if normalization generates a url conflict
+          // This tldr will not be modified and unreachable by normalized urls
+          if (err && err.code !== 11000 && err.code !== 11001) { return cb(err); }
+
+          return cb();
+        });
+      }
+      , callback);
+    });
+  });
+};
+
 
 
 // ========================================================================

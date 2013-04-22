@@ -1563,6 +1563,127 @@ describe('Tldr', function () {
       });
     });
 
+    it('Renormalize a whole domain using the same options as a single renormalization', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/article?bad=qs'
+                     , summaryBullets: ['coin']
+                     }
+        , tldr1, tldr2, tldr3;
+
+      async.waterfall([
+      function (cb) {   // Create necessary tldrs for testing
+        Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr1) {
+          tldr1 = _tldr1;
+          tldrData.url = 'http://mydomain.com/anotherarticle?bouh=bad';
+          Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr2) {
+            tldr2 = _tldr2;
+            tldrData.url = 'http://notthesame.com/anotherarticle?bouh=bad';
+            Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr3) {
+              tldr3 = _tldr3;
+
+              // Update them to give them querystrings
+              Tldr.update({ _id: tldr1._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that'] } }, {}, function () {
+                Tldr.update({ _id: tldr2._id }, { $set: { possibleUrls: ['http://mydomain.com/anotherarticle?forget=that'] } }, {}, function () {
+                  Tldr.update({ _id: tldr3._id }, { $set: { possibleUrls: ['http://notthesame.com/anotherarticle?forget=that'] } }, {}, function () {
+                    return cb();
+                  });
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Tldr.renormalizeDomain({ domainName: 'mydomain.com' }, function (err) {
+          assert.isNull(err);
+          Tldr.findOne({ _id: tldr1._id }, function (err, tldr) {
+            tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls.should.contain('http://mydomain.com/article');
+
+            Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+              tldr.originalUrl.should.equal('http://mydomain.com/anotherarticle?bouh=bad');
+              tldr.possibleUrls.length.should.equal(1);
+              tldr.possibleUrls.should.contain('http://mydomain.com/anotherarticle');
+
+              Tldr.findOne({ _id: tldr3._id }, function (err, tldr) {
+                tldr.originalUrl.should.equal('http://notthesame.com/anotherarticle?bouh=bad');
+                tldr.possibleUrls.length.should.equal(1);
+                tldr.possibleUrls.should.contain('http://notthesame.com/anotherarticle?forget=that');
+
+                done();
+              });
+            });
+          });
+        });
+      }
+      ], done);
+    });
+
+
+    it('Can renormalize a whole domain and not give an error if there is a conflict due to uniqueness', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/article?bad=qs'
+                     , summaryBullets: ['coin']
+                     }
+        , tldr1, tldr2, tldr3;
+
+      async.waterfall([
+      function (cb) {   // Create necessary tldrs for testing
+        Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr1) {
+          tldr1 = _tldr1;
+          tldrData.url = 'http://mydomain.com/anotherarticle?bouh=bad';
+          Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr2) {
+            tldr2 = _tldr2;
+            tldrData.url = 'http://notthesame.com/anotherarticle?bouh=bad';
+            Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr3) {
+              tldr3 = _tldr3;
+
+              // Update them to give them querystrings
+              Tldr.update({ _id: tldr1._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that'] } }, {}, function (err) {
+                assert.isNull(err);
+                Tldr.update({ _id: tldr2._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that'] } }, {}, function (err) {
+                  assert.isNull(err);
+                  Tldr.update({ _id: tldr3._id }, { $set: { possibleUrls: ['http://notthesame.com/anotherarticle?forget=that'] } }, {}, function (err) {
+                    assert.isNull(err);
+                    return cb();
+                  });
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Tldr.renormalizeDomain({ domainName: 'mydomain.com' }, function (err) {
+          assert.isNull(err);
+          Tldr.findOne({ _id: tldr1._id }, function (err, tldr) {
+            console.log(tldr);
+            tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+            tldr.possibleUrls.length.should.equal(1);
+            tldr.possibleUrls.should.contain('http://mydomain.com/article');
+
+            Tldr.findOne({ _id: tldr2._id }, function (err, tldr) {
+              console.log("==============");
+              console.log(tldr);
+              tldr.originalUrl.should.equal('http://mydomain.com/anotherarticle?bouh=bad');
+              tldr.possibleUrls.length.should.equal(1);
+              tldr.possibleUrls.should.contain('http://mydomain.com/article?this=too');
+
+              Tldr.findOne({ _id: tldr3._id }, function (err, tldr) {
+                tldr.originalUrl.should.equal('http://notthesame.com/anotherarticle?bouh=bad');
+                tldr.possibleUrls.length.should.equal(1);
+                tldr.possibleUrls.should.contain('http://notthesame.com/anotherarticle?forget=that');
+
+                done();
+              });
+            });
+          });
+        });
+      }
+      ], done);
+    });
+
   });
 
 
