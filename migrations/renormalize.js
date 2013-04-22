@@ -13,6 +13,7 @@ var async = require('async')
   , Tldr = models.Tldr
   , DbObject = require('../lib/db')
   , config = require('../lib/config')
+  , hard = false
   , db = new DbObject( config.dbHost
                      , config.dbName
                      , config.dbPort
@@ -20,6 +21,11 @@ var async = require('async')
 
 console.log('===== Beginning migration =====');
 console.log('Connecting to DB ' + config.dbHost + ':' + config.dbPort + '/' + config.dbName)
+
+if (process.argv[2] === 'hard') {
+  console.log("==== HARD RENORMALIZATION ====");
+  hard = true;
+}
 
 async.waterfall([
   function (cb) {
@@ -42,11 +48,7 @@ async.waterfall([
           var possibleUrls = [];
           console.log('Renormalizing: ' + tldrs[i]._id);
 
-          tldrs[i].possibleUrls.forEach(function (url) {
-            possibleUrls.push(urlNormalization.normalizeUrl(url));
-          });
-          tldrs[i].possibleUrls = possibleUrls;
-          tldrs[i].save(function(err) {
+          tldrs[i].renormalize({ hard: hard }, function(err) {
             if (err) { return cb(err); }
 
             i += 1;
