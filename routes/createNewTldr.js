@@ -48,7 +48,8 @@ function createNewTldr (req, res, next) {
                          });
       }
 
-      if (isQuerystringOffender) { mqClient.emit('tldr.created.querystringoffender', { tldr: tldr }); }
+      // For now, only Wordpress is handled
+      if (isQuerystringOffender) { mqClient.emit('tldr.created.querystringoffender', { tldr: tldr, significant: ['p'] }); }
 
       // Return the complete tldr with all populations
       Tldr.findOneById(tldr._id, function (err, tldr) {

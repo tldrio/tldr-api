@@ -1666,8 +1666,6 @@ describe('Tldr', function () {
               tldr2.originalUrl.should.equal('http://mydomain.com/anotherarticle?bouh=bad');
               tldr2.possibleUrls.length.should.equal(1);
 
-              console.log(tldr1.possibleUrls);
-              console.log(tldr2.possibleUrls);
               // Don't know the order of the renormalization and hence the tldr
               // that provoked the duplicate error
               if (tldr1.possibleUrls[0] === 'http://mydomain.com/article?forget=that' && tldr2.possibleUrls[0] === 'http://mydomain.com/article') {

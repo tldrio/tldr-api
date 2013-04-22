@@ -24,7 +24,7 @@ var should = require('chai').should()
   ;
 
 
-describe.only('Offenders', function () {
+describe('Offenders', function () {
   var user;
 
   before(function (done) {
@@ -294,6 +294,69 @@ describe.only('Offenders', function () {
         Object.keys(qso.getCache()).length.should.equal(1);
         qso.getCache()['mydomain.com'].significant.length.should.equal(1);
         qso.getCache()['mydomain.com'].significant.should.contain('sig');
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(1);
+          offenders[0].domainName.should.equal('mydomain.com');
+          return cb();
+        });
+      }
+      ], done);
+  });
+
+  it('handleQuerystringOffender now renormalizes the whole domain upon adding a qs offender', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://www.mydomain.com/article?var=value&sig=yes'
+                     // The hostname is normalized
+                     , summaryBullets: ['coin']
+                     , imageUrl: 'http://google.com/image.png'
+                     , articleWordCount: 437
+                     }
+        , tldr
+        , qso = urlNormalization.querystringOffenders;
+
+      async.waterfall([
+      function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(0);
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(0);
+          return cb();
+        });
+      }
+      , function (cb) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr) {
+          tldr = _tldr;
+
+          tldrData.url = 'http://mydomain.com/other?vari=varo';
+          Tldr.createAndSaveInstance(tldrData, user, function (err, tldr2) {
+            tldrData.url = 'http://other.com/other?vari=varo';
+            Tldr.createAndSaveInstance(tldrData, user, function (err, tldr3) {
+
+              urlNormalization.handleQuerystringOffender({ tldr: tldr, significant: [] }, function (err) {
+                assert.isNull(err);
+                Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+                  tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value&sig=yes');
+                  tldr.possibleUrls.length.should.equal(1);
+                  tldr.possibleUrls[0].should.equal('http://mydomain.com/article?sig=yes&var=value');
+
+                  Tldr.findOne({ _id: tldr2._id }, function (err, tldr2) {
+                    tldr2.possibleUrls.length.should.equal(1);
+                    tldr2.possibleUrls[0].should.equal('http://mydomain.com/other?vari=varo');
+                    Tldr.findOne({ _id: tldr3._id }, function (err, tldr3) {
+                      tldr3.possibleUrls.length.should.equal(1);
+                      tldr3.possibleUrls[0].should.equal('http://other.com/other');
+
+                      return cb();
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(1);
+        qso.getCache()['mydomain.com'].significant.length.should.equal(0);
         Offenders.find({}, function (err, offenders) {
           offenders.length.should.equal(1);
           offenders[0].domainName.should.equal('mydomain.com');
