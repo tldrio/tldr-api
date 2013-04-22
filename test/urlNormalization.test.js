@@ -24,7 +24,7 @@ var should = require('chai').should()
   ;
 
 
-describe('Offenders', function () {
+describe.only('Offenders', function () {
   var user;
 
   before(function (done) {
@@ -61,11 +61,33 @@ describe('Offenders', function () {
     Object.keys(qso.getCache()).length.should.equal(0);
     qso.addDomainToCacheAndDatabase('badboy.com', function () {
       Object.keys(qso.getCache()).length.should.equal(1);
-      qso.getCache()['badboy.com'].should.equal(true);
+      qso.getCache()['badboy.com'].significant.length.should.equal(0);
 
       Offenders.find({}, function (err, offenders) {
         offenders.length.should.equal(1);
         offenders[0].domainName.should.equal('badboy.com');
+
+        done();
+      });
+    });
+  });
+
+  it('Can add a qso and specify his significant part', function (done) {
+    var qso = new QuerystringOffenders();
+
+    Object.keys(qso.getCache()).length.should.equal(0);
+    qso.addDomainToCacheAndDatabase({ domainName: 'badboy.com', significant: ['whyinblazes', 'dontdothat'] }, function () {
+      Object.keys(qso.getCache()).length.should.equal(1);
+      qso.getCache()['badboy.com'].significant.length.should.equal(2);
+      qso.getCache()['badboy.com'].significant.should.contain('whyinblazes');
+      qso.getCache()['badboy.com'].significant.should.contain('dontdothat');
+
+      Offenders.find({}, function (err, offenders) {
+        offenders.length.should.equal(1);
+        offenders[0].domainName.should.equal('badboy.com');
+        offenders[0].significant.length.should.equal(2);
+        offenders[0].significant.should.contain('whyinblazes');
+        offenders[0].significant.should.contain('dontdothat');
 
         done();
       });
@@ -78,7 +100,7 @@ describe('Offenders', function () {
     Object.keys(qso.getCache()).length.should.equal(0);
     qso.addDomainToCacheAndDatabase('badboy.com', function () {
       Object.keys(qso.getCache()).length.should.equal(1);
-      qso.getCache()['badboy.com'].should.equal(true);
+      qso.getCache()['badboy.com'].significant.length.should.equal(0);
 
       Offenders.find({}, function (err, offenders) {
         offenders.length.should.equal(1);
@@ -110,8 +132,8 @@ describe('Offenders', function () {
 
         qso.updateCacheFromDatabase(function () {
           Object.keys(qso.getCache()).length.should.equal(2);
-          qso.getCache()['badboy.com'].should.equal(true);
-          qso.getCache()['another.com'].should.equal(true);
+          qso.getCache()['badboy.com'].significant.length.should.equal(0);
+          qso.getCache()['another.com'].significant.length.should.equal(0);
 
           done();
         });
@@ -125,7 +147,7 @@ describe('Offenders', function () {
     Object.keys(qso.getCache()).length.should.equal(0);
     qso.addDomainToCacheAndDatabase('badboy.com');
     Object.keys(qso.getCache()).length.should.equal(1);
-    qso.getCache()['badboy.com'].should.equal(true);
+    qso.getCache()['badboy.com'].significant.length.should.equal(0);
   });
 
   it('Can add the same domain multiple times without raising an error and keeping the docs unique', function (done) {
@@ -135,7 +157,7 @@ describe('Offenders', function () {
     qso.addDomainToCacheAndDatabase('badboy.com', function (err) {
       assert.isUndefined(err);
       Object.keys(qso.getCache()).length.should.equal(1);
-      qso.getCache()['badboy.com'].should.equal(true);
+      qso.getCache()['badboy.com'].significant.length.should.equal(0);
 
       Offenders.find({}, function (err, docs) {
         docs.length.should.equal(1);
@@ -145,7 +167,7 @@ describe('Offenders', function () {
         qso.addDomainToCacheAndDatabase('badboy.com', function (err) {
           assert.isUndefined(err);
           Object.keys(qso.getCache()).length.should.equal(1);
-          qso.getCache()['badboy.com'].should.equal(true);
+          qso.getCache()['badboy.com'].significant.length.should.equal(0);
 
           Offenders.find({}, function (err, docs) {
             docs.length.should.equal(1);
@@ -158,7 +180,7 @@ describe('Offenders', function () {
     });
   });
 
-  it('handleQuerystringOffender can hanlde the fact that a tldr is a qso', function (done) {
+  it('handleQuerystringOffender can handle the fact that a tldr is a qso', function (done) {
       var tldrData = { title: 'Blog NFA'
                      , url: 'http://www.mydomain.com/article?var=value'
                      // The hostname is normalized
@@ -198,7 +220,7 @@ describe('Offenders', function () {
       }
       , function (cb) {
         Object.keys(qso.getCache()).length.should.equal(1);
-        qso.getCache()['mydomain.com'].should.equal(true);
+        qso.getCache()['mydomain.com'].significant.length.should.equal(0);
         Offenders.find({}, function (err, offenders) {
           offenders.length.should.equal(1);
           offenders[0].domainName.should.equal('mydomain.com');
@@ -220,7 +242,7 @@ describe('Offenders', function () {
       }
       , function (cb) {
         Object.keys(qso.getCache()).length.should.equal(1);
-        qso.getCache()['mydomain.com'].should.equal(true);
+        qso.getCache()['mydomain.com'].significant.length.should.equal(0);
         Offenders.find({}, function (err, offenders) {
           offenders.length.should.equal(1);
           offenders[0].domainName.should.equal('mydomain.com');
@@ -228,9 +250,59 @@ describe('Offenders', function () {
         });
       }
       ], done);
-
-
   });
+
+  it('handleQuerystringOffender can handle a new qso with a significant part', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://www.mydomain.com/article?var=value&sig=yes'
+                     // The hostname is normalized
+                     , summaryBullets: ['coin']
+                     , imageUrl: 'http://google.com/image.png'
+                     , articleWordCount: 437
+                     }
+        , tldr
+        , qso = urlNormalization.querystringOffenders;
+
+      async.waterfall([
+      function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(0);
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(0);
+          return cb();
+        });
+      }
+      , function (cb) {
+        Tldr.createAndSaveInstance(tldrData, user, function (err, _tldr) {
+          tldr = _tldr;
+          tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value&sig=yes');
+          tldr.possibleUrls.length.should.equal(1);
+          tldr.possibleUrls[0].should.equal('http://mydomain.com/article');
+
+          urlNormalization.handleQuerystringOffender({ tldr: tldr, significant: ['sig'] }, function (err) {
+            assert.isNull(err);
+            Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+              tldr.originalUrl.should.equal('http://www.mydomain.com/article?var=value&sig=yes');
+              tldr.possibleUrls.length.should.equal(1);
+              tldr.possibleUrls[0].should.equal('http://mydomain.com/article?sig=yes');
+
+              return cb();
+            });
+          });
+        });
+      }
+      , function (cb) {
+        Object.keys(qso.getCache()).length.should.equal(1);
+        qso.getCache()['mydomain.com'].significant.length.should.equal(1);
+        qso.getCache()['mydomain.com'].significant.should.contain('sig');
+        Offenders.find({}, function (err, offenders) {
+          offenders.length.should.equal(1);
+          offenders[0].domainName.should.equal('mydomain.com');
+          return cb();
+        });
+      }
+      ], done);
+  });
+
 
 });
 
