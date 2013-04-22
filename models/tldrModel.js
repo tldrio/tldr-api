@@ -338,10 +338,6 @@ TldrSchema.statics.renormalizeDomain = function (options, cb) {
     Tldr.find({ domain: domain._id }, function (err, tldrs) {
       if (err) { return callback(err); }
 
-      console.log("=========================");
-      console.log(options.domainName);
-      console.log(tldrs.length);
-
       async.each(tldrs
       , function (tldr, cb) {
         tldr.renormalize(options, function (err) {
