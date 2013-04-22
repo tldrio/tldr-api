@@ -42,12 +42,10 @@ async.waterfall([
           var possibleUrls = [];
           console.log('Renormalizing: ' + tldrs[i]._id);
 
-          tldrs[i].url = urlNormalization.normalizeUrl(tldrs[i].url);
           tldrs[i].possibleUrls.forEach(function (url) {
             possibleUrls.push(urlNormalization.normalizeUrl(url));
           });
           tldrs[i].possibleUrls = possibleUrls;
-          tldrs[i].hostname = customUtils.getHostnameFromUrl(tldrs[i].url);
           tldrs[i].save(function(err) {
             if (err) { return cb(err); }
 

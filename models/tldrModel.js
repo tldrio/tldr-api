@@ -297,6 +297,28 @@ TldrSchema.statics.updateBatch = function (batch, updateQuery, cb) {
 };
 
 
+/**
+ * Renormalize a tldr
+ * @param {Boolean} hard Optional. If set to true, make a "hard" renormalization,
+ *                       i.e. reinitialize possibleUrls to [ normalizeUrl(originalUrl) ]
+ */
+TldrSchema.methods.renormalize = function (options, cb) {
+  var callback = cb || function () {}
+    , possibleUrls = []
+    ;
+
+  if (options.hard) {
+    this.possibleUrls = [ urlNormalization.normalizeUrl(this.originalUrl) ];
+  } else {
+    this.possibleUrls.forEach(function (url) {
+      possibleUrls.push(urlNormalization.normalizeUrl(url));
+    });
+    this.possibleUrls = possibleUrls;
+  }
+
+  this.save(function (err, tldr) { return callback(err, tldr); });
+};
+
 
 // ========================================================================
 // Moderation

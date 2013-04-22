@@ -1503,6 +1503,69 @@ describe('Tldr', function () {
   });   // ==== End of '#updateValidFields' ==== //
 
 
+  describe.only('Renormalization', function () {
+
+    it('Renormalize a tldr softly', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/article?bad=qs'
+                     , summaryBullets: ['coin']
+                     };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        Tldr.update({ _id: tldr._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that', 'http://another.com/grak?this=too'] } }, {}, function () {
+          Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+            tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+            tldr.possibleUrls.length.should.equal(2);
+            tldr.possibleUrls.should.contain('http://mydomain.com/article?forget=that');
+            tldr.possibleUrls.should.contain('http://another.com/grak?this=too');
+
+            tldr.renormalize({}, function (err) {
+              Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+                tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+                tldr.possibleUrls.length.should.equal(2);
+                tldr.possibleUrls.should.contain('http://mydomain.com/article');
+                tldr.possibleUrls.should.contain('http://another.com/grak');
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+
+    it('Renormalize a tldr the hard way', function (done) {
+      var tldrData = { title: 'Blog NFA'
+                     , url: 'http://mydomain.com/article?bad=qs'
+                     , summaryBullets: ['coin']
+                     };
+
+      Tldr.createAndSaveInstance(tldrData, user, function (err, tldr) {
+        Tldr.update({ _id: tldr._id }, { $set: { possibleUrls: ['http://mydomain.com/article?forget=that', 'http://another.com/grak?this=too'] } }, {}, function () {
+          Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+            tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+            tldr.possibleUrls.length.should.equal(2);
+            tldr.possibleUrls.should.contain('http://mydomain.com/article?forget=that');
+            tldr.possibleUrls.should.contain('http://another.com/grak?this=too');
+
+            tldr.renormalize({ hard: true }, function (err) {
+              Tldr.findOne({ _id: tldr._id }, function (err, tldr) {
+                tldr.originalUrl.should.equal('http://mydomain.com/article?bad=qs');
+                tldr.possibleUrls.length.should.equal(1);
+                tldr.possibleUrls.should.contain('http://mydomain.com/article');
+
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+
+  });
+
+
   describe('#getCreatorId - both static and dynamic versions', function () {
 
     it('If creator is not populated', function (done) {
