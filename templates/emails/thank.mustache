@@ -1,4 +1,4 @@
-Hey {{user.username}},<br><br>
+Hey {{creator.username}},<br><br>
 
 <a href="{{websiteUrl}}/{{thanker.username}}">{{thanker.username}}</a> just thanked you for your tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a>.
 
@@ -15,4 +15,4 @@ Awesome work!
 <br>
 ---------
 <br>
-You can <a href="{{websiteUrl}}/notifications/unsubscribe?id={{user._id}}&type=thank&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">unsubscribe</a> in one click from these notifications.
+You can <a href="{{websiteUrl}}/notifications/unsubscribe?id={{creator._id}}&type=thank&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">unsubscribe</a> in one click from these notifications.
