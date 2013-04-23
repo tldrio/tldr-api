@@ -1,6 +1,6 @@
 <div style="display: hidden" id="all-tldr-data" data-tldr="{{tldrData}}"></div>
 <div class="row">
-  <div class="tldr-base-unit page-tldr-container">
+  <div class="tldr-base-unit page-tldr-container span12">
     <div class="tldr-read-container">
       <div class="tldr-tldr" data-thanked="{{tldr.thankedBy}}">
         <div class="tldr-header">
@@ -52,7 +52,9 @@
         {{/tldr.imageUrl}}
       </div>
 
-      <div class="sub-tldr">
+      <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link visible-phone">Read full article</a>
+
+      <div class="sub-tldr hidden-phone">
         <a href="{{tldr.originalUrl}}" target="_blank" id="read-full-article" class="btn btn-link">Read full article</a>
         <div class="thank-container">
           <div class="btn-group">

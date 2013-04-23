@@ -38,6 +38,7 @@ function displayPage (req, res, tldr) {
   if (tldr.imageUrl) { values.pageMetaProperties = customUtils.upsertKVInArray(values.pageMetaProperties, 'og:image', tldr.imageUrl); }
 
   values.tldrData = tldrData;
+  values.responsive = true;
 
   return res.render('website/basicLayout', { values: values , partials: partials });
 }
