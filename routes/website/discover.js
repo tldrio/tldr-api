@@ -4,12 +4,18 @@ var config = require('../../lib/config')
   , Tldr = models.Tldr
   , _ = require('underscore')
   , mqClient = require('../../lib/message-queue')
+  , customUtils = require('../../lib/customUtils')
+  , profile = customUtils.profiler('TESTDISCOVER')
   ;
+
+
 
 
 // Get 100 tldrs according to our sort
 function loadTldrs (req, res, next) {
   var options = { limit: 100 };
+
+  profile('Begin');
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
@@ -22,9 +28,13 @@ function loadTldrs (req, res, next) {
   req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
+  profile('Before query');
+
   Tldr.findByQuery( { 'language.language': { $in: req.renderingValues.languages }
                     , 'distributionChannels.latestTldrs': true }
                   ,options, function (err, tldrs) {
+
+    profile('After query');
     req.renderingValues.tldrs = tldrs;
     return next();
   });
@@ -77,6 +87,7 @@ function displayPage (req, res, next) {
     , limit = 10
     ;
 
+    profile('Begin display');
   // Ensure cookie is set and tell template which boxes need to be checked
   req.renderingValues.languagesToDisplay = {};
   req.renderingValues.languages.forEach(function (language) {
@@ -97,8 +108,10 @@ function displayPage (req, res, next) {
                      , topic: topic
                      };
   }
+  profile('First prep ok');
 
   Topic.getCategories(function (err, categories) {
+  profile('Got categories');
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;
     values.description = "Discover summaries of interesting content contributed by the community.";
@@ -109,6 +122,8 @@ function displayPage (req, res, next) {
     });
 
     partials.content = '{{>website/pages/discover}}';
+
+  profile('Render now');
 
     res.render('website/responsiveLayout', { values: values
                                            , partials: partials
