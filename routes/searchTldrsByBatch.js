@@ -7,6 +7,7 @@
 
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
+  , SubscriptionTldr = require('../lib/models').SubscriptionTldr
   , _ = require('underscore')
   , urlNormalization = require('../lib/urlNormalization')
   , normalizeUrl = urlNormalization.normalizeUrl
@@ -49,7 +50,10 @@ function searchTldrsByBatch (req, res, next) {
       tldrsToReturn.push(tldr.getPublicData());
     });
 
-    return res.json(200, { tldrs: tldrsToReturn, urls: urls} );
+    batch = _.difference(batch, _.flatten(_.pluck(docs, 'possibleUrls')));
+    SubscriptionTldr.findByBatch(batch, function (err, docs) {
+      return res.json(200, { tldrs: tldrsToReturn, urls: urls, requests: docs} );
+    });
   });
 
 }

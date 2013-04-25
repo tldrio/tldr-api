@@ -74,6 +74,8 @@ api.put('/tldrs/:id', routes.updateTldrWithId);
 api.put('/tldrs/:id/thank', routes.thankContributor);
 api.delete('/tldrs/:id', routes.deleteTldrIfPossible);
 
+api.put('/subscriptions/:id/add', routes.addSubscriber);
+
 // routes for emails gathered during a product launch
 api.post('/subscribeEmailAddress', routes.subscribeEmailAddress);
 
