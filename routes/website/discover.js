@@ -15,7 +15,7 @@ var config = require('../../lib/config')
 function loadTldrs (req, res, next) {
   var options = { limit: 100 };
 
-  profile('Begin');
+  profile('Begin', true);
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
