@@ -49,11 +49,15 @@ function searchTldrsByBatch (req, res, next) {
     docs.forEach(function (tldr) {
       tldrsToReturn.push(tldr.getPublicData());
     });
+    if (req.body.insertSubscription) {
+      batch = _.difference(batch, _.flatten(_.pluck(docs, 'possibleUrls')));
+      SubscriptionTldr.findByBatch(batch, function (err, docs) {
+        return res.json(200, { tldrs: tldrsToReturn, urls: urls, requests: docs} );
+      });
+    } else {
+      return res.json(200, { tldrs: tldrsToReturn, urls: urls} );
+    }
 
-    batch = _.difference(batch, _.flatten(_.pluck(docs, 'possibleUrls')));
-    SubscriptionTldr.findByBatch(batch, function (err, docs) {
-      return res.json(200, { tldrs: tldrsToReturn, urls: urls, requests: docs} );
-    });
   });
 
 }
