@@ -343,7 +343,7 @@ TwitterAnalyticsSchema.statics.addRequest = function (options, cb) {
     } else {
       updateQuery.$inc.anonymousRequests = 1;
     }
-    if (options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
+    if (options.expandedUrls && options.expandedUrls[url]) { possibleUrls.push(options.expandedUrls[url]); }
 
     async.waterfall([
       function (cb) {   // Add the whole redirection chain to the possible urls if not on test
