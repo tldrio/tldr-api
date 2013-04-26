@@ -7,7 +7,7 @@
 
 var models = require('../../lib/models')
   , Tldr = models.Tldr
-  , SubscriptionTldr = models.SubscriptionTldr
+  , TldrSubscription = models.TldrSubscription
   , async = require('async')
   , _ = require('underscore')
   , config = require('../../lib/config')
@@ -31,7 +31,7 @@ module.exports = function (req, res, next) {
         .sort('-createdAt')
         .populateTldrFields()
         .exec(function (err, tldrs) {
-          SubscriptionTldr.find({url: { $in : _.uniq(_.pluck(tldrs, 'possibleUrls'))}}, function (err, subscriptions) {
+          TldrSubscription.find({url: { $in : _.uniq(_.pluck(tldrs, 'possibleUrls'))}}, function (err, subscriptions) {
             _.each(subscriptions, function (subscription) {
               _.each(tldrs, function (tldr) {
                 if (_.contains(tldr.possibleUrls, subscription.url)){

@@ -10,7 +10,7 @@ var i18n = require('../lib/i18n')
   , check = require('validator').check
   , Schema = mongoose.Schema
   , ObjectId = mongoose.Schema.ObjectId
-  , SubscriptionTldr, SubscriptionTldrSchema
+  , TldrSubscription, TldrSubscriptionSchema
   , async = require('async')
   , _ = require('underscore')
   , bunyan = require('../lib/logger').bunyan
@@ -22,7 +22,7 @@ var i18n = require('../lib/i18n')
 /*
  * Schema definition
  */
-SubscriptionTldrSchema = new Schema(
+TldrSubscriptionSchema = new Schema(
   { url: { type: String }
   , subscribersCount: { type: Number }
   , subscribers: [{ type: ObjectId, ref: 'user'}]
@@ -38,14 +38,16 @@ SubscriptionTldrSchema = new Schema(
  */
 
 // Find existing requests and create a new one if not
-SubscriptionTldrSchema.statics.findByBatch = function (batch, cb) {
+TldrSubscriptionSchema.statics.findByBatchOrInsert = function (batch, cb) {
   var callback = cb ? cb : function () {};
-  SubscriptionTldr.find({ url: { $in: batch } }, function (err, docs) {
+  TldrSubscription.find({ url: { $in: batch } }, function (err, docs) {
+    // Entries that are not in the db -> create a subscription for them
     var newEntries = _.difference(batch, _.pluck(docs, 'url'))
       , request;
 
     async.map(newEntries, function ( url, _cb) {
-      request = new SubscriptionTldr({ url: url, subscribersCount: Math.floor(Math.random()*50) + 17, subscribers: [] });
+      // Fake  subscribers count at the beginning
+      request = new TldrSubscription({ url: url, subscribersCount: Math.floor(Math.random()*50) + 17, subscribers: [] });
       request.save(_cb);
 
       }, function (err, results) {
@@ -57,7 +59,7 @@ SubscriptionTldrSchema.statics.findByBatch = function (batch, cb) {
 };
 
 // Add request
-SubscriptionTldrSchema.methods.addSubscriber = function (subscriber , cb) {
+TldrSubscriptionSchema.methods.addSubscriber = function (subscriber , cb) {
   var callback = cb ? cb : function () {};
 
   if (! subscriber || ! subscriber._id) {
@@ -76,7 +78,7 @@ SubscriptionTldrSchema.methods.addSubscriber = function (subscriber , cb) {
 
 
 // Define the model
-SubscriptionTldr = mongoose.model('subscription', SubscriptionTldrSchema);
+TldrSubscription = mongoose.model('subscription', TldrSubscriptionSchema);
 // Export Post
-module.exports = SubscriptionTldr;
+module.exports = TldrSubscription;
 

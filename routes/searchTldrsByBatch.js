@@ -7,7 +7,7 @@
 
 var bunyan = require('../lib/logger').bunyan
   , Tldr = require('../lib/models').Tldr
-  , SubscriptionTldr = require('../lib/models').SubscriptionTldr
+  , TldrSubscription = require('../lib/models').TldrSubscription
   , _ = require('underscore')
   , urlNormalization = require('../lib/urlNormalization')
   , normalizeUrl = urlNormalization.normalizeUrl
@@ -49,9 +49,13 @@ function searchTldrsByBatch (req, res, next) {
     docs.forEach(function (tldr) {
       tldrsToReturn.push(tldr.getPublicData());
     });
+
+    // Quick and dirty option provided by the client to tell the server he wants
+    // to ne able to subscribe to future tldrs
     if (req.body.insertSubscription) {
+      // Array of urls that dont have a tldr
       batch = _.difference(batch, _.flatten(_.pluck(docs, 'possibleUrls')));
-      SubscriptionTldr.findByBatch(batch, function (err, docs) {
+      TldrSubscription.findByBatchOrInsert(batch, function (err, docs) {
         return res.json(200, { tldrs: tldrsToReturn, urls: urls, requests: docs} );
       });
     } else {
