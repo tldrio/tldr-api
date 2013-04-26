@@ -8,6 +8,7 @@
 var bunyan = require('../lib/logger').bunyan
   , SubscriptionTldr = require('../lib/models').SubscriptionTldr
   , mailer = require('../lib/mailer')
+  , mqClient = require('../lib/message-queue')
   , i18n = require('../lib/i18n');
 
 
@@ -25,6 +26,7 @@ function addSubscriber (req, res, next) {
     }
     subscription.addSubscriber( req.user, function (err, subscription, silent) {
       if (err) { return next(i18n.se_thanking); }
+      mqClient.emit('tldr.subscribe', { subscriber: req.user, subscription: subscription });
       return res.json(200, subscription);
     });
   }) ;

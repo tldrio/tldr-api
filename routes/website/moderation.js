@@ -7,6 +7,7 @@
 
 var models = require('../../lib/models')
   , Tldr = models.Tldr
+  , SubscriptionTldr = models.SubscriptionTldr
   , async = require('async')
   , _ = require('underscore')
   , config = require('../../lib/config')
@@ -30,12 +31,22 @@ module.exports = function (req, res, next) {
         .sort('-createdAt')
         .populateTldrFields()
         .exec(function (err, tldrs) {
-          values.tldrs = tldrs;
-          values.count = tldrs.length;
-          _.each(values.tldrs, function (tldr) {
-            tldr.linkToTldrPage = true;
+          SubscriptionTldr.find({url: { $in : _.uniq(_.pluck(tldrs, 'possibleUrls'))}}, function (err, subscriptions) {
+            _.each(subscriptions, function (subscription) {
+              _.each(tldrs, function (tldr) {
+                if (_.contains(tldr.possibleUrls, subscription.url)){
+                  tldr.subscribersCount = subscription.subscribers.length;
+                }
+              });
+            });
+
+            values.tldrs = tldrs;
+            values.count = tldrs.length;
+            _.each(values.tldrs, function (tldr) {
+              tldr.linkToTldrPage = true;
+            });
+            cb(null);
           });
-          cb(null);
         });
     }
   ], function (err) {

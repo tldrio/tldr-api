@@ -13,6 +13,7 @@ var i18n = require('../lib/i18n')
   , SubscriptionTldr, SubscriptionTldrSchema
   , async = require('async')
   , _ = require('underscore')
+  , bunyan = require('../lib/logger').bunyan
   ;
 
 
@@ -25,6 +26,7 @@ SubscriptionTldrSchema = new Schema(
   { url: { type: String }
   , subscribersCount: { type: Number }
   , subscribers: [{ type: ObjectId, ref: 'user'}]
+  , fulfilled: { type: Boolean, default: false }
   }
 , { strict: true });
 
@@ -72,9 +74,9 @@ SubscriptionTldrSchema.methods.addSubscriber = function (subscriber , cb) {
   this.save(function (err, tldr) { return callback(err, tldr, false); });
 };
 
+
 // Define the model
 SubscriptionTldr = mongoose.model('subscription', SubscriptionTldrSchema);
-
-
 // Export Post
 module.exports = SubscriptionTldr;
+

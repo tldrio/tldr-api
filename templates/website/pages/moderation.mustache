@@ -40,6 +40,11 @@
               </span>
               <a href="/tldrs/{{_id}}/{{slug}}"><span class="label">page</span></a>
               <a href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><span class="label label-info">in DB</span></a>
+              {{#subscribersCount}}
+              <span class="tldr-readcount">
+              {{subscribersCount}} people waiting for this tldr
+              </span>
+              {{/subscribersCount}}
             </div>
             <ul>
               {{#summaryBullets}}
