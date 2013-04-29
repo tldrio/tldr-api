@@ -28,6 +28,9 @@ function checkForInactivity (limitDateOfInactivity) {
        console.log('Fatal error, couldnt retrieve the docs');
        process.exit(1);
      }
+     if (!user.email) {
+       return;
+     }
 
     async.each( users
               , function (user, cb) {
