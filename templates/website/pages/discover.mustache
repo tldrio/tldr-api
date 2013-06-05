@@ -1,0 +1,79 @@
+<div class="container main-container">
+  <div class="row">
+    <div class="span3 topics-list-column">
+      <ul class="nav nav-list topics-list">
+        {{#categories}}
+        <li{{#active}} class="active"{{/active}}>
+        <a href="/discover/{{slug}}">
+            <i class="icon-chevron-right"></i>
+            {{name}}
+          </a>
+        </li>
+        {{/categories}}
+      </ul>
+      <div class="options options-lang">
+        <label class="checkbox"><input data-language="en" type="checkbox"{{#languagesToDisplay.en}} checked="checked"{{/languagesToDisplay.en}}> English</label>
+        <label class="checkbox"><input data-language="de" type="checkbox"{{#languagesToDisplay.de}} checked="checked"{{/languagesToDisplay.de}}> German</label>
+      </div>
+        <hr class="soften">
+      <div class="options options-follow">
+        <p>
+          Subscribe to get featured summaries
+        </p>
+        <div class="subscribe-medium">
+          <div class="twitter-follow">
+            <a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-width="103px" data-lang="en" data-count="none">Follow @tldrio</a>
+            <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+          </div>
+          <div class="fb-like">
+            <iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Ftldr.io&amp;send=false&amp;layout=button_count&amp;width=450&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:95px; height:21px;" allowTransparency="true"></iframe>
+          </div>
+          <div>
+            {{^rssFeed}}
+              <a class="latest-rss-feed-link" href="http://feeds.feedburner.com/TldrioLatestSummaries" target="_blank"><img src="/assets/img/feed-icon-28x28.png" class="rss-feed-icon">RSS feed (2/day)</a>
+            {{/rssFeed}}
+            {{#rssFeed}}
+              <a class="latest-rss-feed-link" href="{{url}}" target="_blank"><img src="/assets/img/feed-icon-28x28.png" class="rss-feed-icon">RSS feed for this category</a>
+            {{/rssFeed}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="span9 discover-feed-column">
+      <div class="tab-content discover-feed-container">
+        <div class="discover-feed-options">
+          <span class="options">
+            {{#mostread}}
+            <a alt="Newest summaries" href="{{currentBaseUrl}}">Newest</a>
+            /
+            <span class="option-chosen">Most read</span>
+            {{/mostread}}
+            {{#newest}}
+            <span class="option-chosen">Newest</span>
+            /
+            <a alt="Most read summaries" href="{{currentBaseUrl}}/mostread">Most read</a>
+            {{/newest}}
+          </span>
+          <span class="options options-visual pull-right">
+            <a class="option-expand" alt="Expand all summaries" href="#">Expand all</a>
+            <a class="option-collapse" alt="Collapse all summaries" href="#" style="display:none;">Collapse all</a>
+          </span>
+        </div>
+        <div class="tab-pane active">
+          <ol class="media-list discover-tldr-list">
+            {{#tldrs}}
+            {{>website/discover.tldr.unit}}
+            {{/tldrs}}
+          </ol>
+        </div>
+        {{#loadMoreButton}}
+        <div class="discover-load-more">
+          <button class="btn btn-primary btn-load-more">
+            <img src="/assets/img/happy-derp.small.png">
+            Load more...
+          </button>
+        </div>
+        {{/loadMoreButton}}
+      </div>
+    </div>
+  </div>

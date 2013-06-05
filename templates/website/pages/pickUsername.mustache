@@ -1,0 +1,14 @@
+<header class="marketing">
+  <h1>Pick a username</h1>
+  <h2 class="marketing-byline">And registration is finished</h2>
+</header>
+
+
+<center>
+  {{>website/validationErrors}}
+
+  <form method="post" action="/third-party-auth/pick-username">
+    <input type="text" placeholder="Username" name="username" class="input" value="{{chosenUsername}}"><br>
+    <input type="submit" value="Done!" class="btn btn-primary">
+  </form>
+</center>

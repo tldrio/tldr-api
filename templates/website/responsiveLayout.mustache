@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}{{^title}}Read summaries of interesting content{{/title}}</title>
+    <meta name="description" content="{{description}}{{^description}}Summaries of interesting content, written by people.{{/description}}">
+    <meta name="author" content="">
+    <meta property="fb:admins" content="619070902">
+    {{#pageMetaProperties}}
+      <meta property="{{key}}" content="{{value}}">
+    {{/pageMetaProperties}}
+
+    <!-- Le styles -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+    <link rel="shortcut icon" href="/assets/img/favicon.ico" type="image/x-icon">
+    <link rel="chrome-webstore-item" href="https://chrome.google.com/webstore/detail/ohmamcbkcmfalompaelgoepcnbnpiioe">
+
+    {{^rssFeed}}
+      <link rel="alternate" type="application/rss+xml" title="Latest summaries from tldr.io" href="http://feeds.feedburner.com/TldrioLatestSummaries">
+    {{/rssFeed}}
+    {{#rssFeed}}
+    <link rel="alternate" type="application/rss+xml" title="Latest summaries in {{topic}}" href="{{url}}">
+    {{/rssFeed}}
+
+    <link rel="stylesheet" href="/assets/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="/assets/css/website.css">
+
+
+  </head>
+
+  <body>
+    <div class="all-but-footer">
+      {{>website/navbar.responsive}}
+
+        {{>content}}
+    </div>
+
+    {{>website/footer}}
+
+
+    <!--Require main js with Require.js-->
+    <script src="/src/website.js"></script>
+    <!-- google analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-33656717-1']);
+      _gaq.push(['_setDomainName', 'tldr.io']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+
+  </body>
+</html>

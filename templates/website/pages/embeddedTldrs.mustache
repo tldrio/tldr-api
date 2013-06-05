@@ -1,0 +1,103 @@
+<header class="marketing">
+<h1>Embedded tldrs</h1>
+<h2 class="marketing-byline">Use tldr.io summaries anywhere!</h2>
+</header>
+
+<div class="centered-block list-box">
+  <h4>What do they look like?</h4>
+  <p>
+  For example, this is the embedded summary of Paul Graham's essay, <a href="http://paulgraham.com/hw.html" target="_blank">"The HardWare Renaissance"</a>:
+  </p>
+  <blockquote data-url="http://paulgraham.com/hw.html" data-show-title="true" class="tldr-embed-widget" style="display: none;"></blockquote> <script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"></script>
+  <a href="#embed-examples">Check out a few real life examples</a>
+
+  <br><br>
+  <h4>I want them on my blog!</h4>
+  <p>
+    Good idea! You have three options. The first is the easiest but the other two work everywhere, not only Wordpress.
+    <ul>
+      <li><a href="#use-wordpress-plugin">1. Use our Wordpress plugin</a></li>
+      <li><a href="#use-tldr-embed-code">2. Use the embed code in a tldr</a></li>
+      <li><a href="#use-custom-code">3. Use a custom embed code</a></li>
+    </ul>
+  </p>
+
+  <br>
+  <div id="use-wordpress-plugin" class="anchor-before-h4-title"></div>
+  <h4>1. Using the Wordpress plugin</h4>
+  <p>
+    Our plugin is <a href="http://wordpress.org/extend/plugins/embed-tldrio-summaries/" target="_blank"><strong>hosted on Wordpress.org</strong></a>
+    so you can directly install it from your Wordpress dashboard, in the "plugins" section.
+    If you want to install it manually, <a href="http://downloads.wordpress.org/plugin/embed-tldrio-summaries.zip">download it</a>.
+  </p>
+  <p>
+    With the tldr.io Wordpress plugin, you only need to put the custom shortcode <code>[tldrio_embed]</code> where you want the embedded summary of
+    your post to be. By default, if the summary has not yet been created, nothing will be displayed. You can change this in the plugin settings, so that
+    a link to tldr.io is displayed. That allows you to make sure the plugin works correctly. Once you make the summary, the default link will be replaced
+    by the embed.
+  </p>
+  <img src="/assets/img/embed-screenshot-1.png" alt="Embedding the summary of your own article" class="img-rounded embed-screenshot">
+  <p>
+    You can also embed the summary of another article with the shortcode <code>[tldrio_embed someurl]</code> where <code>someurl</code> is the
+    url of the article whose summary you want to embed. For example if you want the same embed as the one at the top of this page:
+  </p>
+  <img src="/assets/img/embed-screenshot-2.png" alt="Embedding the summary of any article" class="img-rounded embed-screenshot">
+  <p>
+    If you're feeling lazy, the plugin even adds a 'tldr.io' button in your editor (you can see in the screenshots). Click on it to insert the
+    <code>[tldrio_embed]</code> shortcode.
+  </p>
+  <p>
+    <strong>Make your blog awesome now! </strong> Install the plugin through your admin dashboard or <a target="_blank" href="http://downloads.wordpress.org/plugin/embed-tldrio-summaries.zip">download it</a>.
+  </p>
+
+  <br>
+  <div id="use-tldr-embed-code" class="anchor-before-h4-title"></div>
+  <h4>2. Using the embed code in a tldr</h4>
+  <p>
+    If you don't have Wordpress, don't worry, this method and the next work everywhere. Wherever a tldr is displayed, you can easily get the HTML embed code.
+    You can find it on the website and on the extension, and it's always at the same place: bottom right of the tldr:
+  </p>
+  <img src="/assets/img/embed-screenshot-4.png" alt="Embedding the summary of any article" class="img-rounded embed-screenshot">
+
+  <br><br>
+  <div id="use-custom-code" class="anchor-before-h4-title"></div>
+  <h4>3. Using a custom code</h4>
+  <p>
+    Use this option for maximum flexibility or if you think the embed codes used in option #2 are too big. Here you need to use a small HTML code and choose
+    the parameters you want to use with it.
+  </p>
+  <p>
+    <br><strong>To embed the tldr of your own post</strong><br>
+<textarea class="code-textarea" rows="2">&lt;blockquote data-use-own-tldr="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
+&lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;</textarea>
+
+    <br><br><strong>To embed the tldr of another post and display the article title</strong><br>
+<textarea class="code-textarea" rows="2">&lt;blockquote data-url="http://example.com/article" data-show-title="true" class="tldr-embed-widget" style="display: none;"&gt;&lt;/blockquote&gt;
+&lt;script async src="//tldr.io/embed/widget-embed.js" charset="utf-8"&gt;&lt;/script&gt;</textarea>
+
+  </p>
+  <p>
+    As you can see, it's always the same code, in which you specify options using data attributes:
+    <ul>
+      <li><code>data-use-own-tldr="true"</code> if you want to embed the summary of your own post</li>
+      <li><code>data-url="some_url"</code> if you want to embed the summary an arbitrary url (if no tldr exists for the url the embed wil stay invisible).
+          You can also use <code>data-url="own"</code> or <code>data-url="this page"</code> to get the same behaviour as the above option <code>data-use-own-tldr="true"</code>.
+      </li>
+      <li><code>data-show-title="true|false"</code> if you want to show the title of the article in the embed (defaults to false)</li>
+    </ul>
+  </p>
+
+  <br>
+  <div id="embed-examples" class="anchor-before-h4-title"></div>
+  <h4>Embedded tldrs in the wild</h4>
+  <p>
+    A few real life examples:
+    <ul>
+      <li><a href="http://blog.dartwatch.com/2013/03/getting-your-feet-wet-with-streams.html" target="_blank">On Chris Buckett's blog on Dart</a></li>
+      <li><a href="http://thedrawingboard.me/2013/02/04/the-importance-of-good-mentors/" target="_blank">On Seedcamp Partner Carlos Espinal's blog in the form of key takeaways after a post</a></li>
+      <li><a href="http://blog.tldr.io/3d-printing-is-the-next-industrial-revolution/" target="_blank">Several embeds in one of our story newsletters</a></li>
+      <li><a href="http://zerotosuperhero.com/mindhack/find-your-lifes-last-known-working-configuration/" target="_blank">On Jason Comely's ZeroToSuperhero</a></li>
+      <li><a href="http://siliconic.tumblr.com/post/45988377931/tldr-io-is-a-more-productive-way-to-read-the-web-and" target="_blank">And more ...</a></li>
+    </ul>
+  </p>
+</div>

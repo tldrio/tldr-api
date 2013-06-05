@@ -1,0 +1,10 @@
+user-agent: *
+disallow: /impact
+disallow: /account
+disallow: /moderation
+disallow: /tldrscreated
+disallow: /forum/newThread
+disallow: /forum/posts/
+disallow: /third-party-auth/
+
+sitemap: http://tldr.io/sitemaps/sitemap.xml

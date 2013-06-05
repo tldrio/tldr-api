@@ -1,0 +1,61 @@
+{
+  "name": "tldr-api",
+  "private": true,
+  "version": "1.0.0",
+  "author": "tldr",
+  "contributors": [
+    "Stanislas Marion",
+    "Charles Miglietti",
+    "Louis Chatriot"
+  ],
+  "description": "crowdsourced summaries",
+  "keywords": [
+    "summary",
+    "tldr"
+  ],
+  "homepage": "http://tldr.io",
+  "engines": {
+    "node": "0.8.2",
+    "npm": "1.1.42"
+  },
+  "dependencies": {
+    "h4e": "0.3.0",
+    "bcrypt": "0.7.3",
+    "bunyan": "0.7.x",
+    "connect-redis": "1.4.x",
+    "consolidate": "0.3.x",
+    "express": "3.0.0rc5",
+    "jade": ">= 0.0.1",
+    "hogan.js": "2.0.x",
+    "mailchimp": "0.9.x",
+    "mongoose": "3.3.x",
+    "nodemailer": "0.3.x",
+    "node-redis-pubsub": "0.1.1",
+    "passport": "0.1.10",
+    "passport-local": "0.1.3",
+    "underscore": "1.4.x",
+    "validator": "0.4.x",
+    "marked": "0.2.5",
+    "redis": "~0.8.2",
+    "hiredis": "~0.1.14",
+    "request": "2.9.x",
+    "passport-google": "~0.2.0",
+    "async": "~0.2.5",
+    "diff": "~1.0.4",
+    "underscore.string": "~2.3.1",
+    "moment": "~2.0.0",
+    "express-group-handlers": "0.1.0",
+    "ua-parser": "0.3.x",
+    "geoip-lite": "~1.0.10",
+    "cheerio": "~0.11.0"
+  },
+  "devDependencies": {
+    "chai": "1.0.x",
+    "mocha": "1.8.x",
+    "sinon": "1.3.x"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "main": "app"
+}

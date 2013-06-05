@@ -1,0 +1,23 @@
+<item>
+  <title>{{title}}</title>
+  <link>http://tldr.io/tldrs/{{_id}}/{{slug}}</link>
+  <guid isPermaLink="false">{{_id}}</guid>
+  <pubDate>{{pubDate}}</pubDate>
+  <description>
+  <![CDATA[
+    {{#imageUrl}}
+      <img style="max-width: 300px;" src="{{imageUrl}}" alt="{{title}}">
+    {{/imageUrl}}
+    <ul>
+    {{#summaryBullets}}
+      <li>{{.}}</li>
+    {{/summaryBullets}}
+    </ul>
+    <br>
+    <i>{{#creator.username}}Tldr created by <a href="http://tldr.io/{{creator.username}}">{{creator.username}}</a>{{/creator.username}}</i><br><br>
+    <a href="{{originalUrl}}">Read complete article</a>
+
+  ]]>
+  </description>
+</item>
+

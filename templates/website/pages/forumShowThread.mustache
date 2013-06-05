@@ -1,0 +1,49 @@
+<div class="centered-block">
+    <div id="title-and-vote">
+      {{#thread}}{{>website/voting}}{{/thread}}
+      <div class="right-of-voting">
+        <h1 class="thread-title">{{thread.title}}</h1><br>
+        <span class="post-thread-metadata">{{thread.posts.length}} post{{#thread.moreThanOnePost}}s{{/thread.moreThanOnePost}}</span>
+      </div>
+    </div>
+    <br><br>
+
+    {{#thread.archived}}<em><a href="/forum/threads/archive">Back to the forum archive</a></em><br>{{/thread.archived}}
+    <em><a href="/forum/threads">Back to the forum</a></em>
+
+    <div class="list-box">
+      {{#posts}}
+        <div class="media">
+          <img class="pull-left" src="{{creator.gravatar.url}}&s=48" alt="a" style="width: 48px; height: 48px; visibility: hidden;" onload="this.style.visibility='visible';">
+          <div class="media-body">
+            {{#creator}} {{>website/usernameLink}} {{/creator}}
+              - <span class="post-topic-metadata">{{timeago}}</span> {{#editable}}<a href="/forum/posts/{{_id}}/edit">edit</a>{{/editable}}<br>
+              {{{markedText}}}
+          </div>
+        </div>
+        <br>
+      {{/posts}}
+    </div>
+
+    <br>
+
+    {{^loggedUser}}
+    You need to be <a href="/login?warning=false&returnUrl=/forum/threads/{{thread._id}}/{{thread.slug}}">logged in</a> to post something. No account yet? <a href="/signup">Create one!</a>
+    {{/loggedUser}}
+
+    {{#loggedUser}}
+      <!-- Directly scroll to this part of the page if there was an error -->
+      {{#displayValidationErrors}}
+        {{>website/comeHerePlease}}
+      {{/displayValidationErrors}}
+
+      {{>website/validationErrors}}
+
+      <form method="post" action="/forum/threads/{{thread._id}}/{{thread.slug}}">
+        <textarea rows="5" cols="60" name="text" class="post-input" placeholder=" Say something!">{{userInput.text}}</textarea><br>
+        <input type="submit" value="Express yourself" class="btn btn-primary">
+      </form>
+    {{/loggedUser}}
+
+    <br><br><br>
+</div>

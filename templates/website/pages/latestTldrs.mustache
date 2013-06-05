@@ -1,0 +1,63 @@
+<section class="marketing">
+  <h1>Freshest Summaries From All Around The World</h1>
+  <h2 class="marketing-byline"><p>Get to the point faster, Read more, Remember better</p></h2>
+  <img width="450" height="" class="graphic-helper" id="graphic-helper-badge" src="/assets/img/extension.gh2.png" alt="Hover over these little badges!">
+  <div class="tldr-base-unit">
+    <div class="latest-tldrs-created">
+      <ul class="unstyled">
+        {{#latestTldrs}}
+        <li>
+          <div class="tldr-icon">
+          </div>
+          <div class="tldr-title-wrapper">
+            <p class="tldr-title-ellipsis">
+              <a href="{{url}}" target="_blank">{{title}}</a>
+            </p>
+            {{>website/tldrBadge}}
+            {{>website/powertip}}
+            <span class="tldr-hostname tldr-hostname-list">
+              ({{domain.name}})
+            </span>
+          </div>
+          <div class="tldr-metadata-tldrs">
+            {{#anonymous}}
+            <span class="tldr-creator">
+              contributed anonymously
+            </span>
+            <span class="tldr-readcount">
+              &middot; read {{readCount}} times
+            </span>
+            {{/anonymous}}
+            {{^anonymous}}
+            <span class="tldr-creator">
+              contributed by <em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em>
+            </span>
+            <span class="tldr-readcount">
+              &middot; read {{readCount}} times
+            </span>
+            {{/anonymous}}
+          </div>
+        </li>
+        {{/latestTldrs}}
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="marketing marketing-tip">
+  <h2>Get the most popular summaries in your Twitter or RSS feed</h2>
+  <a href="https://twitter.com/tldrio" class="twitter-follow-button"  data-lang="en" data-size="large" >Follow @tldrio</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+
+  <a class="latest-rss-feed-link" href="http://feeds.feedburner.com/TldrioLatestSummaries" target="_blank"><img src="/assets/img/feed-icon-28x28.png" class="rss-feed-icon"> RSS feed of the best tldrs</a>
+</section>
+
+
+<hr class="soften">
+<section class="marketing">
+  <h1>You can be a hero too!</h1>
+  <p class="marketing-byline">Always feels good if you ask me</p>
+  <p>
+    <a href="/browser-extension#contribute-tldrs" class="btn btn-primary btn-large centered-button"> Contribute summaries</a>
+  </p>
+</section>
+

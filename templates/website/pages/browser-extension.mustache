@@ -1,0 +1,282 @@
+<div class="marketing">
+
+  <div class="more-on-extension-container">
+    <h1 class="featurette-heading" style="text-shadow:0px 1px 0px white;color:#999;"><span style="font-weight:bold">t</span>oo <span style="font-weight:bold">l</span>ong; <span style="font-weight:bold">d</span>idn't <span style="font-weight:bold">r</span>ead</h1>
+    {{#installed}}
+    <div style="width:567px;text-align=center;margin:20px auto;">
+      <strong>Thank you</strong> for installing the extension!
+      Now look at how badass it's going to make you:
+    </div>
+    {{/installed}}
+    <section class="container tldr-base-unit-2">
+    <div class="featurette">
+      <div class="featurette-image pull-right first-featurette tldr-present">
+        tldr
+      </div>
+      <h2 class="featurette-heading">Read human written summaries. <span class="muted">Save time and energy.</span></h2>
+    </div>
+    <div class="tutorial">
+      <div class="row">
+        <div class="span4">
+          <img  src="assets/img/onboarding1-{{browser}}.png" alt="Article which has been summarized">
+        </div>
+        <div class="span4 click-screenshot">
+          <img  class="screenshot-chrome" src="assets/img/onboarding2-{{browser}}.png" alt="Zoom on tldr green page action">
+        </div>
+        <div class="span4">
+          <img  src="assets/img/onboarding3-{{browser}}.png" alt="Summary for the page">
+        </div>
+      </div>
+      <div class="row">
+        <div class="span4">
+          <h2>1. Find a page</h2>
+        </div>
+        <div class="span4">
+          <h2>2. Click the green button</h2>
+        </div>
+        <div class="span4">
+          <h2>3. Enjoy your summary!</h2>
+        </div>
+      </div>
+    </div>
+
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://www.motherjones.com/environment/2013/01/lead-crime-link-gasoline" target="_blank" class="btn btn-primary btn-large" id="crx-try-read">Try it!</a>
+      </div>
+    {{/installed}}
+    {{^installed}}
+      {{>website/addToBrowser}}
+    {{/installed}}
+
+    <hr class="soften">
+
+    <div class="featurette" id="contribute-tldrs">
+      <div class="featurette-image pull-left second-featurette tldr-missing">
+        tldr
+      </div>
+      <h2 class="featurette-heading">Read something interesting? <span class="muted">Summarize it for posterity!</span></h2>
+    </div>
+
+    <div class="tutorial">
+      <div class="row">
+        <div class="span4">
+          <img  src="assets/img/onboarding4-{{browser}}.png" alt="Article to be summarized">
+        </div>
+        <div class="span4 click-screenshot">
+          <img  class="screenshot-chrome" src="assets/img/onboarding5-{{browser}}.png" alt="Red Page Action to create summary">
+        </div>
+        <div class="span4">
+          <img  src="assets/img/onboarding6-{{browser}}.png" alt="Form to create a summary for the page">
+        </div>
+      </div>
+      <div class="row">
+        <div class="span4">
+          <h2>1. Read an article</h2>
+        </div>
+        <div class="span4">
+          <h2>2. Click the red button</h2>
+        </div>
+        <div class="span4">
+          <h2>3. Summarize it for everyone else!</h2>
+        </div>
+      </div>
+    </div>
+
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://en.wikipedia.org/wiki/Special:Randompage" target="_blank" class="btn btn-primary btn-large" id="crx-try-read">Summarize your first article!</a>
+      </div>
+    {{/installed}}
+    {{^installed}}
+      {{>website/addToBrowser}}
+    {{/installed}}
+
+    <hr class="soften">
+
+    <div class="featurette">
+      <div class="featurette-image pull-right third-featurette">
+        tldr
+      </div>
+      <h2 class="featurette-heading">We give you superpowers. <span class="muted">See through hyperlinks.</span></h2>
+    </div>
+
+
+
+    <div id="landing-extension-wrapper">
+    <img width="450" height="" class="graphic-helper" id="extension-gh-hn" src="/assets/img/extension.gh2.png" alt="Hover over these little badges!">
+    <div id="hacker-news-container">
+      <center>
+        <table  border="0" cellpadding="0" cellspacing="0" width="85%" id="hacker-news-main-table">
+          <tbody>
+            <tr>
+              <td bgcolor="#ff6600">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:2px">
+                  <tbody>
+                    <tr>
+                      <td style="width:18px;padding-right:4px">
+                        <span><img src="/assets/img/hn.y18.gif" width="18" height="18" style="border:1px #ffffff solid;" alt="Hacker News favicon"></span>
+                      </td>
+                      <td style="line-height:12pt; height:10px;">
+                        <span class="pagetop"><b><span>Hacker News</span></b><img src="/assets/img/hn.s.gif" height="1" width="10" alt=" "><span>new</span> | <span>threads</span> | <span>comments</span> | <span>ask</span> | <span>jobs</span> | <span>submit</span></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+            <tr style="height:10px">
+            </tr>
+            <tr>
+              <td>
+                <table border="0" cellpadding="0" cellspacing="0">
+                  <tbody>
+                    <tr>
+                      <td align="right" valign="top" class="title">
+                        1.
+                      </td>
+                      <td>
+                        <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2" alt=" "></span></center>
+                      </td>
+                      <td class="title">
+                        <span>Internet Explorer becomes Korean election issue</span>
+                        {{#tldr1}} {{>website/tldrBadge}} {{/tldr1}}
+                        {{#tldr1}} {{>website/powertip}} {{/tldr1}}
+                        <span class="comhead"> (theregister.co.uk) </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                      </td>
+                      <td class="subtext  ">
+                        <span>40 points</span> by <span>Cbasedlifeform</span> 2 hours ago | <span>flag</span> | <span>7 comments</span>
+                      </td>
+                    </tr>
+                    <tr style="height:5px">
+                    </tr>
+                    <tr>
+                      <td align="right" valign="top" class="title">
+                        2.
+                      </td>
+                      <td>
+                        <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2" alt=" "></span></center>
+                      </td>
+                      <td class="title">
+
+                        <span> Commercial Freedom</span>
+                        {{#tldr2}} {{>website/tldrBadge}} {{/tldr2}}
+                        {{#tldr2}} {{>website/powertip}} {{/tldr2}}
+                        <span class="comhead"> (37signals.com) </span>
+                      </td>
+                    </tr>
+                    <tr><td colspan="2"></td><td class="subtext buffer-inserted"><span >142 points</span> by <span>scott</span> 3 hours ago  | <span>flag</span> | <span>40 comments</span> </td></tr>
+                    <tr style="height:5px">
+                    </tr>
+                    <tr>
+                      <td align="right" valign="top" class="title">
+                        3.
+                      </td>
+                      <td>
+                        <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2" alt=" "></span></center>
+                      </td>
+                      <td class="title">
+                        <span>Bring back the 40-hour work week</span>
+                        {{#tldr3}} {{>website/tldrBadge}} {{/tldr3}}
+                        {{#tldr3}} {{>website/powertip}} {{/tldr3}}
+                        <span class="comhead"> (salon.com)</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                      </td>
+                      <td class="subtext  ">
+                        <span >264 points</span> by <span>pnathan</span> 3 hours ago | <span>flag</span> | <span>35 comments</span>
+                      </td>
+                    </tr>
+                    <tr style="height:5px">
+                    </tr>
+                    <tr>
+                      <td align="right" valign="top" class="title">
+                        4.
+                      </td>
+                      <td>
+                        <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2" alt=" "></span></center>
+                      </td>
+                      <td class="title">
+                        <span>Google Fiber is live in Kansas City, real-world speeds at 700 Mbps</span>
+                        {{#tldr4}} {{>website/tldrBadge}} {{/tldr4}}
+                        {{#tldr4}} {{>website/powertip}} {{/tldr4}}
+                        <span class="comhead">(arstechnica.com)</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                      </td>
+                      <td class="subtext  ">
+                        <span>165 points</span> by <span>zoowar</span> 6 hours ago | <span>flag</span> | <span>98 comments</span>
+                      </td>
+                    </tr>
+                    <tr style="height:5px">
+                    </tr>
+                    <tr>
+                      <td align="right" valign="top" class="title">
+                        5.
+                      </td>
+                      <td>
+                        <center><span><img src="/assets/img/hn.grayarrow.gif" border="0" vspace="3" hspace="2" alt=" "></span></center>
+                      </td>
+                      <td class="title">
+                        <span>Show HN: My Life Project, Kickstarter for Dogs</span>
+                        {{#tldr5}} {{>website/tldrBadge}} {{/tldr5}}
+                        {{#tldr5}} {{>website/powertip}} {{/tldr5}}
+                        <span class="comhead"> (notsureifserious.com) </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">
+                      </td>
+                      <td class="subtext">
+                        <span >114 points</span> by <span>lolwut</span> 1 hour ago | <span>flag</span> | <span>32 comments</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <img src="/assets/img/hn.s.gif" height="10" width="0" alt=" ">
+                <table width="100%" cellspacing="0" cellpadding="1">
+                  <tbody>
+                    <tr>
+                      <td bgcolor="#ff6600">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+
+
+              </center>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </center>
+
+
+  </div>
+  </div>
+
+    {{#installed}}
+      <div class="call-to-action">
+        <a href="http://news.ycombinator.com" target="_blank" class="btn btn-primary btn-large" id="crx-try-hn">Put on your X-rays glasses</a>
+      </div>
+    {{/installed}}
+  {{^installed}}
+    {{>website/addToBrowser}}
+  {{/installed}}
+</section>
+
+</div>
+

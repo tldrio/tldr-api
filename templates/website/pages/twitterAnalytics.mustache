@@ -1,0 +1,40 @@
+<section class="marketing">
+  <h1>Twitter analytics since {{daysBack}} days back</h1>
+
+  Average redundancy: {{averageRedundancy}}<br>
+
+  <strong>Recap by requests</strong>
+  <ul>
+    <li>Small: {{small}} mentions, {{smallCount}} articles</li>
+    <li>Big: {{big}} mentions, {{bigCount}} articles</li>
+  </ul>
+
+  <br>
+
+  <strong>Recap by users</strong>
+  <ul>
+    <li>Small: {{smallBU}} mentions, {{smallCountBU}} articles</li>
+    <li>Big: {{bigBU}} mentions, {{bigCountBU}} articles</li>
+  </ul>
+
+  <br>
+
+  <strong>Details per request</strong>
+  <ul>
+    {{#tasR}}
+      <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedCount}})</li>
+    {{/tasR}}
+  </ul>
+
+  <br>
+
+  <strong>Details per user</strong>
+  <ul>
+    {{#tasU}}
+      <li><a href="{{representativeUrl}}">{{representativeUrl}}</a> ({{requestedByLength}} users, {{anonymousRequests}} anonymous requests, {{requestedCount}} mentions)</li>
+    {{/tasU}}
+  </ul>
+
+  <br>
+
+</section>

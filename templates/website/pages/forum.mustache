@@ -1,0 +1,41 @@
+<header class="marketing">
+<h1>Forum{{#archive}} (archived threads){{/archive}}</h1>
+{{^archive}}
+<h2 class="marketing-byline">Got an idea? Know an interesting blog that should be summarized? Say it here!</h2>
+{{/archive}}
+</header>
+
+<div class="centered-block">
+  {{^archive}}
+    {{#loggedUser}}
+    <em><a href="/forum/newThread">Start a new thread</a></em><br><br>
+    {{/loggedUser}}
+    {{^loggedUser}}
+    <em><a href="/login?warning=false&returnUrl=/forum/newThread">Login to start a new thread</a></em><br><br>
+    {{/loggedUser}}
+  {{/archive}}
+
+
+  <div id="thread-list" class="list-box">
+    {{#threads}}
+      <div>
+        {{>website/voting}}
+        <div class="right-of-voting">
+          <a href="/forum/threads/{{_id}}/{{slug}}"><span class="thread-in-list">{{title}}</span></a><br>
+          <span class="post-thread-metadata">{{posts.length}} post{{#moreThanOnePost}}s{{/moreThanOnePost}}, last one {{lastPostTimeago}} by {{#lastPost.by}} {{>website/usernameLink}} {{/lastPost.by}}</span>
+        </div>
+      </div>
+      <br>
+      <div class="thread-separator"></div>
+    {{/threads}}
+  </div>
+
+  <br>
+  {{^archive}}
+    <em><a href="/forum/threads/archive">See archived threads</a></em>
+  {{/archive}}
+  {{#archive}}
+    <em><a href="/forum/threads">See the non archived threads</a></em>
+  {{/archive}}
+
+</div>

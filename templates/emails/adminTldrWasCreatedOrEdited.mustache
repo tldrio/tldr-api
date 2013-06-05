@@ -1,0 +1,16 @@
+The new entry is:<br><br>
+Title: <a href="{{tldr.originalUrl}}">{{tldr.title}}</a> <br>
+Author: {{tldr.resourceAuthor}}<br>
+Date: {{tldr.resourceDate}}<br>
+Summary: <br>
+{{#tldr.summaryBullets}}
+   - {{.}} <br>
+{{/tldr.summaryBullets}}
+<br>
+{{type}} by {{^user.deleted}}<a href="{{websiteUrl}}/{{user.username}}">{{/user.deleted}} {{user.usernameForDisplay}} {{^user.deleted}}</a>{{/user.deleted}}<br><br><br>
+
+
+## ADMIN<br>
+<a href="{{apiUrl}}/tldrs/{{tldr._id}}/admin">See all versions of this tldr</a><br>
+Bad summary? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/delete">Delete it</a><br><br><br>
+Good summary but you don't want it to show anywhere? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/block">Block it</a>

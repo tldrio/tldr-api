@@ -1,0 +1,49 @@
+<a href="{{websiteUrl}}/{{editor.username}}">{{editor.username}}</a> just edited the tl;dr of <a href="{{websiteUrl}}/tldrs/{{tldr._id}}/{{tldr.slug}}">{{tldr.title}}</a> from <a href="{{websiteUrl}}/{{creator.username}}">{{creator.username}}</a>. <br> <br>
+
+Title:
+{{#diffTotal.diffTitle}}
+  {{#added}}
+  <span style="color: #8bc142; background: #e7fddd;"> {{value}}</span>
+  {{/added}}
+
+  {{#removed}}
+    <span style="color: #a63822; background: #f7dede;"> {{value}}</span>
+  {{/removed}}
+
+  {{^removed}}
+  {{^added}}
+    {{value}}
+  {{/added}}
+  {{/removed}}
+
+{{/diffTotal.diffTitle}}
+
+<br>
+<br>
+
+{{#diffTotal.diffSummary}}
+  -
+  {{#diffBullet}}
+    {{#added}}
+
+    <span style="color: #8bc142; background: #e7fddd;"> {{value}}</span>
+    {{/added}}
+
+    {{#removed}}
+      <span style="color: #a63822; background: #f7dede;"> {{value}}</span>
+    {{/removed}}
+
+    {{^removed}}
+    {{^added}}
+      {{value}}
+    {{/added}}
+    {{/removed}}
+  {{/diffBullet}}
+  <br>
+{{/diffTotal.diffSummary}}
+
+<br><br><br>
+
+## ADMIN<br>
+Bad summary? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/delete">Delete it</a><br>
+Good summary but you don't want it to show anywhere? <a href="{{apiUrl}}/tldrs/{{tldr._id}}/block">Block it</a>

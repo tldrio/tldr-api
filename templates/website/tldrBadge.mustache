@@ -1,0 +1,9 @@
+<span class="label tldr-label-d4a6ebe3" data-tldr-id="{{_id}}" data-powertip-id="tldr-powertip-{{_id}}">
+  <!-- By default, the link doesn't do anything -->
+  {{#linkToTldrPage}}
+    <a target="_blank" href="/tldrs/{{_id}}/{{slug}}">tldr</a>
+  {{/linkToTldrPage}}
+  {{^linkToTldrPage}}
+    <a> tldr </a>
+  {{/linkToTldrPage}}
+</span>

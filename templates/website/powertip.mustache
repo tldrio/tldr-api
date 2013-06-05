@@ -1,0 +1,36 @@
+<!-- for powertip -->
+<div id="tldr-powertip-{{_id}}"  style="display: none;">
+  <div class="tldr-read-container">
+    <div class="tldr-tldr">
+      <div class="tldr-header">
+        <img class="tldr-favicon tldr-favicon-ellipsis" src="http://www.google.com/s2/favicons?domain={{domain.name}}" alt="Favicon for {{domain.name}}">
+        <p class="tldr-title tldr-title-ellipsis">
+          <a href="{{originalUrl}}" target="_blank">{{title}}</a>
+        </p>
+      </div>
+      <div class="tldr-metadata">
+       tl;dr
+      {{^anonymous}}
+      <span>
+         by
+          <span><em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em></span>
+           -
+      </span>
+      {{/anonymous}}
+      read {{readCount}} times
+    </div>
+
+      <div class="tldr-summary">
+        <ul>
+          {{#summaryBullets}}
+          <li class="tldr-bullet">
+            <i class="icon-stop"></i>
+            {{.}}
+          </li>
+          {{/summaryBullets}}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- end powertip -->

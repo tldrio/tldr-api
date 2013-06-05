@@ -1,0 +1,101 @@
+<header class="marketing">
+<h1>API documentation</h1>
+</header>
+
+<div class="centered-block list-box">
+  <h4>General information</h4>
+  <p>
+    For now only the read-only part of the API is open.
+    This is a JSON API whose base url is: <code>https://api.tldr.io</code>.<br><br>
+
+    All requests must contain two extra headers to authenticate them:
+    <ul>
+      <li><code>api-client-name</code>: the name of your application</li>
+      <li><code>api-client-key</code>: your secret key</li>
+    </ul>
+
+    To request a developer account with your own credentials, <a href="mailto:hello@tldr.io">drop us an email</a>, tell us what you want to use our
+    API for and we'll create you an acccount. All unauthenticated requests will be answered with a 401 status code explaining why the request
+    was refused (unknown username or wrong secret key).
+  </p>
+
+  <br>
+  <h4>Routes</h4>
+  <strong>GET /categories</strong><br>
+  Get the list of categories (useful for the route below)<br><br>
+
+  <strong>GET /tldrs/latest/<em>:number</em>?category=<em>:category</em></strong><br>
+  Get the <code>:number</code> latest tldrs. You can get between 1 and 50 tldrs.<br>
+  Use the <code>?category=:category</code> to filter by category (use above route to get the list). <code>:category</code> is case-insensitive.
+  This parameter and optional, if ommited no filtering is done.<br><br>
+
+  <strong>GET /tldrs/search?url=<em>:url</em></strong><br>
+  Search the summary of the webpage whose url is <code>:url</code>. <code>:url</code>
+  should be properly URL-encoded (for example in Javascript with <code>encodeURIComponent</code>).<br>
+  A 404 response means there is no tldr for this url.<br><br>
+
+  <strong>POST /tldrs/searchBatch</strong><br>
+  Search the tldrs for a batch of urls, not just one as in the route above.<br>
+  The body of the request must be a JSON object of the form <code>{ batch: [url1, url2, ...] }</code><br>
+  The response will be of the form <code>{ tldrs: [tldr1, tldr2, ...] }.</code><br>
+  This route can only return up to 100 tldrs, if your batch contains more than 100 urls the response will be a 403 error.<br><br>
+
+  <strong>GET /users/<em>:username</em></strong><br>
+  Get all public data available about this user.<br><br>
+
+  <strong>GET /users/<em>:username</em>/tldrsCreated</strong><br>
+  Get all tldrs created by this user.<br><br>
+
+  <br>
+  <h4>Format of the data you receive</h4>
+  <strong>tldrs</strong>
+  <ul>
+    <li><code>title</code> <em class="muted">(String)</em> The title of the article</li>
+    <li><code>slug</code> <em class="muted">(String)</em> Slug of the title, used in the permalink</li>
+    <li><code>permalink</code> <em class="muted">(String)</em> Link to the tldr's page</li>
+    <li><code>summaryBullets</code> <em class="muted">(Array of String)</em> The bullet points composing the summary (maximum: 5)</li>
+    <li><code>readCount</code> <em class="muted">(Integer)</em> Number of times the tldr has been read</li>
+    <li><code>originalUrl</code> <em class="muted">(String)</em> The url of the page the tldr is the summary of</li>
+    <li><code>possibleUrls</code> <em class="muted">(String)</em> Array of normalized urls that correspond to this tldr. The url normalization is
+        a procedure we use to make sure that different urls returning the same content are linked to the same tldr. For example, no website (that we know of)
+        serves different version depending on whether you use the 'www' subdomain, so the 'www' (if any) is removed during normalization.
+    </li>
+    <li><code>creator</code> <em class="muted">(Object)</em> Public data about the creator of the tldr, with two fields: <code>username</code> and
+        <code>twitterHandle</code> (if the user registered it)</li>
+    <li><code>imageUrl</code> <em class="muted">(String)</em> Link to the Open Graph image of the corresponding webpage, if there is one</li>
+    <li><code>createdAt</code> <em class="muted">(Date)</em> When this tldr was created</li>
+    <li><code>updatedAt</code> <em class="muted">(Date)</em> When this tldr was last updated</li>
+    <li><code>moderated</code> <em class="muted">(Boolean)</em> True if a moderator has reviewed this tldr and deemed it accurate</li>
+    <li><code>distributionChannels</code> <em class="muted">(Object)</em> Some channels do not distribute all tldrs. This object tells
+        where this tldr will be distributed. For now the two channels are 'latestTldrs' (the latest tldrs page as well as the results from
+        GET /tldrs/latest) and 'latestTldrsRSSFeed'.
+    </li>
+    <li><code>anonymous</code> <em class="muted">(Boolean)</em></li>
+    <li><code>wordCount</code> <em class="muted">(Integer)</em> The number of words in the tldr</li>
+    <li><code>articleWordCount</code> <em class="muted">(Integer)</em> The number of words in the underlying article (we get that from Readability's API)</li>
+    <li><code>timeSaved</code> <em class="muted">(String)</em> Human-readable string of the estimation of the amount of time a tldr saves someone who reads it</li>
+    <li><code>language.language</code> <em class="muted">(String)</em> Language of the tldr (from Google Translate's API)</li>
+    <li><code>domain.name</code> <em class="muted">(String)</em> The domain of the underlying article, for example 'avc.com'</li>
+    <li><code>categories</code> <em class="muted">(Array)</em> Categories the tldr is filed under</li>
+  </ul>
+  <strong>users</strong>
+  <ul>
+    <li><code>username</code> <em class="muted">(String)</em></li>
+    <li><code>twitterHandle</code> <em class="muted">(String)</em> Defined only if user made it public</li>
+    <li><code>bio</code> <em class="muted">(String)</em> Defined only if user entered it</li>
+    <li><code>gravatar.url</code> <em class="muted">(String)</em></li>
+    <li><code>createdAt</code> <em class="muted">(Date)</em></li>
+    <li><code>lastActive</code> <em class="muted">(Date)</em></li>
+  </ul>
+
+  <br>
+  <h4>Clients</h4>
+  These clients have been made by our awesome users or ourselves, but may not be up to date. They're open-source so feel free to do a PR!
+  <p>
+    <ul>
+      <li>We made a <a href="https://github.com/tldrio/api-js-client" target="_blank">Javascript client for the browser.</a>.</li>
+      <li>User <a href="http://tldr.io/jhgaylor">jhgaylor</a> made a <a href="https://github.com/jhgaylor/tldrio-python-client/" target="_blank">Python wrapper.</a>.</li>
+    </ul>
+  </p>
+
+</div>

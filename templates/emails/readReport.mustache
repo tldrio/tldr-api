@@ -1,0 +1,28 @@
+Hey {{user.username}}, <br>
+<br>
+
+Your tl;drs are saving people <strong>a massive amount of time</strong>.
+<br>
+<br>
+This week your tl;drs have been read <strong>{{totalReadCountThisWeek}} times</strong> so you can now boast <strong>{{totalReadCount}} views</strong> for all your tl;drs!
+<br>
+<br>
+Your biggest hit this week is <a href="{{websiteUrl}}/tldrs/{{bestTldrThisWeek._id}}/{{bestTldrThisWeek.slug}}">{{bestTldrThisWeek.title}}</a> which has been <strong>viewed {{bestTldrThisWeek.readCountThisWeek}} times.</strong>
+Your most popular contribution of all time is the tl;dr of <a href="{{websiteUrl}}/tldrs/{{bestTldr._id}}/{{bestTldr.slug}}">{{bestTldr.title}}</a> which has been <strong>viewed {{bestTldr.readCount}} times</strong>.
+<br>
+Did you know you can access all your recent contributions and see their read counts on <a href="{{websiteUrl}}/{{user.username}}">your public profile</a>?
+<br>
+<br>
+Congrats for these stats! Do you want to see more?<br>
+<a href="http://tldr.io/impact" style="margin-top: 4px;color: #fff; background-color: #f60; text-decoration: none; padding: 6px; border-radius: 4px; font-weight: bold; display: block; max-width: 180px; text-align: center;">Check your analytics dashboard on the website</a>
+<br>
+<br>
+Cheers,<br>
+Charles, Louis and Stan <br>
+Cofounders of <a href="http://tldr.io">tldr.io</a>
+<br>
+<br>
+---------
+<br>
+Tired of being congratulated?
+<a href="{{websiteUrl}}/notifications/unsubscribe?id={{user._id}}&type=read&signature={{dataForUnsubscribe.signature}}&expiration={{dataForUnsubscribe.expiration}}">Unsubscribe</a> in one click.

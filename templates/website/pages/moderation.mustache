@@ -1,0 +1,69 @@
+<section class="marketing">
+  <h1>{{count}} Tldrs in need of some moderation</h1>
+  <div class="tldr-base-unit">
+    <div class="latest-tldrs-created">
+      <ul class="unstyled">
+        {{#tldrs}}
+        <li data-tldr-id="{{_id}}">
+          <!-- Channels -->
+          <div style="width: 25%; float: right;">
+            <label class="checkbox"><input kind="channel" channel="latestTldrs" type="checkbox"{{#distributionChannels.latestTldrs}} checked{{/distributionChannels.latestTldrs}}><strong>Latest</strong></label>
+            <label class="checkbox"><input kind="channel" channel="latestTldrsRSSFeed" type="checkbox"{{#distributionChannels.latestTldrsRSSFeed}} checked{{/distributionChannels.latestTldrsRSSFeed}}><strong>RSS</strong></label>
+            {{#socialProfiles}}
+              <label class="checkbox">
+                <input type="checkbox" kind="sharing" bufferid="{{id}}">
+                {{service_username}} <span style="color: #999;">({{formatted_service}})</span>
+              </label>
+            {{/socialProfiles}}
+            <button class="btn btn-primary btn-mini moderationDone" type="button">Done</button>
+            <button class="btn btn-mini blockTldr" type="button">Block</button>
+            <button class="btn btn-danger btn-mini deleteTldr" type="button">Delete</button>
+          </div>
+
+          <!-- Tldr -->
+          <div style="width: 75%;">
+            <div class="tldr-icon"></div>
+            <a href="{{originalUrl}}" target="_blank" style="color: #333; text-decoration: none;">{{title}}</a>
+            <span class="tldr-hostname tldr-hostname-list">
+              ({{domain.name}})
+            </span>
+            <div class="tldr-metadata-tldrs">
+              In
+              {{#categories}}
+                <span><a href="{{websiteUrl}}/discover/{{name}}" target="_blank"><em>{{name}}</em></a></span> ·
+              {{/categories}}
+              <span class="tldr-creator">
+                contributed by <em>{{#creator}} {{>website/usernameLink}} {{/creator}}</em> {{#anonymous}} anonymously{{/anonymous}}
+              </span>
+              <span class="tldr-readcount">
+                &middot; read {{readCount}} times
+              </span>
+              <a href="/tldrs/{{_id}}/{{slug}}"><span class="label">page</span></a>
+              <a href="{{dbguiUrl}}/tldrs/{{_id}}/edit"><span class="label label-info">in DB</span></a>
+              {{#subscribersCount}}
+              <span class="tldr-readcount">
+              {{subscribersCount}} people waiting for this tldr
+              </span>
+              {{/subscribersCount}}
+            </div>
+            <ul>
+              {{#summaryBullets}}
+              <li style="list-style-type: none;">
+                <i class="icon-stop"></i>
+                {{.}}
+              </li>
+              {{/summaryBullets}}
+            </ul>
+          </div>
+
+          <hr style="clear: both; height: 1px; background-color: #333; border: none;">
+        </li>
+        {{/tldrs}}
+      </ul>
+
+      {{^tldrs}}
+        Woohoo, no tldrs need to be moderated!
+      {{/tldrs}}
+    </div>
+  </div>
+</section>
