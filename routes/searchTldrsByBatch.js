@@ -77,7 +77,7 @@ function searchTldrsByBatch (req, res, next) {
       profiler.step('Before sending as JSON');
       res.json(200, { tldrs: tldrsToReturn, urls: urls} );
       profiler.step('After sending as JSON');
-      return
+      return;
     }
 
   });
