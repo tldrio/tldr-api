@@ -1,6 +1,6 @@
 {
   "name": "tldr-api",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "dependencies": {
     "h4e": {
       "version": "0.3.0",
@@ -414,6 +414,11 @@
           "resolved": "https://registry.npmjs.org/entities/-/entities-0.2.2.tgz"
         }
       }
+    },
+    "exec-time": {
+      "version": "0.0.2",
+      "from": "exec-time@",
+      "resolved": "https://registry.npmjs.org/exec-time/-/exec-time-0.0.2.tgz"
     },
     "sinon": {
       "version": "1.3.4",
