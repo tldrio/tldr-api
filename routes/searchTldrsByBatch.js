@@ -31,6 +31,7 @@ function searchTldrsByBatch (req, res, next) {
 
   profiler = new ExecTime("SEARCHBATCH - " + Math.random().toString().substring(2, 7) + " -");
   profiler.beginProfiling();
+  profiler.step("------------ " + new Date());
   //if (req.header('origin') === 'https://twitter.com') {
     //mqClient.emit('searchBatch.twitter', { urls: req.body.batch, expandedUrls: req.body.expandedUrls, userId: req.user ? req.user._id : null });
   //}
@@ -77,6 +78,7 @@ function searchTldrsByBatch (req, res, next) {
       profiler.step('Before sending as JSON');
       res.json(200, { tldrs: tldrsToReturn, urls: urls} );
       profiler.step('After sending as JSON');
+      profiler.step("--------------------------------------------");
       return;
     }
 
