@@ -35,7 +35,7 @@ function loadTldrs (req, res, next) {
                     , 'distributionChannels.latestTldrs': true }
                   ,options, function (err, tldrs) {
 
-  profiler.step('Query done');
+    profiler.step('Query done');
 
     req.renderingValues.tldrs = tldrs;
     return next();
@@ -88,6 +88,8 @@ function displayPage (req, res, next) {
     , topic = req.params.topic
     , limit = 10
     ;
+
+  profiler.step("Beginning displayPage");
 
   // Ensure cookie is set and tell template which boxes need to be checked
   req.renderingValues.languagesToDisplay = {};
