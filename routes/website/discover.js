@@ -5,15 +5,18 @@ var config = require('../../lib/config')
   , _ = require('underscore')
   , mqClient = require('../../lib/message-queue')
   , customUtils = require('../../lib/customUtils')
-  , profile = customUtils.profiler('TESTDISCOVER')
+  , ExecTime = require('exec-time')
+  , profiler
   ;
-
 
 
 
 // Get 100 tldrs according to our sort
 function loadTldrs (req, res, next) {
   var options = { limit: 100 };
+
+  profiler = new ExecTime("DISCOVER - " + Math.random().toString().substring(2, 7) + " -");
+  profiler.beginProfiling();
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
@@ -26,9 +29,13 @@ function loadTldrs (req, res, next) {
   req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
+  profiler.step('Ready to query');
+
   Tldr.findByQuery( { 'language.language': { $in: req.renderingValues.languages }
                     , 'distributionChannels.latestTldrs': true }
                   ,options, function (err, tldrs) {
+
+  profiler.step('Query done');
 
     req.renderingValues.tldrs = tldrs;
     return next();
@@ -102,8 +109,10 @@ function displayPage (req, res, next) {
                      , topic: topic
                      };
   }
+  profiler.step('Ready to get categories');
 
   Topic.getCategories(function (err, categories) {
+  profiler.step('Categories gotten');
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;
     values.description = "Discover summaries of interesting content contributed by the community.";
@@ -115,9 +124,11 @@ function displayPage (req, res, next) {
 
     partials.content = '{{>website/pages/discover}}';
 
+  profiler.step('Begin rendering');
     res.render('website/responsiveLayout', { values: values
                                            , partials: partials
                                            });
+  profiler.step('Rendering done');
   });
 }
 

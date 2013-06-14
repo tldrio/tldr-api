@@ -47,7 +47,8 @@
     "express-group-handlers": "0.1.0",
     "ua-parser": "0.3.x",
     "geoip-lite": "~1.0.10",
-    "cheerio": "~0.11.0"
+    "cheerio": "~0.11.0",
+    "exec-time": "0.0.2"
   },
   "devDependencies": {
     "chai": "1.0.x",
