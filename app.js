@@ -24,6 +24,7 @@ app.db = new DbObject( config.dbHost
 if (config.env !== 'test') { bunyan.setToLog = true; }
 
 
+
 /**
  * Last wall of defense. If an exception makes its way to the top, the service shouldn't
  * stop if it is run in production, but log a fatal error and send an email to us.
