@@ -6,7 +6,6 @@ var config = require('../../lib/config')
   , mqClient = require('../../lib/message-queue')
   , customUtils = require('../../lib/customUtils')
   , ExecTime = require('exec-time')
-  , profiler
   ;
 
 
@@ -15,8 +14,8 @@ var config = require('../../lib/config')
 function loadTldrs (req, res, next) {
   var options = { limit: 100 };
 
-  profiler = new ExecTime("DISCOVER - " + Math.random().toString().substring(2, 7) + " -");
-  profiler.beginProfiling();
+  req.profiler = new ExecTime("DISCOVER - " + Math.random().toString().substring(2, 7) + " -");
+  req.profiler.beginProfiling();
 
   if (req.params.sort === 'mostread') {
     options.sort = '-readCount';
@@ -29,13 +28,13 @@ function loadTldrs (req, res, next) {
   req.renderingValues.activeTopic = 'all';
   req.renderingValues.currentBaseUrl = '/discover';
 
-  profiler.step('Ready to query');
+  req.profiler.step('Ready to query');
 
   Tldr.findByQuery( { 'language.language': { $in: req.renderingValues.languages }
                     , 'distributionChannels.latestTldrs': true }
                   ,options, function (err, tldrs) {
 
-    profiler.step('Query done');
+    req.profiler.step('Query done');
 
     req.renderingValues.tldrs = tldrs;
     return next();
@@ -89,7 +88,7 @@ function displayPage (req, res, next) {
     , limit = 10
     ;
 
-  profiler.step("Beginning displayPage");
+  if (req.profiler) { req.profiler.step("Beginning displayPage"); }
 
   // Ensure cookie is set and tell template which boxes need to be checked
   req.renderingValues.languagesToDisplay = {};
@@ -111,10 +110,10 @@ function displayPage (req, res, next) {
                      , topic: topic
                      };
   }
-  profiler.step('Ready to get categories');
+  if (req.profiler) { req.profiler.step('Ready to get categories'); }
 
   Topic.getCategories(function (err, categories) {
-  profiler.step('Categories gotten');
+  if (req.profiler) { req.profiler.step('Categories gotten'); }
     values.title = "Discover" + config.titles.branding + config.titles.shortDescription;
     values.discover = true;
     values.description = "Discover summaries of interesting content contributed by the community.";
@@ -126,11 +125,11 @@ function displayPage (req, res, next) {
 
     partials.content = '{{>website/pages/discover}}';
 
-  profiler.step('Begin rendering');
+  if (req.profiler) { req.profiler.step('Begin rendering'); }
     res.render('website/responsiveLayout', { values: values
                                            , partials: partials
                                            });
-  profiler.step('Rendering done');
+  if (req.profiler) { req.profiler.step('Rendering done'); }
   });
 }
 
