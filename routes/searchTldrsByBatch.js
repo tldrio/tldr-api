@@ -15,7 +15,6 @@ var bunyan = require('../lib/logger').bunyan
   , mqClient = require('../lib/message-queue')
   , customUtils = require('../lib/customUtils')
   , ExecTime = require('exec-time')
-  , profiler
   ;
 
 /**
@@ -29,9 +28,9 @@ function searchTldrsByBatch (req, res, next) {
     , urls = {}
     , maxBatchSize = req.body.nolimit ? 5000 : 100;
 
-  profiler = new ExecTime("SEARCHBATCH - " + Math.random().toString().substring(2, 7) + " -");
-  profiler.beginProfiling();
-  profiler.step("------------ " + new Date());
+  req.profiler = new ExecTime("SEARCHBATCH - " + Math.random().toString().substring(2, 7) + " -");
+  req.profiler.beginProfiling();
+  req.profiler.step("------------ " + new Date());
   //if (req.header('origin') === 'https://twitter.com') {
     //mqClient.emit('searchBatch.twitter', { urls: req.body.batch, expandedUrls: req.body.expandedUrls, userId: req.user ? req.user._id : null });
   //}
@@ -43,7 +42,7 @@ function searchTldrsByBatch (req, res, next) {
   if (!req.body.batch) { req.body.batch = []; }
   if (req.body.batch.length > maxBatchSize) { return next({ statusCode: 403, body: { message: i18n.batchTooLarge } }); }
 
-  profiler.step('Before normalization');
+  req.profiler.step('Before normalization');
 
   // We normalize the urls
   _.each(req.body.batch, function (url) {
@@ -51,11 +50,11 @@ function searchTldrsByBatch (req, res, next) {
     batch.push(normalizedUrl);
     urls[url] = normalizedUrl;
   });
-  profiler.step('After normalization');
+  req.profiler.step('After normalization');
 
   //Search by batch
   Tldr.findByUrlBatch( batch, {}, function (err, docs) {
-    profiler.step('After findByUrlBatch query');
+    req.profiler.step('After findByUrlBatch query');
     var tldrsToReturn = [];
 
     if (err) { return res.send(500, { message: i18n.mongoInternErrQuery }); }
@@ -63,7 +62,7 @@ function searchTldrsByBatch (req, res, next) {
     docs.forEach(function (tldr) {
       tldrsToReturn.push(tldr.getPublicData());
     });
-    profiler.step('After getPublicData on all tldrs');
+    req.profiler.step('After getPublicData on all tldrs');
 
     // Quick and dirty option provided by the client to tell the server he wants
     // to be able to subscribe to future tldrs
@@ -75,10 +74,10 @@ function searchTldrsByBatch (req, res, next) {
         return res.json(200, { tldrs: tldrsToReturn, urls: urls, requests: docs} );
       });
     } else {
-      profiler.step('Before sending as JSON');
+      req.profiler.step('Before sending as JSON');
       res.json(200, { tldrs: tldrsToReturn, urls: urls} );
-      profiler.step('After sending as JSON');
-      profiler.step("--------------------------------------------");
+      req.profiler.step('After sending as JSON');
+      req.profiler.step("--------------------------------------------");
       return;
     }
 
