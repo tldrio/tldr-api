@@ -16,7 +16,7 @@ var express = require('express')
   , h4e = require('h4e')
   , beforeEach = require('express-group-handlers').beforeEach
   ;
-
+config.env = 'development';
 
 // Set up templating
 h4e.setup({ app: website
@@ -106,6 +106,7 @@ beforeEach(website, middleware.websiteRoute, function (website) {
   website.get('/api-documentation', routes.website.apiDoc);
   website.get('/release-notes', routes.website.releaseNotes);
   website.get('/embedded-tldrs', routes.website.embeddedTldrs);
+  website.get('/impact/:username', routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
 
 
   // Discover
@@ -173,7 +174,6 @@ beforeEach(website, middleware.websiteRoute, function (website) {
     website.get('/twitter-analytics/:daysBack', routes.website.twitterAnalytics);
     website.get('/embed-admin', function (req, res, next) { return res.redirect(302, '/embed-admin/14'); });
     website.get('/embed-admin/:daysBack', routes.website.embedAdmin);
-    website.get('/:username/impact', routes.website.analytics.selectUserForAnalytics, routes.website.analytics.displayAnalytics);
   });
 
   // User profiles and RSS feeds
@@ -200,7 +200,7 @@ website.launchServer = function (cb) {
 
   // Begin to listen. If the callback gets called, it means the server was successfully launched
   self.apiServer.listen.apply(self.apiServer, [config.websitePort, function() {
-    bunyan.info('Website launched in %s environment, on port %s.', config.env, config.websitePort);
+      bunyan.info('Website launched in %s environment, on port %s.', config.env, config.websitePort);
     callback();
   }]);
 };
