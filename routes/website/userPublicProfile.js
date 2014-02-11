@@ -11,8 +11,9 @@ var models = require('../../lib/models')
   , customUtils = require('../../lib/customUtils')
   , bunyan = require('../../lib/logger').bunyan
   , config = require('../../lib/config')
-  , async = require('async');
-
+  , analytics = require('../../lib/analytics')
+  , async = require('async')
+ , moment = require('moment')
 
 function displayProfile (req, res, next) {
   var values = req.renderingValues || {}
@@ -60,8 +61,8 @@ function displayProfile (req, res, next) {
           }
 
           cb(null);
-        });
-      });
+            });
+	  });
     }
     , function (cb) {
       User.findOne({ usernameLowerCased: usernameLowerCased })
@@ -72,10 +73,58 @@ function displayProfile (req, res, next) {
             } else {
               return res.json(404, {});
             }
-
-            cb(null);
+	      cb(null);
           });
     }
+      , function (cb) {
+	  User.findOne({ usernameLowerCased: usernameLowerCased })
+	  .populate('tldrsCreated', '_id', { anonymous: false })
+          .exec(function (err, user) {
+	      if (! err && user) {
+		  analytics.getAnalyticsForUser( user, 30, function (err, analytics30Days, rawData) {
+		      analytics.getAnalyticsForUser( user, null, function (err, analyticsAllTime, rawData) {
+			  var userJoinDate = moment(user.createdAt)
+			  , now = moment()
+			  , joinedRecently = now.diff(userJoinDate, 'days') < 6
+			  ;
+
+			  // figure out correct subtitle depending on activity
+			  if (parseInt(analyticsAllTime.readCount, 10) > 0) {   // User already made some tldrs
+			      values.hasBeenActive = true;
+			      if (parseInt(analytics30Days.tldrsCreated, 10) > 0) {
+				  values.active = true;
+				  values.subtitle = 'Looks like the world owes you a one!';
+			      } else {
+				  values.wasActive = true;
+				  values.subtitle = 'You were so prolific once upon a time, what happened to you?';
+			      }
+			  } else {   // User never wrote a tldr
+			      if (joinedRecently) {
+				  values.subtitle = 'Looks like you\'re new here. You should try creating your first tl;dr!';
+				  values.isNewHere = true;
+			      } else {
+				  values.subtitle = 'Time to stop procrastinating and contribute a tl;dr!';
+				  values.neverActive = true;
+			      }
+			  }
+			values.analytics = rawData;
+			values.past30Days = analytics30Days;
+			values.past30Days.selection = 'past30Days';
+			values.allTime = analyticsAllTime;
+			values.allTime.selection = 'allTime';
+			  cb(null);
+	
+		      });
+		  });
+		      
+	      }
+            else {
+              return res.json(404, {});
+		cb(null);
+	    }
+	  });
+      }
+
   ], function (err) {   // Render the page
        res.render('website/basicLayout', { values: values
                                          , partials: partials
@@ -86,3 +135,5 @@ function displayProfile (req, res, next) {
 
 // Interface
 module.exports.displayProfile = displayProfile;
+
+
