@@ -197,6 +197,7 @@
 
 
 <section class="marketing">
+{{#hasBeenActive}}
     <h1>tl;dr of {{user.username}}'s impact on the world</h1>
   <div class="tldr-base-unit" id="badass">
     <ul class="nav nav-pills">
@@ -227,6 +228,7 @@
       </div>
     </div>
   </div>
+{{/hasBeenActive}}
 </section>
 
 <div id="all-the-user-data" style="display: none;" data-analytics="{{analytics}}"></div>
