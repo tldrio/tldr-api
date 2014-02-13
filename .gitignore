@@ -8,3 +8,17 @@ npm-debug.log
 node_modules
 robots/sitemaps/
 rss/feeds/
+lib-cov
+lcov.info
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+pids
+build
+.grunt
+node_modules/*
+node_modules/**/*
