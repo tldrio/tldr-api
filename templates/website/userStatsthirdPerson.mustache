@@ -1,0 +1,32 @@
+<div class="users-stats">
+  <h1>
+    <span class="number">{{timeSaved}}</span> saved for other people.
+  </h1>
+
+  <h3>
+    <i class="icon-coffee"></i>
+    (That's about <span class="number">{{coffeeBreaks}}</span> coffee break{{#coffeeBreaksPlural}}s{{/coffeeBreaksPlural}})
+  </h3>
+
+  <h3>
+    <i class="icon-eye-open"></i>
+    {{user.username}}'s tl;drs were read <span class="number">{{readCount}}</span> time{{#readCountPlural}}s{{/readCountPlural}}.
+  </h3>
+
+  <h3>
+    <i class="icon-thumbs-up"></i>
+    {{user.username}}'s were thanked <span class="number">{{thanks}}</span> time{{#thanksPlural}}s{{/thanksPlural}}.
+  </h3>
+
+  <h3>
+    <i class="icon-pencil"></i>
+    {{user.username}}'s wrote <span class="number">{{tldrsCreated}}</span> tldr{{#tldrsCreatedPlural}}s{{/tldrsCreatedPlural}},
+      {{#createdSomeTldrs}}
+        compressing <span class="number">{{wordsCompressed}}</span> words into <span class="number">{{wordsWritten}}</span> words.
+      {{/createdSomeTldrs}}
+      {{^createdSomeTldrs}}
+        but your previous work is still helping a lot of people!
+      {{/createdSomeTldrs}}
+  </h3>
+
+</div>

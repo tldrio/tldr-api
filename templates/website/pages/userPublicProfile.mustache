@@ -207,7 +207,7 @@
       <div class="tab-pane" id="past-30-days">
           {{#past30Days}}
             {{#wasRead}}
-              {{>website/userStats}}
+              {{>website/userStatsthirdPerson}}
               {{>website/userChartBar}}
             {{/wasRead}}
           {{/past30Days}}
@@ -220,7 +220,7 @@
       </div>
       <div class="tab-pane active" id="all-time">
         {{#allTime}}
-          {{>website/userStats}}
+          {{>website/userStatsthirdPerson}}
           {{>website/userChartBar}}
           {{>website/userChartLine}}
         {{/allTime}}
