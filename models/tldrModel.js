@@ -11,6 +11,7 @@ var _ = require('underscore')
   , mailer = require('../lib/mailer')
   , mqClient = require('../lib/message-queue')
   , mongoose = require('mongoose')
+  , textSearch = require('mongoose-text-search')
   , urlNormalization = require('../lib/urlNormalization')
   , customUtils = require('../lib/customUtils')
   , ObjectId = mongoose.Schema.ObjectId
@@ -184,6 +185,12 @@ TldrSchema.virtual('timeSaved').get(function () {
 TldrSchema.set('toJSON', {
    virtuals: true
 });
+
+// give our schema text search capabilities
+TldrSchema.plugin(textSearch);
+
+// add a text index to the tags array
+TldrSchema.index({ summaryBullets: 'text' });
 
 
 // ========================================================================
@@ -587,6 +594,7 @@ TldrSchema.statics.findByQuery = function (query, _options, _callback) {
 };
 
 
+
 /**
  * Find n tldrs from every category
  * Absolutely suboptimal for now. If we need to use it, make it acceptable
@@ -763,6 +771,7 @@ TldrSchema.methods.thank = function (thanker , cb) {
 };
 
 
+
 /**
  * Serialize the tldr in a string that can be put in a data attribute, so that a client can
  * recreate the object (in fact only a subset of its fields)
@@ -784,6 +793,7 @@ TldrSchema.methods.serializeForDataAttribute = function () {
 
   return tldrData;
 };
+
 
 
 // Define tldr model

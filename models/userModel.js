@@ -58,6 +58,7 @@ reservedUsernames = {
   , 'users': true
   , 'whatisit': true
   , 'you': true
+  , 'create': true
 };
 
 

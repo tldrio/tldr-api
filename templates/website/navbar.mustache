@@ -1,7 +1,6 @@
 <div class="navbar navbar-fixed-top hidden-phone">
   <div class="navbar-inner">
     <div class="container">
-
       <a class="brand" href="/">tl;dr</a>
 
       <ul class="nav">
@@ -13,8 +12,11 @@
         <li{{#forum}} class="active"{{/forum}}><a href="/forum/threads">Forum</a></li>
       </ul>
 
+
+
       <!-- Right part of the navbar, holding the signup and login links -->
       <ul class="nav pull-right">
+
 
         <!-- User is not logged, display the login widget -->
         {{^loggedUser}}
@@ -22,6 +24,7 @@
           <a href="/signup">Sign up!</a>
         </li>
         <li class="divider-vertical"></li>
+
 
         <li  class="dropdown">
           <a href="#"  class="dropdown-toggle" data-toggle="dropdown">

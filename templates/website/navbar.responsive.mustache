@@ -23,8 +23,14 @@
           <li{{#forum}} class="active"{{/forum}}><a href="/forum/threads">Forum</a></li>
         </ul>
 
+	<ul class="nav">
+	<form id="search" method="POST" name="searchform" class="search-input" action="/discover/search">
+    	   <input id="searchtldr" type="search" name="search" size="10" placeholder="Search">
+        </form>	            
+	</ul>
+
         <!-- Right part of the navbar, holding the signup and login links -->
-        <ul class="nav pull-right">
+	<ul class="nav pull-right">
 
           <!-- User is not logged, display the login widget -->
           {{^loggedUser}}

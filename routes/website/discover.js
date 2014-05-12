@@ -38,7 +38,7 @@ function loadTldrs (req, res, next) {
 
     req.renderingValues.tldrs = tldrs;
     return next();
-  });
+   });
 }
 
 // Get 100 tldrs from the given topic
@@ -79,6 +79,40 @@ function loadTldrsByCategory (req, res, next) {
     }
   });
 }
+
+
+function searchTldrs(req, res, next) {
+  // filter added to cast the model
+  var options = { limit: 100 };
+  
+
+  if (req.params.sort === 'mostread') {
+    options.sort = '-readCount';
+    req.renderingValues.mostread = true;
+  } else {
+    options.sort = '-createdAt';
+    req.renderingValues.newest = true;
+  }
+  options.language = req.renderingValues.languagesToDisplay
+  searchTerm = req.body.search
+   
+  req.renderingValues.activeTopic = 'all';
+  req.renderingValues.currentBaseUrl = '/discover';
+    
+  // Search for all the objects in the query
+  Tldr.textSearch(searchTerm , options,  function (err, tldrs_temp) {
+      tldrs = []
+      tldrs_temp.results.forEach(function (result) {
+	  tldrs.push(result.obj) 
+      });
+
+      req.renderingValues.tldrs = tldrs;
+      return next();
+   });
+    
+}
+
+
 
 // Display the discover page
 function displayPage (req, res, next) {
@@ -155,8 +189,10 @@ function serveCategoryRSSFeed (req, res, next) {
 
 
 
+
 // Interface
 module.exports.loadTldrs = loadTldrs;
 module.exports.loadTldrsByCategory = loadTldrsByCategory;
 module.exports.displayPage = displayPage;
 module.exports.serveCategoryRSSFeed = serveCategoryRSSFeed;
+module.exports.searchTldrs = searchTldrs;
