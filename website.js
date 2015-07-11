@@ -67,7 +67,9 @@ website.get('/third-party-auth/google', function (req, res, next) {
                                       req.session.googleAuthThroughPopup = req.query.googleAuthThroughPopup;
                                       next();
                                     }
-                                  , passport.authenticate('google'));
+                                  , passport.authenticate('google', { scope: 
+								      [ 'https://www.googleapis.com/auth/userinfo.email',]
+								    }));
 website.get('/third-party-auth/google/return', passport.customAuthenticateWithGoogle);
 website.get('/third-party-auth/google/successPopup', routes.website.googleSSOWithPopup);
 
